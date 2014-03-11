@@ -16,9 +16,11 @@ import es.tid.cosmos.api.auth.request.ChainedAuthenticationComponent
 import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManagerComponent
 import es.tid.cosmos.api.controllers.admin.InMemoryMaintenanceStatusComponent
-import es.tid.cosmos.api.profile.{CosmosProfileDaoComponent, MockCosmosDaoComponent}
-import es.tid.cosmos.api.profile.sql.PlayDbCosmosDaoComponent
+import es.tid.cosmos.api.profile.dao.CosmosDataStoreComponent
+import es.tid.cosmos.api.profile.dao.sql.PlayDbDataStoreComponent
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
 import es.tid.cosmos.api.task.inmemory.InMemoryTaskDaoComponent
+import es.tid.cosmos.api.usage.DynamicMachineUsageComponent
 import es.tid.cosmos.common.ApplicationConfigComponent
 
 abstract class TestApplication extends Application
@@ -28,13 +30,14 @@ abstract class TestApplication extends Application
   with ApplicationConfigComponent
   with InMemoryMaintenanceStatusComponent
   with ChainedAuthenticationComponent
+  with DynamicMachineUsageComponent
   with InMemoryTaskDaoComponent {
 
-  self: CosmosProfileDaoComponent =>
+  self: CosmosDataStoreComponent =>
 
   val global = new AbstractGlobal(this) {}
 }
 
-class MockDaoTestApplication extends TestApplication with MockCosmosDaoComponent
+class MockDaoTestApplication extends TestApplication with MockCosmosDataStoreComponent
 
-class PlayDaoTestApplication extends TestApplication with PlayDbCosmosDaoComponent
+class PlayDaoTestApplication extends TestApplication with PlayDbDataStoreComponent

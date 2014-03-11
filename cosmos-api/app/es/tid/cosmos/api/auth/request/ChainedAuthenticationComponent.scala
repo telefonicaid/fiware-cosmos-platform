@@ -12,19 +12,18 @@
 package es.tid.cosmos.api.auth.request
 
 import es.tid.cosmos.api.auth.multiauth.MultiAuthProviderComponent
-import es.tid.cosmos.api.profile.CosmosProfileDaoComponent
+import es.tid.cosmos.api.profile.dao.CosmosDataStoreComponent
 
 trait ChainedAuthenticationComponent extends RequestAuthenticationComponent {
-  this: CosmosProfileDaoComponent with MultiAuthProviderComponent =>
+  this: CosmosDataStoreComponent with MultiAuthProviderComponent =>
 
   override lazy val apiRequestAuthentication: RequestAuthentication = {
-    val dao = cosmosProfileDao
     val baseAuthentications = Seq(
-      new ApiCredentialsAuthentication(dao),
-      new SessionCookieAuthentication(dao)
+      new ApiCredentialsAuthentication(store),
+      new SessionCookieAuthentication(store)
     )
     val optionalAuthentication = multiAuthProvider.tokenAuthenticationProvider.map(authProvider =>
-      new TokenAuthentication(authProvider, dao)
+      new TokenAuthentication(authProvider, store)
     )
     new ChainedAuthentication(baseAuthentications ++ optionalAuthentication)
   }

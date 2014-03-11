@@ -9,11 +9,13 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile
+package es.tid.cosmos.api.profile.dao
 
 import java.util.Date
 
 import es.tid.cosmos.servicemanager.clusters.ClusterId
+import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.ClusterAssignment
 
 trait ClusterDao[Conn] {
 
@@ -22,7 +24,7 @@ trait ClusterDao[Conn] {
     * @param id  The unique Cosmos ID of the given user.
     * @param c   The connection to use.
     * @return    The set of assigned clusters for a given user.
-    * @throws CosmosProfileException  When no user has such id
+    * @throws CosmosDaoException  When no user has such id
     */
   def ownedBy(id: ProfileId)(implicit c: Conn): Seq[ClusterAssignment]
 

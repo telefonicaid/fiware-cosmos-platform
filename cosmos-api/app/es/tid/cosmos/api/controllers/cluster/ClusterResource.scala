@@ -26,7 +26,9 @@ import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.dao._
 import es.tid.cosmos.api.task.TaskDao
+import es.tid.cosmos.api.usage.MachineUsage
 import es.tid.cosmos.servicemanager.{ClusterExecutableValidation, ClusterUser, ServiceManager}
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
 
@@ -36,23 +38,24 @@ import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
 class ClusterResource(
     override val auth: RequestAuthentication,
     serviceManager: ServiceManager,
+    machineUsage: MachineUsage,
     override val taskDao: TaskDao,
-    dao: CosmosDao,
+    store: ProfileDataStore with ClusterDataStore,
     override val maintenanceStatus: MaintenanceStatus) extends Controller with ApiAuthController
   with JsonController with MaintenanceAwareController with TaskController {
 
   import ClusterResource._
+  import Scalaz._
 
-  private lazy val quotaContext =
-    new QuotaContextFactory(new CosmosMachineUsageDao(dao, serviceManager))
+  private lazy val quotaContext = new QuotaContextFactory(machineUsage)
 
   /** List user clusters. */
   @ApiOperation(value = "List clusters", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.cluster.ClusterList")
   def list = Action { implicit request =>
 
-    def listClustersWithOwnConnection(profile: CosmosProfile) = dao.withConnection { c =>
-      listClusters(profile)(c)
+    def listClustersWithOwnConnection(profile: CosmosProfile) = store.withConnection { implicit c =>
+      listClusters(profile)
     }
 
     for {
@@ -104,7 +107,7 @@ class ClusterResource(
       case Success(clusterId: ClusterId) =>
         Logger.info(s"Provisioning new cluster $clusterId")
         val assignment = ClusterAssignment(clusterId, profile.id, new Date())
-        dao.withTransaction { implicit c => dao.cluster.register(assignment) }
+        store.withTransaction { implicit c => store.cluster.register(assignment) }
         val clusterDescription = serviceManager.describeCluster(clusterId).get
         val reference = ClusterReference(clusterDescription, assignment).withAbsoluteUri(request)
         Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
@@ -119,8 +122,8 @@ class ClusterResource(
       Forbidden(Json.toJson(Message(errors.list.mkString(" "))))
     )
 
-  private def listClusters(profile: CosmosProfile)(implicit c: dao.Conn) = {
-    val assignedClusters =  Set(dao.cluster.ownedBy(profile.id): _*)
+  private def listClusters(profile: CosmosProfile)(implicit c: store.Conn) = {
+    val assignedClusters =  Set(store.cluster.ownedBy(profile.id): _*)
     (for {
       assignment <- assignedClusters.toList
       description <- serviceManager.describeCluster(assignment.clusterId).toList
@@ -226,7 +229,6 @@ class ClusterResource(
 
   private def requireSshAccessToCluster(
       profile: CosmosProfile, clusterId: ClusterId): ActionValidation[ClusterDescription] = {
-    import Scalaz._
     requireThatOwner(profile, clusterId,
       ifOwner = desc => desc.success,
       ifNotOwner = desc => (for {
@@ -236,38 +238,31 @@ class ClusterResource(
   }
 
   private def requireOwnedCluster(
-      profile: CosmosProfile, clusterId: ClusterId): ActionValidation[ClusterDescription] = {
-    import Scalaz._
+      profile: CosmosProfile, clusterId: ClusterId): ActionValidation[ClusterDescription] =
     requireThatOwner(profile, clusterId,
       ifOwner = desc => desc.success,
       ifNotOwner = _ => unauthorizedAccessTo(clusterId).failure
     )
-  }
 
   private def requireNotOwnedCluster(
       profile: CosmosProfile,
-      clusterId: ClusterId): ActionValidation[ClusterDescription] = {
-    import Scalaz._
+      clusterId: ClusterId): ActionValidation[ClusterDescription] =
     requireThatOwner(profile, clusterId,
       ifOwner = _ => userIsOwnerOf(profile.handle, clusterId).failure,
       ifNotOwner = desc => desc.success
     )
-  }
 
   private def requireThatOwner(
       profile: CosmosProfile,
       clusterId: ClusterId,
       ifOwner: ClusterDescription => ActionValidation[ClusterDescription],
       ifNotOwner: ClusterDescription => ActionValidation[ClusterDescription]):
-      ActionValidation[ClusterDescription] = {
-    import Scalaz._
-    clusterOwnership(profile, clusterId) match {
-      case (true, None) => throw new IllegalStateException(
-        s"Cluster '$clusterId' is on app database but not found in Service Manager")
-      case (false, None) => notFound(clusterId).failure
-      case (false, Some(description)) => ifNotOwner(description)
-      case (true, Some(description)) => ifOwner(description)
-    }
+      ActionValidation[ClusterDescription] = clusterOwnership(profile, clusterId) match {
+    case (true, None) => throw new IllegalStateException(
+      s"Cluster '$clusterId' is on app database but not found in Service Manager")
+    case (false, None) => notFound(clusterId).failure
+    case (false, Some(description)) => ifNotOwner(description)
+    case (true, Some(description)) => ifOwner(description)
   }
 
   private def clusterOwnership(profile: CosmosProfile, clusterId: ClusterId) = {
@@ -276,47 +271,39 @@ class ClusterResource(
     (owned, maybeDescription)
   }
 
-  private def requireProfileExists(handle: String): ActionValidation[CosmosProfile] = {
-    import Scalaz._
-    dao.withConnection { implicit c =>
-      dao.profile.lookupByHandle(handle) match {
+  private def requireProfileExists(handle: String): ActionValidation[CosmosProfile] =
+    store.withConnection { implicit c =>
+      store.profile.lookupByHandle(handle) match {
         case Some(profile: CosmosProfile) => profile.success
         case None => profileNotFound(handle).failure
       }
     }
-  }
 
   private def requireProfileIsUserOf(
       profile: CosmosProfile,
-      clusterId: ClusterId): ActionValidation[Unit] = {
-    import Scalaz._
+      clusterId: ClusterId): ActionValidation[Unit] =
     requireClusterUsersAreAvailable(clusterId).flatMap { users =>
       if (userIsMemberOfCluster(profile, users)) ().success
       else notUserOf(profile.handle, clusterId).failure
     }
-  }
 
   private def userIsMemberOfCluster(profile: CosmosProfile, users: Seq[ClusterUser]) =
     users.exists(usr => usr.username.equals(profile.handle) && usr.isEnabled)
 
   private def requireProfileIsNotUserOf(
       profile: CosmosProfile,
-      clusterId: ClusterId): ActionValidation[Unit] = {
-    import Scalaz._
+      clusterId: ClusterId): ActionValidation[Unit] =
     requireProfileIsUserOf(profile, clusterId).fold(
       fail = _ => ().success,
       succ = _ => alreadyUserOf(profile.handle, clusterId).failure
     )
-  }
 
   private def requireClusterUsersAreAvailable(
-      clusterId: ClusterId): ActionValidation[Seq[ClusterUser]] = {
-    import Scalaz._
+      clusterId: ClusterId): ActionValidation[Seq[ClusterUser]] =
     serviceManager.listUsers(clusterId) match {
       case Some(users) => users.success
       case None => usersUnavailable(clusterId).failure
     }
-  }
 
   private def requireUserManagementConditions(
       request: Request[JsValue], clusterId: ClusterId): ActionValidation[CosmosProfile] = for {
@@ -328,8 +315,8 @@ class ClusterResource(
   } yield user
 
   private def isOwnerOfCluster(cosmosId: Long, cluster: ClusterId): Boolean =
-    dao.withConnection { implicit c =>
-      dao.cluster.ownedBy(cosmosId).exists(_.clusterId == cluster)
+    store.withConnection { implicit c =>
+      store.cluster.ownedBy(cosmosId).exists(_.clusterId == cluster)
     }
 }
 

@@ -36,7 +36,7 @@ class StorageResourceIT
 
   it must "provide the WebHDFS connection details" in new WithSampleSessions {
     mockedServiceManager.defineCluster(MockedServiceManager.PersistentHdfsProps)
-    val persistentHdfsCluster = services.serviceManager().describePersistentHdfsCluster().get
+    val persistentHdfsCluster = services.serviceManager.describePersistentHdfsCluster().get
     val result = regUser.doRequest(request)
     status(result) must be (OK)
     val jsonBody = contentAsJson(result)

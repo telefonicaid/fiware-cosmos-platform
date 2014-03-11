@@ -43,14 +43,18 @@ class ClustersIT
   it must behave like enabledOnlyForOperatorsWhenUnderMaintenance(createCluster)
 
   "The clusters resource" must "list user clusters" in new WithSampleSessions with SampleClusters {
-    dao.withConnection { implicit c =>
-      val user1 = new RegisteredUserSession("user1", "User 1")
-      val user2 = new RegisteredUserSession("user2", "User 2")
-      val ownCluster = SampleClusters.RunningClusterProps.id
-      val otherCluster = ClusterId()
-      dao.cluster.register(ownCluster, user1.cosmosProfile.id)
-      dao.cluster.register(otherCluster, user2.cosmosProfile.id)
-      val resource = user1.doRequest(listClusters)
+    val user1 = new RegisteredUserSession("user1", "User 1")
+    val user2 = new RegisteredUserSession("user2", "User 2")
+    val ownCluster = SampleClusters.RunningClusterProps.id
+    val otherCluster = ClusterId()
+    store.withTransaction { implicit c =>
+      store.cluster.register(ownCluster, user1.cosmosProfile.id)
+      store.cluster.register(otherCluster, user2.cosmosProfile.id)
+    }
+
+    val resource = user1.doRequest(listClusters)
+
+    store.withTransaction { implicit c =>
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
       contentAsString(resource) must include (ownCluster.toString)
@@ -67,8 +71,8 @@ class ClustersIT
     val location = header("Location", resource)
     location must be ('defined)
     contentAsString(resource) must include (location.get)
-    dao.withConnection { implicit c =>
-      dao.cluster.ownedBy(regUser.cosmosProfile.id) must have length 1
+    store.withConnection { implicit c =>
+      store.cluster.ownedBy(regUser.cosmosProfile.id) must have length 1
     }
   }
 
@@ -79,8 +83,8 @@ class ClustersIT
     val location = header("Location", resource)
     location must be ('defined)
     contentAsString(resource) must include (location.get)
-    dao.withConnection { implicit c =>
-      dao.cluster.ownedBy(regUser.cosmosProfile.id) must have length 1
+    store.withConnection { implicit c =>
+      store.cluster.ownedBy(regUser.cosmosProfile.id) must have length 1
     }
   }
 

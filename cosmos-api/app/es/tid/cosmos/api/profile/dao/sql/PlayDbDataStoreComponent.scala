@@ -9,10 +9,11 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile.sql
+package es.tid.cosmos.api.profile.dao.sql
 
-import es.tid.cosmos.api.profile.{CosmosDao, CosmosProfileDaoComponent}
+import es.tid.cosmos.api.profile.dao.CosmosDataStoreComponent
 
-trait PlayDbCosmosDaoComponent extends CosmosProfileDaoComponent {
-  lazy val cosmosProfileDao: CosmosDao = new PlayDbCosmosDao
+/** Use Play DB as data store for Cosmos profile, groups, etc. */
+trait PlayDbDataStoreComponent extends CosmosDataStoreComponent {
+  override lazy val store = PlayDbCosmosDataStore
 }

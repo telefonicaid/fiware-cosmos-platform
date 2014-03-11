@@ -9,21 +9,19 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile.sql
+package es.tid.cosmos.api.profile.dao.sql
 
 import java.sql.Connection
 
 import play.api.Play.current
 import play.api.db.DB
 
-import es.tid.cosmos.api.profile.CosmosDao
+import es.tid.cosmos.api.profile.dao.CosmosDataStore
 
-class PlayDbCosmosDao extends CosmosDao {
-
-  type Conn = Connection
-
-  def withConnection[A](block: (Conn) => A): A = DB.withConnection[A](block)
-  def withTransaction[A](block: (Conn) => A): A = DB.withTransaction[A](block)
+object PlayDbCosmosDataStore extends CosmosDataStore {
+  override type Conn = Connection
+  override def withConnection[A](block: Connection => A): A = DB.withConnection[A](block)
+  override def withTransaction[A](block: Connection => A): A = DB.withTransaction[A](block)
 
   override val profile = PlayDbProfileDao
   override val capability = PlayDbCapabilityDao

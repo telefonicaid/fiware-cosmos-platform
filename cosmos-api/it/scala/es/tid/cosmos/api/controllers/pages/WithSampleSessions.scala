@@ -64,8 +64,8 @@ trait WithSampleSessions extends WithTestApplication {
     val session = Session().setUserProfile(userProfile).setToken("token")
 
     def setAsOwner(cluster: ClusterId) = {
-      dao.withConnection { implicit c =>
-        dao.cluster.register(cluster, cosmosProfile.id)
+      store.withConnection { implicit c =>
+        store.cluster.register(cluster, cosmosProfile.id)
       }
     }
 
@@ -76,7 +76,7 @@ trait WithSampleSessions extends WithTestApplication {
     )
 
     protected def buildCosmosProfile(): CosmosProfile =
-      CosmosProfileTestHelpers.registerUser(handle)(dao)
+      CosmosProfileTestHelpers.registerUser(handle)(store)
   }
 
   /** Not authenticated user */
@@ -104,9 +104,9 @@ trait WithSampleSessions extends WithTestApplication {
     new RegisteredUserSession(state.toString, s"${state.toString} 1") {
       override protected def buildCosmosProfile(): CosmosProfile = {
         val profile = super.buildCosmosProfile()
-        dao.withTransaction { implicit c =>
-          dao.profile.setUserState(profile.id, state)
-          dao.profile.lookupByProfileId(profile.id).get
+        store.withTransaction { implicit c =>
+          store.profile.setUserState(profile.id, state)
+          store.profile.lookupByProfileId(profile.id).get
         }
       }
     }
@@ -115,9 +115,9 @@ trait WithSampleSessions extends WithTestApplication {
   val opUser = new RegisteredUserSession("operator", "Mr Operator") {
     override protected def buildCosmosProfile(): CosmosProfile = {
       val profile = super.buildCosmosProfile()
-      dao.withTransaction { implicit c =>
-        dao.capability.enable(profile.id, Capability.IsOperator)
-        dao.profile.lookupByProfileId(profile.id).get
+      store.withTransaction { implicit c =>
+        store.capability.enable(profile.id, Capability.IsOperator)
+        store.profile.lookupByProfileId(profile.id).get
       }
     }
   }

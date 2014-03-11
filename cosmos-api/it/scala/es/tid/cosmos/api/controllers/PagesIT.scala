@@ -78,8 +78,8 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
         "email" -> "jsmith@example.com",
         "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com")
       response must redirectTo ("/")
-      dao.withConnection { implicit c =>
-        dao.profile.lookupByUserId(unregUser.userId) must be ('defined)
+      store.withConnection { implicit c =>
+        store.profile.lookupByUserId(unregUser.userId) must be ('defined)
       }
     }
   }
@@ -143,7 +143,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
 
   "A registered user" must "be authenticated after OAuth redirection" in
     new WithTestApplication {
-      registerUser(dao, MockAuthConstants.User101)
+      registerUser(MockAuthConstants.User101)
       val redirection = oauthRedirectionWithCode(MockAuthConstants.GrantedCode)
       redirection must redirectTo ("/profile")
       val cosmosSession: CosmosSession = session(redirection)

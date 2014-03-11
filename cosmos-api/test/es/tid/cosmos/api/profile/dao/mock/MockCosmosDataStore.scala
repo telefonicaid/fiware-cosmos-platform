@@ -9,40 +9,35 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile
+package es.tid.cosmos.api.profile.dao.mock
 
 import scala.concurrent.stm._
 
-import es.tid.cosmos.api.profile.UserState._
-import es.tid.cosmos.api.profile.MockCosmosDao._
+import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.UserState.UserState
+import es.tid.cosmos.api.profile.dao._
 import es.tid.cosmos.api.quota._
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
-trait MockCosmosDaoComponent extends CosmosProfileDaoComponent {
-  lazy val cosmosProfileDao: CosmosDao = new MockCosmosDao
-}
-
-/** Mock to be used in tests for handling the profile DAO. Thread-safe. */
-class MockCosmosDao extends CosmosDao {
-
-  type Conn = DummyConnection.type
+class MockCosmosDataStore extends CosmosDataStore {
 
   private val users = Ref(Map[UserId, CosmosProfile]())
   private val clusters = Ref(List[ClusterAssignment]())
   private val groups = Ref(Set(Group.noGroup))
   private val bannedStates = Ref(Set.empty[UserState])
 
-  def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
-  def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
-
   def throwOnUserStateChangeTo(state: UserState): Unit = atomic { implicit txn =>
     bannedStates() = bannedStates() + state
   }
 
+  override type Conn = InTxn
+  override def withConnection[A](block: (Conn) => A): A = withTransaction(block)
+  override def withTransaction[A](block: (Conn) => A): A = atomic { implicit txn => block(txn) }
+
   override def profile = new ProfileDao[Conn] {
 
     override def register(userId: UserId, reg: Registration, state: UserState)
-                         (implicit c: Conn): CosmosProfile = atomic { implicit txn =>
+                         (implicit c: Conn): CosmosProfile = {
       val cosmosProfile = CosmosProfile(
         id = users().size,
         state = state,
@@ -57,82 +52,62 @@ class MockCosmosDao extends CosmosDao {
       cosmosProfile
     }
 
-    override def list()(implicit c: Conn): Seq[CosmosProfile] = atomic { implicit txn =>
-      users().values.toSeq
-    }
+    override def list()(implicit c: Conn): Seq[CosmosProfile] = users().values.toSeq
 
     override def lookupByProfileId(id: ProfileId)(implicit c: Conn): Option[CosmosProfile] =
-      atomic { implicit txn =>
-        users().values.find(_.id == id)
-      }
+      users().values.find(_.id == id)
 
     override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
-      atomic { implicit txn =>
-        users().get(userId)
-      }
+      users().get(userId)
 
     override def lookupByApiCredentials(creds: ApiCredentials)
                                        (implicit c: Conn): Option[CosmosProfile] =
-      atomic { implicit txn =>
-        users().collectFirst {
-          case (_, profile) if profile.apiCredentials == creds => profile
-        }
+      users().collectFirst {
+        case (_, profile) if profile.apiCredentials == creds => profile
       }
 
     override def lookupByHandle(handle: String)(implicit c: Conn): Option[CosmosProfile] =
-      atomic { implicit txn =>
-        users().values.find(_.handle == handle)
-      }
+      users().values.find(_.handle == handle)
 
     override def lookupByGroup(group: Group)(implicit c: Conn): Set[CosmosProfile] =
-      atomic { implicit txn =>
-        users().values.filter(profile => profile.group == group).toSet
-      }
+      users().values.filter(profile => profile.group == group).toSet
 
-    override def handleExists(handle: String)(implicit c: Conn): Boolean = atomic { implicit txn =>
+    override def handleExists(handle: String)(implicit c: Conn): Boolean =
       users().values.exists(_.handle == handle)
-    }
 
     override def setHandle(id: ProfileId, handle: String)(implicit c: Conn) =
-      atomic { implicit txn =>
-        updateProfile(id) { profile =>
-          if (profile.handle != handle && users().values.exists(_.handle == handle))
-            throw CosmosProfileException.duplicatedHandle(handle)
-          profile.copy(handle = handle)
-        }
+      updateProfile(id) { profile =>
+        if (profile.handle != handle && users().values.exists(_.handle == handle))
+          throw CosmosDaoException.duplicatedHandle(handle)
+        profile.copy(handle = handle)
       }
 
-    override def setEmail(id: ProfileId, email: String)(implicit c: Conn) {
+    override def setEmail(id: ProfileId, email: String)(implicit c: Conn) =
       updateProfile(id) { profile =>
         profile.copy(email = email)
       }
-    }
 
-    override def setPublicKeys(id: ProfileId, publicKeys: Seq[NamedKey])(implicit c: Conn) {
+    override def setPublicKeys(id: ProfileId, publicKeys: Seq[NamedKey])(implicit c: Conn) =
       updateProfile(id) { profile =>
         profile.copy(keys = publicKeys)
       }
-    }
 
     override def setUserState(id: ProfileId, userState: UserState)(implicit c: Conn) =
-      atomic { implicit txn =>
-        if (bannedStates().contains(userState)) {
-          throw new RuntimeException("Forced failure: cannot change user state")
-        } else updateProfile(id) { profile =>
-          profile.copy(state = userState)
-        }
+      if (bannedStates().contains(userState)) {
+        throw new RuntimeException("Forced failure: cannot change user state")
+      } else updateProfile(id) { profile =>
+        profile.copy(state = userState)
       }
 
-    override def setGroup(id: ProfileId, groupName: Option[String])(implicit c: Conn) {
+    override def setGroup(id: ProfileId, groupName: Option[String])(implicit c: Conn) = {
       val maybeGroup = if (groupName.isEmpty) Some(NoGroup) else groupName.flatMap(groupByName)
       for (group <- maybeGroup) yield {
         updateProfile(id)(profile => profile.copy(group = group))
       }
     }
 
-    override def setMachineQuota(id: ProfileId, quota: Quota)(implicit c: Conn) {
+    override def setMachineQuota(id: ProfileId, quota: Quota)(implicit c: Conn) =
       updateProfile(id) { profile => profile.copy(quota = quota) }
-    }
   }
 
   override def capability = new CapabilityDao[Conn] {
@@ -153,11 +128,11 @@ class MockCosmosDao extends CosmosDao {
 
   override def group = new GroupDao[Conn] {
 
-    override def register(group: Group)(implicit c: Conn): Unit = atomic { implicit txn =>
+    override def register(group: Group)(implicit c: Conn): Unit = {
       groups() = groups() + group
     }
 
-    override def delete(name: String)(implicit c: Conn): Unit = atomic { implicit txn =>
+    override def delete(name: String)(implicit c: Conn): Unit = {
       val groupUsers = users().values.filter(profile => profile.group.name == name)
       groupUsers.foreach { profile =>
         updateProfile(profile.id) { profile => profile.copy(group = NoGroup) }
@@ -165,33 +140,27 @@ class MockCosmosDao extends CosmosDao {
       groups() = groups().filterNot(_.name == name)
     }
 
-    override def list()(implicit c: Conn): Set[Group] = atomic { implicit txn => groups() }
+    override def list()(implicit c: Conn): Set[Group] = groups()
 
-    override def setQuota(name: String, minQuota: LimitedQuota)(implicit c: Conn): Unit =
-      atomic { implicit txn =>
-        val updated = GuaranteedGroup(name, minQuota)
-        updateUsersWithGroup(updated)
-        groups() = groups().filterNot(_.name == name) + updated
-      }
+    override def setQuota(name: String, minQuota: LimitedQuota)(implicit c: Conn): Unit = {
+      val updated = GuaranteedGroup(name, minQuota)
+      updateUsersWithGroup(updated)
+      groups() = groups().filterNot(_.name == name) + updated
+    }
   }
 
   override def cluster = new ClusterDao[Conn] {
 
     override def ownedBy(id: ProfileId)(implicit c: Conn): Seq[ClusterAssignment] =
-      atomic { implicit txn =>
-        clusters().filter(_.ownerId == id)
-      }
+      clusters().filter(_.ownerId == id)
 
     override def ownerOf(clusterId: ClusterId)(implicit c: Conn): Option[ProfileId] =
-      atomic { implicit txn =>
-        clusters().find(_.clusterId == clusterId).map(_.ownerId)
-      }
+      clusters().find(_.clusterId == clusterId).map(_.ownerId)
 
-    override def register(assignment: ClusterAssignment)(implicit c: Conn): Unit =
-      atomic { implicit txn =>
-        require(!clusters().exists(_.clusterId == assignment.clusterId), "Cluster already assigned")
-        clusters() = clusters() :+ assignment
-      }
+    override def register(assignment: ClusterAssignment)(implicit c: Conn): Unit = {
+      require(!clusters().exists(_.clusterId == assignment.clusterId), "Cluster already assigned")
+      clusters() = clusters() :+ assignment
+    }
   }
 
   private def updateProfile(id: ProfileId)(f: CosmosProfile => CosmosProfile): Unit =
@@ -202,7 +171,7 @@ class MockCosmosDao extends CosmosDao {
         users() = users().updated(userId, f(profile))
         userId
       }
-      if (updatedUserId.isEmpty) throw CosmosProfileException.unknownUser(id)
+      if (updatedUserId.isEmpty) throw CosmosDaoException.unknownUser(id)
     }
 
   private def groupByName(name: String): Option[Group] = atomic { implicit txn =>
@@ -215,8 +184,4 @@ class MockCosmosDao extends CosmosDao {
       users() = users().updated(userId, profile.copy(group = group))
     }
   }
-}
-
-object MockCosmosDao {
-  object DummyConnection
 }

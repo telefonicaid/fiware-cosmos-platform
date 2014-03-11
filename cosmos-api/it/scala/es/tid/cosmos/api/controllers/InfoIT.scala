@@ -54,9 +54,9 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
     }
 
   it must "provide group name and group quota" in new WithSampleSessions {
-    dao.withTransaction { implicit c =>
-      dao.group.register(GuaranteedGroup("fooGroup", Quota(10)))
-      dao.profile.setGroup(regUser.cosmosProfile.id, Some("fooGroup"))
+    store.withTransaction { implicit c =>
+      store.group.register(GuaranteedGroup("fooGroup", Quota(10)))
+      store.profile.setGroup(regUser.cosmosProfile.id, Some("fooGroup"))
     }
     val res = regUser.doRequest(getInfo)
     status(res) must be (OK)
@@ -138,10 +138,10 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
     }
 
   it must "provide info about existing and available resources" in new WithSampleSessions {
-    dao.withTransaction { implicit c =>
-      dao.group.register(GuaranteedGroup("fooGroup", Quota(10)))
-      dao.group.register(GuaranteedGroup("otherGroup", Quota(5)))
-      dao.profile.setGroup(regUser.cosmosProfile.id, Some("fooGroup"))
+    store.withTransaction { implicit c =>
+      store.group.register(GuaranteedGroup("fooGroup", Quota(10)))
+      store.group.register(GuaranteedGroup("otherGroup", Quota(5)))
+      store.profile.setGroup(regUser.cosmosProfile.id, Some("fooGroup"))
     }
     val cluster = mockedServiceManager.createCluster(
       name = ClusterName("ownCluster"),

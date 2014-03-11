@@ -23,11 +23,11 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.clusters.ClusterId
-import scala.concurrent.Await
 
 class UserRegistrationWizardIT
   extends FlatSpec with MustMatchers with MockitoSugar with FutureMatchers {
@@ -37,19 +37,15 @@ class UserRegistrationWizardIT
   val userId = userIdFor(handle)
   val registration = registrationFor(handle)
 
-  trait WithUserRegistrationWizard {
-    val dao = new MockCosmosDao()
+  trait WithUserRegistrationWizard extends MockCosmosDataStoreComponent {
     val sm = spy(new MockedServiceManager())
-    val instance = new UserRegistrationWizard(sm)
-
+    val instance = new UserRegistrationWizard(store, sm)
     sm.defineCluster(MockedServiceManager.PersistentHdfsProps)
   }
 
   "User registration" must "create a new profile with the input data" in
     new WithUserRegistrationWizard {
-      val validationResult = dao.withTransaction { implicit c =>
-        instance.registerUser(dao, userId, registration)
-      }
+      val validationResult = instance.registerUser(userId, registration)
 
       validationResult must be ('success)
       val (profile, registration_>) = validationResult.toOption.get
@@ -63,14 +59,12 @@ class UserRegistrationWizardIT
 
   it must "reconfigure persistent HDFS cluster with current and deleted users" in
     new WithUserRegistrationWizard {
-      val deletedUser = registerUser("deleted")(dao)
-      dao.withTransaction { implicit c =>
-        dao.profile.setUserState(deletedUser.id, UserState.Deleted)
+      val deletedUser = registerUser("deleted")(store)
+      store.withTransaction { implicit c =>
+        store.profile.setUserState(deletedUser.id, UserState.Deleted)
       }
 
-      val validationResult = dao.withTransaction { implicit c =>
-        instance.registerUser(dao, userId, registration)
-      }
+      val validationResult = instance.registerUser(userId, registration)
 
       validationResult must be ('success)
       val (_, registration_>) = validationResult.toOption.get

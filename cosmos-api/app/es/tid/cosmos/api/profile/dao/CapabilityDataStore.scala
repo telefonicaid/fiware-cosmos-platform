@@ -9,9 +9,8 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.api.profile.dao
 
-/** Provider of ServiceManagers */
-trait ServiceManagerComponent {
-  def serviceManager: ServiceManager
+trait CapabilityDataStore extends DataStore {
+  def capability: CapabilityDao[Conn]
 }

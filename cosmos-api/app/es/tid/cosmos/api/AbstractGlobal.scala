@@ -22,9 +22,12 @@ import play.api.mvc.{SimpleResult, RequestHeader, Controller}
 import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.controllers.common.ErrorMessage
 import es.tid.cosmos.api.controllers.cosmos.routes
+import es.tid.cosmos.api.profile.dao.CosmosDataStoreComponent
 
 /** Custom global Play! settings to override controller instantiation. */
-abstract class AbstractGlobal(val application: Application) extends GlobalSettings {
+abstract class AbstractGlobal(val application: Application with CosmosDataStoreComponent)
+  extends GlobalSettings {
+
   override def getControllerInstance[A](controllerClass: Class[A]): A = {
     application.controllers(controllerClass.asInstanceOf[Class[Controller]]).asInstanceOf[A]
   }

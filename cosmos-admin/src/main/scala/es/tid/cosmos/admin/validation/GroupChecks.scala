@@ -12,13 +12,13 @@
 package es.tid.cosmos.admin.validation
 
 import es.tid.cosmos.admin.Util
-import es.tid.cosmos.api.profile.CosmosDao
+import es.tid.cosmos.api.profile.dao.GroupDataStore
 import es.tid.cosmos.api.quota.GuaranteedGroup
 
 /** Mix-in trait for adding user-group related checks */
 trait GroupChecks {
 
-  val dao: CosmosDao
+  val store: GroupDataStore
 
   /** ''With side-effects.''
     * Attempt to load the group by name and print an error message otherwise.
@@ -27,8 +27,8 @@ trait GroupChecks {
     * @param c the DAO connection
     * @return the group iff found `None` otherwise
     */
-  protected def withGroup(name: String)(implicit c: this.dao.type#Conn): Option[GuaranteedGroup] =
-    Util.whenEmpty(dao.group.list().collectFirst {
+  protected def withGroup(name: String)(implicit c: store.Conn): Option[GuaranteedGroup] =
+    Util.whenEmpty(store.group.list().collectFirst {
       case group@GuaranteedGroup(`name`, _) => group
     }) { println(s"No group with name $name") }
 }

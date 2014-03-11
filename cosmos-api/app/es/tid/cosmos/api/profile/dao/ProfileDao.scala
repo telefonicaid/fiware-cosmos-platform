@@ -9,10 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile
+package es.tid.cosmos.api.profile.dao
 
-import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.api.quota.{Quota, Group}
+import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.UserState.UserState
+import es.tid.cosmos.api.profile.Registration
 
 trait ProfileDao[Conn] {
 
@@ -87,7 +89,7 @@ trait ProfileDao[Conn] {
     * @param id      The id of the user
     * @param c       The connection to use
     * @param handle  The new handle
-    * @throws CosmosProfileException
+    * @throws CosmosDaoException
     *                When no user has such id or handle is already in use
     */
   def setHandle(id: ProfileId, handle: String)(implicit c: Conn): Unit
@@ -97,7 +99,7 @@ trait ProfileDao[Conn] {
     * @param id     The id of the user.
     * @param c      The connection to use.
     * @param email  The new email.
-    * @throws CosmosProfileException  When no user has such id
+    * @throws CosmosDaoException  When no user has such id
     */
   def setEmail(id: ProfileId, email: String)(implicit c: Conn): Unit
 
@@ -105,7 +107,7 @@ trait ProfileDao[Conn] {
     *
     * @param id          The id of the user.
     * @param publicKeys  New public keys.
-    * @throws CosmosProfileException  When no user has such id
+    * @throws CosmosDaoException  When no user has such id
     */
   def setPublicKeys(id: ProfileId, publicKeys: Seq[NamedKey])(implicit c: Conn): Unit
 
@@ -114,7 +116,7 @@ trait ProfileDao[Conn] {
     * @param id         Id of the user.
     * @param userState  The new state.
     * @param c          The connection to use.
-    * @throws CosmosProfileException  When no user has such id
+    * @throws CosmosDaoException  When no user has such id
     */
   def setUserState(id: ProfileId, userState: UserState)(implicit c: Conn): Unit
 
@@ -132,7 +134,7 @@ trait ProfileDao[Conn] {
     * @param id     The unique Cosmos ID of the given user.
     * @param quota  The quota to set.
     * @param c      The connection to use.
-    * @throws CosmosProfileException  When no user has such id
+    * @throws CosmosDaoException  When no user has such id
     */
   def setMachineQuota(id: ProfileId, quota: Quota)(implicit c: Conn): Unit
 }

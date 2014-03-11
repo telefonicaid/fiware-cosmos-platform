@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile
+package es.tid.cosmos.api.profile.dao
 
 import es.tid.cosmos.api.quota.{LimitedQuota, Group}
 

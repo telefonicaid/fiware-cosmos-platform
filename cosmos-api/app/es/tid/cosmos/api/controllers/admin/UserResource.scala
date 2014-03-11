@@ -25,7 +25,8 @@ import play.api.mvc.{Controller, Action, Headers}
 
 import es.tid.cosmos.api.auth.multiauth.MultiAuthProvider
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile.{Registration, UserId, CosmosDao}
+import es.tid.cosmos.api.profile.{Registration, UserId}
+import es.tid.cosmos.api.profile.dao._
 import es.tid.cosmos.api.wizards.{UserUnregistrationWizard, UserRegistrationWizard}
 import es.tid.cosmos.servicemanager.ServiceManager
 
@@ -35,16 +36,15 @@ import es.tid.cosmos.servicemanager.ServiceManager
 class UserResource(
     multiUserProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
-    dao: CosmosDao,
+    store: ProfileDataStore with ClusterDataStore,
     override val maintenanceStatus: MaintenanceStatus
   ) extends Controller with JsonController with MaintenanceAwareController {
 
   import Scalaz._
 
-  private type Conn = dao.Conn
-
-  private val registrationWizard = new UserRegistrationWizard(serviceManager)
-  private val unregistrationWizard = new UserUnregistrationWizard(serviceManager)
+  private type Conn = store.Conn
+  private val registrationWizard = new UserRegistrationWizard(store, serviceManager)
+  private val unregistrationWizard = new UserUnregistrationWizard(store, serviceManager)
 
   /** Register a new user account. */
   @ApiOperation(value = "Create a new user account", httpMethod = "POST",
@@ -84,14 +84,14 @@ class UserResource(
       _ <- requireResourceNotUnderMaintenance()
       params <- validJsonBody[RegisterUserParams](request)
       _ <- requireAdminCreds(params.authRealm, request.headers)
-      dbInfo <- dao.withTransaction { implicit c =>
+      dbInfo <- store.withTransaction { implicit c =>
         for {
           userId <- uniqueUserId(params)
           handle <- selectHandle(params.handle)
         } yield (userId, Registration(handle, params.sshPublicKey, params.email))
       }
       (userId, registration) = dbInfo
-      registrationResult <- registrationWizard.registerUser(dao, userId, registration)
+      registrationResult <- registrationWizard.registerUser(userId, registration)
         .leftMap(message => InternalServerError(Json.toJson(message)))
       (profile, _) = registrationResult
     } yield Created(Json.toJson(RegisterUserResponse(
@@ -131,10 +131,10 @@ class UserResource(
   }
 
   private def startUnregistration(userId: UserId): ActionValidation[Future[Unit]] = for {
-    cosmosProfile <- dao.withTransaction { implicit c =>
-      dao.profile.lookupByUserId(userId)
+    cosmosProfile <- store.withTransaction { implicit c =>
+      store.profile.lookupByUserId(userId)
     }.toSuccess(message(NotFound, s"User $userId does not exist"))
-    unregistration_> <- unregistrationWizard.unregisterUser(dao, cosmosProfile.id)
+    unregistration_> <- unregistrationWizard.unregisterUser(cosmosProfile.id)
       .leftMap(message => InternalServerError(Json.toJson(message)))
   } yield {
     unregistration_>.onSuccess {
@@ -149,14 +149,14 @@ class UserResource(
   private def selectHandle(reqHandle: Option[String])(implicit c: Conn) =
     reqHandle match {
       case None => Success(generateHandle())
-      case Some(handle) if !dao.profile.handleExists(handle) => handle.success
+      case Some(handle) if !store.profile.handleExists(handle) => handle.success
       case Some(handle) => failWith(Conflict, s"Handle '$handle' is already taken")
     }
 
   private def uniqueUserId(params: RegisterUserParams)
                           (implicit c: Conn): ActionValidation[UserId] = {
     val userId = UserId(params.authRealm, params.authId)
-    if (dao.profile.lookupByUserId(userId).isEmpty) userId.success
+    if (store.profile.lookupByUserId(userId).isEmpty) userId.success
     else failWith(Conflict, s"Already existing credentials: $userId")
   }
 
@@ -195,6 +195,6 @@ class UserResource(
   @tailrec
   private def generateHandle()(implicit c: Conn): String = {
     val handle = s"id${Random.nextLong().abs.toString}"
-    if (dao.profile.handleExists(handle)) generateHandle() else handle
+    if (store.profile.handleExists(handle)) generateHandle() else handle
   }
 }

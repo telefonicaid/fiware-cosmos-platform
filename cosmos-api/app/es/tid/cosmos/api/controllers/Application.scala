@@ -25,8 +25,9 @@ import es.tid.cosmos.api.controllers.profile.ProfileResource
 import es.tid.cosmos.api.controllers.services.ServicesResource
 import es.tid.cosmos.api.controllers.storage.StorageResource
 import es.tid.cosmos.api.controllers.task.TaskResource
-import es.tid.cosmos.api.profile.CosmosProfileDaoComponent
+import es.tid.cosmos.api.profile.dao.CosmosDataStoreComponent
 import es.tid.cosmos.api.task.TaskDaoComponent
+import es.tid.cosmos.api.usage.MachineUsageComponent
 import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
@@ -36,7 +37,8 @@ abstract class Application {
   this: ServiceManagerComponent
     with InfrastructureProviderComponent
     with MultiAuthProviderComponent
-    with CosmosProfileDaoComponent
+    with CosmosDataStoreComponent
+    with MachineUsageComponent
     with TaskDaoComponent
     with MaintenanceStatusComponent
     with RequestAuthenticationComponent
@@ -44,35 +46,32 @@ abstract class Application {
 
   lazy val conf = this.config
 
-  lazy val dao = this.cosmosProfileDao
-
   lazy val controllers: Map[Class[Controller], Controller] = {
     val status = this.maintenanceStatus
-    val sm = this.serviceManager()
     val ial = this.infrastructureProvider
     val multiAuthProvider = this.multiAuthProvider
     val auth = apiRequestAuthentication
     controllerMap(
       // Pages
-      new Pages(multiAuthProvider, sm, taskDao, dao, status, conf.getConfig("pages")),
-      new AdminPage(dao, status),
-      new CliConfigResource(dao),
+      new Pages(multiAuthProvider, serviceManager, taskDao, store, status, conf.getConfig("pages")),
+      new AdminPage(store, status),
+      new CliConfigResource(store),
 
       // Non-authenticated user API
       new CosmosResource(),
-      new ServicesResource(sm),
+      new ServicesResource(serviceManager),
 
       // Authenticated user API
-      new StatsResource(auth, dao, sm, ial),
-      new InfoResource(auth, dao, sm),
-      new ProfileResource(auth, dao),
-      new ClusterResource(auth, sm, taskDao, dao, status),
-      new StorageResource(auth, sm, status),
+      new StatsResource(auth, store, serviceManager, ial),
+      new InfoResource(auth, store, serviceManager, machineUsage),
+      new ProfileResource(auth, store),
+      new ClusterResource(auth, serviceManager, machineUsage, taskDao, store, status),
+      new StorageResource(auth, serviceManager, status),
       new MaintenanceResource(auth, status),
       new TaskResource(auth, taskDao),
 
       // Admin API
-      new UserResource(multiAuthProvider, sm, dao, status)
+      new UserResource(multiAuthProvider, serviceManager, store, status)
     )
   }
 

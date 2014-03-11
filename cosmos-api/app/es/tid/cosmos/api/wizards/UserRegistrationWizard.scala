@@ -22,44 +22,44 @@ import play.api.mvc.Results
 
 import es.tid.cosmos.api.controllers.common.ErrorMessage
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.Registration
+import es.tid.cosmos.api.profile.dao.ProfileDataStore
 import es.tid.cosmos.servicemanager.ServiceManager
 
 /** Sequence of actions to register a new user in Cosmos.
   *
   * @constructor
+  * @param store           Data store
   * @param serviceManager  For registering the user credentials
   */
-class UserRegistrationWizard(serviceManager: ServiceManager) extends Results {
+class UserRegistrationWizard(store: ProfileDataStore, serviceManager: ServiceManager)
+  extends Results {
 
   import Scalaz._
 
-  private val hdfsWizard = new UpdatePersistentHdfsUsersWizard(serviceManager)
+  private val hdfsWizard = new UpdatePersistentHdfsUsersWizard(store, serviceManager)
 
   /** Registers a new user.
     *
     * Database user creation is synchronously done but persistent HDFS account creation is done
     * as a background task.
     *
-    * @param dao           For accessing to the store of Cosmos profiles
     * @param userId        User id
     * @param registration  Registration parameters
     * @return              Newly created profile or an error message
     */
   def registerUser(
-      dao: CosmosDao,
-      userId: UserId,
-      registration: Registration): Validation[ErrorMessage, (CosmosProfile, Future[Unit])] =
-    dao.withTransaction { implicit c =>
+        userId: UserId, registration: Registration
+      ): Validation[ErrorMessage, (CosmosProfile, Future[Unit])] =
+    store.withTransaction { implicit c =>
       Logger.info(s"Starting $userId (${registration.handle}) registration")
-      Try (dao.profile.register(userId, registration, UserState.Creating)) match {
+      Try (store.profile.register(userId, registration, UserState.Creating)) match {
         case Failure(ex) =>
           logRegistrationError(userId, ex)
           ErrorMessage(registrationErrorMessage(userId)).failure
         case Success(profile) =>
           val registration_> = for {
-            _ <- hdfsWizard.updatePersistentHdfsUsers(dao)
-          } yield markUserEnabled(dao, userId)
+            _ <- hdfsWizard.updatePersistentHdfsUsers()
+          } yield markUserEnabled(userId)
           registration_>.onComplete {
             case Failure(NonFatal(ex)) => logRegistrationError(userId, ex)
             case Success(_) => logRegistrationSuccess(userId, profile)
@@ -68,31 +68,27 @@ class UserRegistrationWizard(serviceManager: ServiceManager) extends Results {
       }
     }
 
-  private def markUserEnabled(dao: CosmosDao, userId: UserId) {
-    dao.withTransaction { implicit c =>
-      dao.profile.lookupByUserId(userId).map { profile =>
-        if (profile.state == UserState.Creating) {
-          dao.profile.setUserState(profile.id, UserState.Enabled)
-        } else {
-          logRegistrationError(userId, new IllegalStateException(s"""
-            | Registration for $userId (${profile.handle}) cannot be completed as it is in
-            | '${profile.state}' state instead of 'creating' state." +
-          """.stripMargin))
-        }
-      }.getOrElse {
-        logRegistrationError(userId, new IllegalStateException(
-          s"Cannot complete registration of unknown user $userId"))
+  private def markUserEnabled(userId: UserId): Unit = store.withTransaction { implicit c =>
+    store.profile.lookupByUserId(userId).map { profile =>
+      if (profile.state == UserState.Creating) {
+        store.profile.setUserState(profile.id, UserState.Enabled)
+      } else {
+        logRegistrationError(userId, new IllegalStateException(s"""
+          | Registration for $userId (${profile.handle}) cannot be completed as it is in
+          | '${profile.state}' state instead of 'creating' state." +
+        """.stripMargin))
       }
+    }.getOrElse {
+      logRegistrationError(userId, new IllegalStateException(
+        s"Cannot complete registration of unknown user $userId"))
     }
   }
 
-  private def logRegistrationSuccess(userId: UserId, profile: CosmosProfile) {
+  private def logRegistrationSuccess(userId: UserId, profile: CosmosProfile): Unit =
     Logger.info(s"User $userId (${profile.handle}) was successfully registered")
-  }
 
-  private def logRegistrationError(userId: UserId, ex: Throwable) {
+  private def logRegistrationError(userId: UserId, ex: Throwable): Unit =
     Logger.error(registrationErrorMessage(userId), ex)
-  }
 
   private def registrationErrorMessage(userId: UserId) = s"Registration of $userId failed"
 }

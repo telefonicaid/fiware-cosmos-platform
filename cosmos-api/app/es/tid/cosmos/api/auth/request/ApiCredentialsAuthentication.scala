@@ -16,11 +16,12 @@ import scalaz._
 import play.api.mvc.RequestHeader
 
 import es.tid.cosmos.api.controllers.common.BasicAuth
-import es.tid.cosmos.api.profile.{ApiCredentials, CosmosDao}
+import es.tid.cosmos.api.profile.ApiCredentials
 import es.tid.cosmos.api.profile.ApiCredentials.{ApiKeyLength, ApiSecretLength}
+import es.tid.cosmos.api.profile.dao.ProfileDataStore
 
 /** Authenticated requests that have a BasicAuth header with the Cosmos API key and secret. */
-private[request] class ApiCredentialsAuthentication(dao: CosmosDao)
+private[request] class ApiCredentialsAuthentication(store: ProfileDataStore)
   extends RequestAuthentication {
 
   import Scalaz._
@@ -56,8 +57,8 @@ private[request] class ApiCredentialsAuthentication(dao: CosmosDao)
     * @return             Either a cosmos profile or a validation error
     */
   private def getProfileFromCredentials(credentials: ApiCredentials): AuthResult =
-    dao.withConnection { implicit c =>
-      dao.profile.lookupByApiCredentials(credentials)
+    store.withConnection { implicit c =>
+      store.profile.lookupByApiCredentials(credentials)
         .map(_.success)
         .getOrElse(InvalidAuthCredentials.failure)
     }

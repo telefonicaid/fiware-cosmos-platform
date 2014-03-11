@@ -19,12 +19,12 @@ import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
-import es.tid.cosmos.api.profile.CosmosDao
+import es.tid.cosmos.api.profile.dao.ProfileDataStore
 
 /** Resource that represents a user profile. */
 @Api(value = "/cosmos/v1/profile", listingPath = "/doc/cosmos/v1/profile",
   description = "Represents the user profile")
-class ProfileResource(override val auth: RequestAuthentication, val dao: CosmosDao)
+class ProfileResource(override val auth: RequestAuthentication, store: ProfileDataStore)
   extends Controller with JsonController with ApiAuthController {
 
   /** Show user profile. */
@@ -57,13 +57,13 @@ class ProfileResource(override val auth: RequestAuthentication, val dao: CosmosD
       targetProfile <- validJsonBody[UserProfile](request)
     } yield {
       if (targetProfile.keys.length != 1) badRequest("Only one public key is supported")
-      else dao.withTransaction { implicit c =>
+      else store.withTransaction { implicit c =>
         if (currentProfile.handle != targetProfile.handle) {
           badRequest("Handle modification is not supported")
         } else {
-          dao.profile.setHandle(currentProfile.id, targetProfile.handle)
-          dao.profile.setEmail(currentProfile.id, targetProfile.email)
-          dao.profile.setPublicKeys(currentProfile.id, targetProfile.keys)
+          store.profile.setHandle(currentProfile.id, targetProfile.handle)
+          store.profile.setEmail(currentProfile.id, targetProfile.email)
+          store.profile.setPublicKeys(currentProfile.id, targetProfile.keys)
           Ok(Json.toJson(targetProfile))
         }
       }

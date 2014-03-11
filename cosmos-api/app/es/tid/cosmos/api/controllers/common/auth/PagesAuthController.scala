@@ -19,14 +19,15 @@ import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.controllers.pages.routes
-import es.tid.cosmos.api.profile.{CosmosProfile, CosmosDao, UserId}
+import es.tid.cosmos.api.profile.{CosmosProfile, UserId}
 import es.tid.cosmos.api.profile.UserState._
+import es.tid.cosmos.api.profile.dao.ProfileDataStore
 
 /** Controller mixin adding authentication validations. */
 trait PagesAuthController { this: Controller =>
-  val dao: CosmosDao
-
   import Scalaz._
+
+  protected val store: ProfileDataStore
 
   /** Checks cookie and DB information to clear inconsistent cookies and
     * let you execute a different action for authenticated and unauthenticated
@@ -43,8 +44,8 @@ trait PagesAuthController { this: Controller =>
       whenNotRegistered: OAuthUserProfile => SimpleResult,
       whenNotAuthenticated: => SimpleResult): SimpleResult =
     request.session.userProfile.map(userProfile =>
-      dao.withTransaction { implicit c =>
-        dao.profile.lookupByUserId(userProfile.id)
+      store.withTransaction { implicit c =>
+        store.profile.lookupByUserId(userProfile.id)
       } match {
         case Some(cosmosProfile)
           if cosmosProfile.state == Enabled || cosmosProfile.state == Creating =>
@@ -83,8 +84,8 @@ trait PagesAuthController { this: Controller =>
   def requireRegisteredUser(
       userId: UserId,
       redirectTo: Call = routes.Pages.registerForm()): ActionValidation[CosmosProfile] =
-    dao.withTransaction { implicit c =>
-      dao.profile.lookupByUserId(userId)
+    store.withTransaction { implicit c =>
+      store.profile.lookupByUserId(userId)
     }.toSuccess(Redirect(redirectTo))
 
   lazy val redirectToIndex = Redirect(routes.Pages.index())

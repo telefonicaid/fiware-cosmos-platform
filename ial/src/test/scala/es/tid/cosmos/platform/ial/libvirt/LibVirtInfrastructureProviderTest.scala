@@ -25,7 +25,6 @@ import es.tid.cosmos.common.{ExecutableValidation, PassThrough}
 import es.tid.cosmos.common.scalatest.matchers.{FutureMatchers, ForAllMatcher}
 import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.platform.ial.MachineProfile._
-import es.tid.cosmos.platform.ial.libvirt.LibVirtServerProperties
 
 class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with FutureMatchers
     with OneInstancePerTest {

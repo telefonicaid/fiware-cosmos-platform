@@ -9,9 +9,11 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.api.profile.dao.mock
 
-/** Provider of ServiceManagers */
-trait ServiceManagerComponent {
-  def serviceManager: ServiceManager
+import es.tid.cosmos.api.profile.dao.CosmosDataStoreComponent
+
+/** Mock to be used in tests for handling the profile DAO. Thread-safe. */
+trait MockCosmosDataStoreComponent extends CosmosDataStoreComponent {
+  override val store = new MockCosmosDataStore()
 }

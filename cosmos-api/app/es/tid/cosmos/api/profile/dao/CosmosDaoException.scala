@@ -9,21 +9,23 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile
+package es.tid.cosmos.api.profile.dao
 
-/** Exception to be thrown by implementations of CosmosProfileDao to provide a clean
+import es.tid.cosmos.api.profile.ProfileId
+
+/** Exception to be thrown by implementations of DAOs to provide a clean
   * layer abstraction.
   *
   * @param message Error description
   * @param cause   Deeper cause of the problem
   */
-case class CosmosProfileException(message: String, cause: Throwable = null)
+case class CosmosDaoException(message: String, cause: Throwable = null)
   extends RuntimeException(message, cause)
 
-object CosmosProfileException {
+object CosmosDaoException {
 
-  def unknownUser(id: ProfileId) = CosmosProfileException(s"Unknown user with cosmosId=$id")
+  def unknownUser(id: ProfileId) = CosmosDaoException(s"Unknown user with cosmosId=$id")
 
   def duplicatedHandle(handle: String) =
-    CosmosProfileException(s"Cannot use $handle as handle or it will become duplicated")
+    CosmosDaoException(s"Cannot use $handle as handle or it will become duplicated")
 }

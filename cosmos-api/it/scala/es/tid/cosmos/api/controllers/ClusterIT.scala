@@ -90,7 +90,7 @@ class ClusterIT
     regUser.setAsOwner(RunningClusterProps.id)
     val resource = regUser.doRequest(RunningClusterProps.terminateRequest)
     status(resource) must equal (OK)
-    val cluster = services.serviceManager().describeCluster(RunningClusterProps.id).get
+    val cluster = services.serviceManager.describeCluster(RunningClusterProps.id).get
     cluster.state must (be (Terminating) or be (Terminated))
   }
 
@@ -108,7 +108,7 @@ class ClusterIT
     regUser.setAsOwner(RunningClusterProps.id)
     for (_ <- 1 to 2) {
       status(regUser.doRequest(RunningClusterProps.terminateRequest)) must equal (OK)
-      val cluster = services.serviceManager().describeCluster(RunningClusterProps.id).get
+      val cluster = services.serviceManager.describeCluster(RunningClusterProps.id).get
       cluster.state must (be (Terminating) or be (Terminated))
     }
   }
@@ -117,7 +117,7 @@ class ClusterIT
     regUser.setAsOwner(RunningClusterProps.id)
     val rep = regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
     status(rep) must equal (OK)
-    val users = services.serviceManager().listUsers(RunningClusterProps.id)
+    val users = services.serviceManager.listUsers(RunningClusterProps.id)
     users must be ('defined)
     users.get.exists(
       usr => usr.username.equals(opUser.handle) && usr.isEnabled
@@ -150,7 +150,7 @@ class ClusterIT
 
     val rep = regUser.doRequest(RunningClusterProps.removeUserRequest(opUser.handle))
     status(rep) must equal (OK)
-    val users = services.serviceManager().listUsers(RunningClusterProps.id)
+    val users = services.serviceManager.listUsers(RunningClusterProps.id)
     users must be ('defined)
     users.get.exists(
       usr => usr.username.equals("pocahontas") && usr.isEnabled

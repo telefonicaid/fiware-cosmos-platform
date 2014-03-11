@@ -25,6 +25,7 @@ import org.scalatest.concurrent.Eventually
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers.{registerUser, userIdFor}
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
 import es.tid.cosmos.api.controllers.common.Message
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser, UnfilteredPassThrough}
@@ -37,29 +38,28 @@ class UserUnregistrationWizardTest
   val failure = new RuntimeException("Forced failure")
   val failedFuture: Future[Unit] = Future.failed(failure)
 
-  trait WithWizard {
+  trait WithWizard extends MockCosmosDataStoreComponent {
     val sm = spy(new MockedServiceManager())
-    val dao = spy(new MockCosmosDao())
-    val wizard = new UserUnregistrationWizard(sm)
+    val wizard = new UserUnregistrationWizard(store, sm)
 
     sm.defineCluster(MockedServiceManager.PersistentHdfsProps)
   }
 
   trait WithExistingUser extends WithWizard {
-    val cosmosProfile = registerUser("jsmith")(dao)
+    val cosmosProfile = registerUser("jsmith")(store)
     val cosmosId = cosmosProfile.id
 
     def unregistrationMust(futureMatcher: Matcher[Future[_]]) {
-      dao.withTransaction { implicit c =>
-        wizard.unregisterUser(dao, cosmosId)
+      store.withTransaction { implicit c =>
+        wizard.unregisterUser(cosmosId)
       }.fold(
         fail = message => fail(s"Unexpected failure with message $message"),
         succ = unreg_> => unreg_> must (runUnder(timeout) and futureMatcher)
       )
     }
 
-    def databaseUser = dao.withTransaction { implicit c =>
-      dao.profile.lookupByUserId(userIdFor("jsmith"))
+    def databaseUser = store.withTransaction { implicit c =>
+      store.profile.lookupByUserId(userIdFor("jsmith"))
     }
   }
 
@@ -75,8 +75,8 @@ class UserUnregistrationWizardTest
       cluster.completeProvisioning()
       cluster.immediateTermination()
     }
-    dao.withTransaction { implicit c =>
-      dao.cluster.register(clusterId, cosmosProfile.id)
+    store.withTransaction { implicit c =>
+      store.cluster.register(clusterId, cosmosProfile.id)
     }
   }
 
@@ -101,10 +101,9 @@ class UserUnregistrationWizardTest
 
   "Unregistration" must "not be created when user status cannot be changed" in new WithWizard {
     val userId = 0
-    dao.throwOnUserStateChangeTo(UserState.Creating)
-    dao.withTransaction { implicit c =>
-      wizard.unregisterUser(dao, userId)
-    } must be (Failure(Message(s"Cannot change user cosmosId=$userId status")))
+    store.throwOnUserStateChangeTo(UserState.Creating)
+    wizard.unregisterUser(userId) must
+      be (Failure(Message(s"Cannot change user cosmosId=$userId status")))
   }
 
   it must "mark user as deleted" in new WithExistingUser {
@@ -113,7 +112,7 @@ class UserUnregistrationWizardTest
   }
 
   it must "fail when user cannot be marked as deleted" in new WithExistingUser {
-    dao.throwOnUserStateChangeTo(UserState.Deleted)
+    store.throwOnUserStateChangeTo(UserState.Deleted)
     unregistrationMust(eventuallyFailWith(
       s"Cannot remove user with cosmosId=$cosmosId from the database"))
     databaseUser.get.state must be (UserState.Deleting)

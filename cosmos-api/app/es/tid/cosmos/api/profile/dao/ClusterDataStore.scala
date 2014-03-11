@@ -9,8 +9,8 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile
+package es.tid.cosmos.api.profile.dao
 
-trait CosmosProfileDaoComponent {
-  val cosmosProfileDao: CosmosDao
+trait ClusterDataStore extends DataStore {
+  def cluster: ClusterDao[Conn]
 }

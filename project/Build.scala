@@ -185,7 +185,7 @@ object Build extends sbt.Build {
       val infinityServerRPM = (dist in infinityServer).value
       IO.copyFile(infinityServerRPM, filesDir / infinityServerRPM.name)
 
-      val puppetDir = target.value / "di  st/puppet"
+      val puppetDir = target.value / "dist/puppet"
       puppetDir.mkdirs()
 
       s.log.info("Copying puppet to project dist directory...")

@@ -157,7 +157,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
       serviceDescriptions: Seq[ServiceDescription],
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = synchronized {
-    val id = ClusterId()
+    val id = ClusterId.random()
     val properties = ClusterProperties(id, name, size, users.toSet)
 
     val propertiesAfterPreconditions = preConditions(id).apply().fold(

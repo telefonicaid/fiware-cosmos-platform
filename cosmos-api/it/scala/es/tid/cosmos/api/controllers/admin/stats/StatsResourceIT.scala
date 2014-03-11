@@ -43,7 +43,7 @@ class StatsResourceIT
       serviceDescriptions = Seq.empty,
       users = Seq.empty
     )
-    val terminatedClusterId = ClusterId()
+    val terminatedClusterId = ClusterId.random()
     store.withTransaction { implicit c =>
       store.cluster.register(activeClusterId, regUser.cosmosProfile.id)
       store.cluster.register(terminatedClusterId, opUser.cosmosProfile.id)

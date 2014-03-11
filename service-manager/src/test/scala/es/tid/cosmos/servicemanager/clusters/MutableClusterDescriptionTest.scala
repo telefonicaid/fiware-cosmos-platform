@@ -26,7 +26,7 @@ class MutableClusterDescriptionTest
   extends FlatSpec with MustMatchers with FutureMatchers with OneInstancePerTest {
 
   class TestDescription extends MutableClusterDescription {
-    override val id = ClusterId()
+    override val id = ClusterId.random()
     override var state: ClusterState = Running
     override val size = 2
     override var name = ClusterName("test-description")

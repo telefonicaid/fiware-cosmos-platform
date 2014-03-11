@@ -25,11 +25,9 @@ case class ClusterId(id: String) extends Ordered[ClusterId] {
 }
 
 object ClusterId {
-  /**
-   * Creates a cluster ID using UUID.randomUUID
-   * @return the ID
-   */
-  def apply() = new ClusterId(UUID.randomUUID())
+
+  /** Creates a cluster ID using UUID.randomUUID. */
+  def random() = new ClusterId(UUID.randomUUID())
 
   def apply(uuid: UUID) = new ClusterId(uuid)
 }

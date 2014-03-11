@@ -27,7 +27,7 @@ class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
       override val name: ClusterName,
       override val state: ClusterState
     ) extends ClusterDescription {
-    override val id = ClusterId()
+    override val id = ClusterId.random()
     override val nameNode = None
     override val size = Random.nextInt(40)
     override val master = Some(HostDetails("foo", "bar"))

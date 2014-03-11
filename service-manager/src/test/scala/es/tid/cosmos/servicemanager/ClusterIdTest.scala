@@ -13,11 +13,9 @@ package es.tid.cosmos.servicemanager
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
+
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
-/**
- * @author sortega
- */
 class ClusterIdTest extends FlatSpec with MustMatchers {
 
   "ClusterId instances" must "be equal by value" in {
@@ -34,7 +32,7 @@ class ClusterIdTest extends FlatSpec with MustMatchers {
   }
 
   "ClusterId of random UUID" must "be equal by value with ClusterId with same UUID" in {
-    val instance0 = ClusterId()
+    val instance0 = ClusterId.random()
     val instance1 = ClusterId(instance0.id)
     instance0 must equal (instance1)
     instance0.hashCode() must equal (instance1.hashCode())

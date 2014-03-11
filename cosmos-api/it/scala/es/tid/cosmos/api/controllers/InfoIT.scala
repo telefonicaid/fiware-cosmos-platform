@@ -102,7 +102,7 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
   it must "filter terminated clusters from the owned listing" in
     new WithSampleSessions {
       val cluster1 = mockedServiceManager.defineCluster(MockedServiceManager.ClusterProperties(
-        id = ClusterId(),
+        id = ClusterId.random(),
         name = ClusterName("own but terminated"),
         size = 10,
         users = Set(regUser.asClusterUser()),

@@ -214,7 +214,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
 
     taggedTest(it must "assign cluster ownership and remember it", withStore { implicit store =>
       store.withTransaction { implicit c =>
-        val clusterId = ClusterId()
+        val clusterId = ClusterId.random()
         val id1 = registerUser(store, "user1").id
         val id2 = registerUser(store, "user2").id
         store.cluster.register(clusterId, id2)
@@ -224,7 +224,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "retrieve the owner of a cluster", withStore { implicit store =>
-      val clusterId = ClusterId()
+      val clusterId = ClusterId.random()
       val profileId = store.withTransaction { implicit c =>
         val profileId = registerUser(store, "user1").id
         store.cluster.register(clusterId, profileId)

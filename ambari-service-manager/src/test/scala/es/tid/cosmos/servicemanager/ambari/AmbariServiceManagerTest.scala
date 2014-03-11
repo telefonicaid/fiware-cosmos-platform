@@ -212,7 +212,7 @@ class AmbariServiceManagerTest
 
   it must "fail adding users on an un-managed cluster" in
     new MockIalComponent with WithServiceManager {
-      val unmanagedClusterId = ClusterId()
+      val unmanagedClusterId = ClusterId.random()
       evaluating {
         instance.setUsers(unmanagedClusterId, Seq(ClusterUser("username", "publicKey")))
       } must produce [IllegalArgumentException]

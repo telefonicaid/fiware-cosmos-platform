@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision :puppet, :module_path =>  "modules" do |puppet|
     puppet.manifests_path = "target/dist/puppet/modules/cosmos/manifests"
     puppet.manifest_file  = "site.pp"
-    puppet.module_path = ["target/dist/puppet/modules", "target/dist/puppet/modules_third_party", "target/dist/rpms"]
+    puppet.module_path = ["deployment/puppet/modules", "deployment/puppet/modules_third_party", "target/dist/rpms"]
     puppet.working_directory = "/tmp/vagrant-puppet"
     puppet.options = "--environment vagrant --hiera_config /tmp/vagrant-puppet/manifests/hiera.yaml --manifestdir /tmp/vagrant-puppet/manifests"
   end

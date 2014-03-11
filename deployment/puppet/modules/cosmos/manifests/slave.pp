@@ -30,6 +30,13 @@ class cosmos::slave (
     ensure  => stopped
   }
 
+  file { '/etc/sysconfig/iptables-config':
+    ensure => present,
+    source => "puppet:///modules/${module_name}/iptables-config",
+    owner  => root,
+    group  => root
+  }
+
   class { 'cosmos::openvz::service':
     vz_utils_repo  => "${cosmos::params::cosmos_repo_deps_url}/OpenVZ/openvz-utils",
     vz_kernel_repo => "${cosmos::params::cosmos_repo_deps_url}/OpenVZ/openvz-kernel-rhel6",

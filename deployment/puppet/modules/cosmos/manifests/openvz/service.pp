@@ -65,7 +65,7 @@ class cosmos::openvz::service  (
     -> Package[$vz_ctl_packages]
     -> File['vz.conf']
     -> Class['openvz::sysctl']
-    -> Service['vz']
+    ~> Service['vz']
 
   anchor {'cosmos::openvz::service::begin':}
     -> Class['cosmos::openvz::sysctl']

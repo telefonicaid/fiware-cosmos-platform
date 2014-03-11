@@ -64,9 +64,9 @@ class cosmos::setup inherits cosmos::params {
         'logback.conf'
       ]
 
-  Package['cosmos-api'] -> File['cosmos-api.conf']
+  Exec['install-cosmos-api'] -> File['cosmos-api.conf']
 
-  Package['cosmos-admin'] -> Exec['cosmos-setup']
+  Exec['install-cosmos-admin'] -> Exec['cosmos-setup']
 
   Apache::Vhost['platform.repo'] -> Exec['cosmos-setup']
 

@@ -23,7 +23,7 @@ class yum {
   anchor { 'yum::begin': }
   anchor { 'yum::end': }
 
-  include yum::params, yum::remove_repos, yum::post_clean,
+  include yum::check_update, yum::params, yum::remove_repos, yum::post_clean,
     yum::thirdparty::puppetlabs, yum::thirdparty::epel
 
 # When the name changes to common:yum, make a grep of yum::thirdparty::epel
@@ -46,6 +46,7 @@ class yum {
   include $os_repo
 
   Anchor['yum::begin']
+    -> Class['yum::check_update']
     -> Class['yum::remove_repos']
     ~> Class['yum::post_clean']
     -> Class['yum::params']

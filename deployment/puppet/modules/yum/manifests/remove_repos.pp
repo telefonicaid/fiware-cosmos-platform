@@ -28,5 +28,6 @@ class yum::remove_repos {
   file {'/etc/yum.repos.d/rhel.repo':          	  ensure => absent, }
   file {'/etc/yum.repos.d/redhat.repo':        	  ensure => absent, }
   file {'/etc/yum.repos.d/ambari.repo':           ensure => absent, }
+  file {'/etc/yum.repos.d/ambari-remote.repo':    ensure => absent, }
   file {'/etc/yum.repos.d/localrepo.repo':        ensure => absent, }
 }

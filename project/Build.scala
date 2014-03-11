@@ -23,9 +23,9 @@ object Build extends sbt.Build {
   val projectVersion = IO.read(file("VERSION")).trim
 
   object Versions {
-    val akka = "2.2.3"
+    val akka = "2.3.0"
     val hdp2Hadoop = "2.2.0" /** HDP 2 has a patched 2.2.0 Hadoop stabilized by themselves */
-    val spray = "1.2.0"
+    val spray = "1.3.0"
   }
 
   object Dependencies {

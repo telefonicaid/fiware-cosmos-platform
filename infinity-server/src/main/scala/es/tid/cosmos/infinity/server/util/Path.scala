@@ -12,23 +12,38 @@
 package es.tid.cosmos.infinity.server.util
 
 /** A representation of filesystem path in Infinity. */
-class Path(val parent: Option[Path], name: String) {
+sealed trait Path {
 
-  require(!name.contains(Path.Separator),
-    s"invalid path element $name (it cannot contain ${Path.Separator} symbol)")
+  /** The parent directory of this path, or none in case or root path. */
+  val parent: Option[Path]
 
   override def equals(what: Any) = what match {
     case p: Path => p.toString == toString
   }
 
-  override def toString: String =  parent match {
-    case Some(p) if p.parent.isDefined =>  s"$p${Path.Separator}$name"
-    case Some(p) if !p.parent.isDefined =>  s"${Path.Separator}$name"
-    case None => "/"
-  }
-
   /** Retrieve a child path with this as parent. */
-  def / (name: String): Path = new Path(parent = Some(this), name)
+  def / (name: String): Path = new SubPath(parentPath = this, name)
+}
+
+/** The path corresponding to the root of Infinity filesystem. */
+object RootPath extends Path {
+
+  override val parent = None
+  override val toString = "/"
+}
+
+/** A subpath that have a parent and an element name. */
+final class SubPath(parentPath: Path, name: String) extends Path {
+
+  require(!name.contains(Path.Separator),
+    s"invalid path element $name (it cannot contain ${Path.Separator} symbol)")
+
+  override val parent = Some(parentPath)
+
+  override def toString: String =  parentPath match {
+    case RootPath =>  s"$parentPath$name"
+    case _ =>  s"$parentPath${Path.Separator}$name"
+  }
 }
 
 object Path {
@@ -36,16 +51,13 @@ object Path {
   /** The default separator used in string-to-path conversions. */
   val Separator: Char = '/'
 
-  /** The root path. */
-  val Root = new Path(parent = None, name = "")
-
-  /** A convenience function to generate absolute paths. */
-  def / (name: String) = Root / name
+  /** Create a new path from given parent and name. */
+  def apply(parent: Path, name: String): Path = new SubPath(parent, name)
 
   /** Retrieve the home directory for the given user. */
   def userDirectory(username: String): Path = {
     require(username.nonEmpty, s"user directory needs a non-empty username")
-    Path / "user" / username
+    RootPath / "user" / username
   }
 
   /** Convert the given string into an absolute path. */
@@ -57,8 +69,8 @@ object Path {
 
   /** Convert the given sequence of strings into an absolute path. */
   def absolute(path: Seq[String]): Path = path match {
-    case Seq() => Root
-    case _ => new Path(Some(absolute(path.dropRight(1))), path.last)
+    case Seq() => RootPath
+    case _ => new SubPath(absolute(path.init), path.last)
   }
 
   /** Convert the given string into a relative path. */

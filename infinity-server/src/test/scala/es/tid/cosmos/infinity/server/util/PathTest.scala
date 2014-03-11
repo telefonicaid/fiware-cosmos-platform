@@ -17,23 +17,23 @@ import org.scalatest.matchers.MustMatchers
 class PathTest extends FlatSpec with MustMatchers {
 
   "Filesystem path" must "be constructed from its parent and element name" in {
-    new Path(Some(Path.Root), "foo") must be (Path / "foo")
+    Path(RootPath, "foo") must be (RootPath / "foo")
   }
 
   it must "fail to construct from its parent and element name with separator" in {
-    evaluating { new Path(Some(Path.Root), "foo/bar") } must produce [IllegalArgumentException]
+    evaluating { Path(RootPath, "foo/bar") } must produce [IllegalArgumentException]
   }
 
   it must "be constructed from absolute non-empty string value" in {
-    Path.absolute("/foo/bar") must be (Path / "foo" / "bar")
+    Path.absolute("/foo/bar") must be (RootPath / "foo" / "bar")
   }
 
   it must "be constructed from absolute non-empty string value ignoring trailing separator" in {
-    Path.absolute("/foo/bar/") must be (Path / "foo" / "bar")
+    Path.absolute("/foo/bar/") must be (RootPath / "foo" / "bar")
   }
 
   it must "be constructed from absolute empty string value" in {
-    Path.absolute("") must be (Path.Root)
+    Path.absolute("") must be (RootPath)
   }
 
   it must "fail to construct from absolute string without leading separator" in {
@@ -41,7 +41,7 @@ class PathTest extends FlatSpec with MustMatchers {
   }
 
   it must "retrieve the right user directory" in {
-    Path.userDirectory("apv") must be (Path / "user" / "apv")
+    Path.userDirectory("apv") must be (RootPath / "user" / "apv")
   }
 
   it must "fail to retrieve the user directory for empty username" in {
@@ -50,24 +50,24 @@ class PathTest extends FlatSpec with MustMatchers {
 
   it must "be constructed from non-empty relative string value" in {
     Path.relative(path = "foo/bar", username = "apv") must be (
-      Path / "user" / "apv" / "foo" / "bar")
+      RootPath / "user" / "apv" / "foo" / "bar")
   }
 
   it must "be constructed from non-empty relative string value ignoring trailing separator" in {
     Path.relative(path = "foo/bar/", username = "apv") must be (
-      Path / "user" / "apv" / "foo" / "bar")
+      RootPath / "user" / "apv" / "foo" / "bar")
   }
 
   it must "be constructed from empty relative string value" in {
     Path.relative(path = "", username = "apv") must be (
-      Path / "user" / "apv")
+      RootPath / "user" / "apv")
   }
 
   it must "be converted into string" in {
-    (Path / "foo" / "bar").toString must be ("/foo/bar")
+    (RootPath / "foo" / "bar").toString must be ("/foo/bar")
   }
 
   it must "be converted into string when root" in {
-    Path.Root.toString must be ("/")
+    RootPath.toString must be ("/")
   }
 }

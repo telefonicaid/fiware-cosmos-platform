@@ -15,11 +15,16 @@ import java.util.Date
 
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
-/**
- * Association between a cluster and his owner.
- *
- * @param clusterId    Owned cluster
- * @param ownerId        Cluster creator
- * @param creationDate Creation timestamp
- */
-case class ClusterAssignment(clusterId: ClusterId, ownerId: Long, creationDate: Date)
+/** Association between a cluster and his owner.
+  *
+  * @param clusterId     Owned cluster
+  * @param ownerId       Cluster creator
+  * @param creationDate  Creation timestamp
+  * @param secret        Cluster secret
+  */
+case class Cluster(
+    clusterId: ClusterId,
+    ownerId: Long,
+    creationDate: Date,
+    secret: Option[ClusterSecret] = None
+)

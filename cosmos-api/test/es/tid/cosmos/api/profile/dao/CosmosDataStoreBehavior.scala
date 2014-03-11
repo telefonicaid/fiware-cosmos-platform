@@ -18,11 +18,9 @@ import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.quota._
-import es.tid.cosmos.servicemanager.clusters.ClusterId
 
-trait CosmosDataStoreBehavior extends CapabilityMatchers with MustMatchers { this: FlatSpec =>
-
-  type DaoTest = CosmosDataStore => Unit
+trait CosmosDataStoreBehavior
+  extends CapabilityMatchers with MustMatchers with ClusterDataStoreBehavior { this: FlatSpec =>
 
   def profileDataStore(withStore: DaoTest => Unit) {
 
@@ -208,29 +206,6 @@ trait CosmosDataStoreBehavior extends CapabilityMatchers with MustMatchers { thi
       }
     }
 
-    it must "assign cluster ownership and remember it" in withStore { implicit store =>
-      store.withTransaction { implicit c =>
-        val clusterId = ClusterId.random()
-        val id1 = registerUser(store, "user1").id
-        val id2 = registerUser(store, "user2").id
-        store.cluster.register(clusterId, id2)
-        store.cluster.ownedBy(id1).map(_.clusterId).toList must not contain clusterId
-        store.cluster.ownedBy(id2).map(_.clusterId).toList must contain (clusterId)
-      }
-    }
-
-    it must "retrieve the owner of a cluster" in withStore { implicit store =>
-      val clusterId = ClusterId.random()
-      val profileId = store.withTransaction { implicit c =>
-        val profileId = registerUser(store, "user1").id
-        store.cluster.register(clusterId, profileId)
-        profileId
-      }
-      store.withTransaction { implicit c =>
-        store.cluster.ownerOf(clusterId) must be (Some(profileId))
-      }
-    }
-
     it must "get empty, NoGroup by default" in withStore{ store =>
       store.withConnection{ implicit c =>
         store.group.list() must equal (Set(NoGroup))
@@ -304,4 +279,5 @@ trait CosmosDataStoreBehavior extends CapabilityMatchers with MustMatchers { thi
       }
     }
   }
+
 }

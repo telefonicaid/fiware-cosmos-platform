@@ -18,9 +18,9 @@ import es.tid.cosmos.api.profile.dao.{CosmosDataStoreBehavior, CosmosDataStore}
 
 class MockCosmosDataStoreTest extends FlatSpec with MustMatchers with CosmosDataStoreBehavior {
 
-   def withMockCosmosProfileDao(block: CosmosDataStore => Unit) {
-     block(new MockCosmosDataStore())
-   }
+  def withStore(block: CosmosDataStore => Unit): Unit = block(new MockCosmosDataStore())
 
-   "The mocked profile resource" must behave like profileDataStore(withMockCosmosProfileDao)
+  "The mocked profile resource" must behave like profileDataStore(withStore)
+
+  it must behave like clusterDataStore(withStore)
  }

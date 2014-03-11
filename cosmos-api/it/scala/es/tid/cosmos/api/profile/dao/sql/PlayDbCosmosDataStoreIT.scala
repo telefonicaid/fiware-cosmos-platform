@@ -33,4 +33,6 @@ class PlayDbCosmosDataStoreIT
   }
 
   "The Play DB profile resource" must behave like profileDataStore(withStore)
+
+  it must behave like clusterDataStore(withStore)
 }

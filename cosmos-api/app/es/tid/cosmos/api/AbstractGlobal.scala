@@ -29,7 +29,11 @@ abstract class AbstractGlobal(val application: Application with CosmosDataStoreC
   extends GlobalSettings {
 
   override def getControllerInstance[A](controllerClass: Class[A]): A = {
-    application.controllers(controllerClass.asInstanceOf[Class[Controller]]).asInstanceOf[A]
+    application.controllers.getOrElse(
+      controllerClass.asInstanceOf[Class[Controller]],
+      throw new RuntimeException(s"No instance for $controllerClass is registered. " +
+        s"Add a binding at ${classOf[Application].getCanonicalName}")
+    ).asInstanceOf[A]
   }
 
   override def onError(request: RequestHeader, ex: Throwable): Future[SimpleResult] = {

@@ -31,6 +31,7 @@ object Build extends sbt.Build {
   object Dependencies {
     lazy val akka = Seq(
       "com.typesafe.akka" %% "akka-actor" % Versions.akka,
+      "com.typesafe.akka" %% "akka-slf4j" % Versions.akka,
       "com.typesafe.akka" %% "akka-testkit" % Versions.akka % "test"
     )
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"

@@ -11,11 +11,12 @@
 
 package es.tid.cosmos.infinity.server
 
-import akka.actor.Actor
+import akka.actor.{ActorLogging, Actor}
 import spray.http.MediaTypes._
 import spray.routing._
+import akka.event.LoggingAdapter
 
-class MyServiceActor extends Actor with MyService {
+class MyServiceActor extends Actor with MyService with ActorLogging {
 
   def actorRefFactory = context
 
@@ -24,9 +25,12 @@ class MyServiceActor extends Actor with MyService {
 
 trait MyService extends HttpService {
 
-  val myRoute =
+  def log: LoggingAdapter
+
+  def myRoute =
     path("") {
       get {
+        log.info("Got a GET request")
         respondWithMediaType(`text/html`) { // XML is marshalled to `text/xml` by default, so we simply override here
           complete {
             <html>

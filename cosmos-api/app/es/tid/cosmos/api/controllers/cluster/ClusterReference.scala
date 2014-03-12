@@ -15,12 +15,10 @@ import org.apache.commons.lang.time.DateFormatUtils
 import play.api.libs.json.{Json, JsValue, Writes}
 import play.api.mvc.RequestHeader
 
-import es.tid.cosmos.api.profile.ClusterAssignment
+import es.tid.cosmos.api.profile.Cluster
 import es.tid.cosmos.servicemanager.clusters.ClusterDescription
 
-case class ClusterReference(
-    description: ClusterDescription,
-    assignment: ClusterAssignment) {
+case class ClusterReference(description: ClusterDescription, assignment: Cluster) {
   require(description.id == assignment.clusterId)
 
   def withAbsoluteUri(request: RequestHeader): AbsoluteUriClusterReference =

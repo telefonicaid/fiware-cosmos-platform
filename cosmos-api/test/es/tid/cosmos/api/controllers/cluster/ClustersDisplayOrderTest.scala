@@ -11,13 +11,13 @@
 
 package es.tid.cosmos.api.controllers.cluster
 
-import java.util.Date
+import java.sql.Timestamp
 import scala.util.Random
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.api.profile.ClusterAssignment
+import es.tid.cosmos.api.profile.Cluster
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
 
@@ -27,7 +27,7 @@ class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
       override val name: ClusterName,
       override val state: ClusterState
     ) extends ClusterDescription {
-    override val id = ClusterId()
+    override val id = ClusterId.random()
     override val nameNode = None
     override val size = Random.nextInt(40)
     override val master = Some(HostDetails("foo", "bar"))
@@ -41,8 +41,8 @@ class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
   def makeRef(name: String, state: ClusterState): ClusterReference = {
     val description = SimpleDescription(ClusterName(name), state)
     val randomOwner = Random.nextLong()
-    val randomDate = new Date(Random.nextLong())
-    ClusterReference(description, ClusterAssignment(description.id, randomOwner, randomDate))
+    val randomDate = new Timestamp(Random.nextLong())
+    ClusterReference(description, Cluster(description.id, randomOwner, randomDate))
   }
 
   object FailedState extends Failed(new IllegalStateException().getMessage)

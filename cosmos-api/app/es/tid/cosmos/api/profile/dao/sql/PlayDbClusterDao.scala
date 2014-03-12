@@ -11,38 +11,50 @@
 
 package es.tid.cosmos.api.profile.dao.sql
 
-import java.util.Date
-import java.sql.Connection
+import java.sql.{Timestamp, Connection}
 
 import anorm._
 import anorm.SqlParser._
 
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.servicemanager.clusters.ClusterId
-import es.tid.cosmos.api.profile.ClusterAssignment
 import es.tid.cosmos.api.profile.dao.ClusterDao
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 private[sql] object PlayDbClusterDao extends ClusterDao[Connection] {
 
-  override def ownedBy(id: ProfileId)(implicit c: Connection): Seq[ClusterAssignment] =
-    SQL("SELECT cluster_id, creation_date FROM cluster WHERE owner = {owner}")
-      .on("owner" -> id)
-      .apply()
-      .collect({
-      case Row(clusterId: String, creationDate: Date) =>
-        ClusterAssignment(ClusterId(clusterId), id, creationDate)
-    }).force
+  override def ownedBy(id: ProfileId)(implicit c: Connection): Seq[Cluster] = SQL(
+    "SELECT cluster_id, owner, creation_date, cluster_secret FROM cluster WHERE owner = {owner}"
+  ).on("owner" -> id)
+    .apply()
+    .collect(asCluster)
+    .force
 
   override def ownerOf(clusterId: ClusterId)(implicit c: Connection): Option[ProfileId] =
     SQL("SELECT owner FROM cluster WHERE cluster_id = {cluster_id}")
       .on("cluster_id" -> clusterId.id)
       .as(scalar[ProfileId].singleOpt)
 
-  override def register(assignment: ClusterAssignment)(implicit c: Connection): Unit =
-    SQL("""INSERT INTO cluster(cluster_id, owner, creation_date)
-          | VALUES ({cluster_id}, {owner}, {creation_date})""".stripMargin).on(
-        "cluster_id" -> assignment.clusterId.toString,
-        "owner" -> assignment.ownerId,
-        "creation_date" -> assignment.creationDate
+  override def register(cluster: Cluster)(implicit c: Connection): Cluster = {
+    require(cluster.secret.isDefined, "Missing cluster secret")
+    SQL("""INSERT INTO cluster(cluster_id, owner, creation_date, cluster_secret)
+          | VALUES ({cluster_id}, {owner}, {creation_date}, {cluster_secret})""".stripMargin).on(
+        "cluster_id" -> cluster.clusterId.toString,
+        "owner" -> cluster.ownerId,
+        "creation_date" -> cluster.creationDate.toString,
+        "cluster_secret" -> cluster.secret.get.underlying
       ).execute()
+    cluster
+  }
+
+  override def lookupBySecret(secret: ClusterSecret)(implicit c: Connection): Option[Cluster] =
+    SQL("""SELECT cluster_id, owner, creation_date, cluster_secret
+          |FROM cluster WHERE cluster_secret = {cluster_secret}""".stripMargin)
+      .on("cluster_secret" -> secret.underlying)
+      .apply()
+      .collectFirst(asCluster)
+
+  private val asCluster: PartialFunction[SqlRow, Cluster] = {
+    case Row(clusterId: String, ownerId: Int, creationDate: Timestamp, secret: Option[String]) =>
+      Cluster(ClusterId(clusterId), ownerId, creationDate, secret.map(ClusterSecret.apply))
+  }
 }

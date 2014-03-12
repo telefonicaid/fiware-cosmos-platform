@@ -135,7 +135,7 @@ class AmbariClusterManagerTest
     }
 
     val description = ImmutableClusterDescription(
-      ClusterId(),
+      ClusterId.random(),
       ClusterName("clusterName"),
       hostCount,
       Provisioning,

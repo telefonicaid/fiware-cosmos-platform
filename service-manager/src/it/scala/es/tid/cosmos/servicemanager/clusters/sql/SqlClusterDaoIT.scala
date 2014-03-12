@@ -19,20 +19,17 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.common.{MySqlDatabase, MySqlConnDetails}
-import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
+import es.tid.cosmos.common.scalatest.tags.{TaggedTests, HasExternalDependencies}
 import es.tid.cosmos.servicemanager.{ClusterName, ServiceDescription, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
 
-class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter with MockitoSugar {
+class SqlClusterDaoIT
+  extends FlatSpec with MustMatchers with BeforeAndAfter with TaggedTests with MockitoSugar {
+
+  override val testsTag = HasExternalDependencies
+
   val db = new MySqlDatabase(MySqlConnDetails("localhost", 3306, "root", "", "smtest"))
   val dao = new SqlClusterDao(db)
-
-  override def tags: Map[String, Set[String]] = {
-    val originalTags = super.tags
-    (for {
-      test <- testNames
-    } yield (test, originalTags.getOrElse(test, Set()) + HasExternalDependencies.name)).toMap
-  }
 
   before  {
     dao.newTransaction {
@@ -45,7 +42,7 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter wit
   }
 
   trait ClusterCreated {
-    val id = ClusterId()
+    val id = ClusterId.random()
     val serviceA, serviceB = mock[ServiceDescription]
     given(serviceA.name).willReturn("serviceA")
     given(serviceB.name).willReturn("serviceB")
@@ -122,7 +119,7 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter wit
   }
 
   it must "return all cluster ids" in new ClusterCreated {
-    val id2 = ClusterId()
+    val id2 = ClusterId.random()
     dao.registerCluster(id2, ClusterName("cosmos"), 3, Set.empty)
     dao.ids.toSet must be (Set(id, id2))
   }
@@ -132,7 +129,7 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter wit
   }
 
   it must "retrieve none users for unexisting cluster" in new ClusterCreated {
-    dao.getUsers(ClusterId()) must not be 'defined
+    dao.getUsers(ClusterId.random()) must not be 'defined
   }
 
   it must "set users of existing cluster" in new ClusterCreated {
@@ -143,7 +140,7 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter wit
 
   it must "fail to set users of unexisting cluster" in new ClusterCreated {
     evaluating {
-      dao.setUsers(ClusterId(), Set(ClusterUser("jsmith", "publickey1")))
+      dao.setUsers(ClusterId.random(), Set(ClusterUser("jsmith", "publickey1")))
     } must produce [IllegalArgumentException]
   }
 

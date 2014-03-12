@@ -40,7 +40,7 @@ trait ClusterDao {
     *         on this object will affect the state of the DAO.
     */
   def registerCluster(
-    id: ClusterId = ClusterId(),
+    id: ClusterId = ClusterId.random(),
     name: ClusterName,
     size: Int,
     services: Set[ServiceDescription]): MutableClusterDescription

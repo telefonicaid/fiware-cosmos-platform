@@ -47,7 +47,7 @@ private[ambari] class AmbariClusterDao(
   }
 
   override def registerCluster(
-    id: ClusterId = ClusterId(),
+    id: ClusterId = ClusterId.random(),
     name: ClusterName,
     size: Int,
     services: Set[ServiceDescription]): MutableClusterDescription =

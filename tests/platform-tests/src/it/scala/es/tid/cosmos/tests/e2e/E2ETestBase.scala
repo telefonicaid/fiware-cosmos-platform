@@ -16,27 +16,22 @@ import scala.language.postfixOps
 import scala.util.Try
 
 import com.typesafe.config.{ConfigFactory, Config}
-import org.scalatest.{BeforeAndAfterAll, FeatureSpec}
+import org.scalatest.{Tag, BeforeAndAfterAll, FeatureSpec}
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.common.scalatest.tags.EndToEndTest
+import es.tid.cosmos.common.scalatest.tags.{TaggedTests, EndToEndTest}
 import es.tid.cosmos.tests.e2e.cluster.Cluster
 
 abstract class E2ETestBase extends FeatureSpec with MustMatchers with Patience
-  with FutureMatchers with BeforeAndAfterAll {
+  with FutureMatchers with BeforeAndAfterAll with TaggedTests {
   implicit val testConfig: Config = {
     val configFile = Option(System.getProperty("testConfig")).getOrElse("test.conf")
     ConfigFactory.load(getClass.getClassLoader, configFile)
   }
   val restTimeout = testConfig.getInt("restTimeout").seconds
 
-  override def tags: Map[String, Set[String]] = {
-    val originalTags = super.tags
-    (for {
-    test <- testNames
-    } yield (test, originalTags.getOrElse(test, Set()) + EndToEndTest.name)).toMap
-  }
+  override val testsTag: Tag = EndToEndTest
 
   private var usersToDelete = List.empty[LazyVal[User]]
   private var clustersToDelete = List.empty[LazyVal[Cluster]]

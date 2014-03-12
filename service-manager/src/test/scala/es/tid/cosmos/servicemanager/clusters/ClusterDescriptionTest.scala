@@ -66,7 +66,7 @@ class ClusterDescriptionTest extends FlatSpec with MustMatchers {
   }
 
   def withMachineInfoForState(state: ClusterState) = ImmutableClusterDescription(
-    id = ClusterId(),
+    id = ClusterId.random(),
     name = ClusterName("myCluster"),
     size = 10,
     state,
@@ -78,7 +78,7 @@ class ClusterDescriptionTest extends FlatSpec with MustMatchers {
   )
 
   def withoutMachineInfoForState(state: ClusterState) = ImmutableClusterDescription(
-    id = ClusterId(),
+    id = ClusterId.random(),
     name = ClusterName("myCluster"),
     size = 10,
     state,

@@ -12,21 +12,30 @@
 package es.tid.cosmos.api.profile.dao
 
 import java.util.Date
+import java.sql.Timestamp
 
-import es.tid.cosmos.servicemanager.clusters.ClusterId
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.ClusterAssignment
+import es.tid.cosmos.api.profile.Cluster
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 trait ClusterDao[Conn] {
 
-  /** Retrieves the set of cluster ids for a given user.
+  /** Retrieves the set of clusters for a given user.
     *
-    * @param id  The unique Cosmos ID of the given user.
-    * @param c   The connection to use.
-    * @return    The set of assigned clusters for a given user.
+    * @param id  The unique Cosmos ID of the given user
+    * @param c   The connection to use
+    * @return    The set of assigned clusters for a given user
     * @throws CosmosDaoException  When no user has such id
     */
-  def ownedBy(id: ProfileId)(implicit c: Conn): Seq[ClusterAssignment]
+  def ownedBy(id: ProfileId)(implicit c: Conn): Seq[Cluster]
+
+  /** Retrieves a cluster by its secret.
+    *
+    * @param secret  Secret of the cluster to look for
+    * @param c       The connection to use
+    * @return        A Cluster or None
+    */
+  def lookupBySecret(secret: ClusterSecret)(implicit c: Conn): Option[Cluster]
 
   /** Determines the owner of a cluster if any.
     *
@@ -38,26 +47,23 @@ trait ClusterDao[Conn] {
 
   /** Assigns a cluster to a given user.
     *
-    * @param assignment  Assignment to make persistent.
-    * @param c           The connection to use.
+    * @param cluster  Cluster to persist, must have a defined cluster secret
+    * @param c        The connection to use
+    * @return         Newly registered cluster
     */
-  def register(assignment: ClusterAssignment)(implicit c: Conn): Unit
+  def register(cluster: Cluster)(implicit c: Conn): Cluster
 
   /** Assigns a cluster to a given user at the present moment.
-    * @param clusterId  The cluster ID to assign.
-    * @param ownerId    The unique Cosmos ID of the new owner.
-    * @param c          The connection to use.
-    */
-  def register(clusterId: ClusterId, ownerId: Long)(implicit c: Conn): Unit =
-    register(ClusterAssignment(clusterId, ownerId, new Date()))
-
-  /** Assigns a cluster to a given user.
     *
-    * @param clusterId     The cluster ID to assign.
-    * @param ownerId       The unique Cosmos ID of the new owner.
-    * @param creationDate  The instant the cluster creation started.
-    * @param c             The connection to use.
+    * @param clusterId  The cluster ID to assign
+    * @param ownerId    The unique Cosmos ID of the new owner
+    * @param c          The connection to use
+    * @return           Newly registered cluster
     */
-  def register(clusterId: ClusterId, ownerId: Long, creationDate: Date)(implicit c: Conn): Unit =
-    register(ClusterAssignment(clusterId, ownerId, creationDate))
+  def register(clusterId: ClusterId, ownerId: Long)(implicit c: Conn): Cluster = register(Cluster(
+    clusterId,
+    ownerId,
+    creationDate = new Timestamp(new Date().getTime),
+    secret = Some(ClusterSecret.random())
+  ))
 }

@@ -46,7 +46,7 @@ class ClustersIT
     val user1 = new RegisteredUserSession("user1", "User 1")
     val user2 = new RegisteredUserSession("user2", "User 2")
     val ownCluster = SampleClusters.RunningClusterProps.id
-    val otherCluster = ClusterId()
+    val otherCluster = ClusterId.random()
     store.withTransaction { implicit c =>
       store.cluster.register(ownCluster, user1.cosmosProfile.id)
       store.cluster.register(otherCluster, user2.cosmosProfile.id)

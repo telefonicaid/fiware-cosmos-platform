@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.api.profile.dao
 
-import es.tid.cosmos.api.quota.{Quota, Group}
+import es.tid.cosmos.api.quota.{GuaranteedGroup, NoGroup, Quota, Group}
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.UserState.UserState
 import es.tid.cosmos.api.profile.Registration
@@ -128,6 +128,17 @@ trait ProfileDao[Conn] {
     * @param c         the connection to use
     */
   def setGroup(id: ProfileId, groupName: Option[String])(implicit c: Conn): Unit
+
+  /** Set the group the user belongs to.
+    *
+    * @param id      the profile id of the user
+    * @param group   the new user group
+    * @param c       the connection to use
+    */
+  def setGroup(id: ProfileId, group: Group)(implicit c: Conn): Unit = setGroup(id, group match {
+    case NoGroup => None
+    case GuaranteedGroup(name, _) => Some(name)
+  })
 
   /** Sets the machine quota for a given user.
     *

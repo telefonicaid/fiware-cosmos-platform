@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.controllers.storage
 
+import play.api.libs.json.{JsString, JsValue, Writes}
+
 /** Unix-style permission mask */
 case class AccessMask(mask: Int) {
   require(mask >= 0 && mask <= AccessMask.MaxMask, "Out of range mask: %o".format(mask))
@@ -20,5 +22,10 @@ case class AccessMask(mask: Int) {
 
 object AccessMask {
   val MaxMask = 511
+
   def apply(mask: String): AccessMask = AccessMask(Integer.parseInt(mask, 8))
+
+  implicit object AccessMaskWrites extends Writes[AccessMask] {
+    override def writes(accessMask: AccessMask): JsValue = JsString(accessMask.toString)
+  }
 }

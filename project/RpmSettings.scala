@@ -121,8 +121,22 @@ object RpmSettings {
     packageSummary := "Infinity Server",
     packageDescription in Rpm := "Server for infinity:// scheme.",
     linuxPackageMappings in Rpm := Seq(
-      packageMapping(assembly.value -> "/opt/pdi-cosmos/infinity-server.jar") withUser "root" withGroup "root" withPerms "0755"
-    )
+      packageMapping(assembly.value -> "/opt/pdi-cosmos/infinity-server/infinity-server.jar")
+        withUser "root" withGroup "root" withPerms "0755",
+      packageMapping(baseDirectory.value / "scripts/infinity-server.sh" -> "/opt/pdi-cosmos/infinity-server/infinity-server.sh")
+        withUser "root" withGroup "root" withPerms "0755",
+      packageMapping(baseDirectory.value / "conf/infinity-server.conf" -> "/opt/pdi-cosmos/infinity-server/infinity-server.conf")
+        withUser "root" withGroup "root" withPerms "0644",
+      packageMapping(IO.temporaryDirectory / "." -> "/opt/pdi-cosmos/infinity-server/logs")
+        withUser "root" withGroup "root" withPerms "0755"
+    ),
+    linuxPackageSymlinks := Seq(
+      LinuxSymlink("/etc/init.d/infinity-server", "/opt/pdi-cosmos/infinity-server/infinity-server.sh"),
+      LinuxSymlink("/etc/infinity-server.conf", "/opt/pdi-cosmos/infinity-server/infinity-server.conf")
+    ),
+    rpmPost := Some("""chkconfig --add /etc/init.d/infinity-server
+                      |chkconfig infinity-server on
+                    """.stripMargin)
   )
 
 

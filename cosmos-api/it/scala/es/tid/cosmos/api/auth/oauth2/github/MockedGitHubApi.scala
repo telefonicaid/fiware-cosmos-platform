@@ -101,8 +101,8 @@ class MockedGitHubApi(
             |    "followers_url": "https://pdihub.hi.inet/api/v3/users/${existingUser.login}/followers",
             |    "following_url": "https://pdihub.hi.inet/api/v3/users/${existingUser.login}/following{/other_user}",
             |    "type": "User",
-            |    "name": "${existingUser.name}",
-            |    "email": "${existingUser.email}",
+            |    "name": "${existingUser.name.get}",
+            |    "email": "${existingUser.email.get}",
             |    "site_admin": false
             |}
           """.stripMargin

@@ -38,8 +38,8 @@ class ProviderIT extends FlatSpec
   val gitHubUser = GitHubProfile(
     id = 53,
     login = "jsmith",
-    name = "John Smith",
-    email = "jsmith@tid.es"
+    name = Some("John Smith"),
+    email = Some("jsmith@tid.es")
   )
   val gitHubMock = new MockedGitHubApi(
     port = 2348,

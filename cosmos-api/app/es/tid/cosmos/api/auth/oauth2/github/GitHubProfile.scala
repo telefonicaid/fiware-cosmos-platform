@@ -16,9 +16,10 @@ import play.api.libs.json._
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.profile.UserId
 
-private[github] case class GitHubProfile(id: Int, login: String, name: String, email: String) {
+private[github] case class GitHubProfile(
+    id: Int, login: String, name: Option[String], email: Option[String]) {
   def asUserProfile(realm: String): OAuthUserProfile =
-    OAuthUserProfile(UserId(realm, id.toString), Some(name), Some(email))
+    OAuthUserProfile(UserId(realm, id.toString), name, email)
 }
 
 private[github] object GitHubProfile {

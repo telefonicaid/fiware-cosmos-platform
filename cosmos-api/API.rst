@@ -249,6 +249,32 @@ it consists on WebHdfs url and username::
     }
 
 
+GET ``/cosmos/v1/storage/auth``
+-------------------------------
+
+*Since v1*
+
+Allows identity authentication for the Infinity filesystem. It provides the user identity given
+either API credentials or a cluster secret provided as query parameters (respectively ``apiKey``,
+``apiSecret`` and ``clusterSecret`` parameters).  For example,
+``/cosmos/v1/storage?clusterSecret=<secret>`` can be used to authorize from a cluster secret.
+
+In case of success, a JSON document with the following structure is returned with OK status::
+
+    {
+       "user": <string>,
+       "group": <string>,
+       "accessMask": <string>,
+       "origins": <origin policy>
+    }
+
+Where ``accessMask`` is a string with a unix-style access mask such as "777" or "077" and
+``origins`` can be ``anyHost`` or a JSON array of the allowed IPs (e.g. ``["10.2.0.1", ... ]``).
+
+In case of malformed input or invalid credentials a BAD REQUEST status will be returned with a
+message with additional details as body.
+
+
 GET ``/cosmos/v1/maintenance``
 ------------------------------
 

@@ -60,10 +60,12 @@ trait ClusterDao[Conn] {
     * @param c          The connection to use
     * @return           Newly registered cluster
     */
-  def register(clusterId: ClusterId, ownerId: Long)(implicit c: Conn): Cluster = register(Cluster(
+  def register(clusterId: ClusterId, ownerId: Long, shared: Boolean = false)
+              (implicit c: Conn): Cluster = register(Cluster(
     clusterId,
     ownerId,
     creationDate = new Timestamp(new Date().getTime),
+    shared,
     secret = Some(ClusterSecret.random())
   ))
 }

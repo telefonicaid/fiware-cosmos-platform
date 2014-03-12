@@ -9,12 +9,14 @@
 -- All rights reserved.
 --
 
--- * Add secret field to cluster table
+-- * Add shared and secret fields to cluster table
 
 # --- !Ups
 
+ALTER TABLE cluster ADD COLUMN shared TINYINT NOT NULL DEFAULT 0;
 ALTER TABLE cluster ADD COLUMN cluster_secret VARCHAR(128);
 
 # --- !Downs
 
+ALTER TABLE cluster DROP COLUMN shared;
 ALTER TABLE cluster DROP COLUMN cluster_secret;

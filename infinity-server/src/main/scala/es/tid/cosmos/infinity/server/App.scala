@@ -30,9 +30,10 @@ trait InfinityService extends HttpService {
   def myRoute =
     path("") {
       get {
-        log.info("Got a GET request")
         respondWithMediaType(`text/html`) { // XML is marshalled to `text/xml` by default, so we simply override here
           complete {
+            log.info("Got a GET request")
+
             <html>
               <body>
                 <h1>Say hello to <i>spray-routing</i> on <i>spray-can</i>!</h1>

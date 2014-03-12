@@ -26,7 +26,7 @@ object Boot extends App {
 
   implicit val system = ActorSystem("infinity-server")
 
-  val service = system.actorOf(Props[InfinityServerActor], "infinity-server-service")
+  val service = system.actorOf(Props[InfinityActor], "infinity-server-service")
 
   implicit val timeout = Timeout(5.seconds)
 

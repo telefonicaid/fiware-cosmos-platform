@@ -16,14 +16,14 @@ import spray.http.MediaTypes._
 import spray.routing._
 import akka.event.LoggingAdapter
 
-class MyServiceActor extends Actor with MyService with ActorLogging {
+class InfinityActor extends Actor with InfinityService with ActorLogging {
 
   def actorRefFactory = context
 
   def receive = runRoute(myRoute)
 }
 
-trait MyService extends HttpService {
+trait InfinityService extends HttpService {
 
   def log: LoggingAdapter
 

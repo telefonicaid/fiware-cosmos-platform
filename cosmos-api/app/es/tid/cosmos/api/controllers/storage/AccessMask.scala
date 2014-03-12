@@ -21,9 +21,11 @@ case class AccessMask(mask: Int) {
 }
 
 object AccessMask {
-  val MaxMask = 511
+  val MaxMask = octal("777")
 
-  def apply(mask: String): AccessMask = AccessMask(Integer.parseInt(mask, 8))
+  def apply(mask: String): AccessMask = AccessMask(octal(mask))
+
+  private def octal(number: String) = Integer.parseInt(number, 8)
 
   implicit object AccessMaskWrites extends Writes[AccessMask] {
     override def writes(accessMask: AccessMask): JsValue = JsString(accessMask.toString)

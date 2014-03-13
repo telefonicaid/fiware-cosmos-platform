@@ -67,28 +67,3 @@ class Protocol(object):
         if r.status_code != 200:
             return []
         return r.json()
-
-    def add_user_to_cluster(self, cluster_id, user_id):
-        """Request the addition of a platform user to an existing cluster"""
-        return self.__manage_cluster_user(
-            cluster_id,
-            user_id,
-            action="add_user",
-            error_msg="Cannot add user %s to cluster %s" % (user_id, cluster_id))
-
-    def remove_user_from_cluster(self, cluster_id, user_id):
-        """Request the removal of a platform user from an existing cluster"""
-        return self.__manage_cluster_user(
-            cluster_id,
-            user_id,
-            action="remove_user",
-            error_msg="Cannot remove user %s from cluster %s" % (user_id, cluster_id))
-
-    def __manage_cluster_user(self, cluster_id, user_id, action, error_msg):
-        body = json.dumps({"user": user_id})
-        r = self.__client.post(
-            self.__routes.cluster(cluster_id, action=action),
-            body)
-        if r.status_code != 200:
-            raise ResponseError(error_msg, r)
-        return r.json()

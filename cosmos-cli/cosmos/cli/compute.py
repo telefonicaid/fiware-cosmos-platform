@@ -105,7 +105,8 @@ def create_cluster(args, proto):
         for service in unknown_services:
             print "\t" + service
         return 1
-    body = proto.create_cluster(args.name, args.size, list(arg_services_set))
+    body = proto.create_cluster(
+        args.name, args.size, list(arg_services_set), args.shared)
     print "Provisioning new cluster %s" % body["id"]
     util.set_last_cluster_id(body["id"])
     return 0
@@ -118,6 +119,8 @@ def add_create_cluster_command(subparsers):
                         help="number of machines (at least 1")
     parser.add_argument("--services", required=False, nargs="*",
                         help='optional services to install in the cluster')
+    parser.add_argument("--shared", action="store_true",
+                        help="share the cluster with your group's users")
     parser.set_defaults(func=ComputeCommand(create_cluster))
 
 

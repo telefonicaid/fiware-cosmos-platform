@@ -28,7 +28,7 @@ class ClusterTest(unittest.TestCase):
         self.cluster = Cluster(self.proto, {
             'id': '1',
             'name': 'cluster1',
-            'href': self.api_url + '/cluster/1',
+            'href': self.api_url + '/cluster/1'
         })
         self.machine1 = machine_json('1')
         self.machine2 = machine_json('2')
@@ -40,6 +40,7 @@ class ClusterTest(unittest.TestCase):
             'href': self.api_url + '/cluster/1',
             'state': 'provisioning',
             'stateDescription': 'the cluster is provisioning',
+            'shared': True
         }
 
         machines_are_ready = initial.copy()
@@ -71,6 +72,9 @@ class ClusterTest(unittest.TestCase):
         self.assertEquals(self.cluster.state_desc, 'the cluster is provisioning')
         self.assertEquals(self.cluster.state_desc, 'the cluster is provisioning')
         self.assertEquals(self.cluster.state_desc, 'the cluster is running')
+
+    def get_shared(self):
+        self.assertEquals(self.cluster.shared, True)
 
     def get_master(self):
         self.assertEquals(self.cluster.master, None)

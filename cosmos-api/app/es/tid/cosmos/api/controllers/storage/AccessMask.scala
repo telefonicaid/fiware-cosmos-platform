@@ -13,6 +13,8 @@ package es.tid.cosmos.api.controllers.storage
 
 import play.api.libs.json.{JsString, JsValue, Writes}
 
+import es.tid.cosmos.common.Octal
+
 /** Unix-style permission mask */
 case class AccessMask(mask: Int) {
   require(mask >= 0 && mask <= AccessMask.MaxMask, "Out of range mask: %o".format(mask))
@@ -21,11 +23,9 @@ case class AccessMask(mask: Int) {
 }
 
 object AccessMask {
-  val MaxMask = octal("777")
+  val MaxMask = Octal("777")
 
-  def apply(mask: String): AccessMask = AccessMask(octal(mask))
-
-  private def octal(number: String) = Integer.parseInt(number, 8)
+  def apply(mask: String): AccessMask = AccessMask(Octal(mask))
 
   implicit object AccessMaskWrites extends Writes[AccessMask] {
     override def writes(accessMask: AccessMask): JsValue = JsString(accessMask.toString)

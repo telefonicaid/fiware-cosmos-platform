@@ -21,14 +21,14 @@ class ApiCredentialsTest extends FlatSpec with MustMatchers {
 
   it must "preserve API id size invariant" in {
     val ex = evaluating {
-      ApiCredentials("small", "justright,justright,justright,justright,")
+      ApiCredentials("small", "justright0justright1justright2justright3")
     } must produce [IllegalArgumentException]
-    ex.getMessage must include ("API identifier")
+    ex.getMessage must include ("API key")
   }
 
   it must "preserve API secret size invariant" in {
     val ex = evaluating {
-      ApiCredentials("justright,justright,", "small")
+      ApiCredentials("justright0justright1", "small")
     } must produce [IllegalArgumentException]
     ex.getMessage must include ("API secret")
   }

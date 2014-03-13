@@ -11,27 +11,21 @@
 
 package es.tid.cosmos.api.profile
 
-import java.security.SecureRandom
+import es.tid.cosmos.common.AlphanumericTokenPattern
 
 /** Cluster secrets are tokens of fixed length that grant access to services when used
   * from their associated cluster.
   */
 case class ClusterSecret(underlying: String) {
-  require(underlying.matches(ClusterSecret.pattern), s"Malformed cluster secret: '$underlying'")
+  ClusterSecret.TokenPattern.requireValid(underlying)
 
   /** Shows only the last digits to avoid unintended leakage of the cluster secret */
   override def toString = "****" + underlying.takeRight(4)
 }
 
 object ClusterSecret {
-
   val Length: Int = 128
+  private val TokenPattern = new AlphanumericTokenPattern("Cluster secret", Length)
 
-  def random(): ClusterSecret = ClusterSecret(Seq.fill(Length)(randomChar()).mkString)
-
-  private def randomChar() = characters.charAt(generator.nextInt(characters.length))
-
-  private val generator = new SecureRandom()
-  private val characters = "01234567890abcdefghijklmnopqrstuvwzABCDEFGHIJKLMNOPQRSTUVWZ"
-  private val pattern = s"[a-zA-Z0-9]{$Length}"
+  def random(): ClusterSecret = ClusterSecret(TokenPattern.generateRandom())
 }

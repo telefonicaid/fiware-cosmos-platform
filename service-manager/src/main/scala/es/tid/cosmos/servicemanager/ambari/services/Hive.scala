@@ -11,10 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{Service, ComponentDescription}
+import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
 
 /** Representation of Hive service */
-object Hive extends Service {
+object Hive extends Service with NoParametrization {
   override val name: String = "HIVE"
 
   override val components: Seq[ComponentDescription] = Seq(

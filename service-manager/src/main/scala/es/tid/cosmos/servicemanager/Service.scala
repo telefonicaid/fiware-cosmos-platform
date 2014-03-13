@@ -13,6 +13,10 @@ package es.tid.cosmos.servicemanager
 
 /** Representation of a service definition. */
 trait Service {
+  /** Type of the values that parametrize it to have a service instance */
+  type Parametrization
+
   val name: String
+
   val components: Seq[ComponentDescription]
 }

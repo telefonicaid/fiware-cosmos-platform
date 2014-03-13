@@ -28,25 +28,23 @@ trait ServiceManager {
    */
   def clusterIds: Seq[ClusterId]
 
-  /**
-   * A sequence of all services this service manager supports
-   */
-  val optionalServices: Seq[Service]
+  /** A sequence of all services this service manager supports. */
+  val optionalServices: Set[AnyServiceInstance]
 
   /**
    * Create a cluster of a given size with a specified set of services.
    *
-   * @param name the cluster's name
-   * @param clusterSize the number of nodes the cluster should comprise of
-   * @param serviceDescriptions the description of services to be installed to the cluster
-   * @param users the list of users the cluster should have
+   * @param name          the cluster's name
+   * @param clusterSize   the number of nodes the cluster should comprise of
+   * @param services      the concrete service instances to be installed to the cluster
+   * @param users         the list of users the cluster should have
    * @param preConditions the pre-conditions to be validated before attempting to create a cluster
-   * @return the ID of the newly created cluster
+   * @return              the ID of the newly created cluster
    */
   def createCluster(
     name: ClusterName,
     clusterSize: Int,
-    serviceDescriptions: Seq[Service],
+    services: Set[AnyServiceInstance],
     users: Seq[ClusterUser],
     preConditions: ClusterExecutableValidation = UnfilteredPassThrough): ClusterId
 

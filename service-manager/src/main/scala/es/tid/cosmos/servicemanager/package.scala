@@ -37,4 +37,6 @@ package object servicemanager {
 
   /** ''Null'' object that does a pass-through without any validation */
   val UnfilteredPassThrough: ClusterExecutableValidation = (_) => PassThrough
+
+  type AnyServiceInstance = ServiceInstance[_ <: Service]
 }

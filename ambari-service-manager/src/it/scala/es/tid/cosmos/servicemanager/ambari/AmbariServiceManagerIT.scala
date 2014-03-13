@@ -88,7 +88,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     val id = sm.createCluster(
       name = ClusterName("persistentHdfsId"),
       clusterSize = 1,
-      serviceDescriptions = Seq(),
+      serviceInstances = Set.empty,
       users = Seq(user1, user2),
       preConditions = preConditions
     )

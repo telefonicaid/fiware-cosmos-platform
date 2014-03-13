@@ -61,7 +61,7 @@ class AmbariServiceManager(
   override def describeCluster(id: ClusterId): Option[ImmutableClusterDescription] =
     clusterDao.getDescription(id).map(_.view)
 
-  override val optionalServices: Seq[Service] = OptionalServices
+  override val optionalServices: Set[AnyServiceInstance] = OptionalServices
 
   private def userServices(users: Seq[ClusterUser]): Seq[Service] =
     Seq(new CosmosUserService(users))
@@ -69,11 +69,12 @@ class AmbariServiceManager(
   override def createCluster(
       name: ClusterName,
       clusterSize: Int,
-      serviceDescriptions: Seq[Service],
+      serviceInstances: Set[AnyServiceInstance],
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = {
+    val serviceDescriptions = serviceInstances.toSeq.map(_.service)
     val servicesWithDependencies = makeUserServiceLast(
-      (BasicHadoopServices ++ serviceDescriptions ++ userServices(users)).withDependencies
+      new ServiceBundle(BasicHadoopServices ++ serviceDescriptions ++ userServices(users)).withDependencies
     )
     val clusterServiceDescriptions =
       servicesWithDependencies.map(toAmbariService(_, serviceConfigPath))
@@ -211,9 +212,10 @@ class AmbariServiceManager(
 
 private[ambari] object AmbariServiceManager {
   val BasicHadoopServices: Seq[Service] = Seq(Hdfs, MapReduce2, InfinityfsDriver)
-  val OptionalServices: Seq[Service] = Seq(Hive, Oozie, Pig, Sqoop)
-  val AllServices: Seq[Service] =
-    (BasicHadoopServices ++ OptionalServices ++ Seq(CosmosUserService, InfinityfsServer)).withDependencies.distinct
+  val OptionalServices: Set[AnyServiceInstance] = Set(Hive, Oozie, Pig, Sqoop).map(_.instance)
+  val AllServices: Seq[Service] = new ServiceBundle(
+    BasicHadoopServices ++ OptionalServices.map(_.service) ++ Seq(CosmosUserService, InfinityfsServer)
+  ).withDependencies.distinct
 
   private def setMachineInfo(
       description: MutableClusterDescription, master: MachineState, slaves: Seq[MachineState]) {

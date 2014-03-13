@@ -55,10 +55,11 @@ object ConfiguratorTestHelpers {
     servicesConfigDirectory = "/tmp/services"
   )
 
-  val BasicServices = AmbariServiceManager.BasicHadoopServices.withDependencies
+  val BasicServices = new ServiceBundle(AmbariServiceManager.BasicHadoopServices).withDependencies
     .map(toAmbariServicesNoConfig)
 
-  val AllServices = AmbariServiceManager.AllServices.withDependencies.map(toAmbariServicesNoConfig)
+  val AllServices = new ServiceBundle(AmbariServiceManager.AllServices).withDependencies
+    .map(toAmbariServicesNoConfig)
 
   def toAmbariServicesNoConfig(service: Service): AmbariService =
     service match {

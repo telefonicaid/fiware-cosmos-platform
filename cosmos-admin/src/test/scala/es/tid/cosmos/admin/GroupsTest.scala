@@ -76,7 +76,7 @@ class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
 
   it must "validate feasibility before setting a group's new minimum quota" in new WithGroups {
     val group = GuaranteedGroup("groupA", Quota(3))
-    val clusterId = serviceManager.createCluster(ClusterName("myCluster"), 2, Seq.empty, Seq.empty)
+    val clusterId = serviceManager.createCluster(ClusterName("myCluster"), 2, Set.empty, Seq.empty)
     store.withTransaction { implicit c =>
       val profile = registerUser(store, "myUser")
       store.group.register(group)

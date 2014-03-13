@@ -11,10 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{Service, ComponentDescription}
+import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
 
 /** Representation of the WebHCat service */
-object WebHCat extends Service {
+object WebHCat extends Service with NoParametrization {
 
   override val name: String = "WEBHCAT"
 

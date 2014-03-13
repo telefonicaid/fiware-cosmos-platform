@@ -30,7 +30,7 @@ object ServiceDependencies {
     Yarn -> Set(InfinityfsDriver)
   )
 
-  implicit class ServiceBundle(services: Seq[Service]) {
+  class ServiceBundle(services: Seq[Service]) {
 
     /** Extend a given collection of services with their dependencies.
       * The dependencies of a service will be added before that service in the resulting collection

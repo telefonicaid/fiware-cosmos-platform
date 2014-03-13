@@ -9,11 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.services
+package es.tid.cosmos.servicemanager
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
-
-object Sqoop extends Service with NoParametrization {
-  override val name = "SQOOP"
-  override val components = Seq(ComponentDescription.masterComponent("SQOOP").makeClient)
-}
+/** A concrete instance of a service */
+case class ServiceInstance[S <: Service](service: S, parameter: S#Parametrization)

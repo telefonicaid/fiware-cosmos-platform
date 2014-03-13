@@ -11,10 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{Service, ComponentDescription}
+import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
 
 /** Representation of the HCatalog service */
-object HCatalog extends Service {
+object HCatalog extends Service with NoParametrization {
   override val name: String = "HCATALOG"
 
   override val components: Seq[ComponentDescription] = Seq(

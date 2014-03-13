@@ -53,7 +53,7 @@ class AmbariServiceManagerTest
 
     val exclusiveMasterSizeCutoff = 10
     val clusterManager = new MockAmbariClusterManager
-    val serviceDescriptions = List(mock[AmbariService], mock[AmbariService])
+    val serviceDescriptions: Set[AnyServiceInstance] = Set(Hive.instance, Pig.instance)
     lazy val instance = new AmbariServiceManager(
       clusterManager, infrastructureProvider,
       ClusterId("HDFS"), exclusiveMasterSizeCutoff, TestHadoopConfig,
@@ -267,11 +267,12 @@ class AmbariServiceManagerTest
     import ServiceDependencies._
 
     val clusterId = instance.createCluster(
-      ClusterName("clusterName"), 3, Seq(Hive), Seq(), UnfilteredPassThrough)
+      ClusterName("clusterName"), 3, Set(Hive.instance), Seq(), UnfilteredPassThrough)
     waitForClusterCompletion(clusterId, instance)
     val description = instance.describeCluster(clusterId)
-    val expectedServices =
-      (AmbariServiceManager.BasicHadoopServices ++ Seq(CosmosUserService, Hive)).withDependencies
+    val expectedServices = new ServiceBundle(
+      AmbariServiceManager.BasicHadoopServices ++ Seq(CosmosUserService, Hive)
+    ).withDependencies
     description.get.services must be (expectedServices.map(_.name).toSet)
   }
 

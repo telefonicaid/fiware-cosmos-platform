@@ -92,12 +92,13 @@ class ClusterResource(
       profile: CosmosProfile): SimpleResult = {
 
     val services = serviceManager.optionalServices.filter(
-      service => body.optionalServices.contains(service.name))
+      serviceInstance => body.optionalServices.contains(serviceInstance.service.name)
+    )
     val users = usersForCluster(body, profile)
     val clusterId = serviceManager.createCluster(
       name = body.name,
       clusterSize = body.size,
-      serviceDescriptions = services,
+      services = services,
       users = users,
       preConditions = executableWithinQuota(profile, body.size)
     )

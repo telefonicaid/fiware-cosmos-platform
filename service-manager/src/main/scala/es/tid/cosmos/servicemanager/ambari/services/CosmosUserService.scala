@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{ClusterUser, ComponentDescription}
+import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.util.SshKeyGenerator
 
@@ -50,7 +50,7 @@ class CosmosUserService(users: Seq[ClusterUser]) extends AmbariService {
   }
 }
 
-object CosmosUserService extends AmbariService with NoConfigurationContribution {
+object CosmosUserService extends Service with NoParametrization {
   override val name: String = "COSMOS_USER"
 
   override val components: Seq[ComponentDescription] = Seq(

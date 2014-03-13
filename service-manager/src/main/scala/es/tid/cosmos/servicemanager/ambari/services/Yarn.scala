@@ -11,10 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{Service, ComponentDescription}
+import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
 
 /** Representation of the YARN service. */
-object Yarn extends Service {
+object Yarn extends Service with NoParametrization {
   override val name: String = "YARN"
 
   override val components: Seq[ComponentDescription] = Seq(

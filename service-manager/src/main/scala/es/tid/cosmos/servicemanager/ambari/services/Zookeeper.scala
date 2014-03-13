@@ -11,10 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{Service, ComponentDescription}
+import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
 
 /** Representation of the Zookeeper service. */
-object Zookeeper extends Service {
+object Zookeeper extends Service with NoParametrization {
   override val name: String = "ZOOKEEPER"
 
   override val components: Seq[ComponentDescription] = Seq(

@@ -15,6 +15,8 @@ object ConfigurationKeys extends Enumeration {
   val MasterNode,
       HdfsReplicationFactor,
       NameNodeHttpPort,
+      UmaskMode,
+
       MrAppMasterMemory,
 
       InfinityMasterNode,

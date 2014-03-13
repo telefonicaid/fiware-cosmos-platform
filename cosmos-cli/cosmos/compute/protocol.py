@@ -41,11 +41,11 @@ class Protocol(object):
                 "Cannot get details for %s" % cluster_id, r)
         return r.json()
 
-    def create_cluster(self, cluster_name, cluster_size, services):
+    def create_cluster(self, cluster_name, cluster_size, services, shared):
         """Send a request to create a new cluster and return the response
         in JSON format"""
         body = json.dumps({"name": cluster_name, "size": cluster_size,
-                           "optionalServices": services})
+                           "optionalServices": services, "shared": shared})
         r = self.__client.post(self.__routes.clusters(),
                                body)
         if r.status_code != 201:

@@ -29,10 +29,10 @@ class CliConfigResourceIT extends FlatSpec with MustMatchers {
     }
 
   it must "return a cosmosrc when authenticated" in new WithSampleSessions {
-    val response = regUser.doRequest("/cosmosrc")
+    val response = regUserInGroup.doRequest("/cosmosrc")
     status(response) must be (OK)
     contentAsString(response) must (
-      include (s"api_key: ${regUser.cosmosProfile.apiCredentials.apiKey}") and
-      include (s"api_secret: ${regUser.cosmosProfile.apiCredentials.apiSecret}"))
+      include (s"api_key: ${regUserInGroup.cosmosProfile.apiCredentials.apiKey}") and
+      include (s"api_secret: ${regUserInGroup.cosmosProfile.apiCredentials.apiSecret}"))
   }
 }

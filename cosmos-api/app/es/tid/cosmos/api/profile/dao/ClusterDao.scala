@@ -15,10 +15,18 @@ import java.util.Date
 import java.sql.Timestamp
 
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.Cluster
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 trait ClusterDao[Conn] {
+
+  /** Retrieves the cluster assignments for a given cluster
+    *
+    * @param id The id of the cluster
+    * @param c  The connection to use
+    * @return   The cluster assignment
+    * @throws CosmosDaoException When no cluster with the specified id exists
+    */
+  def get(id: ClusterId)(implicit c: Conn): Cluster
 
   /** Retrieves the set of clusters for a given user.
     *
@@ -58,6 +66,7 @@ trait ClusterDao[Conn] {
     * @param clusterId  The cluster ID to assign
     * @param ownerId    The unique Cosmos ID of the new owner
     * @param c          The connection to use
+    * @param shared     Whether the cluster is shared or not
     * @return           Newly registered cluster
     */
   def register(clusterId: ClusterId, ownerId: Long, shared: Boolean = false)

@@ -27,6 +27,7 @@ class Cluster(object):
         self.href = json["href"]
         self.__master = None
         self.__slaves = []
+        self.__shared = None
 
     @property
     def state(self):
@@ -50,6 +51,11 @@ class Cluster(object):
         self.__load_details()
         return self.__slaves
 
+    @property
+    def shared(self):
+        self.__load_details()
+        return self.__shared
+
     def terminate(self):
         """Send a request to terminate the cluster"""
         self.__proto.terminate_cluster(self.id)
@@ -69,4 +75,5 @@ class Cluster(object):
         self.__master = Machine(json["master"]) if "master" in json else None
         self.__slaves = [ Machine(slave) for slave in json["slaves"] ] \
             if "slaves" in json else []
+        self.__shared = json["shared"]
 

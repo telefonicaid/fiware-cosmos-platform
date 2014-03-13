@@ -11,10 +11,13 @@
 
 package es.tid.cosmos.api.controllers.cluster
 
+import java.sql.Timestamp
+
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.Json
 
+import es.tid.cosmos.api.profile.Cluster
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
@@ -39,7 +42,8 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
     master = Some(host(1)),
     slaves = Some(Seq(host(2), host(3))),
     users = Some(Seq(clusterOwner, extraUser)),
-    services = Set("ServiceB", "ServiceA")
+    services = Set("ServiceB", "ServiceA"),
+    shared = true
   )
   val sampleJson = Json.obj(
     "href" -> "http://host/path",
@@ -50,6 +54,7 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
     "stateDescription" -> "releasing resources",
     "master" -> hostJson(1),
     "slaves" -> Json.arr(hostJson(2), hostJson(3)),
+    "shared" -> true,
     "users" -> Json.arr(
       Json.obj(
         "username" -> "jsmith",
@@ -106,7 +111,8 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
       users = None,
       services = Set(Hdfs.name, MapReduce2.name) ++ ClusterDetails.unlistedServices
     )
-    val details = ClusterDetails.fromDescription(description)
+    val assignment = Cluster(description.id, 13L, new Timestamp(0))
+    val details = ClusterDetails(description, assignment, "href")
     val listedServices = (Json.toJson(details) \ "services").as[Set[String]]
     ClusterDetails.unlistedServices.foreach { serviceName =>
       listedServices must not contain serviceName

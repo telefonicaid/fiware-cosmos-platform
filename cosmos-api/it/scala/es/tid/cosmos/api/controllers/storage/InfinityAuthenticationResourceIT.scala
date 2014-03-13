@@ -50,9 +50,9 @@ class InfinityAuthenticationResourceIT extends FlatSpec with MustMatchers {
   }
 
   "Infinity authentication" must "provide an identity from API credentials" in new WithFixture {
-    val res = request(regUser.cosmosProfile.apiCredentials)
+    val res = request(regUserNoGroup.cosmosProfile.apiCredentials)
     status(res) must be (OK)
-    contentAsJson(res) \ "user" must be (JsString(regUser.handle))
+    contentAsJson(res) \ "user" must be (JsString(regUserNoGroup.handle))
   }
 
   it must "reject unknown API credentials" in new WithFixture {
@@ -64,15 +64,15 @@ class InfinityAuthenticationResourceIT extends FlatSpec with MustMatchers {
       id = new ClusterId("someCluster"),
       name = ClusterName("Some cluster"),
       size = 4,
-      users = Set(regUser.asClusterUser()),
+      users = Set(regUserNoGroup.asClusterUser()),
       initialState = Some(Running)
     ))
     val clusterSecret = store.withTransaction { implicit c =>
-      store.cluster.register(cluster.view.id, regUser.cosmosProfile.id)
+      store.cluster.register(cluster.view.id, regUserNoGroup.cosmosProfile.id)
     }.secret.get
     val res = request(clusterSecret)
     status(res) must be (OK)
-    contentAsJson(res) \ "user" must be (JsString(regUser.handle))
+    contentAsJson(res) \ "user" must be (JsString(regUserNoGroup.handle))
   }
 
   it must "reject unknown cluster secret" in new WithFixture {

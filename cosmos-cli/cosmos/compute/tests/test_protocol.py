@@ -97,17 +97,19 @@ class ProtocolTest(unittest.TestCase):
         postMock.return_value = mock_response(status_code=201, json={
             'id': '1',
             'name': 'cluster1',
-            'state': 'ready'
+            'state': 'ready',
+            'shared': False
         })
-        rep = self.__create_proto().create_cluster('cluster1', 2, ['FOO'])
+        rep = self.__create_proto().create_cluster('cluster1', 2, ['FOO'], False)
 
         expected_body = json.dumps({ 'name' : 'cluster1', 'size' : 2,
-            'optionalServices': ['FOO'] })
+            'optionalServices': ['FOO'], 'shared': False })
         self.assert_called_once_with(postMock, self.api_url + '/cluster',
                                      expected_body)
         self.assertEquals(rep['id'], '1')
         self.assertEquals(rep['name'], 'cluster1')
         self.assertEquals(rep['state'], 'ready')
+        self.assertEquals(rep['shared'], False)
 
     @patch('requests.post')
     def test_create_cluster_fail(self, postMock):
@@ -115,7 +117,7 @@ class ProtocolTest(unittest.TestCase):
             'error': 'request failed due to server error'
         })
         with self.assertRaises(ResponseError):
-            self.__create_proto().create_cluster('cluster1', 2, ['FOO', 'BAR'])
+            self.__create_proto().create_cluster('cluster1', 2, ['FOO', 'BAR'], True)
 
     @patch('requests.post')
     def test_terminate_cluster(self, postMock):

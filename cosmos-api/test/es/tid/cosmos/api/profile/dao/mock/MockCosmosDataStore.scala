@@ -151,6 +151,9 @@ class MockCosmosDataStore extends CosmosDataStore {
 
   override def cluster = new ClusterDao[Conn] {
 
+    override def get(id: ClusterId)(implicit c: Conn): Cluster =
+      clusters().find(_.clusterId == id).get
+
     override def ownedBy(id: ProfileId)(implicit c: Conn): Seq[Cluster] =
       clusters().filter(_.ownerId == id)
 

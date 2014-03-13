@@ -22,6 +22,13 @@ import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 private[sql] object PlayDbClusterDao extends ClusterDao[Connection] {
 
+  override def get(clusterId: ClusterId)(implicit c: Connection): Cluster =
+    asCluster(SQL(
+      """SELECT cluster_id, owner, creation_date, shared, cluster_secret
+        |FROM cluster WHERE cluster_id = {cluster_id}""".stripMargin)
+      .on("cluster_id" -> clusterId.id)
+      .single())
+
   override def ownedBy(id: ProfileId)(implicit c: Connection): Seq[Cluster] = SQL(
     """SELECT cluster_id, owner, creation_date, shared, cluster_secret
       |FROM cluster WHERE owner = {owner}""".stripMargin
@@ -56,7 +63,7 @@ private[sql] object PlayDbClusterDao extends ClusterDao[Connection] {
       .apply()
       .collectFirst(asCluster)
 
-  private val asCluster: PartialFunction[SqlRow, Cluster] = {
+  private val asCluster: PartialFunction[Row, Cluster] = {
     case Row(
       clusterId: String,
       ownerId: Int,

@@ -48,7 +48,7 @@ class ComputeConnectionTest(unittest.TestCase):
         self.assertEquals(clusters[1].href, self.api_url + '/cluster/2')
 
     def test_list_clusters(self):
-        cluster = self.conn.create_cluster('cluster3', 2, [])
+        cluster = self.conn.create_cluster('cluster3', 2, [], False)
         self.assertEquals(cluster.id, '3')
         self.assertEquals(cluster.name, 'cluster3')
         self.assertEquals(cluster.href, self.api_url + '/cluster/3')

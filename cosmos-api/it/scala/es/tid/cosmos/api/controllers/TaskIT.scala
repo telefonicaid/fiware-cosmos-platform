@@ -21,7 +21,7 @@ import es.tid.cosmos.api.controllers.task.TaskDetails
 
 class TaskIT extends FlatSpec with MustMatchers {
   "The Task resource" must "return the TaskDetails is the user is authorized" in new WithSampleTasks {
-    val res = regUser.doRequest(s"/cosmos/v1/task/${regUserAuthorizedTask.id}")
+    val res = regUserInGroup.doRequest(s"/cosmos/v1/task/${regUserAuthorizedTask.id}")
     contentAsJson(res) must equal (Json.toJson(TaskDetails(regUserAuthorizedTask.view)))
   }
 
@@ -31,12 +31,12 @@ class TaskIT extends FlatSpec with MustMatchers {
   }
 
   it must "return 401 if the user is not authorized to view that task" in new WithSampleTasks {
-    val res = regUser.doRequest(s"/cosmos/v1/task/${inaccesibleTask.id}")
+    val res = regUserInGroup.doRequest(s"/cosmos/v1/task/${inaccesibleTask.id}")
     status(res) must equal (401)
   }
 
   it must "return 404 if the task does not exist" in new WithSampleTasks {
-    val res = regUser.doRequest(s"/cosmos/v1/task/10000")
+    val res = regUserInGroup.doRequest(s"/cosmos/v1/task/10000")
     status(res) must equal (404)
   }
 }

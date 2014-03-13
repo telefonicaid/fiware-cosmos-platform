@@ -45,8 +45,8 @@ class StatsResourceIT
     )
     val terminatedClusterId = ClusterId.random()
     store.withTransaction { implicit c =>
-      store.cluster.register(activeClusterId, regUser.cosmosProfile.id)
-      store.cluster.register(terminatedClusterId, opUser.cosmosProfile.id)
+      store.cluster.register(activeClusterId, regUserInGroup.cosmosProfile.id, shared = false)
+      store.cluster.register(terminatedClusterId, opUser.cosmosProfile.id, shared = false)
     }
 
     val json = contentAsJson(opUser.doRequest(clusterStatsRequest))
@@ -57,7 +57,7 @@ class StatsResourceIT
         (cluster \ "id").as[String] == activeClusterId.toString
       }).get
     (expectedCluster \ "name").as[String] must be ("active")
-    (expectedCluster \ "ownerHandle").as[String] must be (regUser.handle)
+    (expectedCluster \ "ownerHandle").as[String] must be (regUserInGroup.handle)
     (expectedCluster \ "size").as[Int] must be (2)
     (expectedCluster \ "slaves").as[Seq[String]] must ((have size 2) or (have size 0))
   }

@@ -27,9 +27,10 @@ import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.UserState.UserState
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.clusters.ClusterId
+import es.tid.cosmos.api.quota.{Group, NoGroup}
 
 /** A series of user sessions to test with users on different states and roles */
-trait WithSampleSessions extends WithTestApplication {
+trait WithSampleSessions extends WithTestApplication with WithSampleGroups {
 
   /** Represents a user session */
   trait UserSession {
@@ -52,8 +53,12 @@ trait WithSampleSessions extends WithTestApplication {
       route(request(path, method).withJsonBody(body)).get
   }
 
-  class RegisteredUserSession(val handle: String, name: String) extends UserSession {
+  class RegisteredUserSession(val handle: String, name: String, val group: Group = NoGroup) extends UserSession {
     val cosmosProfile = buildCosmosProfile()
+    private val groupName = if (group == NoGroup) None else Some(group.name)
+    store.withTransaction { implicit c =>
+      store.profile.setGroup(cosmosProfile.id, groupName)
+    }
     val email = cosmosProfile.email
     val apiCredentials = Some(cosmosProfile.apiCredentials)
     val userProfile = OAuthUserProfile(
@@ -63,9 +68,9 @@ trait WithSampleSessions extends WithTestApplication {
     )
     val session = Session().setUserProfile(userProfile).setToken("token")
 
-    def setAsOwner(cluster: ClusterId) = {
+    def assignCluster(cluster: ClusterId, shared: Boolean) = {
       store.withConnection { implicit c =>
-        store.cluster.register(cluster, cosmosProfile.id)
+        store.cluster.register(cluster, cosmosProfile.id, shared)
       }
     }
 
@@ -97,8 +102,9 @@ trait WithSampleSessions extends WithTestApplication {
     val apiCredentials = None
   }
 
-  /** Authenticated and registered user */
-  val regUser = new RegisteredUserSession("reguser", "User 1")
+  /** Authenticated and registered users */
+  val regUserInGroup = new RegisteredUserSession("reguser1", "User 1", noQuotaGroup)
+  val regUserNoGroup = new RegisteredUserSession("reguser2", "User 1")
 
   def userWithState(state: UserState) =
     new RegisteredUserSession(state.toString, s"${state.toString} 1") {

@@ -58,7 +58,7 @@ trait AuthBehaviors { this: FlatSpec with MustMatchers =>
     it must behave like rejectingUnauthenticatedRequests(request)
 
     it must "forbid requests from non-operator users" in new WithSampleSessions {
-      status(regUser.doRequest(request)) must equal (FORBIDDEN)
+      status(regUserInGroup.doRequest(request)) must equal (FORBIDDEN)
     }
 
     it must "accept requests from operator users" in new WithSampleSessions {

@@ -28,7 +28,7 @@ class ClustersIT
   extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors {
 
   val validCreationParams =
-    Json.toJson(CreateClusterParams(ClusterName("cluster_new"), 6, Seq(Hdfs.name)))
+    Json.toJson(CreateClusterParams(ClusterName("cluster_new"), 6, Seq(Hdfs.name), shared = false))
   val inValidCreationParams = Json.obj("invalid" -> "json")
   val resourcePath = "/cosmos/v1/cluster"
   val listClusters = FakeRequest(GET, resourcePath)
@@ -41,6 +41,13 @@ class ClustersIT
   "Cluster creation" must behave like rejectingUnauthenticatedRequests(createCluster)
 
   it must behave like enabledOnlyForOperatorsWhenUnderMaintenance(createCluster)
+
+  it must "create shared clusters by default" in new WithSampleSessions {
+    val resource = regUserInGroup.doRequest(FakeRequest(POST, resourcePath)
+      .withJsonBody(Json.obj("name" -> "cluster_new", "size" -> 6)))
+    status(resource) must equal (CREATED)
+    contentType(resource) must be (Some("application/json"))
+  }
 
   "The clusters resource" must "list user clusters" in new WithSampleSessions with SampleClusters {
     val user1 = new RegisteredUserSession("user1", "User 1")
@@ -64,7 +71,7 @@ class ClustersIT
   }
 
   it must "start a new cluster if no services are specified" in new WithSampleSessions {
-    val resource = regUser.doRequest(FakeRequest(POST, resourcePath)
+    val resource = regUserInGroup.doRequest(FakeRequest(POST, resourcePath)
       .withJsonBody(Json.obj("name" -> "cluster_new", "size" -> 6)))
     status(resource) must equal (CREATED)
     contentType(resource) must be (Some("application/json"))
@@ -72,25 +79,25 @@ class ClustersIT
     location must be ('defined)
     contentAsString(resource) must include (location.get)
     store.withConnection { implicit c =>
-      store.cluster.ownedBy(regUser.cosmosProfile.id) must have length 1
+      store.cluster.ownedBy(regUserInGroup.cosmosProfile.id) must have length 1
     }
   }
 
   it must "start a new cluster if some services are specified" in new WithSampleSessions {
-    val resource = regUser.doRequest(createCluster)
+    val resource = regUserInGroup.doRequest(createCluster)
     status(resource) must equal (CREATED)
     contentType(resource) must be (Some("application/json"))
     val location = header("Location", resource)
     location must be ('defined)
     contentAsString(resource) must include (location.get)
     store.withConnection { implicit c =>
-      store.cluster.ownedBy(regUser.cosmosProfile.id) must have length 1
+      store.cluster.ownedBy(regUserInGroup.cosmosProfile.id) must have length 1
     }
   }
 
   it must "reject cluster creation with invalid payload" in new WithSampleSessions {
     val resource =
-      regUser.doRequest(FakeRequest(POST, resourcePath).withJsonBody(inValidCreationParams))
+      regUserInGroup.doRequest(FakeRequest(POST, resourcePath).withJsonBody(inValidCreationParams))
     status(resource) must equal (BAD_REQUEST)
   }
 }

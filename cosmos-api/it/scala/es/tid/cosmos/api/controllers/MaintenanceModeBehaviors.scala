@@ -36,7 +36,7 @@ trait MaintenanceModeBehaviors { this: FlatSpec with MustMatchers =>
   def enabledWhenUnderMaintenance[T](request: FakeRequest[T])(implicit evidence: Writeable[T]) {
     it must "accept requests when under maintenance status" in new WithSampleSessions {
       services.maintenanceStatus.enterMaintenance()
-      status(regUser.doRequest(request)) must not(equal(SERVICE_UNAVAILABLE))
+      status(regUserInGroup.doRequest(request)) must not(equal(SERVICE_UNAVAILABLE))
     }
   }
 
@@ -44,7 +44,7 @@ trait MaintenanceModeBehaviors { this: FlatSpec with MustMatchers =>
                                                     (implicit evidence: Writeable[T]) {
     it must "reject non-operator requests when under maintenance status" in new WithSampleSessions {
       services.maintenanceStatus.enterMaintenance()
-      status(regUser.doRequest(request)) must equal(SERVICE_UNAVAILABLE)
+      status(regUserInGroup.doRequest(request)) must equal(SERVICE_UNAVAILABLE)
     }
 
     it must "accept operator requests when under maintenance status" in new WithSampleSessions {
@@ -61,7 +61,7 @@ trait MaintenanceModeBehaviors { this: FlatSpec with MustMatchers =>
     it must s"reject request with 503 status as a $name under maintenance status" in
       new WithSampleSessions {
         services.maintenanceStatus.enterMaintenance()
-        val response = regUser.doRequest(request)
+        val response = regUserInGroup.doRequest(request)
         status(response) must equal (SERVICE_UNAVAILABLE)
         contentType(response) must be (Some(expectedMimeType))
         contentAsString(response) must include("Service temporarily in maintenance mode")

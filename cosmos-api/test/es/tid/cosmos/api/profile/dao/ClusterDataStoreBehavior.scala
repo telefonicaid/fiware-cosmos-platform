@@ -17,9 +17,9 @@ import java.sql.Timestamp
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.servicemanager.clusters.ClusterId
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.profile.{ClusterSecret, Cluster}
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 trait ClusterDataStoreBehavior extends MustMatchers { this: FlatSpec =>
 

@@ -65,4 +65,7 @@ trait ClusterDescription {
 
   /** The services enabled on this cluster */
   def services: Set[String]
+
+  /** Both master and slave host details. */
+  def hosts: Set[HostDetails] = (slaves ++ master).toSet
 }

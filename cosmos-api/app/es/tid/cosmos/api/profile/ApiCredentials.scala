@@ -11,29 +11,20 @@
 
 package es.tid.cosmos.api.profile
 
-import java.security.SecureRandom
+import es.tid.cosmos.common.AlphanumericTokenPattern
 
-/** Represents the api access credentials. */
+/** Represents the API access credentials. */
 case class ApiCredentials(apiKey: String, apiSecret: String) {
-  require(apiKey.length == ApiCredentials.ApiKeyLength,
-    s"API identifier must have a length of ${ApiCredentials.ApiKeyLength} " +
-      s"but got ${apiKey.length}: $apiKey")
-  require(apiSecret.length == ApiCredentials.ApiSecretLength,
-    s"API secret must have a length of ${ApiCredentials.ApiSecretLength} " +
-      s"but got ${apiSecret.length}: $apiSecret")
+  ApiCredentials.ApiKeyPattern.requireValid(apiKey)
+  ApiCredentials.ApiSecretPattern.requireValid(apiSecret)
 }
 
 object ApiCredentials {
   val ApiKeyLength = 20
   val ApiSecretLength = 40
+  private val ApiKeyPattern = new AlphanumericTokenPattern("API key", ApiKeyLength)
+  private val ApiSecretPattern = new AlphanumericTokenPattern("API secret", ApiSecretLength)
 
   def random(): ApiCredentials =
-    ApiCredentials(randomToken(ApiKeyLength), randomToken(ApiSecretLength))
-
-  private def randomToken(length: Int): String = {
-    val r = new SecureRandom()
-    val tokenCharacters = "0123456789abcdefghijklmnopqrstuvwzABCDEFGHIJKLMNOPQRSTUVWZ"
-    def randomChar = tokenCharacters.charAt(r.nextInt(tokenCharacters.length))
-    List.fill(length)(randomChar).mkString("")
-  }
+    ApiCredentials(ApiKeyPattern.generateRandom(), ApiSecretPattern.generateRandom())
 }

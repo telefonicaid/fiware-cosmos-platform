@@ -20,11 +20,13 @@ import es.tid.cosmos.servicemanager.clusters.ClusterId
   * @param clusterId     Owned cluster
   * @param ownerId       Cluster creator
   * @param creationDate  Creation timestamp
+  * @param shared        Whether the cluster is shared with the user group
   * @param secret        Cluster secret or None for legacy clusters
   */
 case class Cluster(
     clusterId: ClusterId,
     ownerId: Long,
     creationDate: Timestamp,
+    shared: Boolean = false,
     secret: Option[ClusterSecret] = None
 )

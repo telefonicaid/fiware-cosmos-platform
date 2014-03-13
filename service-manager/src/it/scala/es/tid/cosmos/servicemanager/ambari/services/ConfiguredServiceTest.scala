@@ -15,14 +15,14 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
-import es.tid.cosmos.servicemanager.ServiceDescription
+import es.tid.cosmos.servicemanager.Service
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
 
 trait ConfiguredServiceTest extends FlatSpec with MustMatchers with TestResourcePaths {
 
   val dynamicProperties: Map[ConfigurationKeys.Value, String]
-  val service: ServiceDescription
+  val service: Service
 
   def contributions = toAmbariService(service, resourcesConfigDirectory)
     .contributions(dynamicProperties)

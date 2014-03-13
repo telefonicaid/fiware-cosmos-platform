@@ -11,9 +11,9 @@
 
 package es.tid.cosmos.servicemanager.ambari.mocks
 
-import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
+import es.tid.cosmos.servicemanager.ambari.services.AmbariService
 import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationBundle, ConfigurationKeys}
-import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, Cluster}
+import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, Host, Cluster}
 import scala.concurrent.Future
 import org.mockito.BDDMockito._
 import org.mockito.Matchers._
@@ -21,12 +21,12 @@ import scala.concurrent.Future._
 import es.tid.cosmos.servicemanager.ComponentDescription
 import org.scalatest.mock.MockitoSugar
 
-case class MockServiceDescription(
+case class MockService(
     name: String,
     components: Seq[ComponentDescription],
-    configuration: ConfigurationBundle) extends AmbariServiceDescription with MockitoSugar {
+    configuration: ConfigurationBundle) extends AmbariService with MockitoSugar {
 
-  val serviceMock = mock[Service]
+  val serviceMock = mock[ServiceClient]
   given(serviceMock.addComponent(any())).willReturn(successful("componentName"))
   given(serviceMock.install()).willReturn(successful(serviceMock))
   given(serviceMock.start()).willReturn(successful(serviceMock))
@@ -35,6 +35,6 @@ case class MockServiceDescription(
   override def contributions(
     properties: Map[ConfigurationKeys.Value, String]): ConfigurationBundle = configuration
 
-  override def createService(cluster: Cluster, master: Host, slaves: Seq[Host]): Future[Service] =
+  override def createService(cluster: Cluster, master: Host, slaves: Seq[Host]): Future[ServiceClient] =
     Future.successful(serviceMock)
 }

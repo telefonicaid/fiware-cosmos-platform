@@ -53,7 +53,7 @@ class AmbariServiceManagerTest
 
     val exclusiveMasterSizeCutoff = 10
     val clusterManager = new MockAmbariClusterManager
-    val serviceDescriptions = List(mock[AmbariServiceDescription], mock[AmbariServiceDescription])
+    val serviceDescriptions = List(mock[AmbariService], mock[AmbariService])
     lazy val instance = new AmbariServiceManager(
       clusterManager, infrastructureProvider,
       ClusterId("HDFS"), exclusiveMasterSizeCutoff, TestHadoopConfig,

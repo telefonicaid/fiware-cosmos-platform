@@ -15,15 +15,15 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.{ServiceDescription, ComponentDescription}
+import es.tid.cosmos.servicemanager.{Service, ComponentDescription}
 import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
 
-class AmbariServiceDescriptionFactoryTest extends FlatSpec with MustMatchers
+class AmbariServiceFactoryTest extends FlatSpec with MustMatchers
     with TestResourcePaths {
 
   import AmbariServiceDescriptionFactory.toAmbariService
 
-  val dummyAmbariService = new AmbariServiceDescription {
+  val dummyAmbariService = new AmbariService {
     override lazy val name: String = ???
     override lazy val components: Seq[ComponentDescription] = ???
     override def contributions(
@@ -31,13 +31,13 @@ class AmbariServiceDescriptionFactoryTest extends FlatSpec with MustMatchers
   }
   val dummyConfigDir = "/tmp/null"
 
-  val simpleService = new ServiceDescription{
+  val simpleService = new Service{
     override val name: String = "Acme-Service"
     override val components: Seq[ComponentDescription] = Seq.empty
   }
   val acmeConfigPath = packageResourcesConfigDirectory
 
-  val serviceWithConfig = new ServiceDescription with ConfigurationContributor {
+  val serviceWithConfig = new Service with ConfigurationContributor {
     override val name: String = "Service-With-Configuration"
     override val components: Seq[ComponentDescription] = Seq.empty
     override def contributions(properties: ConfigProperties): ConfigurationBundle =

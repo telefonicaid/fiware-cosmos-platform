@@ -61,15 +61,15 @@ class AmbariServiceManager(
   override def describeCluster(id: ClusterId): Option[ImmutableClusterDescription] =
     clusterDao.getDescription(id).map(_.view)
 
-  override val optionalServices: Seq[ServiceDescription] = OptionalServices
+  override val optionalServices: Seq[Service] = OptionalServices
 
-  private def userServices(users: Seq[ClusterUser]): Seq[ServiceDescription] =
+  private def userServices(users: Seq[ClusterUser]): Seq[Service] =
     Seq(new CosmosUserService(users))
 
   override def createCluster(
       name: ClusterName,
       clusterSize: Int,
-      serviceDescriptions: Seq[ServiceDescription],
+      serviceDescriptions: Seq[Service],
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = {
     val servicesWithDependencies = makeUserServiceLast(
@@ -103,7 +103,7 @@ class AmbariServiceManager(
     *        [[es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies]]
     *        doesn't work for this case.
     */
-  private def makeUserServiceLast(services: Seq[ServiceDescription]): Seq[ServiceDescription] =
+  private def makeUserServiceLast(services: Seq[Service]): Seq[Service] =
     services.filterNot(_.name == CosmosUserService.name) ++
       services.find(_.name == CosmosUserService.name)
 
@@ -116,7 +116,7 @@ class AmbariServiceManager(
 
   private def createCluster(
       dbClusterDescription: MutableClusterDescription,
-      serviceDescriptions: Seq[AmbariServiceDescription]) = {
+      serviceDescriptions: Seq[AmbariService]) = {
     require(dbClusterDescription.master.isDefined,
       "This function cannot be called if the master has not been set")
     require(dbClusterDescription.slaves.nonEmpty,
@@ -210,9 +210,9 @@ class AmbariServiceManager(
 }
 
 private[ambari] object AmbariServiceManager {
-  val BasicHadoopServices: Seq[ServiceDescription] = Seq(Hdfs, MapReduce2, InfinityfsDriver)
-  val OptionalServices: Seq[ServiceDescription] = Seq(Hive, Oozie, Pig, Sqoop)
-  val AllServices: Seq[ServiceDescription] =
+  val BasicHadoopServices: Seq[Service] = Seq(Hdfs, MapReduce2, InfinityfsDriver)
+  val OptionalServices: Seq[Service] = Seq(Hive, Oozie, Pig, Sqoop)
+  val AllServices: Seq[Service] =
     (BasicHadoopServices ++ OptionalServices ++ Seq(CosmosUserService, InfinityfsServer)).withDependencies.distinct
 
   private def setMachineInfo(

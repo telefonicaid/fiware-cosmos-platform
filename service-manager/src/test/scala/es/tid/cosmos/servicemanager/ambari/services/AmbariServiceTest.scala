@@ -23,13 +23,13 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.servicemanager.ComponentDescription
-import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, Cluster}
+import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, Host, Cluster}
 import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigProperties, ConfigurationKeys, ConfigurationBundle}
 
-class AmbariServiceDescriptionTest extends FlatSpec with MustMatchers with MockitoSugar {
+class AmbariServiceTest extends FlatSpec with MustMatchers with MockitoSugar {
 
   "An AmbariServiceDescription" must "create a service instance for a given cluster" in {
-    val (cluster, master, slave, service) = (mock[Cluster], mock[Host], mock[Host], mock[Service])
+    val (cluster, master, slave, service) = (mock[Cluster], mock[Host], mock[Host], mock[ServiceClient])
     given(master.name).willReturn("master")
     given(slave.name).willReturn("slave")
     given(cluster.addService(Fake.name)).willReturn(successful(service))
@@ -49,7 +49,7 @@ class AmbariServiceDescriptionTest extends FlatSpec with MustMatchers with Mocki
   }
 
   it must "not add slave and master components twice when the master host is also acting as a slave" in {
-    val (cluster, master, slave, service) = (mock[Cluster], mock[Host], mock[Host], mock[Service])
+    val (cluster, master, slave, service) = (mock[Cluster], mock[Host], mock[Host], mock[ServiceClient])
     given(cluster.addService(Fake.name)).willReturn(successful(service))
     given(master.name).willReturn("master")
     given(slave.name).willReturn("slave")
@@ -69,16 +69,16 @@ class AmbariServiceDescriptionTest extends FlatSpec with MustMatchers with Mocki
   }
 
   it must "be considered running for state 'INSTALL' when its components are of client type" in {
-    val description = new SimpleServiceDescription("component1" -> true, "component2" -> true)
+    val description = new SimpleService("component1" -> true, "component2" -> true)
     description.runningState must be (InstalledService)
   }
 
   it must "be considered running for state 'STARTED' in any other case" in {
-    val description = new SimpleServiceDescription("component1" -> false, "component2" -> true)
+    val description = new SimpleService("component1" -> false, "component2" -> true)
     description.runningState must be (StartedService)
   }
 
-  class SimpleServiceDescription(services: (String, Boolean)*) extends AmbariServiceDescription {
+  class SimpleService(services: (String, Boolean)*) extends AmbariService {
     def contributions(properties: ConfigProperties) =
       ConfigurationBundle(None, None, List())
     val name = "FakeServiceName"
@@ -87,7 +87,7 @@ class AmbariServiceDescriptionTest extends FlatSpec with MustMatchers with Mocki
     } yield ComponentDescription.masterComponent(serviceName).copy(isClient = isClient)
   }
 
-  object Fake extends AmbariServiceDescription {
+  object Fake extends AmbariService {
     val name = "FakeServiceName"
     val component1 = ComponentDescription.masterComponent("component1")
     val component2 = ComponentDescription.slaveComponent("component2").makeClient

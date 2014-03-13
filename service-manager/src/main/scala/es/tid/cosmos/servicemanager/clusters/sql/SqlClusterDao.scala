@@ -3,7 +3,7 @@ package es.tid.cosmos.servicemanager.clusters.sql
 import org.squeryl.PrimitiveTypeMode._
 
 import es.tid.cosmos.common.SqlDatabase
-import es.tid.cosmos.servicemanager.{ClusterName, ServiceDescription, ClusterUser}
+import es.tid.cosmos.servicemanager.{ClusterName, Service, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
 
 private[sql] class SqlClusterDao(db: SqlDatabase) extends ClusterDao {
@@ -19,7 +19,7 @@ private[sql] class SqlClusterDao(db: SqlDatabase) extends ClusterDao {
       id: ClusterId,
       name: ClusterName,
       size: Int,
-      services: Set[ServiceDescription]): MutableClusterDescription =
+      services: Set[Service]): MutableClusterDescription =
     newTransaction {
       val cluster = clusterState.insert(ClusterEntity(id = id.toString, name = name.toString,
         size = size, nameNode = None, state = Provisioning.name, reason = None))

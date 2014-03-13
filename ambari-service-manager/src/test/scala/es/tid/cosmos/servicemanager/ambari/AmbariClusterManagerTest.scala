@@ -23,7 +23,7 @@ import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
 import es.tid.cosmos.servicemanager.{ClusterName, ComponentLocation, ComponentDescription}
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
-import es.tid.cosmos.servicemanager.ambari.mocks.MockServiceDescription
+import es.tid.cosmos.servicemanager.ambari.mocks.MockService
 import es.tid.cosmos.servicemanager.ambari.rest._
 
 class AmbariClusterManagerTest
@@ -95,7 +95,7 @@ class AmbariClusterManagerTest
     given(cluster.applyConfiguration(any(), any())).willReturn(successful())
 
     val serviceDescriptions = List(
-      spy(MockServiceDescription(
+      spy(MockService(
         "service1",
         Seq(
           ComponentDescription(
@@ -107,7 +107,7 @@ class AmbariClusterManagerTest
             distribution = Set(ComponentLocation.Slave),
             isClient = false)),
         contributionsWithNumber(1))),
-      spy(MockServiceDescription(
+      spy(MockService(
         "service2",
         Seq(ComponentDescription(
           "component3", distribution = Set(ComponentLocation.Slave), isClient = true)),

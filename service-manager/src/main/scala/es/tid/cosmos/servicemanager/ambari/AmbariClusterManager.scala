@@ -16,8 +16,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.servicemanager.ClusterManager
 import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
-import es.tid.cosmos.servicemanager.ambari.rest.{Service, AmbariServer, Cluster}
-import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
+import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, AmbariServer, Cluster}
+import es.tid.cosmos.servicemanager.ambari.services.AmbariService
 import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClusterDescription, ClusterId}
 
 private[ambari] class AmbariClusterManager(
@@ -26,7 +26,7 @@ private[ambari] class AmbariClusterManager(
     override val configPath: String) extends ClusterManager with FileConfigurationContributor {
   import AmbariClusterManager._
 
-  override type ServiceDescriptionType = AmbariServiceDescription
+  override type ServiceDescriptionType = AmbariService
 
   override val configName = "global-basic"
 
@@ -57,7 +57,7 @@ private[ambari] class AmbariClusterManager(
   override def changeServiceConfiguration(
       clusterDescription: ImmutableClusterDescription,
       dynamicProperties: DynamicPropertiesFactory,
-      serviceDescription: AmbariServiceDescription): Future[Any] = for {
+      serviceDescription: AmbariService): Future[Any] = for {
     cluster <- ambariServer.getCluster(clusterDescription.id.toString)
     service <- cluster.getService(serviceDescription.name)
     master <- ServiceMasterExtractor.getServiceMaster(cluster, serviceDescription)
@@ -78,17 +78,17 @@ private[ambari] class AmbariClusterManager(
     } yield cluster
   }
 
-  private def installInOrder(services: Seq[Service]): Future[Seq[Service]] = {
+  private def installInOrder(services: Seq[ServiceClient]): Future[Seq[ServiceClient]] = {
     def doInstall(
-        installedServices_> : Future[Seq[Service]],
-        service : Service): Future[Seq[Service]] = for {
+        installedServices_> : Future[Seq[ServiceClient]],
+        service : ServiceClient): Future[Seq[ServiceClient]] = for {
       installedServices <- installedServices_>
       service <- installAndStart(service)
     } yield service +: installedServices
-    services.foldLeft(Future.successful(Seq[Service]()))(doInstall)
+    services.foldLeft(Future.successful(Seq[ServiceClient]()))(doInstall)
   }
 
-  private def installAndStart(service : Service): Future[Service] = for {
+  private def installAndStart(service : ServiceClient): Future[ServiceClient] = for {
     installedService <- service.install()
     startedService <- installedService.start()
   } yield startedService

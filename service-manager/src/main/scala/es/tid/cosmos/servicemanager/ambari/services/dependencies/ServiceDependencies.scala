@@ -11,12 +11,11 @@
 
 package es.tid.cosmos.servicemanager.ambari.services.dependencies
 
-import es.tid.cosmos.servicemanager.ServiceDescription
+import es.tid.cosmos.servicemanager.Service
 import es.tid.cosmos.servicemanager.ambari.services._
 
 /** Object expressing inter-service dependencies. */
 object ServiceDependencies {
-  type Service = ServiceDescription
 
   private val Dependencies = DependencyMapping[Service](
     CosmosUserService -> Set(Hdfs),

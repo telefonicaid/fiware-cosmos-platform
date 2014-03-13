@@ -18,15 +18,15 @@ import com.typesafe.scalalogging.slf4j.Logging
 import dispatch.StatusCode
 
 import es.tid.cosmos.servicemanager.RequestException
-import es.tid.cosmos.servicemanager.ambari.rest.{Service, Cluster}
-import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
+import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, Cluster}
+import es.tid.cosmos.servicemanager.ambari.services.AmbariService
 
 trait ClusterStateResolver extends Logging {
   import AmbariClusterState._
 
   def resolveState(
       cluster: Cluster,
-      allServices: Seq[AmbariServiceDescription]): Future[AmbariClusterState] = {
+      allServices: Seq[AmbariService]): Future[AmbariClusterState] = {
     val state_> = for {
       services <- Future.traverse(cluster.serviceNames)(cluster.getService)
     } yield if (services.forall(isServiceRunning(allServices))) Running else Unknown
@@ -36,7 +36,7 @@ trait ClusterStateResolver extends Logging {
   }
 
   private def isServiceRunning(
-      allServices: Seq[AmbariServiceDescription])(service: Service): Boolean = {
+      allServices: Seq[AmbariService])(service: ServiceClient): Boolean = {
     val serviceDescription = allServices
       .find(_.name == service.name)
       .getOrElse(

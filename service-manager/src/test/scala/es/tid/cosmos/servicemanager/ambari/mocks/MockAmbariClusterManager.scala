@@ -14,14 +14,14 @@ package es.tid.cosmos.servicemanager.ambari.mocks
 import scala.concurrent.Future
 
 import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClusterDescription}
-import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
+import es.tid.cosmos.servicemanager.ambari.services.AmbariService
 import es.tid.cosmos.servicemanager.ambari.{DynamicPropertiesFactory, AmbariClusterManager}
 
 class MockAmbariClusterManager extends AmbariClusterManager(null, "", "/tmp/null") {
 
   override def deployCluster(
     clusterDescription: ImmutableClusterDescription,
-    serviceDescriptions: Seq[AmbariServiceDescription],
+    serviceDescriptions: Seq[AmbariService],
     dynamicProperties: DynamicPropertiesFactory): Future[Unit] = Future.successful()
 
   override def removeCluster(cluster: ClusterDescription): Future[Unit] = Future.successful()
@@ -29,5 +29,5 @@ class MockAmbariClusterManager extends AmbariClusterManager(null, "", "/tmp/null
   override def changeServiceConfiguration(
     clusterDescription: ImmutableClusterDescription,
     dynamicProperties: DynamicPropertiesFactory,
-    serviceDescription: AmbariServiceDescription): Future[Unit] = Future.successful()
+    serviceDescription: AmbariService): Future[Unit] = Future.successful()
 }

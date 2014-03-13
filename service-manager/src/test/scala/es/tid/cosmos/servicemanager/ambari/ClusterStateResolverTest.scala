@@ -23,22 +23,22 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.{ComponentDescription, RequestException}
 import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigProperties, ConfigurationBundle, ConfigurationKeys}
-import es.tid.cosmos.servicemanager.ambari.rest.{Service, Cluster}
-import es.tid.cosmos.servicemanager.ambari.services.{InstalledService, StartedService, ServiceState, AmbariServiceDescription}
+import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, Cluster}
+import es.tid.cosmos.servicemanager.ambari.services.{InstalledService, StartedService, ServiceState, AmbariService}
 
 class ClusterStateResolverTest extends FlatSpec with MustMatchers
   with MockitoSugar with FutureMatchers with OneInstancePerTest {
 
   val instance = new ClusterStateResolver {}
   val cluster = mock[Cluster]
-  val hdfs = mock[Service]
-  val foo = mock[Service]
-  val bar = mock[Service]
+  val hdfs = mock[ServiceClient]
+  val foo = mock[ServiceClient]
+  val bar = mock[ServiceClient]
   val serviceNames = Seq("FOO", "BAR")
 
-  case class FakeAmbariServiceDescription(
+  case class FakeAmbariService(
       override val name: String,
-      override val runningState: ServiceState) extends AmbariServiceDescription {
+      override val runningState: ServiceState) extends AmbariService {
     def contributions(properties: ConfigProperties): ConfigurationBundle =
       throw new NotImplementedError()
     val components: Seq[ComponentDescription] = Seq()
@@ -64,8 +64,8 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
     val resolveState_> = instance.resolveState(
       cluster,
       Seq(
-        FakeAmbariServiceDescription("FOO", StartedService),
-        FakeAmbariServiceDescription("BAR", StartedService)))
+        FakeAmbariService("FOO", StartedService),
+        FakeAmbariService("BAR", StartedService)))
     resolveState_> must eventually (be (AmbariClusterState.Unknown))
   }
 
@@ -80,8 +80,8 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
     val resolveState_> = instance.resolveState(
       cluster,
       Seq(
-        FakeAmbariServiceDescription("FOO", StartedService),
-        FakeAmbariServiceDescription("BAR", InstalledService)))
+        FakeAmbariService("FOO", StartedService),
+        FakeAmbariService("BAR", InstalledService)))
     resolveState_> must eventually (be (AmbariClusterState.Running))
   }
 
@@ -93,8 +93,8 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
     val resolveState_> = instance.resolveState(
       cluster,
       Seq(
-        FakeAmbariServiceDescription("FOO", StartedService),
-        FakeAmbariServiceDescription("BAR", InstalledService)))
+        FakeAmbariService("FOO", StartedService),
+        FakeAmbariService("BAR", InstalledService)))
     resolveState_> must eventually (be (AmbariClusterState.ClusterNotPresent))
   }
 
@@ -109,7 +109,7 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
     val resolveState_> = instance.resolveState(
       cluster,
       Seq(
-        FakeAmbariServiceDescription("FOO", StartedService)))
+        FakeAmbariService("FOO", StartedService)))
     resolveState_> must eventuallyFailWith[IllegalStateException]
   }
 }

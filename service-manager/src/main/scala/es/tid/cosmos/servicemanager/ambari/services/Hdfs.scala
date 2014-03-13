@@ -11,10 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{ServiceDescription, ComponentDescription}
+import es.tid.cosmos.servicemanager.{Service, ComponentDescription}
 
 /** Representation of the HDFS service. */
-object Hdfs extends ServiceDescription {
+object Hdfs extends Service {
   override val name: String = "HDFS"
 
   override val components: Seq[ComponentDescription] = Seq(

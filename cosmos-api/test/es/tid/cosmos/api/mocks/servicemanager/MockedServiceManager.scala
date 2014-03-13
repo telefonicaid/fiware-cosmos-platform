@@ -149,12 +149,12 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
 
   override def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
-  override val optionalServices: Seq[ServiceDescription] = Seq(Hdfs, MapReduce2)
+  override val optionalServices: Seq[Service] = Seq(Hdfs, MapReduce2)
 
   override def createCluster(
       name: ClusterName,
       size: Int,
-      serviceDescriptions: Seq[ServiceDescription],
+      serviceDescriptions: Seq[Service],
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = synchronized {
     val id = ClusterId.random()

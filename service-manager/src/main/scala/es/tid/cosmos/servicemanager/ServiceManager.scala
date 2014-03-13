@@ -31,7 +31,7 @@ trait ServiceManager {
   /**
    * A sequence of all services this service manager supports
    */
-  val optionalServices: Seq[ServiceDescription]
+  val optionalServices: Seq[Service]
 
   /**
    * Create a cluster of a given size with a specified set of services.
@@ -46,7 +46,7 @@ trait ServiceManager {
   def createCluster(
     name: ClusterName,
     clusterSize: Int,
-    serviceDescriptions: Seq[ServiceDescription],
+    serviceDescriptions: Seq[Service],
     users: Seq[ClusterUser],
     preConditions: ClusterExecutableValidation = UnfilteredPassThrough): ClusterId
 

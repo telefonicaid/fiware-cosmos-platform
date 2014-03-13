@@ -54,10 +54,10 @@ private[ambari] class Cluster (clusterInfo: JValue, serverBaseUrl: Request)
     JString(configType) <- configuration \ "type"
   } yield HeaderOnlyConfiguration(configType, tag)
 
-  def getService(serviceName: String): Future[Service] =
-    performRequest(baseUrl / "services" / serviceName).map(new Service(_, baseUrl.build))
+  def getService(serviceName: String): Future[ServiceClient] =
+    performRequest(baseUrl / "services" / serviceName).map(new ServiceClient(_, baseUrl.build))
 
-  def addService(serviceName: String): Future[Service] =
+  def addService(serviceName: String): Future[ServiceClient] =
     performRequest(baseUrl / "services" << s"""{"ServiceInfo": {"service_name": "$serviceName"}}""")
       .flatMap(_ => getService(serviceName))
 

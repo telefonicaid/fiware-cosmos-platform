@@ -15,7 +15,7 @@ import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContri
 
 /** Trait for service descriptions that have a configuration file. */
 trait ServiceWithConfigurationFile
-  extends AmbariServiceDescription with FileConfigurationContributor {
+  extends AmbariService with FileConfigurationContributor {
 
   override protected lazy val configName = name.toLowerCase
 }

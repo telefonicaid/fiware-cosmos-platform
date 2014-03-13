@@ -22,12 +22,12 @@ import org.mockito.Matchers.any
 import org.scalatest.BeforeAndAfter
 import org.scalatest.mock.MockitoSugar
 
-class ServiceTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
+class ServiceClientTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   val serviceName = "SuperService"
-  var service: Service with MockedRestResponsesComponent = _
+  var service: ServiceClient with MockedRestResponsesComponent = _
 
   before {
-    service = new Service(infoWithState("INIT"), url("http://localhost/api/v1/").build)
+    service = new ServiceClient(infoWithState("INIT"), url("http://localhost/api/v1/").build)
       with FakeAmbariRestReplies with MockedRestResponsesComponent with RequestHandlerFactory {
         override def createRequestHandler(url: RequestBuilder): RequestHandler =
           new RequestHandler {
@@ -55,7 +55,7 @@ class ServiceTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     service.addComponent("BadComponent")
   )
 
-  def validateStateChange(state: String, operation: =>Future[Service]) {
+  def validateStateChange(state: String, operation: =>Future[ServiceClient]) {
     val jsonRequestPayload = compact(render("ServiceInfo" -> ("state" -> state)))
     addMock(
       service.responses.changeServiceState(serviceName, jsonRequestPayload),
@@ -65,7 +65,7 @@ class ServiceTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     verify(service.responses).changeServiceState(serviceName, jsonRequestPayload)
   }
 
-  def stateChangeErrorPropagation(operation: => Future[Service]) {
+  def stateChangeErrorPropagation(operation: => Future[ServiceClient]) {
     errorPropagation(service.responses.changeServiceState(any[String], any[String]), operation)
   }
 

@@ -14,9 +14,9 @@ package es.tid.cosmos.servicemanager.ambari.services
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import es.tid.cosmos.servicemanager.{ComponentDescription, ServiceDescription}
+import es.tid.cosmos.servicemanager.{ComponentDescription, Service}
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationContributor
-import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, Cluster}
+import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, Host, Cluster}
 
 /**
  * Representation of a service definition that allows service instantiation for a given Ambari
@@ -25,7 +25,7 @@ import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, Cluster}
  * @see ConfigurationContributor
  * @see ServiceDescription
  */
-private[ambari] trait AmbariServiceDescription extends ConfigurationContributor with ServiceDescription {
+private[ambari] trait AmbariService extends ConfigurationContributor with Service {
   /**
    * Create a service instance on a given cluster.
    *
@@ -34,7 +34,7 @@ private[ambari] trait AmbariServiceDescription extends ConfigurationContributor 
    * @param slaves the cluster's slave nodes
    * @return the future of the service instance for the given cluster
    */
-  def createService(cluster: Cluster, master: Host, slaves: Seq[Host]): Future[Service] =
+  def createService(cluster: Cluster, master: Host, slaves: Seq[Host]): Future[ServiceClient] =
     for {
       service <- cluster.addService(name)
       _ <- Future.sequence(components.map(component => service.addComponent(component.name)))

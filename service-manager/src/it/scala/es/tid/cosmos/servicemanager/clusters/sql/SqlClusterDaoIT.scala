@@ -20,7 +20,7 @@ import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.common.{MySqlDatabase, MySqlConnDetails}
 import es.tid.cosmos.common.scalatest.tags.{TaggedTests, HasExternalDependencies}
-import es.tid.cosmos.servicemanager.{ClusterName, ServiceDescription, ClusterUser}
+import es.tid.cosmos.servicemanager.{ClusterName, Service, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
 
 class SqlClusterDaoIT
@@ -43,7 +43,7 @@ class SqlClusterDaoIT
 
   trait ClusterCreated {
     val id = ClusterId.random()
-    val serviceA, serviceB = mock[ServiceDescription]
+    val serviceA, serviceB = mock[Service]
     given(serviceA.name).willReturn("serviceA")
     given(serviceB.name).willReturn("serviceB")
     dao.registerCluster(id, ClusterName("cosmos"), 3, Set(serviceA, serviceB))

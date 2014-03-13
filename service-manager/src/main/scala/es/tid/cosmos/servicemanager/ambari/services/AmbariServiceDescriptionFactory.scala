@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{ComponentDescription, ServiceDescription}
+import es.tid.cosmos.servicemanager.{ComponentDescription, Service}
 import es.tid.cosmos.servicemanager.ambari.configuration._
 
 /** Factory object to turn service descriptions to ambari-specific ones. */
@@ -25,12 +25,12 @@ object AmbariServiceDescriptionFactory {
     * @param service                    the service to decorate
     * @param configDirectoryPath the directory path to find the service configuration file
     */
-  def toAmbariService(service: ServiceDescription, configDirectoryPath: String)
-      : AmbariServiceDescription =
+  def toAmbariService(service: Service, configDirectoryPath: String)
+      : AmbariService =
     service match {
-      case ambariService: AmbariServiceDescription => ambariService
-      case serviceWithConfig: ServiceDescription with ConfigurationContributor =>
-        new AmbariServiceDescription {
+      case ambariService: AmbariService => ambariService
+      case serviceWithConfig: Service with ConfigurationContributor =>
+        new AmbariService {
           override val name: String = serviceWithConfig.name
           override val components: Seq[ComponentDescription] = serviceWithConfig.components
           override def contributions(properties: ConfigProperties): ConfigurationBundle =

@@ -11,10 +11,8 @@
 
 package es.tid.cosmos.servicemanager
 
-/**
- * Representation of a service definition.
- */
-trait ServiceDescription {
+/** Representation of a service definition. */
+trait Service {
   val name: String
   val components: Seq[ComponentDescription]
 }

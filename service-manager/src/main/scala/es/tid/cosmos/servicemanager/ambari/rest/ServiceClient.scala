@@ -21,14 +21,13 @@ import net.liftweb.json.JsonDSL._
 
 import es.tid.cosmos.servicemanager.ServiceError
 
-/**
- * Wraps Ambari's service-related REST API calls.
- *
- * @constructor
- * @param serviceInfo    the Ambari JSON response that describes the service
- * @param clusterBaseUrl the base url that describes the cluster
- */
-private[ambari] class Service (serviceInfo: JValue, clusterBaseUrl: Request)
+/** Wraps Ambari's service-related REST API calls.
+  *
+  * @constructor
+  * @param serviceInfo    the Ambari JSON response that describes the service
+  * @param clusterBaseUrl the base url that describes the cluster
+  */
+private[ambari] class ServiceClient (serviceInfo: JValue, clusterBaseUrl: Request)
   extends RequestProcessor with ServiceRequestHandlerFactory {
   val name = extractInfo("service_name")
   val state = extractInfo("state")
@@ -41,11 +40,11 @@ private[ambari] class Service (serviceInfo: JValue, clusterBaseUrl: Request)
     performRequest(baseUrl / "components" / componentName << "")
       .map(_ => componentName)
 
-  def install(): Future[Service] = changeState("INSTALLED")
+  def install(): Future[ServiceClient] = changeState("INSTALLED")
 
   def stop() = install()
 
-  def start(): Future[Service] = changeState("STARTED")
+  def start(): Future[ServiceClient] = changeState("STARTED")
 
   private def changeState(state: String) = {
     val body = compact(render("ServiceInfo" -> ("state" -> state)))

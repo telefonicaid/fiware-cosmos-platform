@@ -21,7 +21,7 @@ import es.tid.cosmos.servicemanager.util.SshKeyGenerator
   * Information about users is sent as configuration properties prefixed by {{{user1_}}} for the
   * first user, {{{user2_}}} for the second and so on.
   */
-class CosmosUserService(users: Seq[ClusterUser]) extends AmbariServiceDescription {
+class CosmosUserService(users: Seq[ClusterUser]) extends AmbariService {
   override val name: String = CosmosUserService.name
 
   override val components: Seq[ComponentDescription] = CosmosUserService.components
@@ -50,7 +50,7 @@ class CosmosUserService(users: Seq[ClusterUser]) extends AmbariServiceDescriptio
   }
 }
 
-object CosmosUserService extends AmbariServiceDescription with NoConfigurationContribution {
+object CosmosUserService extends AmbariService with NoConfigurationContribution {
   override val name: String = "COSMOS_USER"
 
   override val components: Seq[ComponentDescription] = Seq(

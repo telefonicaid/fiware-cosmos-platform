@@ -51,7 +51,7 @@ class PagesAuthControllerIT extends FlatSpec with MustMatchers {
   }
 
   it must "detect sessions of registered users" in new WithTestController {
-    contentAsString(route(regUser.request("/"))) must include ("registered")
+    contentAsString(route(regUserInGroup.request("/"))) must include ("registered")
   }
 
   it must "discard sessions of not-enabled users" in new WithTestController {

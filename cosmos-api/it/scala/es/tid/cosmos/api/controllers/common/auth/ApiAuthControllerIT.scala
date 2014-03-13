@@ -76,10 +76,10 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers with MockitoSugar {
     }
 
   it must "authorize valid requests" in new WithTestController {
-    authenticateProfile(regUser.cosmosProfile)
+    authenticateProfile(regUserInGroup.cosmosProfile)
     val res = requestIndex()
     status(res) must be (OK)
-    contentAsString(res) must include (s"handle=${regUser.handle}")
+    contentAsString(res) must include (s"handle=${regUserInGroup.handle}")
   }
 
   it must "reject disabled user requests" in new WithTestController {
@@ -90,7 +90,7 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers with MockitoSugar {
   }
 
   it must "reject non operator from admin pages" in new WithTestController {
-    authenticateProfile(regUser.cosmosProfile)
+    authenticateProfile(regUserInGroup.cosmosProfile)
     val res = requestAdmin()
     status(res) must be (FORBIDDEN)
     contentAsString(res) must include ("You need to be an operator")

@@ -31,20 +31,20 @@ class StorageResourceIT
   val clusterCreationTimeout = 2.seconds
 
   "The storage resource" must "be unavailable when no service is active" in new WithSampleSessions {
-    status(regUser.doRequest(request)) must be (SERVICE_UNAVAILABLE)
+    status(regUserInGroup.doRequest(request)) must be (SERVICE_UNAVAILABLE)
   }
 
   it must "provide the WebHDFS connection details" in new WithSampleSessions {
     mockedServiceManager.defineCluster(MockedServiceManager.PersistentHdfsProps)
     val persistentHdfsCluster = services.serviceManager.describePersistentHdfsCluster().get
-    val result = regUser.doRequest(request)
+    val result = regUserInGroup.doRequest(request)
     status(result) must be (OK)
     val jsonBody = contentAsJson(result)
     val conn = Json.fromJson[WebHdfsConnection](jsonBody)
     conn must not be JsError
     conn.get.location.getScheme must be ("webhdfs")
     conn.get.location.getHost must be (persistentHdfsCluster.master.get.ipAddress)
-    conn.get.user must be ("reguser")
+    conn.get.user must be (regUserInGroup.handle)
   }
 
   it must "reject unauthenticated requests" in new WithSampleSessions {

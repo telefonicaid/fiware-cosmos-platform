@@ -16,6 +16,6 @@ import es.tid.cosmos.api.task.Finished
 trait WithSampleTasks extends WithSampleSessions {
   val taskDao = testApp.taskDao
   val regUserAuthorizedTask = taskDao.registerTask()
-  regUserAuthorizedTask.usersWithAccess = Seq(regUser.handle, "a", "b")
+  regUserAuthorizedTask.usersWithAccess = Seq(regUserInGroup.handle, "a", "b")
   val inaccesibleTask = taskDao.registerTask()
 }

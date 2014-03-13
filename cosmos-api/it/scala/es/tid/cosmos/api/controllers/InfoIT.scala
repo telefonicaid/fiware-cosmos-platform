@@ -26,7 +26,7 @@ import es.tid.cosmos.api.profile.CosmosProfile
 import es.tid.cosmos.api.test.matchers.JsonMatchers
 import es.tid.cosmos.api.quota.{Quota, GuaranteedGroup}
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.servicemanager.{ClusterUser, ClusterName}
+import es.tid.cosmos.servicemanager.ClusterName
 import es.tid.cosmos.servicemanager.clusters._
 
 class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors
@@ -43,26 +43,23 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
 
   it must "provide profile information about id, handle and individual quota" in
     new WithSampleSessions {
-      val res = regUser.doRequest(getInfo)
+      val res = regUserNoGroup.doRequest(getInfo)
       status(res) must be (OK)
-      val quota = regUser.cosmosProfile.quota.toOptInt.get
+      val quota = regUserNoGroup.cosmosProfile.quota.toOptInt.get
       contentAsJson(res) must (
-        containFieldWithValue("profileId", JsNumber(regUser.cosmosProfile.id)) and
-        containFieldWithValue("handle", JsString(regUser.handle)) and
+        containFieldWithValue("profileId", JsNumber(regUserNoGroup.cosmosProfile.id)) and
+        containFieldWithValue("handle", JsString(regUserNoGroup.handle)) and
         containFieldWithValue("individualQuota", JsNumber(quota))
       )
     }
 
   it must "provide group name and group quota" in new WithSampleSessions {
-    store.withTransaction { implicit c =>
-      store.group.register(GuaranteedGroup("fooGroup", Quota(10)))
-      store.profile.setGroup(regUser.cosmosProfile.id, Some("fooGroup"))
-    }
-    val res = regUser.doRequest(getInfo)
+    val group = regUserInGroup.group
+    val res = regUserInGroup.doRequest(getInfo)
     status(res) must be (OK)
     contentAsJson(res) must containFieldThatMust("group",
-      containFieldWithValue("name", JsString("fooGroup")) and
-      containFieldWithValue("guaranteedQuota", JsNumber(10))
+      containFieldWithValue("name", JsString(group.name)) and
+      containFieldWithValue("guaranteedQuota", JsNumber(group.minimumQuota.toInt))
     )
   }
 
@@ -74,12 +71,12 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
         serviceDescriptions = Seq.empty,
         users = Seq.empty
       )
-      regUser.setAsOwner(cluster1)
+      regUserInGroup.assignCluster(cluster1, shared = false)
       val cluster2 = ClusterId("cluster2")
       mockedServiceManager.defineCluster(ClusterProperties(
         id = cluster2,
         name = ClusterName("cluster2"),
-        users = Set(opUser.asClusterUser(), regUser.asClusterUser()),
+        users = Set(opUser.asClusterUser(), regUserInGroup.asClusterUser()),
         size  = 2,
         initialState = Some(Running)
       ))
@@ -87,10 +84,10 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
         name = ClusterName("unlisted"),
         size = 2,
         serviceDescriptions = Seq.empty,
-        users = Seq(opUser.asClusterUser(), regUser.asClusterUser(sshEnabled = false))
+        users = Seq(opUser.asClusterUser(), regUserInGroup.asClusterUser(sshEnabled = false))
       )
 
-      val res = regUser.doRequest(getInfo)
+      val res = regUserInGroup.doRequest(getInfo)
       status(res) must be (OK)
 
       contentAsJson(res) must containFieldThatMust("clusters",
@@ -105,12 +102,12 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
         id = ClusterId.random(),
         name = ClusterName("own but terminated"),
         size = 10,
-        users = Set(regUser.asClusterUser()),
+        users = Set(regUserInGroup.asClusterUser()),
         initialState = Some(Terminated)
       ))
-      regUser.setAsOwner(cluster1.view.id)
+      regUserInGroup.assignCluster(cluster1.view.id, shared = false)
 
-      val res = regUser.doRequest(getInfo)
+      val res = regUserInGroup.doRequest(getInfo)
       status(res) must be (OK)
 
       contentAsJson(res) must containFieldThatMust("clusters",
@@ -123,13 +120,13 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
       val cluster1 = mockedServiceManager.defineCluster(ClusterProperties(
         id = ClusterId("cluster1"),
         name = ClusterName("added to but not running"),
-        users = Set(opUser.asClusterUser(), regUser.asClusterUser()),
+        users = Set(opUser.asClusterUser(), regUserInGroup.asClusterUser()),
         size  = 2,
         initialState = Some(Provisioning)
       ))
-      opUser.setAsOwner(cluster1.view.id)
+      opUser.assignCluster(cluster1.view.id, shared = false)
 
-      val res = regUser.doRequest(getInfo)
+      val res = regUserInGroup.doRequest(getInfo)
       status(res) must be (OK)
 
       contentAsJson(res) must containFieldThatMust("clusters",
@@ -138,21 +135,21 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
     }
 
   it must "provide info about existing and available resources" in new WithSampleSessions {
+    val guaranteedGroup = GuaranteedGroup("fooGroup", Quota(10))
     store.withTransaction { implicit c =>
-      store.group.register(GuaranteedGroup("fooGroup", Quota(10)))
-      store.group.register(GuaranteedGroup("otherGroup", Quota(5)))
-      store.profile.setGroup(regUser.cosmosProfile.id, Some("fooGroup"))
+      store.group.register(guaranteedGroup)
     }
+    val fooGroupUser = new RegisteredUserSession("user", "Mr. user", guaranteedGroup)
     val cluster = mockedServiceManager.createCluster(
       name = ClusterName("ownCluster"),
       size = 2,
       serviceDescriptions = Seq.empty,
       users = Seq.empty
     )
-    regUser.setAsOwner(cluster)
-    val res = regUser.doRequest(getInfo)
+    fooGroupUser.assignCluster(cluster, shared = false)
+    val res = fooGroupUser.doRequest(getInfo)
     status(res) must be (OK)
-    val quota = regUser.cosmosProfile.quota.toOptInt.get
+    val quota = fooGroupUser.cosmosProfile.quota.toOptInt.get
     contentAsJson(res) must containFieldThatMust("resources",
       containFieldWithValue("groupConsumption", JsNumber(2)) and
       containFieldWithValue("individualConsumption", JsNumber(2)) and

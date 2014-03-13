@@ -17,6 +17,7 @@ import com.wordnik.swagger.annotations.ApiProperty
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
 
+import es.tid.cosmos.api.profile.Cluster
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.ambari.services.{InfinityfsDriver, CosmosUserService}
 import es.tid.cosmos.servicemanager.clusters.{HostDetails, ClusterDescription}
@@ -34,6 +35,7 @@ case class ClusterDetails(
     master: Option[HostDetails],
     slaves: Option[Seq[HostDetails]],
     users: Option[Seq[ClusterUser]],
+    shared: Boolean,
     services: Set[String]
 )
 
@@ -45,16 +47,17 @@ object ClusterDetails {
   /**
    * Create a ClusterDetails from a description in the context of a request.
    *
-   * @param desc     Cluster description
-   * @param request  Context request
-   * @return         A ClusterDetails instance
+   * @param desc       Cluster description
+   * @param assignment The cluster assignment from the cluster DAO
+   * @param request    Context request
+   * @return           A ClusterDetails instance
    */
-  def apply(desc: ClusterDescription)(implicit request: RequestHeader): ClusterDetails =
-    fromDescription(desc).copy(href = ClusterResource.clusterUrl(desc.id))
+  def apply(desc: ClusterDescription, assignment: Cluster)(implicit request: RequestHeader): ClusterDetails =
+    apply(desc, assignment, ClusterResource.clusterUrl(desc.id))
 
-  private[cluster] def fromDescription(desc: ClusterDescription): ClusterDetails =
+  def apply(desc: ClusterDescription, assignment: Cluster, href: String): ClusterDetails =
     ClusterDetails(
-      href = "href_not_available",
+      href = href,
       id = desc.id.toString,
       name = desc.name,
       size = desc.size,
@@ -62,6 +65,7 @@ object ClusterDetails {
       stateDescription = desc.state.descLine,
       master = desc.master,
       slaves = if (desc.slaves.isEmpty) None else Some(desc.slaves),
+      shared = assignment.shared,
       users = desc.users.map(_.toSeq),
       services = desc.services.filterNot(unlistedServices)
     )
@@ -92,6 +96,7 @@ object ClusterDetails {
       "size" -> d.size,
       "state" -> d.state,
       "stateDescription" -> d.stateDescription,
+      "shared" -> d.shared,
       "services" -> d.services.toSeq.sorted
     )
 

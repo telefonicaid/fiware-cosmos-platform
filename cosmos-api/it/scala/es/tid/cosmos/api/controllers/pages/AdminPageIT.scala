@@ -34,7 +34,7 @@ class AdminPageIT
   }
 
   it must "be not found by users without operator capability" in new WithSampleSessions {
-    val response = regUser.doRequest(path)
+    val response = regUserInGroup.doRequest(path)
     status(response) must be (FORBIDDEN)
     contentAsString(response) must include ("You are not authorized")
   }

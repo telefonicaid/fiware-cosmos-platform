@@ -22,12 +22,14 @@ class CreateClusterParamsTest extends FlatSpec with MustMatchers {
   val params = CreateClusterParams(
     name = ClusterName("new cluster"),
     size = 150,
-    optionalServices = Seq("HIVE")
+    optionalServices = Seq("HIVE"),
+    shared = true
   )
   val json = Json.obj(
     "name" -> "new cluster",
     "size" -> 150,
-    "optionalServices" -> Json.arr("HIVE")
+    "optionalServices" -> Json.arr("HIVE"),
+    "shared" -> true
   )
 
   "Create cluster params" must "be parsed from JSON" in {

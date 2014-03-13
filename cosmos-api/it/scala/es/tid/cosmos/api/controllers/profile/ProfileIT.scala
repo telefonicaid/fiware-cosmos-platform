@@ -38,32 +38,32 @@ class ProfileIT extends FlatSpec with MustMatchers with AuthBehaviors {
     rejectingUnauthenticatedRequests(FakeRequest(GET, profileResource))
 
   it must "return profile information about the credentials' owner" in new WithSampleSessions {
-    val res = regUser.doRequest(profileResource)
+    val res = regUserInGroup.doRequest(profileResource)
     status(res) must be (OK)
-    contentAsString(res) must include (regUser.handle)
+    contentAsString(res) must include (regUserInGroup.handle)
   }
 
   "Updates to the profile" must behave like rejectingUnauthenticatedRequests(
     FakeRequest(PUT, profileResource).withJsonBody(templateProfile))
 
   it must "accept public key changes" in new WithSampleSessions {
-    val newProfile = templateProfile ++ Json.obj("handle" -> regUser.handle)
-    status(regUser.submitJson(profileResource, newProfile, method = PUT)) must be (OK)
+    val newProfile = templateProfile ++ Json.obj("handle" -> regUserInGroup.handle)
+    status(regUserInGroup.submitJson(profileResource, newProfile, method = PUT)) must be (OK)
   }
 
   it must "reject profile updates with other than one public key" in new WithSampleSessions {
     val newProfile = templateProfile ++ Json.obj(
-      "handle" -> regUser.handle,
+      "handle" -> regUserInGroup.handle,
       "keys" -> Json.arr()
     )
-    val response = regUser.submitJson(profileResource, newProfile, method = PUT)
+    val response = regUserInGroup.submitJson(profileResource, newProfile, method = PUT)
     status(response) must be (BAD_REQUEST)
     contentAsString(response) must include ("Only one public key is supported")
   }
 
   it must "reject profile updates with a different handle" in new WithSampleSessions {
     val newProfile = templateProfile ++ Json.obj("handle" -> "newHandle")
-    val response = regUser.submitJson(profileResource, newProfile, method = PUT)
+    val response = regUserInGroup.submitJson(profileResource, newProfile, method = PUT)
     status(response) must be (BAD_REQUEST)
     contentAsString(response) must include ("Handle modification is not supported")
   }

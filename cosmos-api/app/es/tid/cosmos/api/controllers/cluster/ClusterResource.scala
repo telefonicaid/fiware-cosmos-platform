@@ -27,6 +27,7 @@ import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.dao._
+import es.tid.cosmos.api.quota.{Group, NoGroup}
 import es.tid.cosmos.api.task.TaskDao
 import es.tid.cosmos.api.usage.MachineUsage
 import es.tid.cosmos.servicemanager.{ClusterExecutableValidation, ClusterUser, ServiceManager}
@@ -69,6 +70,8 @@ class ClusterResource(
   @ApiOperation(value = "Create a new cluster", httpMethod = "POST")
   @ApiErrors(Array(
     new ApiError(code = 400, reason = "Invalid JSON payload"),
+    new ApiError(
+      code = 400, reason = "Shared cluster requested by user that doesn't belong to any group"),
     new ApiError(code = 403, reason = "Quota exceeded"),
     new ApiError(code = 503, reason = "Service is under maintenance")
   ))
@@ -82,6 +85,7 @@ class ClusterResource(
       _ <- requireNotUnderMaintenanceToNonOperators(profile)
       body <- validJsonBody[CreateClusterParams](request)
       _ <- requireWithinQuota(profile, body.size)
+      _ <- requireGroupIfShared(profile.group, body.shared)
     } yield create(request, body, profile)
   }
 
@@ -92,28 +96,36 @@ class ClusterResource(
 
     val services = serviceManager.optionalServices.filter(
       service => body.optionalServices.contains(service.name))
-    Try(serviceManager.createCluster(
+    val users = usersForCluster(body, profile)
+    val clusterId = serviceManager.createCluster(
       name = body.name,
       clusterSize = body.size,
       serviceDescriptions = services,
-      users = Seq(ClusterUser(
-        username = profile.handle,
-        publicKey = profile.keys.head.signature,
-        isSudoer = profile.capabilities.hasCapability(Capability.IsSudoer)
-      )),
+      users = users,
       preConditions = executableWithinQuota(profile, body.size)
-    )) match {
-      case Failure(ex) => throw ex
-      case Success(clusterId: ClusterId) =>
-        Logger.info(s"Provisioning new cluster $clusterId")
-        val cluster = store.withTransaction { implicit c =>
-          store.cluster.register(clusterId, profile.id)
-        }
-        val clusterDescription = serviceManager.describeCluster(clusterId).get
-        val reference = ClusterReference(clusterDescription, cluster).withAbsoluteUri(request)
-        Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
-    }
+    )
+    Logger.info(s"Provisioning new cluster $clusterId")
+    val cluster = store.withTransaction { implicit c => store.cluster.register(clusterId, profile.id, body.shared) }
+    val clusterDescription = serviceManager.describeCluster(clusterId).get
+    val reference = ClusterReference(clusterDescription, cluster).withAbsoluteUri(request)
+    Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
   }
+
+  private def usersForCluster(body: CreateClusterParams, profile: CosmosProfile) =
+    if (!body.shared) {
+      Seq(toClusterUser(profile))
+    } else {
+      assert(profile.group != NoGroup)
+      store.withTransaction { implicit c =>
+        store.profile.lookupByGroup(profile.group)
+      }.toSeq.map(toClusterUser)
+    }
+
+  private def toClusterUser(profile: CosmosProfile) = ClusterUser(
+    username = profile.handle,
+    publicKey = profile.keys.head.signature,
+    isSudoer = profile.capabilities.hasCapability(Capability.IsSudoer)
+  )
 
   private def executableWithinQuota(profile: CosmosProfile, size: Int): ClusterExecutableValidation =
     (id: ClusterId) => () => quotaContext(Some(id)).withinQuota(profile, size)
@@ -144,7 +156,9 @@ class ClusterResource(
     for {
       profile <- requireAuthenticatedApiRequest(request)
       cluster <- requireSshAccessToCluster(profile, ClusterId(id))
-    } yield Ok(Json.toJson(ClusterDetails(cluster)))
+    } yield Ok(Json.toJson(ClusterDetails(
+      cluster,
+      store.withTransaction(implicit c => store.cluster.get(cluster.id)))))
   }
 
   @ApiOperation(value = "Add users to an existing cluster", httpMethod = "POST")
@@ -299,6 +313,10 @@ class ClusterResource(
       succ = _ => alreadyUserOf(profile.handle, clusterId).failure
     )
 
+  private def requireGroupIfShared(group: Group, shared: Boolean): ActionValidation[Unit] =
+    if (shared && group == NoGroup) sharedClusterNoGroup.failure
+    else ().success
+
   private def requireClusterUsersAreAvailable(
       clusterId: ClusterId): ActionValidation[Seq[ClusterUser]] =
     serviceManager.listUsers(clusterId) match {
@@ -336,6 +354,9 @@ object ClusterResource extends Results {
 
   private def alreadyUserOf(handle: String, cluster: ClusterId) =
     BadRequest(Json.toJson(ErrorMessage(s"User $handle is already a user of cluster '$cluster'")))
+
+  private def sharedClusterNoGroup =
+    BadRequest(Json.toJson(ErrorMessage("Cannot request a shared cluster because you don't belong to any group")))
 
   private def notFound(cluster: ClusterId) =
     NotFound(Json.toJson(ErrorMessage(s"No cluster '$cluster' exists")))

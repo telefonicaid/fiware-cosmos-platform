@@ -116,13 +116,32 @@ object RpmSettings {
     linuxPackageSymlinks in Rpm := JarLinks.map(destination => LinuxSymlink(destination, JarPath))
   )
 
+  val InfinityServerPath = "/opt/pdi-cosmos/infinity-server"
+
   val infinityServerSettings: Seq[Setting[_]] = assemblySettings ++ packagerSettings ++ commonRpmSettings ++ Seq(
     name in Rpm := "infinity-server",
     packageSummary := "Infinity Server",
     packageDescription in Rpm := "Server for infinity:// scheme.",
     linuxPackageMappings in Rpm := Seq(
-      packageMapping(assembly.value -> "/opt/pdi-cosmos/infinity-server.jar") withUser "root" withGroup "root" withPerms "0755"
-    )
+      packageMapping(assembly.value -> s"$InfinityServerPath/infinity-server.jar")
+        withUser "root" withGroup "root" withPerms "0755",
+      packageMapping(baseDirectory.value / "scripts/infinity-server.sh" -> s"$InfinityServerPath/infinity-server.sh")
+        withUser "root" withGroup "root" withPerms "0755",
+      packageMapping(baseDirectory.value / "conf/infinity-server.conf" -> s"$InfinityServerPath/infinity-server.conf")
+        withUser "root" withGroup "root" withPerms "0644",
+      packageMapping(baseDirectory.value / "conf/logback.xml" -> s"$InfinityServerPath/logback.xml")
+        withUser "root" withGroup "root" withPerms "0644",
+      packageMapping(IO.temporaryDirectory / "." -> s"$InfinityServerPath/logs")
+        withUser "root" withGroup "root" withPerms "0755"
+    ),
+    linuxPackageSymlinks := Seq(
+      LinuxSymlink("/etc/init.d/infinity-server", s"$InfinityServerPath/infinity-server.sh"),
+      LinuxSymlink("/etc/infinity-server.conf", s"$InfinityServerPath/infinity-server.conf"),
+      LinuxSymlink("/var/log/infinity-server", s"$InfinityServerPath/logs")
+    ),
+    rpmPost := Some("""chkconfig --add /etc/init.d/infinity-server
+                      |chkconfig infinity-server on
+                    """.stripMargin)
   )
 
 

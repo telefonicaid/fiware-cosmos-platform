@@ -16,23 +16,24 @@ import spray.http.MediaTypes._
 import spray.routing._
 import akka.event.LoggingAdapter
 
-class MyServiceActor extends Actor with MyService with ActorLogging {
+class InfinityActor extends Actor with InfinityService with ActorLogging {
 
   def actorRefFactory = context
 
   def receive = runRoute(myRoute)
 }
 
-trait MyService extends HttpService {
+trait InfinityService extends HttpService {
 
   def log: LoggingAdapter
 
   def myRoute =
     path("") {
       get {
-        log.info("Got a GET request")
         respondWithMediaType(`text/html`) { // XML is marshalled to `text/xml` by default, so we simply override here
           complete {
+            log.info("Got a GET request")
+
             <html>
               <body>
                 <h1>Say hello to <i>spray-routing</i> on <i>spray-can</i>!</h1>

@@ -17,6 +17,8 @@ import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescri
 object Hive extends Service with NoParametrization {
   override val name: String = "HIVE"
 
+  override val dependencies: Set[Service] = Set(Hdfs, MapReduce2, HCatalog, WebHCat)
+
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription.masterComponent("HIVE_SERVER"),
     ComponentDescription.masterComponent("HIVE_METASTORE"),

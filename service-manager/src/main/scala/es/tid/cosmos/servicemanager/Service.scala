@@ -11,12 +11,18 @@
 
 package es.tid.cosmos.servicemanager
 
-/** Representation of a service definition. */
+/** Representation of a service definition.
+  *
+  * Derived classes should be objects as only an instance per service is assumed.
+  */
 trait Service {
   /** Type of the values that parametrize it to have a service instance */
   type Parametrization
 
   val name: String
+
+  /** Direct service dependencies */
+  val dependencies: Set[Service] = Set.empty
 
   val components: Seq[ComponentDescription]
 }

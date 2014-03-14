@@ -17,6 +17,8 @@ import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescri
 object Hdfs extends Service with NoParametrization {
   override val name: String = "HDFS"
 
+  override val dependencies: Set[Service] = Set(Zookeeper, InfinityfsDriver)
+
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription.masterComponent("NAMENODE"),
     ComponentDescription.slaveComponent("DATANODE"),

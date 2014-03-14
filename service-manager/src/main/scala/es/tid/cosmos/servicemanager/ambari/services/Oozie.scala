@@ -21,4 +21,6 @@ object Oozie extends Service with NoParametrization {
     ComponentDescription.masterComponent("OOZIE_SERVER"),
     ComponentDescription.masterComponent("OOZIE_CLIENT").makeClient
   )
+
+  override val dependencies: Set[Service] = Set(Hdfs, MapReduce2)
 }

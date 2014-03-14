@@ -25,4 +25,5 @@ object MapReduce2 extends Service with NoParametrization {
     ComponentDescription.masterComponent("HISTORYSERVER"),
     ComponentDescription.masterComponent("MAPREDUCE2_CLIENT").makeClient
   )
+  override val dependencies: Set[Service] = Set(Yarn)
 }

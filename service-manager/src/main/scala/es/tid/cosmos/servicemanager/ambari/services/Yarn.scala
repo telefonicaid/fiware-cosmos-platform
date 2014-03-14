@@ -21,4 +21,6 @@ object Yarn extends Service with NoParametrization {
     ComponentDescription.masterComponent("RESOURCEMANAGER"),
     ComponentDescription.slaveComponent("NODEMANAGER"),
     ComponentDescription.masterComponent("YARN_CLIENT").makeClient)
+
+  override val dependencies: Set[Service] = Set(InfinityfsDriver)
 }

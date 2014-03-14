@@ -9,17 +9,18 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.services.dependencies
+package es.tid.cosmos.servicemanager.services
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service}
+import es.tid.cosmos.servicemanager.Service
 import es.tid.cosmos.servicemanager.ambari.services._
+import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
 
-class ServiceDependenciesTest extends FlatSpec with MustMatchers {
+class ServiceDependencyMappingTest extends FlatSpec with MustMatchers {
 
-  import ServiceDependencies._
+  val testMapping = new ServiceDependencyMapping(ServiceDependencies.ServiceCatalogue)
 
   "Hdfs" must "depend on Zookeeper" in {
     dependencies(Hdfs) must contain (Zookeeper: Service)
@@ -50,6 +51,5 @@ class ServiceDependenciesTest extends FlatSpec with MustMatchers {
     dependencies(Yarn) must contain (requiredDependency)
   }
 
-  private def dependencies(services: Service with NoParametrization*) =
-    new ServiceBundle(services).withDependencies
+  private def dependencies(services: Service*) = testMapping.executionPlan(services.toSet)
 }

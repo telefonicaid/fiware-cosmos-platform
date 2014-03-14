@@ -9,20 +9,21 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.services.dependencies
+package es.tid.cosmos.servicemanager.services
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.{MatchResult, Matcher, MustMatchers}
+import es.tid.cosmos.servicemanager.ambari.services.dependencies.CyclicDependencyException
 
 class DependencyMappingTest extends FlatSpec with MustMatchers {
 
   "Dependency mapping" must "resolve dependencies when there are no additional dependencies" in {
-    val mapping = DependencyMapping(3 -> Set(4))
+    val mapping = new DependencyMapping(3 -> Set(4))
     mapping.resolve(Set(1, 2)) must be (Set(1, 2))
   }
 
   it must "resolve dependencies when dependencies are internal to the input set" in {
-    val mapping = DependencyMapping(
+    val mapping = new DependencyMapping(
       1 -> Set(2),
       2 -> Set(3)
     )
@@ -30,7 +31,7 @@ class DependencyMappingTest extends FlatSpec with MustMatchers {
   }
 
   it must "resolve direct dependencies" in {
-    val mapping = DependencyMapping(
+    val mapping = new DependencyMapping(
       1 -> Set(3),
       2 -> Set(4)
     )
@@ -38,7 +39,7 @@ class DependencyMappingTest extends FlatSpec with MustMatchers {
   }
 
   it must "resolve transitive dependencies" in {
-    val mapping = DependencyMapping(
+    val mapping = new DependencyMapping(
       1 -> Set(2, 3),
       2 -> Set(4)
     )
@@ -46,7 +47,7 @@ class DependencyMappingTest extends FlatSpec with MustMatchers {
   }
 
   it must "put dependencies after dependants when ordering for execution" in {
-    val mapping = DependencyMapping(
+    val mapping = new DependencyMapping(
       "a" -> Set("a1", "a2"),
       "b" -> Set("b1", "b2")
     )
@@ -58,7 +59,7 @@ class DependencyMappingTest extends FlatSpec with MustMatchers {
   }
 
   it must "detect dependency cycles" in {
-    val mapping = DependencyMapping(
+    val mapping = new DependencyMapping(
       "a" -> Set("b", "d"),
       "b" -> Set("c"),
       "c" -> Set("a")

@@ -9,14 +9,18 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.services.dependencies
+package es.tid.cosmos.servicemanager.services
 
 import scala.annotation.tailrec
 
-/** Simple transitive dependency mapping.  */
-private[dependencies] case class DependencyMapping[T](dependencyMappings: (T, Set[T])*) {
+import es.tid.cosmos.servicemanager.ambari.services.dependencies.CyclicDependencyException
 
-  private val dependencies: Map[T, Set[T]] = dependencyMappings.toMap.withDefaultValue(Set.empty)
+/** Simple transitive dependency mapping.  */
+private[services] class DependencyMapping[T](dependencyMapping: Map[T, Set[T]]) {
+
+  def this(dependencyMapping: (T, Set[T])*) = this(dependencyMapping.toMap)
+
+  private val dependencies = dependencyMapping.withDefaultValue(Set.empty)
 
   /** Resolves services dependencies transitively. */
   @tailrec

@@ -26,6 +26,8 @@ class CosmosUserService(users: Seq[ClusterUser]) extends AmbariService {
 
   override val components: Seq[ComponentDescription] = CosmosUserService.components
 
+  override val dependencies: Set[Service] = Set(Hdfs)
+
   override def contributions(properties: ConfigProperties): ConfigurationBundle =
     ConfigurationBundle(usersConfiguration(properties(ConfigurationKeys.MasterNode)))
 
@@ -52,6 +54,8 @@ class CosmosUserService(users: Seq[ClusterUser]) extends AmbariService {
 
 object CosmosUserService extends Service with NoParametrization {
   override val name: String = "COSMOS_USER"
+
+  override val dependencies: Set[Service] = Set(Hdfs)
 
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription.masterComponent("USER_MASTER_MANAGER").makeClient,

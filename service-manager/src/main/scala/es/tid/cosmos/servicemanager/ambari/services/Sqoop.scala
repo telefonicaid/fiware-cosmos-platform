@@ -16,4 +16,5 @@ import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescri
 object Sqoop extends Service with NoParametrization {
   override val name = "SQOOP"
   override val components = Seq(ComponentDescription.masterComponent("SQOOP").makeClient)
+  override val dependencies: Set[Service] = Set(Hdfs, MapReduce2)
 }

@@ -21,4 +21,6 @@ object WebHCat extends Service with NoParametrization {
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription.masterComponent("WEBHCAT_SERVER")
   )
+
+  override val dependencies: Set[Service] = Set(Hdfs, MapReduce2)
 }

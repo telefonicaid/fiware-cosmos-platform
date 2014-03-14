@@ -11,13 +11,11 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{Service, ComponentDescription}
-import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, Host, Cluster}
-import scala.concurrent.Future
+import es.tid.cosmos.servicemanager.ComponentDescription
+import es.tid.cosmos.servicemanager.services.Service
 
 /** Temporal bridge to refactor the service manager.
   *
-  * TODO: make all derived classes objects and self contained in this package
   * TODO: rename to AmbariService
   */
 trait AmbariServiceDetails {

@@ -11,11 +11,7 @@
 
 package es.tid.cosmos.servicemanager.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service}
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariZookeeper, AmbariServiceDetails}
-
 /** Representation of the Zookeeper service. */
 object Zookeeper extends Service with NoParametrization {
   override val name: String = "ZOOKEEPER"
-  override def ambariService: AmbariServiceDetails = AmbariZookeeper
 }

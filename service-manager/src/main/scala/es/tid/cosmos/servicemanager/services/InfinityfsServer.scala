@@ -11,11 +11,7 @@
 
 package es.tid.cosmos.servicemanager.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service}
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariInfinityfsServer, AmbariServiceDetails}
-
 object InfinityfsServer extends Service with NoParametrization {
   override val name: String = "INFINITYFS_SERVER"
   override val dependencies: Set[Service] = Set(Hdfs)
-  override def ambariService: AmbariServiceDetails = AmbariInfinityfsServer
 }

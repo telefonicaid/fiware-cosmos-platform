@@ -11,5 +11,7 @@
 
 package es.tid.cosmos.servicemanager
 
+import es.tid.cosmos.servicemanager.services.Service
+
 /** A concrete instance of a service */
 case class ServiceInstance[S <: Service](service: S, parameter: S#Parametrization)

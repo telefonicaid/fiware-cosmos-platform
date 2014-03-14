@@ -14,7 +14,8 @@ package es.tid.cosmos.servicemanager.ambari.services
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.servicemanager.{Service, ComponentDescription}
+import es.tid.cosmos.servicemanager.ComponentDescription
+import es.tid.cosmos.servicemanager.services.Service
 
 class AmbariServiceDetailsTest extends FlatSpec with MustMatchers {
 

@@ -11,12 +11,8 @@
 
 package es.tid.cosmos.servicemanager.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service}
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariHdfs, AmbariServiceDetails}
-
 /** Representation of the HDFS service. */
 object Hdfs extends Service with NoParametrization {
   override val name: String = "HDFS"
   override val dependencies: Set[Service] = Set(Zookeeper, InfinityfsDriver)
-  override def ambariService: AmbariServiceDetails = AmbariHdfs
 }

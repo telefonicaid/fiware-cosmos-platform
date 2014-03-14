@@ -11,8 +11,8 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{ComponentDescription, Service}
-import es.tid.cosmos.servicemanager.services.Yarn
+import es.tid.cosmos.servicemanager.ComponentDescription
+import es.tid.cosmos.servicemanager.services.{Service, Yarn}
 
 object AmbariYarn extends AmbariServiceDetails {
   override val service: Service = Yarn

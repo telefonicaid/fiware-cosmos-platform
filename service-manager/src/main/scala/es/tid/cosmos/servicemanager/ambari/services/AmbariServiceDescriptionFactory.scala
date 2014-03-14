@@ -13,6 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
+import es.tid.cosmos.servicemanager.services.{NoParametrization, Service}
 
 /** Factory object to turn service descriptions to ambari-specific ones. */
 object AmbariServiceDescriptionFactory {
@@ -37,13 +38,13 @@ object AmbariServiceDescriptionFactory {
           override val name: String = serviceWithConfig.name
           override def contributions(properties: ConfigProperties): ConfigurationBundle =
             serviceWithConfig.contributions(properties)
-          override def ambariService: AmbariServiceDetails = service.ambariService
+          override def details: AmbariServiceDetails = AmbariServiceFactory.lookup(service)
         }
       case _ => new ServiceWithConfigurationFile with NoParametrization {
         override val name: String = service.name
         override protected val configPath: String = configDirectoryPath
         override def toString: String = s"FileConfigDecoratedService[${service.toString}}]"
-        override def ambariService: AmbariServiceDetails = service.ambariService
+        override def details: AmbariServiceDetails = AmbariServiceFactory.lookup(service)
       }
     }
 }

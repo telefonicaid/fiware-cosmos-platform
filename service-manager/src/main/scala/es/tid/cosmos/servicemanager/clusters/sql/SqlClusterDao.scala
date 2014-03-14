@@ -3,8 +3,9 @@ package es.tid.cosmos.servicemanager.clusters.sql
 import org.squeryl.PrimitiveTypeMode._
 
 import es.tid.cosmos.common.SqlDatabase
-import es.tid.cosmos.servicemanager.{ClusterName, Service, ClusterUser}
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.Service
 
 private[sql] class SqlClusterDao(db: SqlDatabase) extends ClusterDao {
   import ClusterSchema._

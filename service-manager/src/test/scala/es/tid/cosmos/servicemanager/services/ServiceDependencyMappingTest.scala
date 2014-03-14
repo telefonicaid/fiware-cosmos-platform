@@ -14,7 +14,6 @@ package es.tid.cosmos.servicemanager.services
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.servicemanager.Service
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
 

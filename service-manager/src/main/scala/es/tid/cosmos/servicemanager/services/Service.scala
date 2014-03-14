@@ -9,9 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
-
-import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDetails
+package es.tid.cosmos.servicemanager.services
 
 /** Representation of a service definition.
   *
@@ -25,8 +23,4 @@ trait Service {
 
   /** Direct service dependencies */
   val dependencies: Set[Service] = Set.empty
-
-  /** TODO: replace this method by a factory method  in ambari-service-manager
-    * (inverting the dependency) */
-  def ambariService: AmbariServiceDetails
 }

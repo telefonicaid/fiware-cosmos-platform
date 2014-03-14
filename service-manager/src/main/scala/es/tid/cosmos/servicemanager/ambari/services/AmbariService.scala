@@ -11,8 +11,8 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.Service
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationContributor
+import es.tid.cosmos.servicemanager.services.Service
 
 /**
  * Representation of a service definition that allows service instantiation for a given Ambari
@@ -22,4 +22,5 @@ import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationContributo
  * @see ServiceDescription
  */
 private[ambari] trait AmbariService extends ConfigurationContributor with Service {
+  def details: AmbariServiceDetails
 }

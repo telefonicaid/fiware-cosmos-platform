@@ -9,7 +9,9 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.servicemanager.services
+
+import es.tid.cosmos.servicemanager.ServiceInstance
 
 /** Mix-in for services that don't need parametrization */
 trait NoParametrization { this: Service =>

@@ -11,10 +11,9 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service}
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariServiceDetails, AmbariService}
+import es.tid.cosmos.servicemanager.ambari.services.{AmbariServiceFactory, AmbariServiceDetails}
 import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
 
 class ConfiguratorTestHelpers(
@@ -54,16 +53,7 @@ object ConfiguratorTestHelpers {
   )
 
   val AllServices: Set[AmbariServiceDetails] =
-    ServiceDependencies.ServiceCatalogue.map(_.ambariService)
-
-  def toAmbariServicesNoConfig(service: Service): AmbariService =
-    service match {
-      case ambariService: AmbariService => ambariService
-      case _ => new AmbariService with NoConfigurationContribution with NoParametrization {
-        override val name = service.name
-        override def ambariService = service.ambariService
-      }
-    }
+    ServiceDependencies.ServiceCatalogue.map(AmbariServiceFactory.lookup)
 
   def properties(confType: String, number: Int) =
     Map(s"some${confType}Content$number" -> s"somevalue$number")

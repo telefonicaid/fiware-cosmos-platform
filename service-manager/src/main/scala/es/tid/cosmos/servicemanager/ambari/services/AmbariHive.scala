@@ -11,8 +11,8 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{ComponentDescription, Service}
-import es.tid.cosmos.servicemanager.services.Hive
+import es.tid.cosmos.servicemanager.ComponentDescription
+import es.tid.cosmos.servicemanager.services.{Service, Hive}
 
 object AmbariHive extends AmbariServiceDetails {
   override val service: Service = Hive

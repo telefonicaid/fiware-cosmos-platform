@@ -11,11 +11,7 @@
 
 package es.tid.cosmos.servicemanager.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service}
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariInfinityfsDriver, AmbariServiceDetails}
-
 /** Component that enables the infinity:// scheme in Hadoop. */
 object InfinityfsDriver extends Service with NoParametrization {
   override val name = "INFINITYFS_DRIVER"
-  override def ambariService: AmbariServiceDetails = AmbariInfinityfsDriver
 }

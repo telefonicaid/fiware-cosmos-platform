@@ -11,11 +11,7 @@
 
 package es.tid.cosmos.servicemanager.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service}
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariPig, AmbariServiceDetails}
-
 object Pig extends Service with NoParametrization {
   override val name = "PIG"
   override val dependencies: Set[Service] = Set(Hdfs, MapReduce2)
-  override def ambariService: AmbariServiceDetails = AmbariPig
 }

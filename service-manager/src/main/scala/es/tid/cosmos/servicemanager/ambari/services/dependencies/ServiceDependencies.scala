@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.ambari.services.dependencies
 
-import es.tid.cosmos.servicemanager.{ServiceInstance, NoParametrization, AnyServiceInstance, Service}
+import es.tid.cosmos.servicemanager.{ServiceInstance, AnyServiceInstance}
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.services._
 import es.tid.cosmos.servicemanager.ServiceInstance

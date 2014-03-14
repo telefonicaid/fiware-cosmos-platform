@@ -25,6 +25,7 @@ import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
+import es.tid.cosmos.servicemanager.services.{NoParametrization, Service}
 
 class ClusterStateResolverTest extends FlatSpec with MustMatchers
   with MockitoSugar with FutureMatchers with OneInstancePerTest {
@@ -40,7 +41,6 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
       extends AmbariServiceDetails {
     override val service: Service = new Service with NoParametrization {
       override val name: String = FakeAmbariService.this.name
-      override def ambariService: AmbariServiceDetails = FakeAmbariService.this
     }
     override val components: Seq[ComponentDescription] = Seq.empty
     override def runningState: ServiceState = fakedRunningState

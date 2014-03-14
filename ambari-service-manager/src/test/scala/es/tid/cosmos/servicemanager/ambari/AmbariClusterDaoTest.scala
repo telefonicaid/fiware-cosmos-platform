@@ -20,13 +20,13 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.BDDMockito.given
 import org.mockito.Matchers.any
 
-import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser, Service}
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.ambari.AmbariClusterState.AmbariClusterState
 import es.tid.cosmos.servicemanager.ambari.clusters.InMemoryClusterDao
 import es.tid.cosmos.servicemanager.ambari.rest.{Cluster, AmbariServer}
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDetails
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.services.{Hdfs, MapReduce2}
+import es.tid.cosmos.servicemanager.services.{Service, Hdfs, MapReduce2}
 
 class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar {
 

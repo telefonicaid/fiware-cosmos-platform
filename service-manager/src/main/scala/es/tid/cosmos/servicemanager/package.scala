@@ -13,6 +13,7 @@ package es.tid.cosmos
 
 import es.tid.cosmos.common.{ExecutableValidation, PassThrough}
 import es.tid.cosmos.servicemanager.clusters.ClusterId
+import es.tid.cosmos.servicemanager.services.Service
 
 /** Service Manager related type aliases. */
 package object servicemanager {

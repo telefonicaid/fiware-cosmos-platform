@@ -16,10 +16,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-import es.tid.cosmos.servicemanager.{ClusterName, Service, ClusterUser}
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDetails
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.Service
 
 /** This class wraps a ClusterDao and makes sure that the data in Ambari and the data in the
   * DAO are consistent. If there is an inconsistency the DAO is modified (so we use the Ambari

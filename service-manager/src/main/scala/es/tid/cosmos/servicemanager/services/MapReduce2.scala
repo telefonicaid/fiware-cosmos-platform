@@ -11,9 +11,6 @@
 
 package es.tid.cosmos.servicemanager.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service}
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariMapReduce2, AmbariServiceDetails}
-
 /** Representation of the Map Reduce 2 service.
   *
   * The service needs to run along with YARN.
@@ -22,5 +19,4 @@ import es.tid.cosmos.servicemanager.ambari.services.{AmbariMapReduce2, AmbariSer
 object MapReduce2 extends Service with NoParametrization {
   override val name: String = "MAPREDUCE2"
   override val dependencies: Set[Service] = Set(Yarn)
-  override def ambariService: AmbariServiceDetails = AmbariMapReduce2
 }

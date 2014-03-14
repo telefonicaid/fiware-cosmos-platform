@@ -11,11 +11,7 @@
 
 package es.tid.cosmos.servicemanager.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service}
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariHCatalog, AmbariServiceDetails}
-
 /** Representation of the HCatalog service */
 object HCatalog extends Service with NoParametrization {
   override val name: String = "HCATALOG"
-  override def ambariService: AmbariServiceDetails = AmbariHCatalog
 }

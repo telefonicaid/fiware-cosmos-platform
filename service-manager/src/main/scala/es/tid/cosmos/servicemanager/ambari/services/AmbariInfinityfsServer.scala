@@ -11,7 +11,8 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{ComponentDescription, Service}
+import es.tid.cosmos.servicemanager.ComponentDescription
+import es.tid.cosmos.servicemanager.services.{Service, InfinityfsServer}
 
 object AmbariInfinityfsServer extends AmbariServiceDetails {
   override val service: Service = InfinityfsServer

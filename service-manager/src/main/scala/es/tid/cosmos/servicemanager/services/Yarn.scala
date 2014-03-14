@@ -11,12 +11,8 @@
 
 package es.tid.cosmos.servicemanager.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service}
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariYarn, AmbariServiceDetails}
-
 /** Representation of the YARN service. */
 object Yarn extends Service with NoParametrization {
   override val name: String = "YARN"
   override val dependencies: Set[Service] = Set(InfinityfsDriver)
-  override def ambariService: AmbariServiceDetails = AmbariYarn
 }

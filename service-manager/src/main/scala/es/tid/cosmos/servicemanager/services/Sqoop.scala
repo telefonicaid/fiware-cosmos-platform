@@ -11,11 +11,7 @@
 
 package es.tid.cosmos.servicemanager.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service}
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariSqoop, AmbariServiceDetails}
-
 object Sqoop extends Service with NoParametrization {
   override val name = "SQOOP"
   override val dependencies: Set[Service] = Set(Hdfs, MapReduce2)
-  override def ambariService: AmbariServiceDetails = AmbariSqoop
 }

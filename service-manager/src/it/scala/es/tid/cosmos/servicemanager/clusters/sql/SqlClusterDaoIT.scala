@@ -20,8 +20,9 @@ import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.common.{MySqlDatabase, MySqlConnDetails}
 import es.tid.cosmos.common.scalatest.tags.{TaggedTests, HasExternalDependencies}
-import es.tid.cosmos.servicemanager.{ClusterName, Service, ClusterUser}
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.Service
 
 class SqlClusterDaoIT
   extends FlatSpec with MustMatchers with BeforeAndAfter with TaggedTests with MockitoSugar {

@@ -11,7 +11,8 @@
 
 package es.tid.cosmos.servicemanager.clusters
 
-import es.tid.cosmos.servicemanager.{ClusterName, Service, ClusterUser}
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
+import es.tid.cosmos.servicemanager.services.Service
 
 trait ClusterDaoComponent {
   def serviceManagerClusterDao: ClusterDao

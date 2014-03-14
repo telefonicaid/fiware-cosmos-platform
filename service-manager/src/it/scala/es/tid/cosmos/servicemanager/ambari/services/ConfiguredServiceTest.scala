@@ -15,9 +15,9 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
-import es.tid.cosmos.servicemanager.Service
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
+import es.tid.cosmos.servicemanager.services.Service
 
 trait ConfiguredServiceTest extends FlatSpec with MustMatchers with TestResourcePaths {
 

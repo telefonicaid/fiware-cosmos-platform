@@ -11,16 +11,5 @@
 
 package es.tid.cosmos.infinity.server.auth
 
-import scala.util.Try
-
-object AuthenticationProvider {
-
-  /** A message to request the authentication of the given credentials. */
-  case class Authenticate(credentials: Credentials)
-
-  /** A message to respond with a valid authentication request. */
-  case class Authenticated(profile: UserProfile)
-
-  /** A message to response with a failed authentication request. */
-  case class AuthenticationFailed(error: Throwable)
-}
+/** An exception thrown when a request cannot be authenticated. */
+class AuthenticationException(msg: String, cause: Throwable = null) extends Exception(msg, cause)

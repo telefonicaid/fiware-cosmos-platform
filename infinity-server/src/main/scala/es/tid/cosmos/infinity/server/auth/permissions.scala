@@ -72,13 +72,3 @@ case class FilePermissions(
   group: String,
   unix: UnixFilePermissions
 )
-
-/** An object able to store and retrieve file permissions.*/
-trait FilePermissionsStore {
-
-  /** Retrieve the permissions for the given file or directory. */
-  def get(path: Path): Try[FilePermissions]
-
-  /** Set the permissions for the given file or directory. */
-  def set(path: Path, permissions: FilePermissions): Try[Unit]
-}

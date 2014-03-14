@@ -11,5 +11,5 @@
 
 package es.tid.cosmos.infinity.server.auth
 
-/** The credentials used by users to authenticate their Infinity FS requests. */
-case class UserCredentials(apiKey: String, apiSecret: String)
+/** An exception thrown when a request cannot be authorized. */
+class AuthorizationException(msg: String, cause: Throwable = null) extends Exception(msg, cause)

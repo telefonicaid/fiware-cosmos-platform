@@ -11,5 +11,14 @@
 
 package es.tid.cosmos.infinity.server.auth
 
-/** The credentials used by clusters to authenticate their Infinity FS requests. */
-case class ClusterCredentials(clusterSecret: String, hostname: String)
+object AuthorizationProvider {
+
+  /** A message requesting the authorization to execute an action on a path. */
+  case class Authorize(action: Action, profile: UserProfile)
+
+  /** A message responding with a success authorization. */
+  case object Authorized
+
+  /** A message responding with a failed authorization. */
+  case class AuthorizationFailed(error: Throwable)
+}

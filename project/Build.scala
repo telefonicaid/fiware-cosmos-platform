@@ -34,6 +34,7 @@ object Build extends sbt.Build {
       "com.typesafe.akka" %% "akka-slf4j" % Versions.akka,
       "com.typesafe.akka" %% "akka-testkit" % Versions.akka % "test"
     )
+    lazy val commonsCodec = "commons-codec" % "commons-codec" % "1.9"
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
     lazy val hadoopCommon = "org.apache.hadoop" % "hadoop-common" % Versions.hdp2Hadoop
     lazy val hadoopHdfs = "org.apache.hadoop" % "hadoop-hdfs" % Versions.hdp2Hadoop

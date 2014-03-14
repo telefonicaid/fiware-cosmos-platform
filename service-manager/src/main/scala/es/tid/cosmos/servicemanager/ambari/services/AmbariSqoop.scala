@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.services.{Service, Sqoop}
 
-object AmbariSqoop extends AmbariServiceDetails with NoConfiguration {
+object AmbariSqoop extends AmbariService with NoConfiguration {
   override val service: Service = Sqoop
   override val components = Seq(ComponentDescription.masterComponent("SQOOP").makeClient)
 }

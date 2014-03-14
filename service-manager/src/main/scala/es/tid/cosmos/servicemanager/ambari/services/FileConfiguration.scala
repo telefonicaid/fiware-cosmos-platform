@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
 
-trait FileConfiguration { this: AmbariServiceDetails =>
+trait FileConfiguration { this: AmbariService =>
   override def configurator(parametrization: service.Parametrization, configPath: String) =
     new FileConfigurationContributor(configPath, service.name.toLowerCase)
 }

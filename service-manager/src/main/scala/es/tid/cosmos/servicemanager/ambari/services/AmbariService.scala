@@ -12,14 +12,24 @@
 package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.services.Service
+import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationContributor
 
-/**
- * Representation of a service definition that allows service instantiation for a given Ambari
- * cluster. The service definition is also capable of contributing to the cluster configuration.
- *
- * @see ConfigurationContributor
- * @see ServiceDescription
- */
-private[ambari] trait AmbariService extends Service {
-  def details: AmbariServiceDetails
+/** Ambari-specific information about a service.
+  *
+  * Derived classes are expected to be objects.
+  */
+trait AmbariService {
+
+  /** Associated Service */
+  val service: Service
+
+  val components: Seq[ComponentDescription]
+
+  /** Build a configurator contributor for a given parametrization and configuration path */
+  def configurator(
+      parametrization: service.Parametrization, configPath: String): ConfigurationContributor
+
+  /** The state of a service to be considered as running. */
+  def runningState: ServiceState =
+    if (components.forall(_.isClient)) InstalledService else StartedService
 }

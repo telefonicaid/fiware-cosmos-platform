@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.services.Zookeeper
 
-object AmbariZookeeper extends AmbariServiceDetails with FileConfiguration {
+object AmbariZookeeper extends AmbariService with FileConfiguration {
   override val service = Zookeeper
   override val components: Seq[ComponentDescription] = Seq(
     /* Zookeeper is a distributed application.

@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.services.{Service, HCatalog}
 
-object AmbariHCatalog extends AmbariServiceDetails with NoConfiguration {
+object AmbariHCatalog extends AmbariService with NoConfiguration {
   override val service: Service = HCatalog
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription.masterComponent("HCAT").makeClient

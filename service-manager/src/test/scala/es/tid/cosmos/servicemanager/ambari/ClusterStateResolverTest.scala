@@ -38,7 +38,7 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
   val serviceNames = Seq("FOO", "BAR")
 
   case class FakeAmbariService(name: String, fakedRunningState: ServiceState)
-      extends AmbariServiceDetails with NoConfiguration {
+      extends AmbariService with NoConfiguration {
     override val service: Service = new Service with NoParametrization {
       override val name: String = FakeAmbariService.this.name
     }

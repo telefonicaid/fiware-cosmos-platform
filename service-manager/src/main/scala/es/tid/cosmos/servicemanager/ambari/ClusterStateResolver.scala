@@ -20,13 +20,13 @@ import dispatch.StatusCode
 import es.tid.cosmos.servicemanager.RequestException
 import es.tid.cosmos.servicemanager.ambari.AmbariClusterState._
 import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, Cluster}
-import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDetails
+import es.tid.cosmos.servicemanager.ambari.services.AmbariService
 
 trait ClusterStateResolver extends Logging {
 
   def resolveState(
       cluster: Cluster,
-      allServices: Set[AmbariServiceDetails]): Future[AmbariClusterState] = {
+      allServices: Set[AmbariService]): Future[AmbariClusterState] = {
     val state_> = for {
       services <- Future.traverse(cluster.serviceNames)(cluster.getService)
     } yield if (services.forall(isServiceRunning(allServices))) Running else Unknown
@@ -35,7 +35,7 @@ trait ClusterStateResolver extends Logging {
     }
   }
 
-  private def isServiceRunning(allServices: Set[AmbariServiceDetails])
+  private def isServiceRunning(allServices: Set[AmbariService])
                               (service: ServiceClient): Boolean =
     allServices.find(_.service.name == service.name)
       .getOrElse(throw new IllegalStateException(s"Found an unknown service: ${service.name}"))

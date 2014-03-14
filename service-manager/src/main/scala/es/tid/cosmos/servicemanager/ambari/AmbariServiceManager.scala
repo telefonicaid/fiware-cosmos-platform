@@ -22,7 +22,6 @@ import es.tid.cosmos.platform.ial.{MachineProfile, InfrastructureProvider, Machi
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.AmbariServiceManager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
 import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.util.TcpServer
@@ -49,8 +48,6 @@ class AmbariServiceManager(
     hadoopConfig: HadoopConfig,
     clusterDao: ClusterDao) extends ServiceManager with Logging {
 
-  private val serviceConfigPath = hadoopConfig.servicesConfigDirectory
-
   private val dynamicProperties = new DynamicPropertiesFactory(hadoopConfig, () => for {
     description <- describePersistentHdfsCluster()
     master <- description.master
@@ -72,12 +69,10 @@ class AmbariServiceManager(
     val servicesWithDependencies = makeUserServiceLast(ServiceDependencies.executionPlan(
       BasicHadoopServices ++ serviceInstances + CosmosUserService.instance(Seq.empty)
     ), users)
-    val clusterServiceDescriptions =
-      servicesWithDependencies.map(toAmbariService(_, serviceConfigPath))
     val clusterDescription = clusterDao.registerCluster(
       name = name,
       size = clusterSize,
-      services = clusterServiceDescriptions.toSet
+      services = servicesWithDependencies.map(_.service).toSet
     )
     clusterDescription.withFailsafe {
       for {

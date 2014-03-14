@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.services.Hdfs
 
-object AmbariHdfs extends AmbariServiceDetails with FileConfiguration {
+object AmbariHdfs extends AmbariService with FileConfiguration {
   override val service = Hdfs
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription.masterComponent("NAMENODE"),

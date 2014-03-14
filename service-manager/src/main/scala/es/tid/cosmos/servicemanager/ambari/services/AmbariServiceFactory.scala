@@ -19,7 +19,7 @@ import es.tid.cosmos.servicemanager.services.Service
   */
 private[ambari] object AmbariServiceFactory {
 
-  private val ambariServices: Set[AmbariServiceDetails] = Set(
+  private val ambariServices: Set[AmbariService] = Set(
     AmbariCosmosUserService,
     AmbariHCatalog,
     AmbariHdfs,
@@ -35,11 +35,11 @@ private[ambari] object AmbariServiceFactory {
     AmbariZookeeper
   )
 
-  private val mapping: Map[Service, AmbariServiceDetails] = (for {
+  private val mapping: Map[Service, AmbariService] = (for {
     ambariService <- ambariServices
   } yield ambariService.service -> ambariService).toMap
 
-  def lookup(service: Service): AmbariServiceDetails =
+  def lookup(service: Service): AmbariService =
     mapping.getOrElse(service, throw new IllegalArgumentException(
       s"Unsupported service $service: no mapping to Ambari services"
     ))

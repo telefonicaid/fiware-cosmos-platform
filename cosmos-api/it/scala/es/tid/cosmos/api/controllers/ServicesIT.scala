@@ -19,10 +19,10 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.mocks.WithTestApplication
 
 class ServicesIT extends FlatSpec with MustMatchers {
-  "Services listing" must "list services provided by Service Manager" in new WithTestApplication() {
+  "Services listing" must "list services provided by Service Manager" in new WithTestApplication {
     val resource = route(FakeRequest(GET, "/cosmos/v1/services")).get
     status(resource) must equal (OK)
     contentType(resource) must be (Some("application/json"))
-    contentAsString(resource) must include ("HDFS")
+    contentAsString(resource) must include ("PIG")
   }
 }

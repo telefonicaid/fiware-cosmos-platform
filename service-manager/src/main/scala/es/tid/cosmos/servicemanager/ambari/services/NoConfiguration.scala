@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ambari.configuration._
 
-trait NoConfiguration { this: AmbariServiceDetails =>
+trait NoConfiguration { this: AmbariService =>
   override def configurator(
       parametrization: service.Parametrization, configPath: String): ConfigurationContributor =
     NoConfiguration.Contributor

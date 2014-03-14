@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationContributor, FileConfigurationContributor}
 import es.tid.cosmos.servicemanager.ambari.rest.{Host, ServiceClient, AmbariServer, Cluster}
-import es.tid.cosmos.servicemanager.ambari.services.{ComponentDescription, AmbariServiceDetails}
+import es.tid.cosmos.servicemanager.ambari.services.{ComponentDescription, AmbariService}
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.services.Service
 
@@ -25,7 +25,7 @@ private[ambari] class AmbariClusterManager(
     ambariServer: AmbariServer,
     rootPrivateSshKey: String,
     configPath: String,
-    serviceLookup: Service => AmbariServiceDetails) extends ClusterManager {
+    serviceLookup: Service => AmbariService) extends ClusterManager {
 
   val globalConfiguration = new FileConfigurationContributor(configPath, "global-basic")
 
@@ -33,7 +33,7 @@ private[ambari] class AmbariClusterManager(
       clusterDescription: ImmutableClusterDescription,
       serviceInstances: Seq[AnyServiceInstance],
       dynamicProperties: DynamicPropertiesFactory): Future[Unit] = {
-    val services: Seq[AmbariServiceDetails] = serviceInstances.map(_.service).map(serviceLookup)
+    val services: Seq[AmbariService] = serviceInstances.map(_.service).map(serviceLookup)
     for {
       cluster <- initCluster(clusterDescription)
       master = clusterDescription.master.get
@@ -74,7 +74,7 @@ private[ambari] class AmbariClusterManager(
     * @return the future of the service instance for the given cluster
     */
   private def createService(
-      ambariService: AmbariServiceDetails,
+      ambariService: AmbariService,
       cluster: Cluster,
       master: Host,
       slaves: Seq[Host]): Future[ServiceClient] = {

@@ -14,7 +14,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.services.CosmosUserService
 
-object AmbariCosmosUserService extends AmbariServiceDetails {
+object AmbariCosmosUserService extends AmbariService {
 
   override val service: CosmosUserService.type = CosmosUserService
 

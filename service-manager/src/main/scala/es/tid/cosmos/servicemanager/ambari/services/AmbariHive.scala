@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.services.Hive
 
-object AmbariHive extends AmbariServiceDetails with FileConfiguration {
+object AmbariHive extends AmbariService with FileConfiguration {
   override val service = Hive
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription.masterComponent("HIVE_SERVER"),

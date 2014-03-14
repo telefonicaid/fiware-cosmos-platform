@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.services.MapReduce2
 
-object AmbariMapReduce2 extends AmbariServiceDetails with FileConfiguration {
+object AmbariMapReduce2 extends AmbariService with FileConfiguration {
   override val service = MapReduce2
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription.masterComponent("HISTORYSERVER"),

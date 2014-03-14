@@ -11,9 +11,9 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.services.{Service, Pig}
+import es.tid.cosmos.servicemanager.services.Pig
 
-object AmbariPig extends AmbariServiceDetails with NoConfiguration {
-  override val service: Service = Pig
+object AmbariPig extends AmbariService with NoConfiguration {
+  override val service = Pig
   override val components = Seq(ComponentDescription.masterComponent("PIG").makeClient)
 }

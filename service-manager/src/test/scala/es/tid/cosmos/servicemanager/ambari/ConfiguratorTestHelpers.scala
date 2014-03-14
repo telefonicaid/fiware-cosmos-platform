@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager.ambari
 
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariServiceFactory, AmbariServiceDetails}
+import es.tid.cosmos.servicemanager.ambari.services.{AmbariServiceFactory, AmbariService}
 import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
 
 class ConfiguratorTestHelpers(
@@ -53,7 +53,7 @@ object ConfiguratorTestHelpers {
     servicesConfigDirectory = "/tmp/services"
   )
 
-  val AllServices: Set[AmbariServiceDetails] =
+  val AllServices: Set[AmbariService] =
     ServiceDependencies.ServiceCatalogue.map(AmbariServiceFactory.lookup)
 
   def properties(confType: String, number: Int) =

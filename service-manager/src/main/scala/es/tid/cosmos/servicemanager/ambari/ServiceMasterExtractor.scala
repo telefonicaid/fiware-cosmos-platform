@@ -15,14 +15,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
-import es.tid.cosmos.servicemanager.ambari.services.{ComponentDescription, AmbariServiceDetails}
+import es.tid.cosmos.servicemanager.ambari.services.{ComponentDescription, AmbariService}
 
 /** Extractor that returns the master host for a given service, i.e., the host that contains the
   * master component of that service
   */
 object ServiceMasterExtractor {
 
-  def getServiceMaster(cluster: Cluster, service: AmbariServiceDetails): Future[Host] = {
+  def getServiceMaster(cluster: Cluster, service: AmbariService): Future[Host] = {
     val masterComponent = findMasterComponent(service)
     for (hosts <- cluster.getHosts) yield findMasterHost(hosts, masterComponent)
       .getOrElse(throw ServiceMasterNotFound(cluster, service))
@@ -31,13 +31,13 @@ object ServiceMasterExtractor {
   private def findMasterHost(hosts: Seq[Host], masterComponent: ComponentDescription) =
     hosts.find(_.getComponentNames.contains(masterComponent.name))
 
-  private def findMasterComponent(service: AmbariServiceDetails) = {
+  private def findMasterComponent(service: AmbariService) = {
     val masterComponentOption = service.components.find(_.isMaster)
     require(masterComponentOption != None, "ServiceDescription must contain a master component")
     masterComponentOption.get
   }
 
-  case class ServiceMasterNotFound(cluster: Cluster, description: AmbariServiceDetails)
+  case class ServiceMasterNotFound(cluster: Cluster, description: AmbariService)
     extends Exception(
       s"Masternode not found for Service[${description.service.name}]-Cluster[${cluster.name}]")
 }

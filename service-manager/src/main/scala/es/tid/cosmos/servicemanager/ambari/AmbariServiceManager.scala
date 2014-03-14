@@ -22,11 +22,17 @@ import es.tid.cosmos.platform.ial.{MachineProfile, InfrastructureProvider, Machi
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
-import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies._
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.util.TcpServer
 import es.tid.cosmos.servicemanager.util.TcpServer._
+import es.tid.cosmos.servicemanager.ambari.AmbariServiceManager._
+import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
+import es.tid.cosmos.servicemanager.services._
+import es.tid.cosmos.servicemanager.clusters.ImmutableClusterDescription
+import es.tid.cosmos.platform.ial.MachineState
+import es.tid.cosmos.servicemanager.clusters.HostDetails
+import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 
 /** Manager of the Ambari service configuration workflow.
   * It allows creating clusters with specified services using Ambari.
@@ -47,7 +53,6 @@ class AmbariServiceManager(
     exclusiveMasterSizeCutoff: Int,
     hadoopConfig: HadoopConfig,
     clusterDao: ClusterDao) extends ServiceManager with Logging {
-  import AmbariServiceManager._
 
   private val serviceConfigPath = hadoopConfig.servicesConfigDirectory
 
@@ -63,19 +68,15 @@ class AmbariServiceManager(
 
   override val optionalServices: Set[AnyServiceInstance] = OptionalServices
 
-  private def userServices(users: Seq[ClusterUser]): Seq[Service] =
-    Seq(new CosmosUserService(users))
-
   override def createCluster(
       name: ClusterName,
       clusterSize: Int,
       serviceInstances: Set[AnyServiceInstance],
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = {
-    val serviceDescriptions = serviceInstances.toSeq.map(_.service)
-    val servicesWithDependencies = makeUserServiceLast(
-      new ServiceBundle(BasicHadoopServices ++ serviceDescriptions ++ userServices(users)).withDependencies
-    )
+    val servicesWithDependencies = makeUserServiceLast(ServiceDependencies.executionPlan(
+      BasicHadoopServices ++ serviceInstances + CosmosUserService.instance(Seq.empty)
+    ), users)
     val clusterServiceDescriptions =
       servicesWithDependencies.map(toAmbariService(_, serviceConfigPath))
     val clusterDescription = clusterDao.registerCluster(
@@ -104,9 +105,9 @@ class AmbariServiceManager(
     *        [[es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies]]
     *        doesn't work for this case.
     */
-  private def makeUserServiceLast(services: Seq[Service]): Seq[Service] =
-    services.filterNot(_.name == CosmosUserService.name) ++
-      services.find(_.name == CosmosUserService.name)
+  private def makeUserServiceLast(services: Seq[AnyServiceInstance], users: Seq[ClusterUser]): Seq[AnyServiceInstance] =
+    services.filterNot(_.service.name == CosmosUserService.name) :+
+      new CosmosUserService(users).instance(users)
 
   private def masterAndSlaves(machines: Seq[MachineState]) = machines match {
     case Seq(master, slaves @ _*) if machines.length < exclusiveMasterSizeCutoff =>
@@ -188,8 +189,10 @@ class AmbariServiceManager(
 
   override def deployPersistentHdfsCluster(): Future[Unit] = for {
     machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)
-    serviceDescriptions = Seq(Zookeeper, Hdfs, InfinityfsServer, new CosmosUserService(Seq()))
-      .map(toAmbariService(_, serviceConfigPath))
+    serviceDescriptions = (
+      Seq(Zookeeper, Hdfs, InfinityfsServer).map(_.instance) :+
+        new CosmosUserService(Seq.empty).instance(Seq.empty)
+    ).map(toAmbariService(_, serviceConfigPath))
     clusterDescription = clusterDao.registerCluster(
       id = persistentHdfsId,
       name = ClusterName(persistentHdfsId.id),
@@ -211,14 +214,14 @@ class AmbariServiceManager(
 }
 
 private[ambari] object AmbariServiceManager {
-  val BasicHadoopServices: Seq[Service] = Seq(Hdfs, MapReduce2, InfinityfsDriver)
+  val BasicHadoopServices: Set[AnyServiceInstance] =
+    Set(Hdfs, MapReduce2, InfinityfsDriver).map(_.instance)
   val OptionalServices: Set[AnyServiceInstance] = Set(Hive, Oozie, Pig, Sqoop).map(_.instance)
-  val AllServices: Seq[Service] = new ServiceBundle(
-    BasicHadoopServices ++ OptionalServices.map(_.service) ++ Seq(CosmosUserService, InfinityfsServer)
-  ).withDependencies.distinct
 
   private def setMachineInfo(
-      description: MutableClusterDescription, master: MachineState, slaves: Seq[MachineState]) {
+      description: MutableClusterDescription,
+      master: MachineState,
+      slaves: Seq[MachineState]): Unit = {
     description.master = toHostInfo(master)
     description.slaves = slaves.map(toHostInfo)
   }

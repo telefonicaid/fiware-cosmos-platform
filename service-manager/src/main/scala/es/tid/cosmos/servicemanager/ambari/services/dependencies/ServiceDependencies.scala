@@ -11,9 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari.services.dependencies
 
-import es.tid.cosmos.servicemanager.Service
+import es.tid.cosmos.servicemanager.{ServiceInstance, NoParametrization, AnyServiceInstance, Service}
 import es.tid.cosmos.servicemanager.ambari.services._
-import es.tid.cosmos.servicemanager.services.ServiceDependencyMapping
+import es.tid.cosmos.servicemanager.services._
+import es.tid.cosmos.servicemanager.ServiceInstance
 
 /** Object expressing inter-service dependencies. */
 object ServiceDependencies {
@@ -39,21 +40,29 @@ object ServiceDependencies {
     Zookeeper
   )
 
+  /** Default instances of services. At the moment, just services with no parametrization and
+    * services that have sensible default parametrisation.
+    */
+  val DefaultServiceInstances: Set[AnyServiceInstance] = ServiceCatalogue.collect {
+    case service: Service with NoParametrization => service.instance
+    case CosmosUserService => ServiceInstance[CosmosUserService](
+      new CosmosUserService(users = Seq.empty),
+      Seq.empty
+    )
+  }
+
   private val Dependencies = new ServiceDependencyMapping(ServiceCatalogue)
 
-  class ServiceBundle(services: Seq[Service]) {
-
-    /** Extend a given collection of services with their dependencies.
-      * The dependencies of a service will be added before that service in the resulting collection
-      * so as to enforce an order where a service's dependencies will be processed first. e.g.
-      *
-      * {{{
-      *   // assume that serviceA depends on serviceC and serviceB on serviceD
-      *   import ServiceDependencies._
-      *
-      *   Seq(serviceA, serviceB).withDependencies == Seq(serviceC, serviceA, serviceD, serviceB)
-      * }}}
-      */
-    val withDependencies: Seq[Service] = Dependencies.executionPlan(services.toSet)
+  def executionPlan(serviceInstances: Set[AnyServiceInstance]): Seq[AnyServiceInstance] = {
+    val requestedServices = serviceInstances.map(_.service)
+    val serviceExecutionPlan = Dependencies.executionPlan(requestedServices)
+    val instanceMap = mapByService(DefaultServiceInstances) ++ mapByService(serviceInstances)
+    serviceExecutionPlan.map { service =>
+      instanceMap.getOrElse(service,
+        throw new RuntimeException(s"No parametrization found for service ${service.name}"))
+    }
   }
+
+  private def mapByService(instances: Set[AnyServiceInstance]): Map[Service, AnyServiceInstance] =
+    instances.map(instance => (instance.service, instance)).toMap
 }

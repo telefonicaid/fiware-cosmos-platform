@@ -11,16 +11,11 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import org.scalatest.FlatSpec
-import org.scalatest.matchers.MustMatchers
+import es.tid.cosmos.servicemanager.{ComponentDescription, Service}
+import es.tid.cosmos.servicemanager.services.InfinityfsDriver
 
-import es.tid.cosmos.servicemanager.ComponentDescription
-
-class InfinityfsDriverTest extends FlatSpec with MustMatchers {
-
-  "An infinity driver service" must "have a single driver component" in {
-    InfinityfsDriver.components must be (Seq(
-      ComponentDescription.allNodesComponent("INFINITY_HFS_DRIVER").makeClient
-    ))
-  }
+object AmbariInfinityfsDriver extends AmbariServiceDetails {
+  override val service: Service = InfinityfsDriver
+  override val components =
+    Seq(ComponentDescription.allNodesComponent("INFINITY_HFS_DRIVER").makeClient)
 }

@@ -16,31 +16,29 @@ import scala.concurrent.Future
 
 import es.tid.cosmos.servicemanager.{Service, ComponentDescription}
 import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
+import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDetails
 
-/**
- * Extractor that returns the master host for a given service, i.e., the host that contains the
- * master component of that service
- */
+/** Extractor that returns the master host for a given service, i.e., the host that contains the
+  * master component of that service
+  */
 object ServiceMasterExtractor {
 
-  def getServiceMaster(cluster: Cluster, description: Service): Future[Host] = {
-    val masterComponent = findMasterComponent(description)
-    for {
-      hosts <- cluster.getHosts
-    } yield findMasterHost(hosts, masterComponent)
-      .getOrElse(throw ServiceMasterNotFound(cluster, description))
+  def getServiceMaster(cluster: Cluster, service: AmbariServiceDetails): Future[Host] = {
+    val masterComponent = findMasterComponent(service)
+    for (hosts <- cluster.getHosts) yield findMasterHost(hosts, masterComponent)
+      .getOrElse(throw ServiceMasterNotFound(cluster, service))
   }
 
   private def findMasterHost(hosts: Seq[Host], masterComponent: ComponentDescription) =
     hosts.find(_.getComponentNames.contains(masterComponent.name))
 
-  private def findMasterComponent(description: Service) = {
-    val masterComponentOption = description.components.find(_.isMaster)
+  private def findMasterComponent(service: AmbariServiceDetails) = {
+    val masterComponentOption = service.components.find(_.isMaster)
     require(masterComponentOption != None, "ServiceDescription must contain a master component")
     masterComponentOption.get
   }
 
-  case class ServiceMasterNotFound(
-    cluster: Cluster, description: Service) extends Exception(
-      s"Masternode not found for Service[${description.name}]-Cluster[${cluster.name}]")
+  case class ServiceMasterNotFound(cluster: Cluster, description: AmbariServiceDetails)
+    extends Exception(
+      s"Masternode not found for Service[${description.service.name}]-Cluster[${cluster.name}]")
 }

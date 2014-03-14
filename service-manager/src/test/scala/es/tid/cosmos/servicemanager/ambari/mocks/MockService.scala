@@ -11,20 +11,22 @@
 
 package es.tid.cosmos.servicemanager.ambari.mocks
 
-import es.tid.cosmos.servicemanager.ambari.services.AmbariService
-import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationBundle, ConfigurationKeys}
-import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, Host, Cluster}
-import scala.concurrent.Future
+import scala.concurrent.Future._
+
 import org.mockito.BDDMockito._
 import org.mockito.Matchers._
-import scala.concurrent.Future._
-import es.tid.cosmos.servicemanager.ComponentDescription
 import org.scalatest.mock.MockitoSugar
+
+import es.tid.cosmos.servicemanager.{Service, NoParametrization, ComponentDescription}
+import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationBundle, ConfigurationKeys}
+import es.tid.cosmos.servicemanager.ambari.services.{AmbariServiceDetails, AmbariService}
+import es.tid.cosmos.servicemanager.ambari.rest.ServiceClient
 
 case class MockService(
     name: String,
     components: Seq[ComponentDescription],
-    configuration: ConfigurationBundle) extends AmbariService with MockitoSugar {
+    configuration: ConfigurationBundle)
+  extends AmbariService with NoParametrization with MockitoSugar {
 
   val serviceMock = mock[ServiceClient]
   given(serviceMock.addComponent(any())).willReturn(successful("componentName"))
@@ -35,6 +37,8 @@ case class MockService(
   override def contributions(
     properties: Map[ConfigurationKeys.Value, String]): ConfigurationBundle = configuration
 
-  override def createService(cluster: Cluster, master: Host, slaves: Seq[Host]): Future[ServiceClient] =
-    Future.successful(serviceMock)
+  override def ambariService = new AmbariServiceDetails {
+    override val components = MockService.this.components
+    override val service = MockService.this
+  }
 }

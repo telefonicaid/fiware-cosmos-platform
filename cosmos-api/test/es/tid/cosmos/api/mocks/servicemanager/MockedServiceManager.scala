@@ -17,9 +17,9 @@ import scala.language.{postfixOps, reflectiveCalls}
 import scala.util.Random
 
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.services.{Hive, Pig, Hdfs, MapReduce2}
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.clusters.ImmutableClusterDescription
+import es.tid.cosmos.servicemanager.services.{Pig, Hive}
 
 /** In-memory, simulated service manager. */
 class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {

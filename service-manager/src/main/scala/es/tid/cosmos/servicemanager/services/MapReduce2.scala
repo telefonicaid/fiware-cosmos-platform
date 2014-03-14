@@ -9,21 +9,18 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.services
+package es.tid.cosmos.servicemanager.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
+import es.tid.cosmos.servicemanager.{NoParametrization, Service}
+import es.tid.cosmos.servicemanager.ambari.services.{AmbariMapReduce2, AmbariServiceDetails}
 
 /** Representation of the Map Reduce 2 service.
   *
   * The service needs to run along with YARN.
-  * @see [[es.tid.cosmos.servicemanager.ambari.services.Yarn]]
+  * @see [[Yarn]]
   */
 object MapReduce2 extends Service with NoParametrization {
   override val name: String = "MAPREDUCE2"
-
-  override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription.masterComponent("HISTORYSERVER"),
-    ComponentDescription.masterComponent("MAPREDUCE2_CLIENT").makeClient
-  )
   override val dependencies: Set[Service] = Set(Yarn)
+  override def ambariService: AmbariServiceDetails = AmbariMapReduce2
 }

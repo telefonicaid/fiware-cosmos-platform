@@ -9,12 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.services
+package es.tid.cosmos.servicemanager
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
+/** Mix-in for easy parametrization of services. */
+trait ParametrizedWith[T] { this: Service =>
+  override type Parametrization = T
 
-object Pig extends Service with NoParametrization {
-  override val name = "PIG"
-  override val components = Seq(ComponentDescription.masterComponent("PIG").makeClient)
-  override val dependencies: Set[Service] = Set(Hdfs, MapReduce2)
+  def instance(parametrization: T): ServiceInstance[this.type] =
+    ServiceInstance[this.type](this, parametrization)
 }

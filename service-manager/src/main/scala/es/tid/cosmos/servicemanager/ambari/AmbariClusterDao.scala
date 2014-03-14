@@ -17,7 +17,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 import es.tid.cosmos.servicemanager.{ClusterName, Service, ClusterUser}
-import es.tid.cosmos.servicemanager.ambari.services.AmbariService
+import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDetails
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.clusters._
 
@@ -34,7 +34,7 @@ import es.tid.cosmos.servicemanager.clusters._
 private[ambari] class AmbariClusterDao(
     dao: ClusterDao,
     ambariServer: AmbariServer,
-    allServices: Seq[AmbariService],
+    allServices: Set[AmbariServiceDetails],
     initializationPeriod: FiniteDuration = 5 minutes)
   extends ClusterDao with ClusterStateResolver {
 

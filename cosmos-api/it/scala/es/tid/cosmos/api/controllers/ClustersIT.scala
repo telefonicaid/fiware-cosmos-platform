@@ -21,8 +21,8 @@ import es.tid.cosmos.api.controllers.cluster.CreateClusterParams
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.mocks.SampleClusters
 import es.tid.cosmos.servicemanager.ClusterName
-import es.tid.cosmos.servicemanager.ambari.services.Hdfs
 import es.tid.cosmos.servicemanager.clusters.ClusterId
+import es.tid.cosmos.servicemanager.services.Hdfs
 
 class ClustersIT
   extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors {

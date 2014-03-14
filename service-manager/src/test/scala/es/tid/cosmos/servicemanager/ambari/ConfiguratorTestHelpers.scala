@@ -11,19 +11,17 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import es.tid.cosmos.servicemanager.Service
+import es.tid.cosmos.servicemanager.{NoParametrization, Service}
+import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.ambari.services.AmbariService
-import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies._
+import es.tid.cosmos.servicemanager.ambari.services.{AmbariServiceDetails, AmbariService}
+import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
 
 class ConfiguratorTestHelpers(
     masterName: String,
     slaveNames: Seq[String],
     hadoopConfig: HadoopConfig = ConfiguratorTestHelpers.TestHadoopConfig) {
-  import ConfiguratorTestHelpers._
-
   val dynamicPropertiesFactory = new DynamicPropertiesFactory(hadoopConfig, () => None)
-
   val dynamicProperties = dynamicPropertiesFactory.forCluster(masterName, slaveNames)
 
   private def propertiesUpTo(confType: String, number: Int) =
@@ -55,18 +53,15 @@ object ConfiguratorTestHelpers {
     servicesConfigDirectory = "/tmp/services"
   )
 
-  val BasicServices = new ServiceBundle(AmbariServiceManager.BasicHadoopServices).withDependencies
-    .map(toAmbariServicesNoConfig)
-
-  val AllServices = new ServiceBundle(AmbariServiceManager.AllServices).withDependencies
-    .map(toAmbariServicesNoConfig)
+  val AllServices: Set[AmbariServiceDetails] =
+    ServiceDependencies.ServiceCatalogue.map(_.ambariService)
 
   def toAmbariServicesNoConfig(service: Service): AmbariService =
     service match {
       case ambariService: AmbariService => ambariService
-      case _ => new AmbariService with NoConfigurationContribution {
+      case _ => new AmbariService with NoConfigurationContribution with NoParametrization {
         override val name = service.name
-        override val components = service.components
+        override def ambariService = service.ambariService
       }
     }
 

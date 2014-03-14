@@ -11,16 +11,13 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
+import es.tid.cosmos.servicemanager.{ComponentDescription, Service}
+import es.tid.cosmos.servicemanager.services.Oozie
 
-/** Representation of the YARN service. */
-object Yarn extends Service with NoParametrization {
-  override val name: String = "YARN"
-
+object AmbariOozie extends AmbariServiceDetails {
+  override val service: Service = Oozie
   override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription.masterComponent("RESOURCEMANAGER"),
-    ComponentDescription.slaveComponent("NODEMANAGER"),
-    ComponentDescription.masterComponent("YARN_CLIENT").makeClient)
-
-  override val dependencies: Set[Service] = Set(InfinityfsDriver)
+    ComponentDescription.masterComponent("OOZIE_SERVER"),
+    ComponentDescription.masterComponent("OOZIE_CLIENT").makeClient
+  )
 }

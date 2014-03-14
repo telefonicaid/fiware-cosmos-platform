@@ -21,8 +21,8 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.servicemanager.ambari.services.Hdfs
 import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
+import es.tid.cosmos.servicemanager.services.Hdfs
 
 class ServiceMasterExtractorTest extends FlatSpec with MustMatchers with MockitoSugar {
 
@@ -33,7 +33,7 @@ class ServiceMasterExtractorTest extends FlatSpec with MustMatchers with Mockito
     given(host1.getComponentNames).willReturn(List("other"))
     given(host2.getComponentNames).willReturn(List("DATANODE"))
     given(host3.getComponentNames).willReturn(List("NAMENODE", "HDFS_CLIENT"))
-    val master: Future[Host] = ServiceMasterExtractor.getServiceMaster(cluster, Hdfs)
+    val master: Future[Host] = ServiceMasterExtractor.getServiceMaster(cluster, Hdfs.ambariService)
     val host = Await.result(master, 1 second)
     host must equal(host3)
   }

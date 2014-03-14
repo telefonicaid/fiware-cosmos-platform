@@ -50,7 +50,6 @@ class AmbariClusterManagerTest
     verify(cluster).applyConfiguration(the(contributionsWithNumber(2).services(0)), tagPattern)
     verify(cluster).addHosts(any())
     serviceDescriptions.foreach {sd =>
-      verify(sd).createService(cluster, hosts.head, hosts)
       verify(sd).contributions(configTestHelper.dynamicProperties)
       val service = sd.serviceMock
       verify(service).install()

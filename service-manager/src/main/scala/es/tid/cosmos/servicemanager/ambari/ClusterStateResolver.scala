@@ -18,15 +18,15 @@ import com.typesafe.scalalogging.slf4j.Logging
 import dispatch.StatusCode
 
 import es.tid.cosmos.servicemanager.RequestException
+import es.tid.cosmos.servicemanager.ambari.AmbariClusterState._
 import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, Cluster}
-import es.tid.cosmos.servicemanager.ambari.services.AmbariService
+import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDetails
 
 trait ClusterStateResolver extends Logging {
-  import AmbariClusterState._
 
   def resolveState(
       cluster: Cluster,
-      allServices: Seq[AmbariService]): Future[AmbariClusterState] = {
+      allServices: Set[AmbariServiceDetails]): Future[AmbariClusterState] = {
     val state_> = for {
       services <- Future.traverse(cluster.serviceNames)(cluster.getService)
     } yield if (services.forall(isServiceRunning(allServices))) Running else Unknown
@@ -35,12 +35,9 @@ trait ClusterStateResolver extends Logging {
     }
   }
 
-  private def isServiceRunning(
-      allServices: Seq[AmbariService])(service: ServiceClient): Boolean = {
-    val serviceDescription = allServices
-      .find(_.name == service.name)
-      .getOrElse(
-        throw new IllegalStateException(s"Found an unknown service: ${service.name}"))
-    serviceDescription.runningState.toString == service.state
-  }
+  private def isServiceRunning(allServices: Set[AmbariServiceDetails])
+                              (service: ServiceClient): Boolean =
+    allServices.find(_.service.name == service.name)
+      .getOrElse(throw new IllegalStateException(s"Found an unknown service: ${service.name}"))
+      .runningState.toString == service.state
 }

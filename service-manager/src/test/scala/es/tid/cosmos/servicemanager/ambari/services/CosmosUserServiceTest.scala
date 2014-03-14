@@ -14,7 +14,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.{MatchResult, Matcher, MustMatchers}
 
-import es.tid.cosmos.servicemanager.{ClusterUser, ComponentDescription}
+import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 class CosmosUserServiceTest extends FlatSpec with MustMatchers {
@@ -30,16 +30,7 @@ class CosmosUserServiceTest extends FlatSpec with MustMatchers {
     ConfigurationKeys.MasterNode -> "aNameNodeName"
   ))
 
-  "A Cosmos user service" must "have a master and a slave components" in {
-    description.name must equal("COSMOS_USER")
-    description.components must (
-      have length 2 and
-      contain(ComponentDescription.masterComponent("USER_MASTER_MANAGER").makeClient) and
-      contain(ComponentDescription.slaveComponent("USER_SLAVE_MANAGER").makeClient)
-    )
-  }
-
-  it must "not contribute to global and core configurations" in {
+  "A Cosmos user service" must "not contribute to global and core configurations" in {
     contributions.global must be('empty)
     contributions.core must be('empty)
   }

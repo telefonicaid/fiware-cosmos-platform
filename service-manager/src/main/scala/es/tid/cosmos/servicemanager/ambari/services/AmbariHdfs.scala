@@ -11,11 +11,14 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
+import es.tid.cosmos.servicemanager.{ComponentDescription, Service}
+import es.tid.cosmos.servicemanager.services.Hdfs
 
-/** Component that enables the infinity:// scheme in Hadoop. */
-object InfinityfsDriver extends Service with NoParametrization {
-  private val componentName = "INFINITY_HFS_DRIVER"
-  override val name = "INFINITYFS_DRIVER"
-  override val components = Seq(ComponentDescription.allNodesComponent(componentName).makeClient)
+object AmbariHdfs extends AmbariServiceDetails {
+  override val service: Service = Hdfs
+  override val components: Seq[ComponentDescription] = Seq(
+    ComponentDescription.masterComponent("NAMENODE"),
+    ComponentDescription.slaveComponent("DATANODE"),
+    ComponentDescription.masterComponent("HDFS_CLIENT").makeClient
+  )
 }

@@ -14,6 +14,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.util.SshKeyGenerator
+import es.tid.cosmos.servicemanager.services.Hdfs
 
 /** Class for setting up a cluster user by presenting the configuration as
   * a service description.
@@ -21,10 +22,12 @@ import es.tid.cosmos.servicemanager.util.SshKeyGenerator
   * Information about users is sent as configuration properties prefixed by {{{user1_}}} for the
   * first user, {{{user2_}}} for the second and so on.
   */
-class CosmosUserService(users: Seq[ClusterUser]) extends AmbariService {
+class CosmosUserService(users: Seq[ClusterUser])
+  extends AmbariService with ParametrizedWith[Seq[ClusterUser]] {
+
   override val name: String = CosmosUserService.name
 
-  override val components: Seq[ComponentDescription] = CosmosUserService.components
+  override val ambariService = AmbariCosmosUserService
 
   override val dependencies: Set[Service] = Set(Hdfs)
 
@@ -52,13 +55,10 @@ class CosmosUserService(users: Seq[ClusterUser]) extends AmbariService {
   }
 }
 
-object CosmosUserService extends Service with NoParametrization {
+object CosmosUserService extends Service with ParametrizedWith[Seq[ClusterUser]] {
   override val name: String = "COSMOS_USER"
 
   override val dependencies: Set[Service] = Set(Hdfs)
 
-  override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription.masterComponent("USER_MASTER_MANAGER").makeClient,
-    ComponentDescription.slaveComponent("USER_SLAVE_MANAGER").makeClient
-  )
+  override val ambariService = AmbariCosmosUserService
 }

@@ -9,10 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.servicemanager.ambari.services
 
-/** Mix-in for services that don't need parametrization */
-trait NoParametrization { this: Service =>
-  override type Parametrization = None.type
-  lazy val instance: ServiceInstance[this.type] = ServiceInstance[this.type](this, None)
+import es.tid.cosmos.servicemanager.{ComponentDescription, Service}
+import es.tid.cosmos.servicemanager.services.Pig
+
+object AmbariPig extends AmbariServiceDetails {
+  override val service: Service = Pig
+  override val components = Seq(ComponentDescription.masterComponent("PIG").makeClient)
 }

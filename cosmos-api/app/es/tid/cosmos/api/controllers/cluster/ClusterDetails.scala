@@ -19,8 +19,9 @@ import play.api.mvc.RequestHeader
 
 import es.tid.cosmos.api.profile.Cluster
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
-import es.tid.cosmos.servicemanager.ambari.services.{InfinityfsDriver, CosmosUserService}
+import es.tid.cosmos.servicemanager.ambari.services.CosmosUserService
 import es.tid.cosmos.servicemanager.clusters.{HostDetails, ClusterDescription}
+import es.tid.cosmos.servicemanager.services.InfinityfsDriver
 
 /** A cluster from the perspective of API clients. */
 case class ClusterDetails(

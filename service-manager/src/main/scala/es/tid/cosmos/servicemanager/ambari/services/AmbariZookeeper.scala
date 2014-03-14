@@ -11,12 +11,11 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
+import es.tid.cosmos.servicemanager.{ComponentDescription, Service}
+import es.tid.cosmos.servicemanager.services.Zookeeper
 
-/** Representation of the Zookeeper service. */
-object Zookeeper extends Service with NoParametrization {
-  override val name: String = "ZOOKEEPER"
-
+object AmbariZookeeper extends AmbariServiceDetails {
+  override val service: Service = Zookeeper
   override val components: Seq[ComponentDescription] = Seq(
     /* Zookeeper is a distributed application.
      * We choose to have one zookeeper server on each slave for resilience purposes.
@@ -25,5 +24,3 @@ object Zookeeper extends Service with NoParametrization {
     ComponentDescription.masterComponent("ZOOKEEPER_CLIENT").makeClient
   )
 }
-
-

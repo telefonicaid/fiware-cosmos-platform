@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys.MasterNode
+import es.tid.cosmos.servicemanager.services.Oozie
 
 class OozieIT extends ConfiguredServiceTest  {
 

@@ -11,16 +11,13 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
+import es.tid.cosmos.servicemanager.{ComponentDescription, Service}
+import es.tid.cosmos.servicemanager.services.MapReduce2
 
-/** Representation of the WebHCat service */
-object WebHCat extends Service with NoParametrization {
-
-  override val name: String = "WEBHCAT"
-
+object AmbariMapReduce2 extends AmbariServiceDetails {
+  override val service: Service = MapReduce2
   override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription.masterComponent("WEBHCAT_SERVER")
+    ComponentDescription.masterComponent("HISTORYSERVER"),
+    ComponentDescription.masterComponent("MAPREDUCE2_CLIENT").makeClient
   )
-
-  override val dependencies: Set[Service] = Set(Hdfs, MapReduce2)
 }

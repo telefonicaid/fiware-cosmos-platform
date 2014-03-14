@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.servicemanager
 
+import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDetails
+
 /** Representation of a service definition.
   *
   * Derived classes should be objects as only an instance per service is assumed.
@@ -24,5 +26,7 @@ trait Service {
   /** Direct service dependencies */
   val dependencies: Set[Service] = Set.empty
 
-  val components: Seq[ComponentDescription]
+  /** TODO: replace this method by a factory method  in ambari-service-manager
+    * (inverting the dependency) */
+  def ambariService: AmbariServiceDetails
 }

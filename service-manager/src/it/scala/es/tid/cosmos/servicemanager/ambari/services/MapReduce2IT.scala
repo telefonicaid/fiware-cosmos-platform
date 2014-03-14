@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys._
+import es.tid.cosmos.servicemanager.services.MapReduce2
 
 class MapReduce2IT extends ConfiguredServiceTest {
 

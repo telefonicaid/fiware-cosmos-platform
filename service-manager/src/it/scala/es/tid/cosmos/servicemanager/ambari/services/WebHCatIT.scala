@@ -13,6 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
+import es.tid.cosmos.servicemanager.services.WebHCat
 
 class WebHCatIT extends ConfiguredServiceTest {
 

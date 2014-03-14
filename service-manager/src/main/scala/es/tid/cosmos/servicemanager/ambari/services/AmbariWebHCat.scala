@@ -11,17 +11,12 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
+import es.tid.cosmos.servicemanager.{ComponentDescription, Service}
+import es.tid.cosmos.servicemanager.services.WebHCat
 
-/** Representation of the HDFS service. */
-object Hdfs extends Service with NoParametrization {
-  override val name: String = "HDFS"
-
-  override val dependencies: Set[Service] = Set(Zookeeper, InfinityfsDriver)
-
+object AmbariWebHCat extends AmbariServiceDetails {
+  override val service: Service = WebHCat
   override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription.masterComponent("NAMENODE"),
-    ComponentDescription.slaveComponent("DATANODE"),
-    ComponentDescription.masterComponent("HDFS_CLIENT").makeClient
+    ComponentDescription.masterComponent("WEBHCAT_SERVER")
   )
 }

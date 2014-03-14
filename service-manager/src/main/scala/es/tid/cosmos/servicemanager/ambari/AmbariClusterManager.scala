@@ -14,10 +14,10 @@ package es.tid.cosmos.servicemanager.ambari
 import scala.concurrent.{blocking, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import es.tid.cosmos.servicemanager.ClusterManager
+import es.tid.cosmos.servicemanager.{ComponentDescription, ClusterManager}
 import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
-import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, AmbariServer, Cluster}
-import es.tid.cosmos.servicemanager.ambari.services.AmbariService
+import es.tid.cosmos.servicemanager.ambari.rest.{Host, ServiceClient, AmbariServer, Cluster}
+import es.tid.cosmos.servicemanager.ambari.services.{AmbariServiceDetails, AmbariService}
 import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClusterDescription, ClusterId}
 
 private[ambari] class AmbariClusterManager(
@@ -45,9 +45,37 @@ private[ambari] class AmbariClusterManager(
       properties = dynamicProperties.forCluster(masterHost.name, slaveHosts.map(_.name)),
       contributors = this +: serviceDescriptions)
     services <- Future.traverse(serviceDescriptions)(
-      srv => srv.createService(cluster, masterHost, slaveHosts))
+      srv => createService(srv.ambariService, cluster, masterHost, slaveHosts))
     deployedServices <- installInOrder(services)
   } yield ()
+
+  /** Create a service instance on a given cluster.
+    *
+    * @param ambariService  service to create
+    * @param cluster the cluster for which to instantiate the service
+    * @param master the cluster's master node
+    * @param slaves the cluster's slave nodes
+    * @return the future of the service instance for the given cluster
+    */
+  private def createService(
+      ambariService: AmbariServiceDetails,
+      cluster: Cluster,
+      master: Host,
+      slaves: Seq[Host]): Future[ServiceClient] = {
+
+    def addComponents(hosts: Seq[Host], componentFilter: ComponentDescription => Boolean) =
+      Future.sequence(
+        hosts.map(_.addComponents(ambariService.components.filter(componentFilter).map(_.name))))
+
+    for {
+      service <- cluster.addService(ambariService.service.name)
+      _ <- Future.sequence(ambariService.components.map(component => service.addComponent(component.name)))
+      _ <- master.addComponents(ambariService.components.filter(_.isMaster).map(_.name))
+      (masterAndSlaveHost, exclusiveSlaves) = slaves.partition(_.name == master.name)
+      _ <- addComponents(exclusiveSlaves, _.isSlave)
+      _ <- addComponents(masterAndSlaveHost, c => c.isSlave && !c.isMaster)
+    } yield service
+  }
 
   override def removeCluster(cluster: ClusterDescription): Future[Unit] = for {
     _ <- stopStartedServices(cluster.id)
@@ -60,7 +88,7 @@ private[ambari] class AmbariClusterManager(
       serviceDescription: AmbariService): Future[Any] = for {
     cluster <- ambariServer.getCluster(clusterDescription.id.toString)
     service <- cluster.getService(serviceDescription.name)
-    master <- ServiceMasterExtractor.getServiceMaster(cluster, serviceDescription)
+    master <- ServiceMasterExtractor.getServiceMaster(cluster, serviceDescription.ambariService)
     stoppedService <- service.stop()
     slaveDetails = clusterDescription.slaves
     slaves <- Future.traverse(slaveDetails)(details => cluster.getHost(details.hostname))

@@ -21,10 +21,10 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.servicemanager.{ComponentDescription, RequestException}
-import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigProperties, ConfigurationBundle, ConfigurationKeys}
+import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, Cluster}
-import es.tid.cosmos.servicemanager.ambari.services.{InstalledService, StartedService, ServiceState, AmbariService}
+import es.tid.cosmos.servicemanager.ambari.services._
+import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
 
 class ClusterStateResolverTest extends FlatSpec with MustMatchers
   with MockitoSugar with FutureMatchers with OneInstancePerTest {
@@ -36,16 +36,18 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
   val bar = mock[ServiceClient]
   val serviceNames = Seq("FOO", "BAR")
 
-  case class FakeAmbariService(
-      override val name: String,
-      override val runningState: ServiceState) extends AmbariService {
-    def contributions(properties: ConfigProperties): ConfigurationBundle =
-      throw new NotImplementedError()
-    val components: Seq[ComponentDescription] = Seq()
+  case class FakeAmbariService(name: String, fakedRunningState: ServiceState)
+      extends AmbariServiceDetails {
+    override val service: Service = new Service with NoParametrization {
+      override val name: String = FakeAmbariService.this.name
+      override def ambariService: AmbariServiceDetails = FakeAmbariService.this
+    }
+    override val components: Seq[ComponentDescription] = Seq.empty
+    override def runningState: ServiceState = fakedRunningState
   }
 
   "The ClusterStateResolver" must "resolve the unknown state on clusters which have failed services" in {
-    given(cluster.serviceNames).willReturn(AmbariServiceManager.AllServices.map(_.name))
+    given(cluster.serviceNames).willReturn(ServiceDependencies.ServiceCatalogue.toSeq.map(_.name))
     given(cluster.getService(any())).willReturn(Future.successful(hdfs))
     given(hdfs.state).willReturn("ERROR")
     given(hdfs.name).willReturn("HDFS")
@@ -63,9 +65,8 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
     given(bar.state).willReturn(InstalledService.toString)
     val resolveState_> = instance.resolveState(
       cluster,
-      Seq(
-        FakeAmbariService("FOO", StartedService),
-        FakeAmbariService("BAR", StartedService)))
+      Set(FakeAmbariService("FOO", StartedService), FakeAmbariService("BAR", StartedService))
+    )
     resolveState_> must eventually (be (AmbariClusterState.Unknown))
   }
 
@@ -79,9 +80,8 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
     given(bar.state).willReturn(InstalledService.toString)
     val resolveState_> = instance.resolveState(
       cluster,
-      Seq(
-        FakeAmbariService("FOO", StartedService),
-        FakeAmbariService("BAR", InstalledService)))
+      Set(FakeAmbariService("FOO", StartedService), FakeAmbariService("BAR", InstalledService))
+    )
     resolveState_> must eventually (be (AmbariClusterState.Running))
   }
 
@@ -92,9 +92,8 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
     given(cluster.getService("BAR")).willReturn(Future.failed(clusterNotFoundException))
     val resolveState_> = instance.resolveState(
       cluster,
-      Seq(
-        FakeAmbariService("FOO", StartedService),
-        FakeAmbariService("BAR", InstalledService)))
+      Set(FakeAmbariService("FOO", StartedService), FakeAmbariService("BAR", InstalledService))
+    )
     resolveState_> must eventually (be (AmbariClusterState.ClusterNotPresent))
   }
 
@@ -108,8 +107,8 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
     given(bar.state).willReturn(InstalledService.toString)
     val resolveState_> = instance.resolveState(
       cluster,
-      Seq(
-        FakeAmbariService("FOO", StartedService)))
+      Set(FakeAmbariService("FOO", StartedService))
+    )
     resolveState_> must eventuallyFailWith[IllegalStateException]
   }
 }

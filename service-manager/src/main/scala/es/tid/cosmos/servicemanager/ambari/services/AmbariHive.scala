@@ -11,20 +11,15 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys._
+import es.tid.cosmos.servicemanager.{ComponentDescription, Service}
 import es.tid.cosmos.servicemanager.services.Hive
 
-class HiveIT extends ConfiguredServiceTest {
-
-  override val dynamicProperties = Map(
-    MasterNode -> "aMasterNodeName"
+object AmbariHive extends AmbariServiceDetails {
+  override val service: Service = Hive
+  override val components: Seq[ComponentDescription] = Seq(
+    ComponentDescription.masterComponent("HIVE_SERVER"),
+    ComponentDescription.masterComponent("HIVE_METASTORE"),
+    ComponentDescription.masterComponent("HIVE_CLIENT").makeClient,
+    ComponentDescription.masterComponent("MYSQL_SERVER")
   )
-
-  override val service = Hive
-
-  "The Hive service" must "have global, core and service configuration contributions" in {
-    contributions.global must be ('defined)
-    contributions.core must be ('defined)
-    contributions.services must have length 1
-  }
 }

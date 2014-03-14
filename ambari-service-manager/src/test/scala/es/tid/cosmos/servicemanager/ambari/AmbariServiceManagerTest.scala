@@ -39,6 +39,7 @@ import es.tid.cosmos.servicemanager.ambari.rest.AmbariTestBase
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.{ServiceDependencyMapping, Pig, Hive}
 
 class AmbariServiceManagerTest
   extends AmbariTestBase with MockitoSugar with FutureMatchers with Eventually {
@@ -264,16 +265,14 @@ class AmbariServiceManagerTest
   }
 
   it must "create cluster including service bundles" in new WithMachines(3) {
-    import ServiceDependencies._
-
     val clusterId = instance.createCluster(
-      ClusterName("clusterName"), 3, Set(Hive.instance), Seq(), UnfilteredPassThrough)
+      ClusterName("clusterName"), 3, Set(Hive.instance), Seq.empty, UnfilteredPassThrough
+    )
     waitForClusterCompletion(clusterId, instance)
     val description = instance.describeCluster(clusterId)
-    val expectedServices = new ServiceBundle(
-      AmbariServiceManager.BasicHadoopServices ++ Seq(CosmosUserService, Hive)
-    ).withDependencies
-    description.get.services must be (expectedServices.map(_.name).toSet)
+    val expectedServices = new ServiceDependencyMapping(ServiceDependencies.ServiceCatalogue)
+      .resolve(AmbariServiceManager.BasicHadoopServices.map(_.service) + Hive + CosmosUserService)
+    description.get.services must be (expectedServices.map(_.name))
   }
 
   private def matchesValidation(expected: ExecutableValidation) =

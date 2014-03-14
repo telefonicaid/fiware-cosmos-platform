@@ -22,7 +22,6 @@ import net.liftweb.json.Extraction._
 import es.tid.cosmos.servicemanager.ServiceError
 import es.tid.cosmos.servicemanager.ambari.configuration.{Configuration, HeaderOnlyConfiguration}
 
-
 /**
  * Wraps Ambari's cluster-related REST API calls.
  *
@@ -30,7 +29,7 @@ import es.tid.cosmos.servicemanager.ambari.configuration.{Configuration, HeaderO
  * @param clusterInfo   the Ambari JSON response that describes the cluster
  * @param serverBaseUrl the base url that describes the server
  */
-private[ambari] class Cluster (clusterInfo: JValue, serverBaseUrl: Request)
+private[ambari] class Cluster(clusterInfo: JValue, serverBaseUrl: Request)
   extends RequestProcessor {
   val name = clusterInfo \ "Clusters" \ "cluster_name" match {
     case JString(clusterName) => clusterName

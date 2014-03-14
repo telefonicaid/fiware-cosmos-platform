@@ -9,18 +9,14 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.services
+package es.tid.cosmos.servicemanager.services
 
-import es.tid.cosmos.servicemanager.{NoParametrization, Service, ComponentDescription}
+import es.tid.cosmos.servicemanager.{NoParametrization, Service}
+import es.tid.cosmos.servicemanager.ambari.services.{AmbariOozie, AmbariServiceDetails}
 
 /** Representation of the Oozie service. */
 object Oozie extends Service with NoParametrization {
   override val name: String = "OOZIE"
-
-  override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription.masterComponent("OOZIE_SERVER"),
-    ComponentDescription.masterComponent("OOZIE_CLIENT").makeClient
-  )
-
   override val dependencies: Set[Service] = Set(Hdfs, MapReduce2)
+  override def ambariService: AmbariServiceDetails = AmbariOozie
 }

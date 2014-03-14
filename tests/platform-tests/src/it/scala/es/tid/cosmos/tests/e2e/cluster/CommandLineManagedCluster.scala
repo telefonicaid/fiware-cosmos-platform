@@ -35,16 +35,6 @@ class CommandLineManagedCluster(val id: String, val owner: User)
     s"cosmos -c ${executedBy.cosmosrcPath} show $id" !! ProcessLogger(info(_))
   )
 
-  override def addUser(clusterUser: String, executedBy: User = owner): Int = {
-    val command = s"cosmos -c ${executedBy.cosmosrcPath} adduser $id $clusterUser"
-    command ! ProcessLogger(info(_))
-  }
-
-  override def removeUser(clusterUser: String, executedBy: User = owner): Int = {
-    val command = s"cosmos -c ${executedBy.cosmosrcPath} rmuser $id $clusterUser"
-    command ! ProcessLogger(info(_))
-  }
-
   override def terminate(executedBy: User = owner) {
     info(s"Calling terminate on cluster $id")
     s"cosmos -c ${executedBy.cosmosrcPath} terminate $id" ! ProcessLogger(info(_))

@@ -11,11 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ComponentDescription
-import es.tid.cosmos.servicemanager.services.{Service, Hive}
+import es.tid.cosmos.servicemanager.services.Hive
 
-object AmbariHive extends AmbariServiceDetails {
-  override val service: Service = Hive
+object AmbariHive extends AmbariServiceDetails with FileConfiguration {
+  override val service = Hive
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription.masterComponent("HIVE_SERVER"),
     ComponentDescription.masterComponent("HIVE_METASTORE"),

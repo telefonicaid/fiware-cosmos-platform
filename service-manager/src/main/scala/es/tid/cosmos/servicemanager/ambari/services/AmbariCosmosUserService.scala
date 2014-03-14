@@ -11,13 +11,18 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ComponentDescription
-import es.tid.cosmos.servicemanager.services.Service
+import es.tid.cosmos.servicemanager.ClusterUser
+import es.tid.cosmos.servicemanager.services.CosmosUserService
 
 object AmbariCosmosUserService extends AmbariServiceDetails {
-  override val service: Service = CosmosUserService
+
+  override val service: CosmosUserService.type = CosmosUserService
+
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription.masterComponent("USER_MASTER_MANAGER").makeClient,
     ComponentDescription.slaveComponent("USER_SLAVE_MANAGER").makeClient
   )
+
+  override def configurator(users: Seq[ClusterUser], configPath: String) =
+    new CosmosUserConfigurator(users)
 }

@@ -12,7 +12,6 @@
 package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys.MasterNode
-import es.tid.cosmos.servicemanager.services.Oozie
 
 class OozieIT extends ConfiguredServiceTest  {
 
@@ -20,7 +19,7 @@ class OozieIT extends ConfiguredServiceTest  {
     MasterNode -> "aMasterNodeName"
   )
 
-  override val service = Oozie
+  override def configurator = AmbariOozie.configurator(None, resourcesConfigDirectory)
 
   "An Oozie service" must "have global and service configuration contributions without core" in {
     contributions.global must be ('defined)

@@ -34,29 +34,15 @@ class FileConfigurationContributorTest extends FlatSpec with MustMatchers with O
     ServiceConfiguration(s"test-service-site$index",
         Map(s"service.example$index" -> s"service$index-$masterName"))
   )
-  trait ClasspathFileConfigurationContributor extends FileConfigurationContributor {
-    override protected val configPath: String = packageResourcesConfigDirectory
-  }
+  class ClasspathFileConfigurationContributor(configName: String)
+    extends FileConfigurationContributor(packageResourcesConfigDirectory, configName)
 
-  val full = new ClasspathFileConfigurationContributor {
-    override protected val configName: String = "global-core-service"
-  }
-  val noGlobal = new ClasspathFileConfigurationContributor {
-    override protected val configName: String = "core-service"
-  }
-  val noCore = new ClasspathFileConfigurationContributor {
-    override protected val configName: String = "global-service"
-  }
-  val justService = new ClasspathFileConfigurationContributor {
-    override protected val configName: String = "service"
-  }
-  val noService = new ClasspathFileConfigurationContributor {
-    override protected val configName: String = "no-service"
-  }
-
-  val serviceList = new ClasspathFileConfigurationContributor {
-    override protected val configName: String = "service-list"
-  }
+  val full = new ClasspathFileConfigurationContributor("global-core-service")
+  val noGlobal = new ClasspathFileConfigurationContributor("core-service")
+  val noCore = new ClasspathFileConfigurationContributor("global-service")
+  val justService = new ClasspathFileConfigurationContributor("service")
+  val noService = new ClasspathFileConfigurationContributor("no-service")
+  val serviceList = new ClasspathFileConfigurationContributor("service-list")
 
   val properties = Map(ConfigurationKeys.MasterNode -> masterName)
 

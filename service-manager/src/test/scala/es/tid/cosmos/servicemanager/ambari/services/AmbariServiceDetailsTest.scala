@@ -14,14 +14,14 @@ package es.tid.cosmos.servicemanager.ambari.services
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.services.Service
 
 class AmbariServiceDetailsTest extends FlatSpec with MustMatchers {
 
   class AmbariTestService(
       serverServices: Seq[String] = Seq.empty,
-      clientServices: Seq[String] = Seq.empty) extends AmbariServiceDetails{
+      clientServices: Seq[String] = Seq.empty)
+    extends AmbariServiceDetails with NoConfiguration {
 
     override val service: Service = null
 

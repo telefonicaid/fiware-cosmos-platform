@@ -20,7 +20,7 @@ class InfinityfsDriverIT extends ConfiguredServiceTest {
     InfinityMasterNode -> "andromeda-infinity"
   )
 
-  override val service = InfinityfsDriver
+  override def configurator = AmbariInfinityfsDriver.configurator(None, resourcesConfigDirectory)
 
   val contributedConfig = contributions.core.get
 

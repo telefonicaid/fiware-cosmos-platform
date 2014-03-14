@@ -19,20 +19,19 @@ import com.typesafe.config._
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes._
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits._
 
-/**
- * Trait for mixing-in configuration contributions from a file.
- * The loader will load the configuration found in the classpath `[configName].conf` file
- * as specified by `configName`.
- *
- * The Loader makes use of TypeSafe's Config class, so any syntax supported by that class is
- * supported by the FileConfigurationContributor.
- *
- * @see [[https://github.com/typesafehub/config About TypeSafe's config]]
- * @see [[https://github.com/typesafehub/config/blob/master/HOCON.md About HOCON format]]
- */
-trait FileConfigurationContributor extends ConfigurationContributor {
-  protected val configPath: String
-  protected val configName: String
+/** Read configuration contributions from file.
+  *
+  * The loader will load the configuration found in the classpath `[configName].conf` file
+  * as specified by `configName`.
+  *
+  * The Loader makes use of TypeSafe's Config class, so any syntax supported by that class is
+  * supported by the FileConfigurationContributor.
+  *
+  * @see [[https://github.com/typesafehub/config About TypeSafe's config]]
+  * @see [[https://github.com/typesafehub/config/blob/master/HOCON.md About HOCON format]]
+  */
+class FileConfigurationContributor(configPath: String, configName: String)
+  extends ConfigurationContributor {
 
   private class ClusterConfigIncluder(
       properties: ConfigProperties,

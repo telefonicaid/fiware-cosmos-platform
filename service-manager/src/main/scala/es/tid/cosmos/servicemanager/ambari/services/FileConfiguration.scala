@@ -11,12 +11,9 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.services.{Service, InfinityfsServer}
+import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
 
-object AmbariInfinityfsServer extends AmbariServiceDetails with NoConfiguration {
-  override val service: Service = InfinityfsServer
-  override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription.masterComponent("INFINITY_HFS_MASTER_SERVER"),
-    ComponentDescription.slaveComponent("INFINITY_HFS_SLAVE_PROXY")
-  )
+trait FileConfiguration { this: AmbariServiceDetails =>
+  override def configurator(parametrization: service.Parametrization, configPath: String) =
+    new FileConfigurationContributor(configPath, service.name.toLowerCase)
 }

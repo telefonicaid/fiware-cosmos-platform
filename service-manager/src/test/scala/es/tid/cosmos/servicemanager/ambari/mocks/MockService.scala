@@ -17,10 +17,9 @@ import org.mockito.BDDMockito._
 import org.mockito.Matchers._
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.servicemanager.ComponentDescription
-import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationBundle, ConfigurationKeys}
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariServiceDetails, AmbariService}
+import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.rest.ServiceClient
+import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.services.NoParametrization
 
 case class MockService(
@@ -35,11 +34,12 @@ case class MockService(
   given(serviceMock.start()).willReturn(successful(serviceMock))
   given(serviceMock.stop()).willReturn(successful(serviceMock))
 
-  override def contributions(
-    properties: Map[ConfigurationKeys.Value, String]): ConfigurationBundle = configuration
-
   override def details = new AmbariServiceDetails {
     override val components = MockService.this.components
     override val service = MockService.this
+    override def configurator(parametrization: None.type, configPath: String) =
+      new ConfigurationContributor {
+        override def contributions(properties: Map[ConfigurationKeys.Value, String]) = configuration
+      }
   }
 }

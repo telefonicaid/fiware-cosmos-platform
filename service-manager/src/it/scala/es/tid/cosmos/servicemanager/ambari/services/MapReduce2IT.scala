@@ -12,7 +12,6 @@
 package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys._
-import es.tid.cosmos.servicemanager.services.MapReduce2
 
 class MapReduce2IT extends ConfiguredServiceTest {
 
@@ -27,7 +26,7 @@ class MapReduce2IT extends ConfiguredServiceTest {
     MaxReduceTasks -> "4"
   )
 
-  override val service = MapReduce2
+  override def configurator = AmbariMapReduce2.configurator(None, resourcesConfigDirectory)
 
   "A MapReduce service" must "have global, core and service configuration contributions" in {
     contributions.global must be ('defined)

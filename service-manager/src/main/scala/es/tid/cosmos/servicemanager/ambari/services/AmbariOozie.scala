@@ -11,11 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ComponentDescription
-import es.tid.cosmos.servicemanager.services.{Service, Oozie}
+import es.tid.cosmos.servicemanager.services.Oozie
 
-object AmbariOozie extends AmbariServiceDetails {
-  override val service: Service = Oozie
+object AmbariOozie extends AmbariServiceDetails with FileConfiguration {
+  override val service = Oozie
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription.masterComponent("OOZIE_SERVER"),
     ComponentDescription.masterComponent("OOZIE_CLIENT").makeClient

@@ -11,10 +11,8 @@
 
 package es.tid.cosmos.servicemanager.ambari.services.dependencies
 
-import es.tid.cosmos.servicemanager.{ServiceInstance, AnyServiceInstance}
-import es.tid.cosmos.servicemanager.ambari.services._
+import es.tid.cosmos.servicemanager.AnyServiceInstance
 import es.tid.cosmos.servicemanager.services._
-import es.tid.cosmos.servicemanager.ServiceInstance
 
 /** Object expressing inter-service dependencies. */
 object ServiceDependencies {
@@ -45,10 +43,7 @@ object ServiceDependencies {
     */
   val DefaultServiceInstances: Set[AnyServiceInstance] = ServiceCatalogue.collect {
     case service: Service with NoParametrization => service.instance
-    case CosmosUserService => ServiceInstance[CosmosUserService](
-      new CosmosUserService(users = Seq.empty),
-      Seq.empty
-    )
+    case CosmosUserService => CosmosUserService.instance(Seq.empty)
   }
 
   private val Dependencies = new ServiceDependencyMapping(ServiceCatalogue)

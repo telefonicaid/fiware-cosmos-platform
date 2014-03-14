@@ -11,8 +11,8 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.services.Service
+import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationContributor
 
 /** Temporal bridge to refactor the service manager.
   *
@@ -24,6 +24,10 @@ trait AmbariServiceDetails {
   val service: Service
 
   val components: Seq[ComponentDescription]
+
+  /** Build a configurator contributor for a given parametrization and configuration path */
+  def configurator(
+      parametrization: service.Parametrization, configPath: String): ConfigurationContributor
 
   /** The state of a service to be considered as running. */
   def runningState: ServiceState =

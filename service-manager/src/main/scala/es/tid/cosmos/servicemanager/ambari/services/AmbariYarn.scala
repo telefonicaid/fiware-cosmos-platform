@@ -11,10 +11,9 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.services.{Service, Yarn}
 
-object AmbariYarn extends AmbariServiceDetails {
+object AmbariYarn extends AmbariServiceDetails with FileConfiguration {
   override val service: Service = Yarn
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription.masterComponent("RESOURCEMANAGER"),

@@ -36,13 +36,10 @@ object AmbariServiceDescriptionFactory {
       case serviceWithConfig: Service with ConfigurationContributor =>
         new AmbariService with NoParametrization {
           override val name: String = serviceWithConfig.name
-          override def contributions(properties: ConfigProperties): ConfigurationBundle =
-            serviceWithConfig.contributions(properties)
           override def details: AmbariServiceDetails = AmbariServiceFactory.lookup(service)
         }
-      case _ => new ServiceWithConfigurationFile with NoParametrization {
+      case _ => new AmbariService with NoParametrization {
         override val name: String = service.name
-        override protected val configPath: String = configDirectoryPath
         override def toString: String = s"FileConfigDecoratedService[${service.toString}}]"
         override def details: AmbariServiceDetails = AmbariServiceFactory.lookup(service)
       }

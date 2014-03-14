@@ -12,13 +12,12 @@
 package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
-import es.tid.cosmos.servicemanager.services.Zookeeper
 
 class ZookeeperIT extends ConfiguredServiceTest {
 
   override val dynamicProperties = Map(ConfigurationKeys.ZookeeperPort -> "1234")
 
-  override val service = Zookeeper
+  override def configurator = AmbariZookeeper.configurator(None, resourcesConfigDirectory)
 
   "A Zookeeper service" must "only have global configuration contributions" in {
     contributions.global must be ('defined)

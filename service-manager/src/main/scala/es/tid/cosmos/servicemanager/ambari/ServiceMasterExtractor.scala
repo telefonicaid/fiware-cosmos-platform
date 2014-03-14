@@ -14,9 +14,8 @@ package es.tid.cosmos.servicemanager.ambari
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
-import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDetails
+import es.tid.cosmos.servicemanager.ambari.services.{ComponentDescription, AmbariServiceDetails}
 
 /** Extractor that returns the master host for a given service, i.e., the host that contains the
   * master component of that service

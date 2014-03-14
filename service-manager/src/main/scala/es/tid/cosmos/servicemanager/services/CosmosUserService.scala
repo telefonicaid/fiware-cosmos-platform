@@ -9,13 +9,11 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.services
+package es.tid.cosmos.servicemanager.services
 
-import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
+import es.tid.cosmos.servicemanager.ClusterUser
 
-/** Trait for service descriptions that have a configuration file. */
-trait ServiceWithConfigurationFile
-  extends AmbariService with FileConfigurationContributor {
-
-  override protected lazy val configName = name.toLowerCase
+object CosmosUserService extends Service with ParametrizedWith[Seq[ClusterUser]] {
+  override val name: String = "COSMOS_USER"
+  override val dependencies: Set[Service] = Set(Hdfs)
 }

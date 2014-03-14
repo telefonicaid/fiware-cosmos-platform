@@ -20,7 +20,7 @@ class HiveIT extends ConfiguredServiceTest {
     MasterNode -> "aMasterNodeName"
   )
 
-  override val service = Hive
+  override def configurator = AmbariHive.configurator(None, resourcesConfigDirectory)
 
   "The Hive service" must "have global, core and service configuration contributions" in {
     contributions.global must be ('defined)

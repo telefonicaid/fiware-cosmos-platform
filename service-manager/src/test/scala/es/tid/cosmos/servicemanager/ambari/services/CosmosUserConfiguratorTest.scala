@@ -17,18 +17,19 @@ import org.scalatest.matchers.{MatchResult, Matcher, MustMatchers}
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
-class CosmosUserServiceTest extends FlatSpec with MustMatchers {
+class CosmosUserConfiguratorTest extends FlatSpec with MustMatchers {
 
-  val description = new CosmosUserService(Seq(ClusterUser(
+  val users = Seq(ClusterUser(
     username = "userName",
     publicKey = "public_key",
     sshEnabled = true,
     hdfsEnabled = false,
     isSudoer = false
-  )))
-  val contributions = description.contributions(Map(
-    ConfigurationKeys.MasterNode -> "aNameNodeName"
   ))
+  val properties = Map(
+    ConfigurationKeys.MasterNode -> "aNameNodeName"
+  )
+  var contributions = new CosmosUserConfigurator(users).contributions(properties)
 
   "A Cosmos user service" must "not contribute to global and core configurations" in {
     contributions.global must be('empty)

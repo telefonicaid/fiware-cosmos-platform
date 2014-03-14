@@ -29,9 +29,10 @@ class ConfiguratorTestHelpers(
   def mergedCoreConfiguration(number: Int) =
     new CoreConfiguration(propertiesUpTo("Core", number))
 
-  def mergedGlobalConfiguration(number: Int, instance: AmbariClusterManager) =
-    GlobalConfiguration(instance.contributions(dynamicProperties).global.get.properties ++
-      propertiesUpTo("Global", number))
+  def mergedGlobalConfiguration(number: Int, instance: AmbariClusterManager) = GlobalConfiguration(
+    instance.globalConfiguration.contributions(dynamicProperties).global.get.properties ++
+      propertiesUpTo("Global", number)
+  )
 }
 
 object ConfiguratorTestHelpers {

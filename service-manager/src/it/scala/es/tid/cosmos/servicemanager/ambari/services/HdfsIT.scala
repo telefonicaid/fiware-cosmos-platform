@@ -13,6 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys._
 import es.tid.cosmos.servicemanager.services.Hdfs
+import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationContributor
 
 class HdfsIT extends ConfiguredServiceTest {
 
@@ -22,7 +23,7 @@ class HdfsIT extends ConfiguredServiceTest {
     NameNodeHttpPort -> "50070"
   )
 
-  override val service = Hdfs
+  override def configurator = AmbariHdfs.configurator(None, resourcesConfigDirectory)
 
   "An Hdfs service" must "have global, core and service configuration contributions" in {
     contributions.global must be('defined)

@@ -11,11 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ComponentDescription
-import es.tid.cosmos.servicemanager.services.{Service, WebHCat}
+import es.tid.cosmos.servicemanager.services.WebHCat
 
-object AmbariWebHCat extends AmbariServiceDetails {
-  override val service: Service = WebHCat
+object AmbariWebHCat extends AmbariServiceDetails with FileConfiguration {
+  override lazy val service = WebHCat
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription.masterComponent("WEBHCAT_SERVER")
   )

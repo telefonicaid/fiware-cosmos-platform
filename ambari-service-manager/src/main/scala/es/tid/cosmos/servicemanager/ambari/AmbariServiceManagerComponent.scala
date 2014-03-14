@@ -17,9 +17,8 @@ import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDaoComponent}
-import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
-import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
 import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
+import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceFactory
 
@@ -53,7 +52,8 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
   private lazy val ambariClusterManager = new AmbariClusterManager(
     ambariServer,
     infrastructureProvider.rootPrivateSshKey,
-    hadoopConfig.servicesConfigDirectory
+    hadoopConfig.servicesConfigDirectory,
+    AmbariServiceFactory.lookup
   )
 
   override lazy val serviceManager: AmbariServiceManager = new AmbariServiceManager(

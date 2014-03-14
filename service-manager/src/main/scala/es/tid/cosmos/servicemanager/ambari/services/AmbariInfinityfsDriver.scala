@@ -11,11 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.services.{Service, InfinityfsDriver}
 
-object AmbariInfinityfsDriver extends AmbariServiceDetails {
-  override val service: Service = InfinityfsDriver
+object AmbariInfinityfsDriver extends AmbariServiceDetails with FileConfiguration {
+  override val service = InfinityfsDriver
   override val components =
     Seq(ComponentDescription.allNodesComponent("INFINITY_HFS_DRIVER").makeClient)
 }

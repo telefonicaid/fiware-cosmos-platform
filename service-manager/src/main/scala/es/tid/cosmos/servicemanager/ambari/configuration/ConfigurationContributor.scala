@@ -24,9 +24,3 @@ trait ConfigurationContributor {
     */
   def contributions(properties: ConfigProperties): ConfigurationBundle
 }
-
-trait NoConfigurationContribution {
-  this: ConfigurationContributor =>
-
-  def contributions(properties: ConfigProperties) = ConfigurationBundle.NoConfiguration
-}

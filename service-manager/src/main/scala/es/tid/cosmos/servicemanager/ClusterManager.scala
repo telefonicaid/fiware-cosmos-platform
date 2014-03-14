@@ -17,11 +17,10 @@ import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClust
 import es.tid.cosmos.servicemanager.ambari.DynamicPropertiesFactory
 
 trait ClusterManager {
-  type ServiceDescriptionType
 
   def deployCluster(
     clusterDescription: ImmutableClusterDescription,
-    serviceDescriptions: Seq[ServiceDescriptionType],
+    services: Seq[AnyServiceInstance],
     dynamicProperties: DynamicPropertiesFactory): Future[Any]
 
   def removeCluster(cluster: ClusterDescription): Future[Any]
@@ -29,5 +28,5 @@ trait ClusterManager {
   def changeServiceConfiguration(
     clusterDescription: ImmutableClusterDescription,
     dynamicProperties: DynamicPropertiesFactory,
-    serviceDescription: ServiceDescriptionType): Future[Any]
+    serviceDescription: AnyServiceInstance): Future[Any]
 }

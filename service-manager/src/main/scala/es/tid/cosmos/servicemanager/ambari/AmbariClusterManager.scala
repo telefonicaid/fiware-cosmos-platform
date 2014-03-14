@@ -14,40 +14,56 @@ package es.tid.cosmos.servicemanager.ambari
 import scala.concurrent.{blocking, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import es.tid.cosmos.servicemanager.{ComponentDescription, ClusterManager}
-import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
+import es.tid.cosmos.servicemanager._
+import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationContributor, FileConfigurationContributor}
 import es.tid.cosmos.servicemanager.ambari.rest.{Host, ServiceClient, AmbariServer, Cluster}
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariServiceFactory, AmbariServiceDetails, AmbariService}
-import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClusterDescription, ClusterId}
+import es.tid.cosmos.servicemanager.ambari.services.{ComponentDescription, AmbariServiceDetails}
+import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.Service
 
 private[ambari] class AmbariClusterManager(
     ambariServer: AmbariServer,
     rootPrivateSshKey: String,
-    override val configPath: String) extends ClusterManager with FileConfigurationContributor {
-  import AmbariClusterManager._
+    configPath: String,
+    serviceLookup: Service => AmbariServiceDetails) extends ClusterManager {
 
-  override type ServiceDescriptionType = AmbariService
-
-  override val configName = "global-basic"
+  val globalConfiguration = new FileConfigurationContributor(configPath, "global-basic")
 
   override def deployCluster(
       clusterDescription: ImmutableClusterDescription,
-      serviceDescriptions: Seq[ServiceDescriptionType],
-      dynamicProperties: DynamicPropertiesFactory): Future[Unit] = for {
-    cluster <- initCluster(clusterDescription)
-    master = clusterDescription.master.get
-    slaves = clusterDescription.slaves
-    hosts <- cluster.addHosts(clusterDescription.machines.map(_.hostname))
-    masterHost = hosts.find(_.name == master.hostname).get
-    slaveHosts = hosts.filter(host => slaves.exists(_.hostname == host.name))
-    _ <- Configurator.applyConfiguration(
-      cluster,
-      properties = dynamicProperties.forCluster(masterHost.name, slaveHosts.map(_.name)),
-      contributors = this +: serviceDescriptions)
-    services <- Future.traverse(serviceDescriptions)(
-      srv => createService(srv.details, cluster, masterHost, slaveHosts))
-    deployedServices <- installInOrder(services)
-  } yield ()
+      serviceInstances: Seq[AnyServiceInstance],
+      dynamicProperties: DynamicPropertiesFactory): Future[Unit] = {
+    val services: Seq[AmbariServiceDetails] = serviceInstances.map(_.service).map(serviceLookup)
+    for {
+      cluster <- initCluster(clusterDescription)
+      master = clusterDescription.master.get
+      slaves = clusterDescription.slaves
+      hosts <- cluster.addHosts(clusterDescription.machines.map(_.hostname))
+      masterHost = hosts.find(_.name == master.hostname).get
+      slaveHosts = hosts.filter(host => slaves.exists(_.hostname == host.name))
+      _ <- Configurator.applyConfiguration(
+        cluster,
+        properties = dynamicProperties.forCluster(masterHost.name, slaveHosts.map(_.name)),
+        contributors = configuratorContributors(serviceInstances)
+      )
+      serviceClients <- Future.traverse(services) { srv =>
+        createService(srv, cluster, masterHost, slaveHosts)
+      }
+      deployedServices <- installInOrder(serviceClients)
+    } yield ()
+  }
+
+  private def configuratorContributors(
+      serviceInstances: Seq[AnyServiceInstance]): Seq[ConfigurationContributor] =
+    serviceInstances.map(configuratorContributor) :+ globalConfiguration
+
+  private def configuratorContributor(serviceInstance: AnyServiceInstance): ConfigurationContributor = {
+    val ambariService = serviceLookup(serviceInstance.service)
+    ambariService.configurator(
+      serviceInstance.parameter.asInstanceOf[ambariService.service.Parametrization],
+      configPath
+    )
+  }
 
   /** Create a service instance on a given cluster.
     *
@@ -85,24 +101,29 @@ private[ambari] class AmbariClusterManager(
   override def changeServiceConfiguration(
       clusterDescription: ImmutableClusterDescription,
       dynamicProperties: DynamicPropertiesFactory,
-      serviceDescription: AmbariService): Future[Any] = for {
-    cluster <- ambariServer.getCluster(clusterDescription.id.toString)
-    service <- cluster.getService(serviceDescription.name)
-    master <- ServiceMasterExtractor.getServiceMaster(cluster, serviceDescription.details)
-    stoppedService <- service.stop()
-    slaveDetails = clusterDescription.slaves
-    slaves <- Future.traverse(slaveDetails)(details => cluster.getHost(details.hostname))
-    properties = dynamicProperties.forCluster(master.name, slaves.map(_.name))
-    _ <- Configurator.applyConfiguration(cluster, properties, List(serviceDescription))
-    startedService <- stoppedService.start()
-  } yield startedService
+      serviceInstance: AnyServiceInstance): Future[Any] = {
+    val ambariService = serviceLookup(serviceInstance.service)
+    for {
+      cluster <- ambariServer.getCluster(clusterDescription.id.toString)
+      service <- cluster.getService(serviceInstance.service.name)
+      master <- ServiceMasterExtractor.getServiceMaster(cluster, ambariService)
+      stoppedService <- service.stop()
+      slaveDetails = clusterDescription.slaves
+      slaves <- Future.traverse(slaveDetails)(details => cluster.getHost(details.hostname))
+      properties = dynamicProperties.forCluster(master.name, slaves.map(_.name))
+      _ <- Configurator.applyConfiguration(
+        cluster, properties, Seq(configuratorContributor(serviceInstance)))
+      startedService <- stoppedService.start()
+    } yield startedService
+  }
 
   private def initCluster(description: ImmutableClusterDescription) : Future[Cluster] = {
     val distinctHostnames = description.machines.map(_.hostname).toSet
     for {
       _ <- ambariServer.bootstrapMachines(distinctHostnames, rootPrivateSshKey)
       _ <- ensureHostsRegistered(distinctHostnames)
-      cluster <- ambariServer.createCluster(description.id.toString, StackVersion)
+      cluster <- ambariServer.createCluster(
+        description.id.toString, AmbariClusterManager.StackVersion)
     } yield cluster
   }
 

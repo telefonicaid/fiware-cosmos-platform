@@ -20,19 +20,14 @@ import com.typesafe.scalalogging.slf4j.Logging
 import es.tid.cosmos.common.PassThrough
 import es.tid.cosmos.platform.ial.{MachineProfile, InfrastructureProvider, MachineState}
 import es.tid.cosmos.servicemanager._
+import es.tid.cosmos.servicemanager.ambari.AmbariServiceManager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
-import es.tid.cosmos.servicemanager.ambari.services._
+import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.util.TcpServer
 import es.tid.cosmos.servicemanager.util.TcpServer._
-import es.tid.cosmos.servicemanager.ambari.AmbariServiceManager._
-import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
 import es.tid.cosmos.servicemanager.services._
-import es.tid.cosmos.servicemanager.clusters.ImmutableClusterDescription
-import es.tid.cosmos.platform.ial.MachineState
-import es.tid.cosmos.servicemanager.clusters.HostDetails
-import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 
 /** Manager of the Ambari service configuration workflow.
   * It allows creating clusters with specified services using Ambari.
@@ -90,7 +85,7 @@ class AmbariServiceManager(
           preConditions(clusterDescription.id), MachineProfile.G1Compute, clusterSize, waitForSsh)
         (master, slaves) = masterAndSlaves(machines)
         _ = setMachineInfo(clusterDescription, master, slaves)
-        _ <- createCluster(clusterDescription, clusterServiceDescriptions)
+        _ <- createCluster(clusterDescription, servicesWithDependencies)
         _ = clusterDao.setUsers(clusterDescription.id, users.toSet)
       } yield ()
     }
@@ -105,9 +100,10 @@ class AmbariServiceManager(
     *        [[es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies]]
     *        doesn't work for this case.
     */
-  private def makeUserServiceLast(services: Seq[AnyServiceInstance], users: Seq[ClusterUser]): Seq[AnyServiceInstance] =
+  private def makeUserServiceLast(
+      services: Seq[AnyServiceInstance], users: Seq[ClusterUser]): Seq[AnyServiceInstance] =
     services.filterNot(_.service.name == CosmosUserService.name) :+
-      new CosmosUserService(users).instance(users)
+      CosmosUserService.instance(users)
 
   private def masterAndSlaves(machines: Seq[MachineState]) = machines match {
     case Seq(master, slaves @ _*) if machines.length < exclusiveMasterSizeCutoff =>
@@ -118,7 +114,7 @@ class AmbariServiceManager(
 
   private def createCluster(
       dbClusterDescription: MutableClusterDescription,
-      serviceDescriptions: Seq[AmbariService]) = {
+      serviceDescriptions: Seq[AnyServiceInstance]) = {
     require(dbClusterDescription.master.isDefined,
       "This function cannot be called if the master has not been set")
     require(dbClusterDescription.slaves.nonEmpty,
@@ -172,11 +168,13 @@ class AmbariServiceManager(
     require(
       clusterDescription.get.state == Running,
       s"Cluster[$clusterId] not Running")
+    val delta = clusterUsersDelta(listUsers(clusterId), users)
     for {
       _ <- clusterManager.changeServiceConfiguration(
         clusterDescription.get,
         dynamicProperties,
-        new CosmosUserService(clusterUsersDelta(listUsers(clusterId), users)))
+        CosmosUserService.instance(delta)
+      )
     } yield {
       clusterDao.setUsers(clusterId, users.toSet)
     }
@@ -189,15 +187,14 @@ class AmbariServiceManager(
 
   override def deployPersistentHdfsCluster(): Future[Unit] = for {
     machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)
-    serviceDescriptions = (
+    serviceDescriptions: Seq[AnyServiceInstance] =
       Seq(Zookeeper, Hdfs, InfinityfsServer).map(_.instance) :+
-        new CosmosUserService(Seq.empty).instance(Seq.empty)
-    ).map(toAmbariService(_, serviceConfigPath))
+        CosmosUserService.instance(Seq.empty)
     clusterDescription = clusterDao.registerCluster(
       id = persistentHdfsId,
       name = ClusterName(persistentHdfsId.id),
       size = machineCount + 1,
-      services = serviceDescriptions.toSet
+      services = serviceDescriptions.map(_.service).toSet
     )
     _ <- clusterDescription.withFailsafe(for {
       master <- infrastructureProvider.createMachines(

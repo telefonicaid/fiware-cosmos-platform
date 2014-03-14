@@ -27,13 +27,9 @@ trait Cluster extends Closeable with Patience {
 
   def id: String
 
-  def addUser(clusterUser: String, executedBy: User = owner): Int
-
   def describe(executedBy: User = owner): JValue
 
   def isListed(executedBy: User = owner): Boolean
-
-  def removeUser(clusterUser: String, executedBy: User = owner): Int
 
   def terminate(executedBy: User = owner)
 

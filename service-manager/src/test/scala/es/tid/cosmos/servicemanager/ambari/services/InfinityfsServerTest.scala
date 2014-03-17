@@ -20,6 +20,8 @@ class InfinityfsServerTest extends FlatSpec with MustMatchers {
 
   "An infinity server service" must "have a single driver component" in {
     InfinityfsServer.components must be (Seq(
-      ComponentDescription.allNodesComponent("INFINITY_HFS_SERVER")))
+      ComponentDescription.masterComponent("INFINITY_HFS_MASTER_SERVER"),
+      ComponentDescription.slaveComponent("INFINITY_HFS_SLAVE_PROXY")
+    ))
   }
 }

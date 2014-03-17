@@ -17,7 +17,7 @@ object Hdfs extends Service {
   private val umaskPattern = "[0-7]{3}"
 
   case class HdfsParameters(umask: String) {
-    require(umask.matches(umaskPattern), s"Not a valid umask: 'umask'")
+    require(umask.matches(umaskPattern), s"Not a valid umask: '$umask'")
   }
 
   override val name: String = "HDFS"

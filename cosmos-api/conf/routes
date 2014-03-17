@@ -36,8 +36,6 @@ GET     /cosmos/v1/cluster                  @es.tid.cosmos.api.controllers.clust
 POST    /cosmos/v1/cluster                  @es.tid.cosmos.api.controllers.cluster.ClusterResource.createCluster()
 GET     /cosmos/v1/cluster/:id              @es.tid.cosmos.api.controllers.cluster.ClusterResource.listDetails(id)
 POST    /cosmos/v1/cluster/:id/terminate    @es.tid.cosmos.api.controllers.cluster.ClusterResource.terminate(id)
-POST    /cosmos/v1/cluster/:id/add_user     @es.tid.cosmos.api.controllers.cluster.ClusterResource.addUser(id)
-POST    /cosmos/v1/cluster/:id/remove_user  @es.tid.cosmos.api.controllers.cluster.ClusterResource.removeUser(id)
 GET     /doc/cosmos/v1/cluster              controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/cluster")
 
 GET     /cosmos/v1/services                 @es.tid.cosmos.api.controllers.services.ServicesResource.list()

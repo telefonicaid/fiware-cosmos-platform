@@ -19,7 +19,7 @@ class OozieIT extends ConfiguredServiceTest  {
     MasterNode -> "aMasterNodeName"
   )
 
-  override def configurator = AmbariOozie.configurator(None, resourcesConfigDirectory)
+  override def configurator = AmbariOozie.configurator((), resourcesConfigDirectory)
 
   "An Oozie service" must "have global and service configuration contributions without core" in {
     contributions.global must be ('defined)

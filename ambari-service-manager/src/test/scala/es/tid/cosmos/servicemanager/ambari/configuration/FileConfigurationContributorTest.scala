@@ -97,4 +97,12 @@ class FileConfigurationContributorTest extends FlatSpec with MustMatchers with O
     bundle.core must be (None)
     bundle.services must be (expectedServiceList)
   }
+
+  it must "accept extra config properties on its constructor" in {
+    val contributor = new FileConfigurationContributor(packageResourcesConfigDirectory, "extra",
+      extraProperties = Map(ConfigurationKeys.MasterNode -> "extra.value"))
+    val contributions = contributor.contributions(properties)
+    val extraProperty = contributions.global.get.properties.get("extra.property")
+    extraProperty must be (Some("extra.value"))
+  }
 }

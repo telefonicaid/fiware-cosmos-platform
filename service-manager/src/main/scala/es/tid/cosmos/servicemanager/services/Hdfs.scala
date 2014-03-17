@@ -12,7 +12,16 @@
 package es.tid.cosmos.servicemanager.services
 
 /** Representation of the HDFS service. */
-object Hdfs extends Service with NoParametrization {
+object Hdfs extends Service {
+
+  private val umaskPattern = "[0-7]{3}"
+
+  case class HdfsParameters(umask: String) {
+    require(umask.matches(umaskPattern), s"Not a valid umask: 'umask'")
+  }
+
   override val name: String = "HDFS"
+  override type Parametrization = HdfsParameters
+  override val defaultParametrization: Option[HdfsParameters] = Some(HdfsParameters("022"))
   override val dependencies: Set[Service] = Set(Zookeeper, InfinityfsDriver)
 }

@@ -20,7 +20,7 @@ class WebHCatIT extends ConfiguredServiceTest {
     ConfigurationKeys.ZookeeperHosts -> Seq("hostname1:1234", "hostname2:1234").mkString(",")
   )
 
-  override def configurator = AmbariWebHCat.configurator(None, resourcesConfigDirectory)
+  override def configurator = AmbariWebHCat.configurator((), resourcesConfigDirectory)
 
   "A WebHCat service" must "have global and service configuration contributions without core" in {
     contributions.global must be('defined)

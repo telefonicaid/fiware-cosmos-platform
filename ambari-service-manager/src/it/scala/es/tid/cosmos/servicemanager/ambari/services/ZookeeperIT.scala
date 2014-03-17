@@ -17,7 +17,7 @@ class ZookeeperIT extends ConfiguredServiceTest {
 
   override val dynamicProperties = Map(ConfigurationKeys.ZookeeperPort -> "1234")
 
-  override def configurator = AmbariZookeeper.configurator(None, resourcesConfigDirectory)
+  override def configurator = AmbariZookeeper.configurator((), resourcesConfigDirectory)
 
   "A Zookeeper service" must "only have global configuration contributions" in {
     contributions.global must be ('defined)

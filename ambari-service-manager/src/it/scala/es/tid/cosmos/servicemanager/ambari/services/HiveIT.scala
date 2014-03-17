@@ -19,7 +19,7 @@ class HiveIT extends ConfiguredServiceTest {
     ConfigurationKeys.MasterNode -> "aMasterNodeName"
   )
 
-  override def configurator = AmbariHive.configurator(None, resourcesConfigDirectory)
+  override def configurator = AmbariHive.configurator((), resourcesConfigDirectory)
 
   "The Hive service" must "have global, core and service configuration contributions" in {
     contributions.global must be ('defined)

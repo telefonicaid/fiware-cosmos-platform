@@ -169,9 +169,9 @@ class AmbariServiceManager(
 
   override def deployPersistentHdfsCluster(): Future[Unit] = for {
     machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)
-    serviceDescriptions: Seq[AnyServiceInstance] =
-      Seq(Zookeeper, Hdfs, InfinityfsServer).map(_.instance) :+
-        CosmosUserService.instance(Seq.empty)
+    serviceDescriptions: Seq[AnyServiceInstance] = Seq(Zookeeper.defaultInstance,
+      InfinityfsServer.defaultInstance, Hdfs.defaultInstance,
+      CosmosUserService.defaultInstance).flatten
     clusterDescription = clusterDao.registerCluster(
       id = persistentHdfsId,
       name = ClusterName(persistentHdfsId.id),
@@ -194,7 +194,7 @@ class AmbariServiceManager(
 
 private[ambari] object AmbariServiceManager {
   val BasicHadoopServices: Set[AnyServiceInstance] =
-    Set(Hdfs, MapReduce2, InfinityfsDriver).map(_.instance)
+    Set(MapReduce2, InfinityfsDriver).map(_.instance) ++ Hdfs.defaultInstance
   val OptionalServices: Set[AnyServiceInstance] = Set(Hive, Oozie, Pig, Sqoop).map(_.instance)
 
   private def setMachineInfo(

@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.configuration.ConfigurationKeys._
+import es.tid.cosmos.servicemanager.services.Hdfs.HdfsParameters
 
 class HdfsIT extends ConfiguredServiceTest {
 
@@ -20,8 +21,8 @@ class HdfsIT extends ConfiguredServiceTest {
     HdfsReplicationFactor -> "3",
     NameNodeHttpPort -> "50070"
   )
-
-  override def configurator = AmbariHdfs.configurator(None, resourcesConfigDirectory)
+  val parameters = HdfsParameters("123")
+  override def configurator = AmbariHdfs.configurator(parameters, resourcesConfigDirectory)
 
   "An Hdfs service" must "have global, core and service configuration contributions" in {
     contributions.global must be('defined)
@@ -30,7 +31,12 @@ class HdfsIT extends ConfiguredServiceTest {
   }
 
   it must "return the namenode address" in {
-    contributions.services.head.properties("dfs.namenode.http-address") must be ("aMasterNodeName:50070")
+    contributions.services.head.properties("dfs.namenode.http-address") must
+      be ("aMasterNodeName:50070")
+  }
+
+  it must "configure the umask" in {
+    contributions.services.head.properties("fs.permissions.umask-mode") must be (parameters.umask)
   }
 
   /* Note: This is a HDFS-specific configuration needed even when Oozie is not installed */

@@ -26,7 +26,7 @@ class MapReduce2IT extends ConfiguredServiceTest {
     MaxReduceTasks -> "4"
   )
 
-  override def configurator = AmbariMapReduce2.configurator(None, resourcesConfigDirectory)
+  override def configurator = AmbariMapReduce2.configurator((), resourcesConfigDirectory)
 
   "A MapReduce service" must "have global, core and service configuration contributions" in {
     contributions.global must be ('defined)

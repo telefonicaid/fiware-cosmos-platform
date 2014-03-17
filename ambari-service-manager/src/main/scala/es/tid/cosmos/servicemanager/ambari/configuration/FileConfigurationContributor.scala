@@ -31,7 +31,10 @@ import es.tid.cosmos.servicemanager.configuration.ConfigurationKeys
   * @see [[https://github.com/typesafehub/config About TypeSafe's config]]
   * @see [[https://github.com/typesafehub/config/blob/master/HOCON.md About HOCON format]]
   */
-class FileConfigurationContributor(configPath: String, configName: String)
+class FileConfigurationContributor(
+    configPath: String,
+    configName: String,
+    extraProperties: ConfigProperties = Map.empty)
   extends ConfigurationContributor {
 
   private class ClusterConfigIncluder(
@@ -51,7 +54,7 @@ class FileConfigurationContributor(configPath: String, configName: String)
     }
   }
 
-  protected def resolveConfig(properties: Map[ConfigurationKeys.Value, String]) =
+  protected def resolveConfig(properties: ConfigProperties) =
     ConfigFactory.parseFileAnySyntax(
       new File(s"$configPath/$configName"),
       ConfigParseOptions.defaults().setIncluder(new ClusterConfigIncluder(properties))
@@ -120,7 +123,7 @@ class FileConfigurationContributor(configPath: String, configName: String)
    * @see [[ConfigurationKeys]]
    */
   override def contributions(properties: ConfigProperties): ConfigurationBundle = {
-    val config = resolveConfig(properties)
+    val config = resolveConfig(properties ++ extraProperties)
     ConfigurationBundle(
       optional[GlobalConfiguration]("global", config),
       optional[CoreConfiguration]("core", config),

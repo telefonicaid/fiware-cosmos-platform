@@ -15,6 +15,7 @@ import akka.actor.ActorSystem
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import spray.http.Uri
+import es.tid.cosmos.infinity.server.config.AuthTokenConfig
 
 class TokenGeneratorTest extends FlatSpec with MustMatchers {
 
@@ -58,9 +59,14 @@ class TokenGeneratorTest extends FlatSpec with MustMatchers {
    * export PHRASE="c0sm0s1324527723/p/files/top_secret.pdf?permission=755&op=OPEN"
    * echo -n "$PHRASE" | openssl md5 -binary | openssl base64 | tr +/ -_ | tr -d =
    */
-  it must "initialize from the actor system" in {
-    implicit val system = ActorSystem("TokenGeneratorTest")
-    TokenGenerator().encode(
+  it must "initialize from the auth token config" in {
+    val config = AuthTokenConfig(
+      secret = "c0sm0s",
+      pathTemplate = "irrelevant",
+      phraseTemplate = "${secret}${expire}${path}${query}",
+      duration = 100
+    )
+    TokenGenerator(config).encode(
       uri = Uri("http://localhost/p/files/top_secret.pdf?permission=755&op=OPEN"),
       expireInstant = 1324527723
     ) must be ("QO7n54_-ytHqOjbdgO0YOA")

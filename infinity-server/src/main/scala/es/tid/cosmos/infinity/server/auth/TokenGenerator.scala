@@ -13,8 +13,10 @@ package es.tid.cosmos.infinity.server.auth
 
 import org.apache.commons.codec.digest.DigestUtils
 
-import spray.http.Uri
+import akka.actor.ActorSystem
+import com.typesafe.config.ConfigException
 import org.apache.commons.codec.binary.Base64
+import spray.http.Uri
 
 /** A generator of secure link tokens used by Infinity Server.
   *
@@ -65,7 +67,29 @@ class TokenGenerator(secret: String, phraseTemplate: String) {
 
 object TokenGenerator {
 
+  val DefaultPhraseTemplate = "${secret}${expire}${path}${query}"
+  val PhraseConfigProperty = "infinity.server.phrase"
+  val SecretConfigProperty = "infinity.server.secret"
+
   /** Create a new token generator from the given shared secret. */
-  def apply(secret: String, phraseTemplate: String = "${secret}${expire}${path}${query}") =
+  def apply(
+      secret: String,
+      phraseTemplate: String = DefaultPhraseTemplate): TokenGenerator =
     new TokenGenerator(secret, phraseTemplate)
+
+  /** Create a new token generator from the configuration of the given actor system. */
+  def apply()(implicit system: ActorSystem): TokenGenerator = {
+    val secret = try {
+      system.settings.config.getString(SecretConfigProperty)
+    } catch {
+      case e: ConfigException => throw new IllegalStateException(
+        s"config error while reading property $SecretConfigProperty", e)
+    }
+    val phraseTemplate = try {
+      system.settings.config.getString(PhraseConfigProperty)
+    } catch {
+      case e: ConfigException => DefaultPhraseTemplate
+    }
+    TokenGenerator(secret, phraseTemplate)
+  }
 }

@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.servicemanager.services
 
+import es.tid.cosmos.servicemanager.services.dependencies.DependencyMapping
+
 class ServiceDependencyMapping(catalogue: Set[Service])
   extends DependencyMapping[Service](ServiceDependencyMapping.dependencyMap(catalogue)) {
 

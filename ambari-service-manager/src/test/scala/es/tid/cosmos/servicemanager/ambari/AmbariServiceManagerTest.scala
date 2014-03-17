@@ -36,9 +36,9 @@ import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.clusters.InMemoryClusterDao
 import es.tid.cosmos.servicemanager.ambari.mocks.MockAmbariClusterManager
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariTestBase
-import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.services.{CosmosUserService, ServiceDependencyMapping, Pig, Hive}
+import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
 
 class AmbariServiceManagerTest
   extends AmbariTestBase with MockitoSugar with FutureMatchers with Eventually {

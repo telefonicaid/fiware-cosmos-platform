@@ -14,7 +14,7 @@ package es.tid.cosmos.servicemanager
 import scala.concurrent.Future
 
 import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClusterDescription}
-import es.tid.cosmos.servicemanager.ambari.DynamicPropertiesFactory
+import es.tid.cosmos.servicemanager.configuration.DynamicPropertiesFactory
 
 trait ClusterManager {
 

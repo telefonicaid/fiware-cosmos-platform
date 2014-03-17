@@ -5,6 +5,8 @@ import es.tid.cosmos.servicemanager.ambari.configuration.NoConfigurationContribu
 
 object InfinityfsServer extends AmbariServiceDescription with NoConfigurationContribution {
   override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription.allNodesComponent("INFINITY_HFS_SERVER"))
+    ComponentDescription.masterComponent("INFINITY_HFS_MASTER_SERVER"),
+    ComponentDescription.slaveComponent("INFINITY_HFS_SLAVE_PROXY")
+  )
   override val name: String = "INFINITYFS_SERVER"
 }

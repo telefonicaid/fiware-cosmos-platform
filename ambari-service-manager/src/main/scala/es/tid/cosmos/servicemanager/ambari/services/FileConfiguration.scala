@@ -13,6 +13,9 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
 
+/** Mix-in for ambari services that populates the configuration from a file named as the
+  * lowercased name of the service.
+  */
 trait FileConfiguration { this: AmbariService =>
   override def configurator(parametrization: service.Parametrization, configPath: String) =
     new FileConfigurationContributor(configPath, service.name.toLowerCase)

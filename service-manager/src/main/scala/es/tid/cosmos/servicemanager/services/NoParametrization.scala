@@ -17,5 +17,5 @@ import es.tid.cosmos.servicemanager.ServiceInstance
 trait NoParametrization { this: Service =>
   override type Parametrization = Unit
   override lazy val defaultParametrization: Option[Parametrization] = Some(())
-  lazy val instance: ServiceInstance[this.type] = defaultInstance.get
+  final lazy val instance: ServiceInstance[this.type] = defaultInstance.get
 }

@@ -31,7 +31,7 @@ import es.tid.cosmos.api.task.TaskDao
 import es.tid.cosmos.api.usage.MachineUsage
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
-import es.tid.cosmos.servicemanager.services.Hdfs
+import es.tid.cosmos.servicemanager.services.{CosmosUserService, Hdfs}
 import es.tid.cosmos.servicemanager.services.Hdfs.HdfsParameters
 
 /** Resource that represents a single cluster. */
@@ -97,7 +97,7 @@ class ClusterResource(
     val clusterId = serviceManager.createCluster(
       name = clusterParameters.name,
       clusterSize = clusterParameters.size,
-      services = servicesToInstall(clusterParameters),
+      services = servicesToInstall(clusterParameters, users),
       users = users,
       preConditions = executableWithinQuota(profile, clusterParameters.size)
     )
@@ -110,12 +110,15 @@ class ClusterResource(
     Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
   }
 
-  private def servicesToInstall(clusterParameters: CreateClusterParams): Set[AnyServiceInstance] = {
+  private def servicesToInstall(
+      clusterParameters: CreateClusterParams,
+      users: Seq[ClusterUser]): Set[AnyServiceInstance] = {
+    val cosmosUsers = CosmosUserService.instance(users)
+    val hdfs = Hdfs.instance(HdfsParameters(if (clusterParameters.shared) "007" else "027"))
     val optionalServices = serviceManager.optionalServices.filter(
       serviceInstance => clusterParameters.optionalServices.contains(serviceInstance.service.name)
     )
-    val hdfs = Hdfs.instance(HdfsParameters(if (clusterParameters.shared) "007" else "027"))
-    optionalServices + hdfs
+    Set(cosmosUsers, hdfs) ++ optionalServices
   }
 
   private def usersForCluster(

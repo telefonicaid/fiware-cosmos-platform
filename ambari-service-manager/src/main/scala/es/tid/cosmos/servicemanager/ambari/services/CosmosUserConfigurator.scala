@@ -13,8 +13,8 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.util.SshKeyGenerator
 import es.tid.cosmos.servicemanager.configuration.ConfigurationKeys
+import es.tid.cosmos.servicemanager.util.SshKeyGenerator
 
 /** Configurator for the CosmosUserService
   *

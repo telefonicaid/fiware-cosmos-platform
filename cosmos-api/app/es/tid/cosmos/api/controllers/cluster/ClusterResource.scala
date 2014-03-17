@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.api.controllers.cluster
 
-import java.util.Date
 import javax.ws.rs.PathParam
 import scala.util.{Try, Failure, Success}
 import scalaz._
@@ -25,8 +24,8 @@ import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
-import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.dao._
+import es.tid.cosmos.api.profile.{Capability, CosmosProfile, QuotaContextFactory}
+import es.tid.cosmos.api.profile.dao.{ClusterDataStore, ProfileDataStore}
 import es.tid.cosmos.api.quota.{Group, NoGroup}
 import es.tid.cosmos.api.task.TaskDao
 import es.tid.cosmos.api.usage.MachineUsage
@@ -54,16 +53,14 @@ class ClusterResource(
   @ApiOperation(value = "List clusters", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.cluster.ClusterList")
   def list = Action { implicit request =>
-
-    def listClustersWithOwnConnection(profile: CosmosProfile) = store.withConnection { implicit c =>
-      listClusters(profile)
-    }
-
     for {
       profile <- requireAuthenticatedApiRequest(request)
-    } yield Ok(Json.toJson(
-      ClusterList(listClustersWithOwnConnection(profile).map(_.withAbsoluteUri(request)))
-    ))
+    } yield {
+      val clusters = store.withConnection { implicit c =>
+        listClusters(profile)
+      }.map(_.withAbsoluteUri(request))
+      Ok(Json.toJson(ClusterList(clusters)))
+    }
   }
 
   /** Start a new cluster provisioning. */
@@ -105,14 +102,17 @@ class ClusterResource(
       preConditions = executableWithinQuota(profile, body.size)
     )
     Logger.info(s"Provisioning new cluster $clusterId")
-    val cluster = store.withTransaction { implicit c => store.cluster.register(clusterId, profile.id, body.shared) }
+    val cluster = store.withTransaction { implicit c =>
+      store.cluster.register(clusterId, profile.id, body.shared)
+    }
     val clusterDescription = serviceManager.describeCluster(clusterId).get
     val reference = ClusterReference(clusterDescription, cluster).withAbsoluteUri(request)
     Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
   }
 
-  private def usersForCluster(body: CreateClusterParams, profile: CosmosProfile) =
-    if (!body.shared) {
+  private def usersForCluster(
+      clusterParams: CreateClusterParams, profile: CosmosProfile): Seq[ClusterUser] =
+    if (!clusterParams.shared) {
       Seq(toClusterUser(profile))
     } else {
       assert(profile.group != NoGroup)
@@ -135,7 +135,8 @@ class ClusterResource(
       Forbidden(Json.toJson(Message(errors.list.mkString(" "))))
     )
 
-  private def listClusters(profile: CosmosProfile)(implicit c: store.Conn) = {
+  private def listClusters(profile: CosmosProfile)
+                          (implicit c: store.Conn): Seq[ClusterReference] = {
     val assignedClusters =  Set(store.cluster.ownedBy(profile.id): _*)
     (for {
       assignment <- assignedClusters.toList
@@ -159,62 +160,6 @@ class ClusterResource(
     } yield Ok(Json.toJson(ClusterDetails(
       cluster,
       store.withTransaction(implicit c => store.cluster.get(cluster.id)))))
-  }
-
-  @ApiOperation(value = "Add users to an existing cluster", httpMethod = "POST")
-  @ApiParamsImplicit(Array(
-    new ApiParamImplicit(paramType = "body",
-      dataType = "es.tid.cosmos.api.controllers.cluster.ManageUserParams")
-  ))
-  def addUser(
-      @ApiParam(value = "Cluster identifier", required = true,
-        defaultValue = "00000000000000000000000000000000")
-      @PathParam("id")
-      id: String) = Action(parse.tolerantJson) { request =>
-    val clusterId = ClusterId(id)
-    for {
-      user <- requireUserManagementConditions(request, clusterId)
-      _ <- requireProfileIsNotUserOf(user, clusterId)
-      _ <- requireNoActiveTask(resource = request.uri, metadata = user.handle)
-      clusterUsers <- requireClusterUsersAreAvailable(clusterId)
-    } yield {
-      val addUser_> = serviceManager.addUser(clusterId, ClusterUser.enabled(
-        username = user.handle,
-        publicKey = user.keys.head.signature,
-        isSudoer = user.capabilities.hasCapability(Capability.IsSudoer)
-      ))
-      val task = taskDao.registerTask().linkToFuture(
-        future = addUser_>,
-        errorMessage = s"Failed to add user ${user.handle} to cluster")
-      task.usersWithAccess = user.handle +: clusterUsers.map(_.username)
-      task.metadata = user.handle
-      task.resource = request.uri
-      Ok(Json.toJson(Message(s"Adding user ${user.handle} to cluster $clusterId " +
-        "(this will take a while, please be patient)")))
-    }
-  }
-
-  @ApiOperation(value = "Remove a user from an existing cluster", httpMethod = "POST")
-  @ApiParamsImplicit(Array(
-    new ApiParamImplicit(paramType = "body",
-      dataType = "es.tid.cosmos.api.controllers.cluster.ManageUserParams")
-  ))
-  def removeUser(
-      @ApiParam(value = "Cluster identifier", required = true,
-        defaultValue = "00000000000000000000000000000000")
-      @PathParam("id")
-      id: String) = Action(parse.tolerantJson) { request =>
-    val clusterId = ClusterId(id)
-    for {
-      user <- requireUserManagementConditions(request, clusterId)
-      _ <- requireProfileIsUserOf(user, clusterId)
-      _ <- requireNotOwnedCluster(user, clusterId)
-      _ <- requireClusterUsersAreAvailable(clusterId)
-    } yield {
-      serviceManager.disableUser(clusterId, user.handle)
-      Ok(Json.toJson(Message(s"Removing user ${user.handle} from cluster $clusterId " +
-        "(this will take a while, please be patient)")))
-    }
   }
 
   @ApiOperation(value = "Terminate cluster", httpMethod = "POST", notes = "No body is required",
@@ -259,14 +204,6 @@ class ClusterResource(
       ifNotOwner = _ => unauthorizedAccessTo(clusterId).failure
     )
 
-  private def requireNotOwnedCluster(
-      profile: CosmosProfile,
-      clusterId: ClusterId): ActionValidation[ClusterDescription] =
-    requireThatOwner(profile, clusterId,
-      ifOwner = _ => userIsOwnerOf(profile.handle, clusterId).failure,
-      ifNotOwner = desc => desc.success
-    )
-
   private def requireThatOwner(
       profile: CosmosProfile,
       clusterId: ClusterId,
@@ -286,52 +223,9 @@ class ClusterResource(
     (owned, maybeDescription)
   }
 
-  private def requireProfileExists(handle: String): ActionValidation[CosmosProfile] =
-    store.withConnection { implicit c =>
-      store.profile.lookupByHandle(handle) match {
-        case Some(profile: CosmosProfile) => profile.success
-        case None => profileNotFound(handle).failure
-      }
-    }
-
-  private def requireProfileIsUserOf(
-      profile: CosmosProfile,
-      clusterId: ClusterId): ActionValidation[Unit] =
-    requireClusterUsersAreAvailable(clusterId).flatMap { users =>
-      if (userIsMemberOfCluster(profile, users)) ().success
-      else notUserOf(profile.handle, clusterId).failure
-    }
-
-  private def userIsMemberOfCluster(profile: CosmosProfile, users: Seq[ClusterUser]) =
-    users.exists(usr => usr.username.equals(profile.handle) && usr.isEnabled)
-
-  private def requireProfileIsNotUserOf(
-      profile: CosmosProfile,
-      clusterId: ClusterId): ActionValidation[Unit] =
-    requireProfileIsUserOf(profile, clusterId).fold(
-      fail = _ => ().success,
-      succ = _ => alreadyUserOf(profile.handle, clusterId).failure
-    )
-
   private def requireGroupIfShared(group: Group, shared: Boolean): ActionValidation[Unit] =
     if (shared && group == NoGroup) sharedClusterNoGroup.failure
     else ().success
-
-  private def requireClusterUsersAreAvailable(
-      clusterId: ClusterId): ActionValidation[Seq[ClusterUser]] =
-    serviceManager.listUsers(clusterId) match {
-      case Some(users) => users.success
-      case None => usersUnavailable(clusterId).failure
-    }
-
-  private def requireUserManagementConditions(
-      request: Request[JsValue], clusterId: ClusterId): ActionValidation[CosmosProfile] = for {
-    requester <- requireAuthenticatedApiRequest(request)
-    _ <- requireNotUnderMaintenanceToNonOperators(requester)
-    body <- validJsonBody[ManageUserParams](request)
-    _ <- requireOwnedCluster(requester, clusterId)
-    user <- requireProfileExists(body.user)
-  } yield user
 
   private def isOwnerOfCluster(cosmosId: Long, cluster: ClusterId): Boolean =
     store.withConnection { implicit c =>
@@ -346,24 +240,9 @@ object ClusterResource extends Results {
   private def unauthorizedAccessTo(cluster: ClusterId) =
     Unauthorized(Json.toJson(ErrorMessage(s"Cannot access cluster '$cluster'")))
 
-  private def userIsOwnerOf(handle: String, cluster: ClusterId) =
-    BadRequest(Json.toJson(ErrorMessage(s"User $handle is the owner of cluster '$cluster'")))
-
-  private def notUserOf(handle: String, cluster: ClusterId) =
-    BadRequest(Json.toJson(ErrorMessage(s"User $handle is not a user of cluster '$cluster'")))
-
-  private def alreadyUserOf(handle: String, cluster: ClusterId) =
-    BadRequest(Json.toJson(ErrorMessage(s"User $handle is already a user of cluster '$cluster'")))
-
-  private def sharedClusterNoGroup =
-    BadRequest(Json.toJson(ErrorMessage("Cannot request a shared cluster because you don't belong to any group")))
+  private def sharedClusterNoGroup = BadRequest(Json.toJson(ErrorMessage(
+    "Cannot request a shared cluster because you don't belong to any group")))
 
   private def notFound(cluster: ClusterId) =
     NotFound(Json.toJson(ErrorMessage(s"No cluster '$cluster' exists")))
-
-  private def profileNotFound(handle: String) =
-    NotFound(Json.toJson(ErrorMessage(s"No user was found with handle '$handle'")))
-
-  private def usersUnavailable(clusterId: ClusterId) =
-    NotFound(Json.toJson(ErrorMessage(s"User service is unavailable for cluster '$clusterId'")))
 }

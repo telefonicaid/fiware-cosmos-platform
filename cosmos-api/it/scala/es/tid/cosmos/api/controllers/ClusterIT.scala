@@ -18,9 +18,9 @@ import play.api.test.Helpers._
 import play.api.test.FakeRequest
 
 import es.tid.cosmos.api.controllers.ResultMatchers.failWith
+import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.mocks.SampleClusters
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
-import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.test.matchers.JsonMatchers
 import es.tid.cosmos.servicemanager.clusters._
 
@@ -40,12 +40,6 @@ class ClusterIT
 
   it must behave like
     enabledOnlyForOperatorsWhenUnderMaintenance(RunningClusterProps.terminateRequest)
-
-  "Cluster user management" must behave like
-    rejectingUnauthenticatedRequests(RunningClusterProps.addUserRequest("pepito"))
-
-  it must behave like
-    enabledOnlyForOperatorsWhenUnderMaintenance(RunningClusterProps.addUserRequest("pepito"))
 
   "Cluster resource" must "list complete cluster details on GET request when cluster is running" in
     new WithSampleSessions with SampleClusters {
@@ -127,56 +121,6 @@ class ClusterIT
     }
   }
 
-  it must "add a user to cluster" in new WithSampleSessions with SampleClusters {
-    regUserInGroup.assignCluster(RunningClusterProps.id, shared = false)
-    val rep = regUserInGroup.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
-    status(rep) must equal (OK)
-    val users = services.serviceManager.listUsers(RunningClusterProps.id)
-    users must be ('defined)
-    users.get.exists(
-      usr => usr.username.equals(opUser.handle) && usr.isEnabled
-    ) must be (true)
-  }
-
-  it must "fail to add an already existing user" in new WithSampleSessions with SampleClusters {
-    regUserInGroup.assignCluster(RunningClusterProps.id, shared = false)
-    val rep1 = regUserInGroup.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
-    status(rep1) must equal (OK)
-
-    val rep2 = regUserInGroup.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
-    status(rep2) must equal (BAD_REQUEST)
-  }
-
-  it must "fail to add a user that is already being added" in new WithSampleSessions with SampleClusters {
-    mockedServiceManager.autoCompleteSetUserOperations = false
-    regUserInGroup.assignCluster(RunningClusterProps.id, shared = false)
-    val rep1 = regUserInGroup.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
-    status(rep1) must equal (OK)
-
-    val rep2 = regUserInGroup.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
-    status(rep2) must equal (BAD_REQUEST)
-    (contentAsJson(rep2) \ "error").as[String] must include ("Please wait for it to finish")
-  }
-
-  it must "remove a user from cluster" in new WithSampleSessions with SampleClusters {
-    regUserInGroup.assignCluster(RunningClusterProps.id, shared = false)
-    status(regUserInGroup.doRequest(RunningClusterProps.addUserRequest(opUser.handle)))
-
-    val rep = regUserInGroup.doRequest(RunningClusterProps.removeUserRequest(opUser.handle))
-    status(rep) must equal (OK)
-    val users = services.serviceManager.listUsers(RunningClusterProps.id)
-    users must be ('defined)
-    users.get.exists(
-      usr => usr.username.equals("pocahontas") && usr.isEnabled
-    ) must be (false)
-  }
-
-  it must "fail to remove the owner of the cluster" in new WithSampleSessions with SampleClusters {
-    regUserInGroup.assignCluster(RunningClusterProps.id, shared = false)
-    val rep = regUserInGroup.doRequest(RunningClusterProps.removeUserRequest(regUserInGroup.handle))
-    status(rep) must equal (BAD_REQUEST)
-  }
-
   private object representAMachine extends Matcher[JsObject] {
     def apply(js: JsObject) = MatchResult(
       matches = js match {
@@ -229,11 +173,5 @@ class ClusterIT
 
     def listDetailsRequest = FakeRequest(GET, baseUrl)
     def terminateRequest = FakeRequest(POST, s"$baseUrl/terminate")
-    def addUserRequest(handle: String) = FakeRequest(POST, s"$baseUrl/add_user").withJsonBody(
-      Json.obj("user" -> handle)
-    )
-    def removeUserRequest(handle: String) = FakeRequest(POST, s"$baseUrl/remove_user").withJsonBody(
-      Json.obj("user" -> handle)
-    )
   }
 }

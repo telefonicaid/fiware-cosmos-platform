@@ -9,19 +9,19 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.admin
+package es.tid.cosmos.admin.command
 
 import scala.language.reflectiveCalls
 
 import org.rogach.scallop.ScallopConf
 
+import es.tid.cosmos.admin.{Groups, Profile, Cluster, PersistentStorage}
 import es.tid.cosmos.admin.cli.AdminArguments
-import es.tid.cosmos.api.profile.dao.sql.PlayDbDataStoreComponent
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.ClusterId
+import es.tid.cosmos.api.profile.dao.CosmosDataStore
 
-class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager)
-  extends PlayDbDataStoreComponent {
+class CommandRunner(args: AdminArguments, store: CosmosDataStore, serviceManager: => ServiceManager) {
 
   /** Executes an administration command.
     *

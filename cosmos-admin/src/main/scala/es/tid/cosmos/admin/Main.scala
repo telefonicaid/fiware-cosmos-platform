@@ -14,21 +14,25 @@ package es.tid.cosmos.admin
 import _root_.play.api.Play
 
 import es.tid.cosmos.admin.cli.AdminArguments
-import es.tid.cosmos.admin.play.DataAccessApplication
+import es.tid.cosmos.admin.command.CommandRunnerComponent
+import es.tid.cosmos.admin.play.DataAccessApplicationComponent
+import es.tid.cosmos.api.profile.dao.sql.PlayDbDataStoreComponent
 import es.tid.cosmos.common.ApplicationConfigComponent
 import es.tid.cosmos.servicemanager.production.ProductionServiceManagerComponent
 
-object ServiceManagerProvider extends ProductionServiceManagerComponent
-  with ApplicationConfigComponent
-
-object Main {
+object Main extends CommandRunnerComponent
+  with DataAccessApplicationComponent
+  with ProductionServiceManagerComponent
+  with PlayDbDataStoreComponent
+  with ApplicationConfigComponent {
 
   def main(args: Array[String]) {
-    val app = new DataAccessApplication(ServiceManagerProvider.config)
-    Play.start(app)
-    val runner = new CommandRunner(new AdminArguments(args), ServiceManagerProvider.serviceManager)
-    val status = runner.run()
-    Play.stop()
+    Play.start(playApplication)
+    val status = try {
+      commandRunner(new AdminArguments(args)).run()
+    } finally {
+      Play.stop()
+    }
     System.exit(status)
   }
 }

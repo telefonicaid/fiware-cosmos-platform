@@ -38,26 +38,18 @@ object ServiceDependencies {
     Zookeeper
   )
 
-  /** Default instances of services. At the moment, just services with no parametrization and
-    * services that have sensible default parametrisation.
-    */
-  val DefaultServiceInstances: Set[AnyServiceInstance] = ServiceCatalogue.collect {
-    case service: Service with NoParametrization => service.instance
-    case CosmosUserService => CosmosUserService.instance(Seq.empty)
-  }
-
   private val Dependencies = new ServiceDependencyMapping(ServiceCatalogue)
 
   def executionPlan(serviceInstances: Set[AnyServiceInstance]): Seq[AnyServiceInstance] = {
+
+    /** Use the passed instance, pick a default one or throw */
+    def toServiceInstance(service: Service): AnyServiceInstance =
+      serviceInstances.find(_.service == service)
+        .orElse(service.defaultInstance)
+        .getOrElse(throw new RuntimeException(s"No parametrization found for service ${service.name}"))
+
     val requestedServices = serviceInstances.map(_.service)
     val serviceExecutionPlan = Dependencies.executionPlan(requestedServices)
-    val instanceMap = mapByService(DefaultServiceInstances) ++ mapByService(serviceInstances)
-    serviceExecutionPlan.map { service =>
-      instanceMap.getOrElse(service,
-        throw new RuntimeException(s"No parametrization found for service ${service.name}"))
-    }
+    serviceExecutionPlan.map(toServiceInstance)
   }
-
-  private def mapByService(instances: Set[AnyServiceInstance]): Map[Service, AnyServiceInstance] =
-    instances.map(instance => (instance.service, instance)).toMap
 }

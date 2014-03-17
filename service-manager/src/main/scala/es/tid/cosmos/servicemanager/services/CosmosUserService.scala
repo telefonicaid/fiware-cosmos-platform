@@ -13,7 +13,9 @@ package es.tid.cosmos.servicemanager.services
 
 import es.tid.cosmos.servicemanager.ClusterUser
 
-object CosmosUserService extends Service with ParametrizedWith[Seq[ClusterUser]] {
+object CosmosUserService extends Service {
+  override type Parametrization = Seq[ClusterUser]
   override val name: String = "COSMOS_USER"
+  override def defaultParametrization: Option[Parametrization] = Some(Seq.empty)
   override val dependencies: Set[Service] = Set(Hdfs)
 }

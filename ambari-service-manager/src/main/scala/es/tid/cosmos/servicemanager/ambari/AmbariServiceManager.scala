@@ -66,9 +66,9 @@ class AmbariServiceManager(
       serviceInstances: Set[AnyServiceInstance],
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = {
-    val servicesWithDependencies = makeUserServiceLast(ServiceDependencies.executionPlan(
+    val servicesWithDependencies = ServiceDependencies.executionPlan(
       BasicHadoopServices ++ serviceInstances + CosmosUserService.instance(Seq.empty)
-    ), users)
+    )
     val clusterDescription = clusterDao.registerCluster(
       name = name,
       size = clusterSize,
@@ -86,19 +86,6 @@ class AmbariServiceManager(
     }
     clusterDescription.id
   }
-
-  /** Moves the cosmos user service to the last position of the seq.
-    *
-    * FIXME: dirty hack to have the cosmos user service installed as the last service.
-    *        This is needed since we don't have a distinction between services, parametrized
-    *        services and Ambari specific stuff so
-    *        [[ServiceDependencies]]
-    *        doesn't work for this case.
-    */
-  private def makeUserServiceLast(
-      services: Seq[AnyServiceInstance], users: Seq[ClusterUser]): Seq[AnyServiceInstance] =
-    services.filterNot(_.service.name == CosmosUserService.name) :+
-      CosmosUserService.instance(users)
 
   private def masterAndSlaves(machines: Seq[MachineState]) = machines match {
     case Seq(master, slaves @ _*) if machines.length < exclusiveMasterSizeCutoff =>

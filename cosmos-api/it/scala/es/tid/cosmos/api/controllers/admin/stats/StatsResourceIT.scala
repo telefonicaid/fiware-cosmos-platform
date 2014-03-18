@@ -40,7 +40,7 @@ class StatsResourceIT
     val activeClusterId = services.serviceManager.createCluster(
       name = ClusterName("active"),
       clusterSize = 2,
-      serviceDescriptions = Seq.empty,
+      services = Set.empty,
       users = Seq.empty
     )
     val terminatedClusterId = ClusterId.random()

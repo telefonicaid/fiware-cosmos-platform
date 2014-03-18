@@ -68,7 +68,7 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
       val cluster1 = mockedServiceManager.createCluster(
         name = ClusterName("ownCluster"),
         size = 2,
-        serviceDescriptions = Seq.empty,
+        serviceInstances = Set.empty,
         users = Seq.empty
       )
       regUserInGroup.assignCluster(cluster1, shared = false)
@@ -83,7 +83,7 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
       mockedServiceManager.createCluster(
         name = ClusterName("unlisted"),
         size = 2,
-        serviceDescriptions = Seq.empty,
+        serviceInstances = Set.empty,
         users = Seq(opUser.asClusterUser(), regUserInGroup.asClusterUser(sshEnabled = false))
       )
 
@@ -143,7 +143,7 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
     val cluster = mockedServiceManager.createCluster(
       name = ClusterName("ownCluster"),
       size = 2,
-      serviceDescriptions = Seq.empty,
+      serviceInstances = Set.empty,
       users = Seq.empty
     )
     fooGroupUser.assignCluster(cluster, shared = false)

@@ -17,9 +17,9 @@ import scala.language.{postfixOps, reflectiveCalls}
 import scala.util.Random
 
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.services.{Hdfs, MapReduce2}
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.clusters.ImmutableClusterDescription
+import es.tid.cosmos.servicemanager.services.{Pig, Hive}
 
 /** In-memory, simulated service manager. */
 class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
@@ -149,12 +149,12 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
 
   override def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
-  override val optionalServices: Seq[ServiceDescription] = Seq(Hdfs, MapReduce2)
+  override val optionalServices: Set[AnyServiceInstance] = Set(Pig, Hive).map(_.instance)
 
   override def createCluster(
       name: ClusterName,
       size: Int,
-      serviceDescriptions: Seq[ServiceDescription],
+      serviceInstances: Set[AnyServiceInstance],
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = synchronized {
     val id = ClusterId.random()

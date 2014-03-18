@@ -36,9 +36,9 @@ import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.clusters.InMemoryClusterDao
 import es.tid.cosmos.servicemanager.ambari.mocks.MockAmbariClusterManager
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariTestBase
-import es.tid.cosmos.servicemanager.ambari.services._
-import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.{CosmosUserService, ServiceDependencyMapping, Pig, Hive}
+import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
 
 class AmbariServiceManagerTest
   extends AmbariTestBase with MockitoSugar with FutureMatchers with Eventually {
@@ -53,7 +53,7 @@ class AmbariServiceManagerTest
 
     val exclusiveMasterSizeCutoff = 10
     val clusterManager = new MockAmbariClusterManager
-    val serviceDescriptions = List(mock[AmbariServiceDescription], mock[AmbariServiceDescription])
+    val serviceDescriptions: Set[AnyServiceInstance] = Set(Hive.instance, Pig.instance)
     lazy val instance = new AmbariServiceManager(
       clusterManager, infrastructureProvider,
       ClusterId("HDFS"), exclusiveMasterSizeCutoff, TestHadoopConfig,
@@ -264,15 +264,14 @@ class AmbariServiceManagerTest
   }
 
   it must "create cluster including service bundles" in new WithMachines(3) {
-    import ServiceDependencies._
-
     val clusterId = instance.createCluster(
-      ClusterName("clusterName"), 3, Seq(Hive), Seq(), UnfilteredPassThrough)
+      ClusterName("clusterName"), 3, Set(Hive.instance), Seq.empty, UnfilteredPassThrough
+    )
     waitForClusterCompletion(clusterId, instance)
     val description = instance.describeCluster(clusterId)
-    val expectedServices =
-      (AmbariServiceManager.BasicHadoopServices ++ Seq(CosmosUserService, Hive)).withDependencies
-    description.get.services must be (expectedServices.map(_.name).toSet)
+    val expectedServices = new ServiceDependencyMapping(ServiceDependencies.ServiceCatalogue)
+      .resolve(AmbariServiceManager.BasicHadoopServices.map(_.service) + Hive + CosmosUserService)
+    description.get.services must be (expectedServices.map(_.name))
   }
 
   private def matchesValidation(expected: ExecutableValidation) =

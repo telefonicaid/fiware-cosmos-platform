@@ -17,9 +17,10 @@ import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDaoComponent}
-import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
-import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
 import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
+import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
+import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceFactory
+import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
 
 trait AmbariServiceManagerComponent extends ServiceManagerComponent {
   this: InfrastructureProviderComponent with ConfigComponent with ClusterDaoComponent =>
@@ -51,7 +52,8 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
   private lazy val ambariClusterManager = new AmbariClusterManager(
     ambariServer,
     infrastructureProvider.rootPrivateSshKey,
-    hadoopConfig.servicesConfigDirectory
+    hadoopConfig.servicesConfigDirectory,
+    AmbariServiceFactory.lookup
   )
 
   override lazy val serviceManager: AmbariServiceManager = new AmbariServiceManager(
@@ -63,8 +65,8 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
       new AmbariClusterDao(
         serviceManagerClusterDao,
         ambariServer,
-        AmbariServiceManager.AllServices.map(
-          toAmbariService(_, hadoopConfig.servicesConfigDirectory)),
-        config.getInt("ambari.servicemanager.initialization.graceperiod.minutes").minutes)
+        ServiceDependencies.ServiceCatalogue.map(AmbariServiceFactory.lookup),
+        config.getInt("ambari.servicemanager.initialization.graceperiod.minutes").minutes
+      )
     )
 }

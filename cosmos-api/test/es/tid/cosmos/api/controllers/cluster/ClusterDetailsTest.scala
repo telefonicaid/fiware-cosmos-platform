@@ -21,6 +21,7 @@ import es.tid.cosmos.api.profile.Cluster
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.{Hdfs, MapReduce2}
 
 class ClusterDetailsTest extends FlatSpec with MustMatchers {
 

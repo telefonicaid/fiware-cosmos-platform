@@ -13,6 +13,7 @@ package es.tid.cosmos
 
 import es.tid.cosmos.common.{ExecutableValidation, PassThrough}
 import es.tid.cosmos.servicemanager.clusters.ClusterId
+import es.tid.cosmos.servicemanager.services.Service
 
 /** Service Manager related type aliases. */
 package object servicemanager {
@@ -37,4 +38,6 @@ package object servicemanager {
 
   /** ''Null'' object that does a pass-through without any validation */
   val UnfilteredPassThrough: ClusterExecutableValidation = (_) => PassThrough
+
+  type AnyServiceInstance = ServiceInstance[_ <: Service]
 }

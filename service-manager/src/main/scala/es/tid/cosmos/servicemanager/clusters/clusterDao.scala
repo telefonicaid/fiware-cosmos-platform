@@ -11,7 +11,8 @@
 
 package es.tid.cosmos.servicemanager.clusters
 
-import es.tid.cosmos.servicemanager.{ClusterName, ServiceDescription, ClusterUser}
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
+import es.tid.cosmos.servicemanager.services.Service
 
 trait ClusterDaoComponent {
   def serviceManagerClusterDao: ClusterDao
@@ -43,7 +44,7 @@ trait ClusterDao {
     id: ClusterId = ClusterId.random(),
     name: ClusterName,
     size: Int,
-    services: Set[ServiceDescription]): MutableClusterDescription
+    services: Set[Service]): MutableClusterDescription
 
   /** Retrieve the list of users for given cluster.
     *

@@ -29,8 +29,10 @@ import es.tid.cosmos.api.profile.dao.{ClusterDataStore, ProfileDataStore}
 import es.tid.cosmos.api.quota.{Group, NoGroup}
 import es.tid.cosmos.api.task.TaskDao
 import es.tid.cosmos.api.usage.MachineUsage
-import es.tid.cosmos.servicemanager.{ClusterExecutableValidation, ClusterUser, ServiceManager}
+import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
+import es.tid.cosmos.servicemanager.services.{CosmosUserService, Hdfs}
+import es.tid.cosmos.servicemanager.services.Hdfs.HdfsParameters
 
 /** Resource that represents a single cluster. */
 @Api(value = "/cosmos/v1/cluster", listingPath = "/doc/cosmos/v1/cluster",
@@ -88,26 +90,35 @@ class ClusterResource(
 
   private def create(
       request: Request[JsValue],
-      body: CreateClusterParams,
+      clusterParameters: CreateClusterParams,
       profile: CosmosProfile): SimpleResult = {
 
-    val services = serviceManager.optionalServices.filter(
-      service => body.optionalServices.contains(service.name))
-    val users = usersForCluster(body, profile)
+    val users = usersForCluster(clusterParameters, profile)
     val clusterId = serviceManager.createCluster(
-      name = body.name,
-      clusterSize = body.size,
-      serviceDescriptions = services,
+      name = clusterParameters.name,
+      clusterSize = clusterParameters.size,
+      services = servicesToInstall(clusterParameters, users),
       users = users,
-      preConditions = executableWithinQuota(profile, body.size)
+      preConditions = executableWithinQuota(profile, clusterParameters.size)
     )
     Logger.info(s"Provisioning new cluster $clusterId")
     val cluster = store.withTransaction { implicit c =>
-      store.cluster.register(clusterId, profile.id, body.shared)
+      store.cluster.register(clusterId, profile.id, clusterParameters.shared)
     }
     val clusterDescription = serviceManager.describeCluster(clusterId).get
     val reference = ClusterReference(clusterDescription, cluster).withAbsoluteUri(request)
     Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
+  }
+
+  private def servicesToInstall(
+      clusterParameters: CreateClusterParams,
+      users: Seq[ClusterUser]): Set[AnyServiceInstance] = {
+    val cosmosUsers = CosmosUserService.instance(users)
+    val hdfs = Hdfs.instance(HdfsParameters(if (clusterParameters.shared) "007" else "027"))
+    val optionalServices = serviceManager.optionalServices.filter(
+      serviceInstance => clusterParameters.optionalServices.contains(serviceInstance.service.name)
+    )
+    Set(cosmosUsers, hdfs) ++ optionalServices
   }
 
   private def usersForCluster(

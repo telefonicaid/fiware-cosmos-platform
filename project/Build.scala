@@ -122,6 +122,7 @@ object Build extends sbt.Build {
     settings(Defaults.itSettings: _*)
     settings(RpmSettings.cosmosAdminSettings: _*)
     dependsOn(
+      ambariServiceManager,
       serviceManager,
       cosmosApi % "compile->compile;test->test",
       common    % "compile->compile:test->test"

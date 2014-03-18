@@ -11,8 +11,8 @@
 
 package es.tid.cosmos.tests.e2e
 
-import es.tid.cosmos.servicemanager.ambari.services.{Oozie, Hdfs, MapReduce2, Hive}
 import es.tid.cosmos.tests.e2e.cluster.Cluster
+import es.tid.cosmos.servicemanager.services.{Oozie, Hive, Hdfs, MapReduce2}
 
 class ServicesIT extends E2ETestBase {
 

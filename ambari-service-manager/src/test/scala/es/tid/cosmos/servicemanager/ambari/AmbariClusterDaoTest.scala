@@ -20,18 +20,19 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.BDDMockito.given
 import org.mockito.Matchers.any
 
-import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser, ServiceDescription}
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.ambari.AmbariClusterState.AmbariClusterState
 import es.tid.cosmos.servicemanager.ambari.clusters.InMemoryClusterDao
 import es.tid.cosmos.servicemanager.ambari.rest.{Cluster, AmbariServer}
-import es.tid.cosmos.servicemanager.ambari.services.{MapReduce2, Hdfs, AmbariServiceDescription}
+import es.tid.cosmos.servicemanager.ambari.services.AmbariService
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.{Service, Hdfs, MapReduce2}
 
 class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar {
 
   class MockClusterStateResolver(returnState: AmbariClusterState) {
     trait Trait extends ClusterStateResolver {
-      override def resolveState(cluster: Cluster, allServices: Seq[AmbariServiceDescription]) =
+      override def resolveState(cluster: Cluster, allServices: Set[AmbariService]) =
         Future.successful(returnState)
     }
   }
@@ -39,9 +40,9 @@ class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar 
   trait WithMockCluster {
     val innerDao = new InMemoryClusterDao
     val ambariServer = mock[AmbariServer]
-    val services = Seq()
+    val services = Set.empty[AmbariService]
     val id = ClusterId.random()
-    val enabledServices: Set[ServiceDescription] = Set(Hdfs, MapReduce2)
+    val enabledServices: Set[Service] = Set(Hdfs, MapReduce2)
     val clusterDesc = innerDao.registerCluster(id, ClusterName("test"), 5, enabledServices)
     clusterDesc.state = Running
     val ambariCluster = mock[Cluster]

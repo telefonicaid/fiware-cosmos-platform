@@ -67,7 +67,7 @@ class UserUnregistrationWizardTest
     val clusterId = sm.createCluster(
       name = ClusterName("cluster1"),
       size = 6,
-      serviceDescriptions = Seq.empty,
+      serviceInstances = Set.empty,
       users = Seq.empty,
       preConditions = UnfilteredPassThrough
     )
@@ -84,7 +84,7 @@ class UserUnregistrationWizardTest
     val clusterId = sm.createCluster(
       name = ClusterName("cluster1"),
       size = 2,
-      serviceDescriptions = Seq.empty,
+      serviceInstances = Set.empty,
       users = Seq.empty,
       preConditions = UnfilteredPassThrough
     )

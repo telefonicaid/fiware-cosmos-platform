@@ -20,8 +20,13 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.verb.MustVerb
 
 class PersistentHdfs(user: User)(implicit info: Informer) extends MustVerb with MustMatchers {
-  def ls: Seq[String] = (s"cosmos -c ${user.cosmosrcPath} ls /" lines_!(ProcessLogger(info(_))))
-    .filterNot(_ == "No directory entries").map(line => line.substring(line.lastIndexOf(' ') + 1))
+
+  def ls(): Seq[String] =
+    stringToProcess(s"cosmos -c ${user.cosmosrcPath} ls /")
+      .lines(ProcessLogger(info(_)))
+      .filterNot(_ == "No directory entries")
+      .map(line => line.substring(line.lastIndexOf(' ') + 1))
+      .force
 
   def put(sourcePath: String, targetPath: String) {
     (s"cosmos -c ${user.cosmosrcPath} put $sourcePath $targetPath" !!).stripLineEnd must be ===

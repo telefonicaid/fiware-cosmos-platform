@@ -32,14 +32,14 @@ class CommandRunnerTest extends FlatSpec with MustMatchers with MockitoSugar {
 
   "A command runner" must "exit with non-zero status for invalid arguments" in
     new WithArguments() {
-      runner.run() must not be 0
+      runner.run().exitStatus must not be 0
     }
 
   it must "exit with non-zero status when exceptions are thrown" in
     new WithArguments("setup") {
       given(serviceManager.describePersistentHdfsCluster())
         .willThrow(new UnsupportedOperationException())
-      runner.run() must not be 0
+      runner.run().exitStatus must not be 0
     }
 
   it must "exit with zero status when everything goes OK" in
@@ -47,7 +47,7 @@ class CommandRunnerTest extends FlatSpec with MustMatchers with MockitoSugar {
       given(clusterDesc.state).willReturn(Running)
       given(serviceManager.describePersistentHdfsCluster())
         .willReturn(Some(clusterDesc))
-      runner.run() must be (0)
+      runner.run().exitStatus must be (0)
     }
 
   it must "exit status non-zero when storage cluster in state failed" in
@@ -55,7 +55,7 @@ class CommandRunnerTest extends FlatSpec with MustMatchers with MockitoSugar {
       given(clusterDesc.state).willReturn(Failed("state failed"))
       given(serviceManager.describePersistentHdfsCluster())
         .willReturn(Some(clusterDesc))
-      runner.run() must be (-1)
+      runner.run().exitStatus must be (-1)
     }
 
 
@@ -64,6 +64,6 @@ class CommandRunnerTest extends FlatSpec with MustMatchers with MockitoSugar {
       given(clusterDesc.state).willReturn(Running)
       given(serviceManager.describePersistentHdfsCluster())
         .willReturn(Some(clusterDesc))
-      runner.run() must be (0)
+      runner.run().exitStatus must be (0)
     }
 }

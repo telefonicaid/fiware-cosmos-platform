@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.admin
+package es.tid.cosmos.admin.groups
 
 import es.tid.cosmos.admin.Util._
 import es.tid.cosmos.admin.validation.GroupChecks
@@ -20,10 +20,10 @@ import es.tid.cosmos.api.usage.DynamicMachineUsage
 import es.tid.cosmos.servicemanager.ServiceManager
 
 /** Admin commands for managing groups. */
-private[admin] class Groups(
+private[admin] class GroupOperations(
     override val store: ProfileDataStore with GroupDataStore with ClusterDataStore,
     serviceManager: ServiceManager) extends GroupChecks {
-  import Groups._
+  import GroupOperations._
 
   private val quotaContext = new QuotaContextFactory(new DynamicMachineUsage(store, serviceManager))
 
@@ -85,6 +85,6 @@ private[admin] class Groups(
   }
 }
 
-private object Groups {
+private object GroupOperations {
   private def toUserFriendly(group: Group): String = s"${group.name} | ${group.minimumQuota}"
 }

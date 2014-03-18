@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.admin
+package es.tid.cosmos.admin.groups
 
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
@@ -20,11 +20,11 @@ import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.quota.{NoGroup, GuaranteedGroup, Quota, EmptyQuota}
 import es.tid.cosmos.servicemanager.ClusterName
 
-class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
+class GroupOperationsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
 
   trait WithGroups extends MockCosmosDataStoreComponent {
     val serviceManager = new MockedServiceManager(maxPoolSize = 6)
-    val groups = new Groups(store, serviceManager)
+    val groups = new GroupOperations(store, serviceManager)
   }
 
   "Group commands" must "support creating a new group" in new WithGroups {

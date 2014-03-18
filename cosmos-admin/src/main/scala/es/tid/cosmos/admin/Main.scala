@@ -28,11 +28,12 @@ object Main extends CommandRunnerComponent
 
   def main(args: Array[String]) {
     Play.start(playApplication)
-    val status = try {
+    val result = try {
       commandRunner(new AdminArguments(args)).run()
     } finally {
       Play.stop()
     }
-    System.exit(status)
+    println(result.message)
+    System.exit(result.exitStatus)
   }
 }

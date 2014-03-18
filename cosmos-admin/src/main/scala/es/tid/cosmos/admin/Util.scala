@@ -21,7 +21,7 @@ private[admin] object Util {
 
   def waitUntilReady(task_> : Future[Unit]): Boolean = {
     val handled_> = task_>.transform(
-      _ => println("Cosmos admin task succeded!"),
+      _ => println("Cosmos admin task succeeded!"),
       throwable => {
         println("ERROR: Cosmos admin task failed")
         println(throwable.getMessage)
@@ -40,7 +40,9 @@ private[admin] object Util {
   def tryAction(action: => Option[Any]): Boolean = {
     Try(action) match {
       case Success(maybe) => maybe.isDefined
-      case Failure(e) => { println(s"Error: ${e.getMessage}"); false }
+      case Failure(e) =>
+        println(s"Error: ${e.getMessage}")
+        false
     }
   }
 }

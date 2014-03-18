@@ -15,23 +15,27 @@ import scala.language.reflectiveCalls
 
 import org.rogach.scallop.ScallopConf
 
-import es.tid.cosmos.admin.{Groups, Profile, Cluster, PersistentStorage}
+import es.tid.cosmos.admin.{Profile, Cluster, PersistentStorage}
 import es.tid.cosmos.admin.cli.AdminArguments
+import es.tid.cosmos.admin.groups.GroupOperations
+import es.tid.cosmos.api.profile.dao.CosmosDataStore
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.ClusterId
-import es.tid.cosmos.api.profile.dao.CosmosDataStore
 
-class CommandRunner(args: AdminArguments, store: CosmosDataStore, serviceManager: => ServiceManager) {
+class CommandRunner(
+    args: AdminArguments,
+    store: CosmosDataStore,
+    serviceManager: => ServiceManager) {
 
   /** Executes an administration command.
     *
-    * @return Exit status
+    * @return Command result
     */
-  def run(): Int = processCommands(args.subcommands)
+  def run(): CommandResult = processCommands(args.subcommands)
 
-  private def processCommands(subCommands: List[ScallopConf]): Int =
+  private def processCommands(subCommands: List[ScallopConf]): CommandResult =
     subCommands.headOption match {
-      case Some(args.setup) => tryCommand(setupAll(serviceManager))
+      case Some(args.setup) => CommandResult.fromBlock(setupAll(serviceManager))
       case Some(args.persistentStorage) => processPersistentStorageCommand(subCommands.tail)
       case Some(args.cluster) => processClusterCommand(subCommands.tail)
       case Some(args.profile) => processProfileCommand(subCommands.tail)
@@ -39,54 +43,66 @@ class CommandRunner(args: AdminArguments, store: CosmosDataStore, serviceManager
       case _ => help(args)
     }
 
-  private def processPersistentStorageCommand(subCommands: List[ScallopConf]) =
+  private def processPersistentStorageCommand(subCommands: List[ScallopConf]): CommandResult =
     subCommands.headOption match {
-      case Some(args.persistentStorage.setup) => tryCommand(PersistentStorage.setup(serviceManager))
+      case Some(args.persistentStorage.setup) =>
+        CommandResult.fromBlock(PersistentStorage.setup(serviceManager))
       case Some(args.persistentStorage.terminate) =>
-        tryCommand(PersistentStorage.terminate(serviceManager))
+        CommandResult.fromBlock(PersistentStorage.terminate(serviceManager))
       case _ => help(args.persistentStorage)
     }
 
   private def processClusterCommand(subCommands: List[ScallopConf]) = subCommands.headOption match {
       case Some(args.cluster.terminate) =>
-        tryCommand(Cluster.terminate(serviceManager, ClusterId(args.cluster.terminate.clusterId())))
+        CommandResult.fromBlock(
+          Cluster.terminate(serviceManager, ClusterId(args.cluster.terminate.clusterId()))
+        )
       case _ => help(args.cluster)
   }
 
   private def processProfileCommand(subCommands: List[ScallopConf]) = {
     val playDbProfile = new Profile(store)
     subCommands.headOption match {
-      case Some(args.profile.setMachineQuota) => tryCommand(playDbProfile.setMachineQuota(
-          args.profile.setMachineQuota.handle(), args.profile.setMachineQuota.limit()))
-      case Some(args.profile.removeMachineQuota) => tryCommand(playDbProfile.removeMachineQuota(
-          args.profile.setMachineQuota.handle()))
-      case Some(args.profile.enableCapability) => tryCommand(playDbProfile.enableCapability(
-        args.profile.enableCapability.handle(),
-        args.profile.enableCapability.capability()
-      ))
-      case Some(args.profile.disableCapability) => tryCommand(playDbProfile.disableCapability(
-        args.profile.disableCapability.handle(),
-        args.profile.disableCapability.capability()
-      ))
-      case Some(args.profile.setGroup) => tryCommand(playDbProfile.setGroup(
-        args.profile.setGroup.handle(), args.profile.setGroup.group()
-      ))
-      case Some(args.profile.removeGroup) => tryCommand(playDbProfile.removeGroup(
-        args.profile.setGroup.handle()
-      ))
-      case Some(args.profile.list) => tryCommandWithOutput(playDbProfile.list)
+      case Some(args.profile.setMachineQuota) =>
+        CommandResult.fromBlock(playDbProfile.setMachineQuota(
+          args.profile.setMachineQuota.handle(), args.profile.setMachineQuota.limit())
+        )
+      case Some(args.profile.removeMachineQuota) =>
+        CommandResult.fromBlock(playDbProfile.removeMachineQuota(
+          args.profile.setMachineQuota.handle()
+        ))
+      case Some(args.profile.enableCapability) =>
+        CommandResult.fromBlock(playDbProfile.enableCapability(
+          args.profile.enableCapability.handle(),
+          args.profile.enableCapability.capability()
+        ))
+      case Some(args.profile.disableCapability) =>
+        CommandResult.fromBlock(playDbProfile.disableCapability(
+          args.profile.disableCapability.handle(),
+          args.profile.disableCapability.capability()
+        ))
+      case Some(args.profile.setGroup) =>
+        CommandResult.fromBlock(playDbProfile.setGroup(
+          args.profile.setGroup.handle(), args.profile.setGroup.group()
+        ))
+      case Some(args.profile.removeGroup) =>
+        CommandResult.fromBlock(playDbProfile.removeGroup(
+          args.profile.setGroup.handle()
+        ))
+      case Some(args.profile.list) => CommandResult.fromBlockWithOutput(playDbProfile.list)
       case _ => help(args.profile)
     }
   }
 
   private def processGroupCommand(subCommands: List[ScallopConf]) = {
-    val groups = new Groups(store, serviceManager)
+    val groups = new GroupOperations(store, serviceManager)
     subCommands.headOption match {
-      case Some(args.group.create) => tryCommand(groups.create(
+      case Some(args.group.create) => CommandResult.fromBlock(groups.create(
         args.group.create.name(), args.group.create.minQuota()))
-      case Some(args.group.list) => tryCommandWithOutput(groups.list)
-      case Some(args.group.delete) => tryCommand(groups.delete(args.group.delete.name()))
-      case Some(args.group.setMinQuota) => tryCommand(groups.setMinQuota(
+      case Some(args.group.list) => CommandResult.fromBlockWithOutput(groups.list)
+      case Some(args.group.delete) =>
+        CommandResult.fromBlock(groups.delete(args.group.delete.name()))
+      case Some(args.group.setMinQuota) => CommandResult.fromBlock(groups.setMinQuota(
         args.group.setMinQuota.name(), args.group.setMinQuota.quota()))
       case _ => help(args.group)
     }
@@ -100,30 +116,6 @@ class CommandRunner(args: AdminArguments, store: CosmosDataStore, serviceManager
 
   private def help(conf: ScallopConf) = {
     conf.printHelp()
-    CommandRunner.InvalidArgsStatus
+    CommandResult.error("Invalid arguments", CommandResult.InvalidArgsStatus)
   }
-
-  private def tryCommand(block: => Boolean) = try {
-    if (block) CommandRunner.SuccessStatus
-    else CommandRunner.ExecutionErrorStatus
-  } catch {
-    case ex: Throwable =>
-      ex.printStackTrace()
-      CommandRunner.ExecutionErrorStatus
-  }
-
-  private def tryCommandWithOutput(block: => String) = try {
-    println(block)
-    CommandRunner.SuccessStatus
-  } catch {
-    case ex: Throwable =>
-      ex.printStackTrace()
-      CommandRunner.ExecutionErrorStatus
-  }
-}
-
-object CommandRunner {
-  val SuccessStatus = 0
-  val InvalidArgsStatus = 1
-  val ExecutionErrorStatus = -1
 }

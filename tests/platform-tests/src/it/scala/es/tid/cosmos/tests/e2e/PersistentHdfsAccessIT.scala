@@ -31,11 +31,12 @@ class PersistentHdfsAccessIT extends E2ETestBase {
 
     feature("Users can use Infinity to persist important data") {
       scenario("Initially, the user's directory must be empty") {
-        infinity.ls must be ('empty)
+        infinity.ls() must be ('empty)
       }
+
       scenario("The user can upload a file to Infinity through the CLI") {
         infinity.put(source, target)
-        infinity.ls must be (Stream(target))
+        infinity.ls() must be (Seq(target))
       }
 
       scenario("The user can get the file that was uploaded") {
@@ -44,7 +45,7 @@ class PersistentHdfsAccessIT extends E2ETestBase {
 
       scenario("The user can remove the file from Infinity") {
         infinity.rm(target)
-        infinity.ls must be ('empty)
+        infinity.ls() must be ('empty)
       }
     }
   }

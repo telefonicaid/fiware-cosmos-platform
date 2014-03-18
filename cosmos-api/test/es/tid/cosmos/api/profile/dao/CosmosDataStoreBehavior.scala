@@ -220,9 +220,17 @@ trait CosmosDataStoreBehavior
         GuaranteedGroup("B", Quota(2)),
         GuaranteedGroup("C", Quota(3))
       )
-      store.withTransaction{ implicit conn =>
+      store.withTransaction { implicit conn =>
         Seq(a, b, c).foreach(store.group.register)
         store.group.list() must be (Set(a, b, c, NoGroup))
+      }
+    }
+
+    it must "lookup groups by name" in withStore { store =>
+      val group = GuaranteedGroup("name", Quota(10))
+      store.withTransaction { implicit c =>
+        store.group.register(group)
+        store.group.lookupByName(group.name) must be (Some(group))
       }
     }
 

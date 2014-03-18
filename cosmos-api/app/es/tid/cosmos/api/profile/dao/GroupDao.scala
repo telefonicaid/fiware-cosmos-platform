@@ -11,13 +11,22 @@
 
 package es.tid.cosmos.api.profile.dao
 
-import es.tid.cosmos.api.quota.{LimitedQuota, Group}
+import es.tid.cosmos.api.quota.{GuaranteedGroup, LimitedQuota, Group}
 
 trait GroupDao[Conn] {
+
+  /** Find a guaranteed group by name.
+    *
+    * @param name group name
+    * @param c    the connection to use
+    * @return     a guaranteed group or none
+    */
+  def lookupByName(name: String)(implicit c: Conn): Option[GuaranteedGroup]
 
   /** Register a user group in the database.
     *
     * @param group the group to be persisted
+    * @param c     the connection to use
     */
   def register(group: Group)(implicit c: Conn): Unit
 

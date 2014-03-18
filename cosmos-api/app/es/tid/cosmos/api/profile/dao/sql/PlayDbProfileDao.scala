@@ -198,13 +198,8 @@ private[sql] object PlayDbProfileDao extends ProfileDao[Connection] {
       )
       .executeInsert()
 
-  private def getGroup(maybeName: Option[String])(implicit c: Connection): Group = {
-    val maybeGroup = maybeName.flatMap(name =>
-      SQL("""SELECT name, min_quota FROM user_group WHERE name = {name}""".stripMargin)
-        .on("name" -> name).apply().collectFirst(ToGroup))
-
-    maybeGroup.getOrElse(NoGroup)
-  }
+  private def getGroup(maybeName: Option[String])(implicit c: Connection): Group =
+    maybeName.flatMap(PlayDbGroupDao.lookupByName).getOrElse(NoGroup)
 
   /** Utility method for changing the operator in SQL statements when using optional values
     * that convert None to NULL in SQL.
@@ -224,11 +219,5 @@ private[sql] object PlayDbProfileDao extends ProfileDao[Connection] {
   private def dbGroupName(group: Group): Option[String] = group match {
     case NoGroup => None
     case _ => Some(group.name)
-  }
-
-  // TODO: move elsewhere
-  val ToGroup: PartialFunction[Row, Group] = {
-    case Row(name: String, minimumQuota: Int) =>
-      GuaranteedGroup(name, Quota(minimumQuota))
   }
 }

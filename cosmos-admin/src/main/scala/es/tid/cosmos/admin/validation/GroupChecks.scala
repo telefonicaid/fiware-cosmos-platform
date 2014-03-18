@@ -28,7 +28,7 @@ trait GroupChecks {
     * @return the group iff found `None` otherwise
     */
   protected def withGroup(name: String)(implicit c: store.Conn): Option[GuaranteedGroup] =
-    Util.whenEmpty(store.group.list().collectFirst {
-      case group@GuaranteedGroup(`name`, _) => group
-    }) { println(s"No group with name $name") }
+    Util.whenEmpty(store.group.lookupByName(name)) {
+      println(s"No group with name $name")
+    }
 }

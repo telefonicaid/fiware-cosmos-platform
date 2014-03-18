@@ -128,6 +128,11 @@ class MockCosmosDataStore extends CosmosDataStore {
 
   override def group = new GroupDao[Conn] {
 
+    override def lookupByName(name: String)(implicit c: Conn): Option[GuaranteedGroup] =
+      groups().collectFirst {
+        case group @ GuaranteedGroup(`name`, _) => group
+      }
+
     override def register(group: Group)(implicit c: Conn): Unit = {
       groups() = groups() + group
     }

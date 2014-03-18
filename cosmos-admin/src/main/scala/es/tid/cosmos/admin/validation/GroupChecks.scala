@@ -11,12 +11,15 @@
 
 package es.tid.cosmos.admin.validation
 
+import scalaz._
+
 import es.tid.cosmos.admin.Util
 import es.tid.cosmos.api.profile.dao.GroupDataStore
 import es.tid.cosmos.api.quota.GuaranteedGroup
 
 /** Mix-in trait for adding user-group related checks */
 trait GroupChecks {
+  import Scalaz._
 
   val store: GroupDataStore
 
@@ -31,4 +34,8 @@ trait GroupChecks {
     Util.whenEmpty(store.group.lookupByName(name)) {
       println(s"No group with name $name")
     }
+
+  protected def requireExistingGroup(name: String)
+                                    (implicit c: store.Conn): Validation[String, GuaranteedGroup] =
+    store.group.lookupByName(name).toSuccess(s"No group with name $name")
 }

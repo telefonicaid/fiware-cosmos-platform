@@ -212,6 +212,18 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
     clusters += props.id -> cluster
     cluster
   }
+
+  /** Overload of [[es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager.defineCluster]]
+    * with default values for all the fields for shorter tests.
+    */
+  def defineCluster(
+     id: ClusterId = ClusterId.random(),
+     name: ClusterName = ClusterName("fake_cluster"),
+     size: Int = 2,
+     users: Set[ClusterUser] = Set.empty,
+     initialState: Option[ClusterState] = None,
+     services: Seq[String] = Seq("HDFS", "MAPREDUCE")): FakeCluster =
+    defineCluster(ClusterProperties(id, name, size, users, initialState, services))
 }
 
 object MockedServiceManager {

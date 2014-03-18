@@ -11,13 +11,14 @@
 
 package es.tid.cosmos.admin.command
 
-import scala.concurrent.Await
+import scala.concurrent.{Future, Await}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.util.control.NonFatal
 
 import java.io.{StringWriter, PrintWriter}
 import java.util.concurrent.TimeoutException
+import scalaz.Validation
 
 /** Represents the result of a command */
 case class CommandResult(exitStatus: Int, message: String) {
@@ -48,7 +49,7 @@ object CommandResult {
     CommandResult.error(str.toString)
   }
 
-  def get(command: Command, timeout: Duration = Duration.Inf): CommandResult = {
+  def await(command: Future[CommandResult], timeout: Duration = Duration.Inf): CommandResult = {
     val commandWithErrorHandling = command.recover {
       case NonFatal(ex) => CommandResult.fromThrowable(ex)
     }
@@ -58,6 +59,12 @@ object CommandResult {
       case _: TimeoutException => CommandResult.error(s"Command timed out after $timeout")
     }
   }
+
+  def fromValidation(validation: Validation[String, CommandResult]): CommandResult =
+    validation.fold(
+      fail = cause => CommandResult.error(cause),
+      succ = identity
+    )
 
   def fromBlock(block: => Boolean): CommandResult = try {
     if (block) CommandResult.success()

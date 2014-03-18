@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.admin.groups
 
+import scalaz.{Scalaz, Validation}
+
 import es.tid.cosmos.admin.Util._
 import es.tid.cosmos.admin.validation.GroupChecks
 import es.tid.cosmos.api.profile._
@@ -18,12 +20,14 @@ import es.tid.cosmos.api.profile.dao.{ClusterDataStore, GroupDataStore, ProfileD
 import es.tid.cosmos.api.quota._
 import es.tid.cosmos.api.usage.DynamicMachineUsage
 import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.admin.command.CommandResult
 
 /** Admin commands for managing groups. */
-private[admin] class GroupOperations(
+private[admin] class GroupCommands(
     override val store: ProfileDataStore with GroupDataStore with ClusterDataStore,
     serviceManager: ServiceManager) extends GroupChecks {
-  import GroupOperations._
+  import Scalaz._
+  import GroupCommands._
 
   private val quotaContext = new QuotaContextFactory(new DynamicMachineUsage(store, serviceManager))
 
@@ -55,10 +59,32 @@ private[admin] class GroupOperations(
   /** Delete an existing group.
     *
     * @param name the group's name
-    * @return     true iff the group was successfully deleted
+    * @return     whether the group was successfully deleted
     */
-  def delete(name: String): Boolean = store.withTransaction { implicit c =>
-    tryAction { for (group <- withGroup(name)) yield store.group.delete(group.name) }
+  def delete(name: String): CommandResult = CommandResult.fromValidation(
+    store.withTransaction { implicit c =>
+      for {
+        group <- requireExistingGroup(name)
+        _ <- requireNoSharedCluster(group)
+      } yield {
+        store.group.delete(group.name)
+        CommandResult.success(s"Group $name successfully deleted")
+      }
+    })
+
+  private def requireNoSharedCluster(group: GuaranteedGroup)
+                                    (implicit c: store.Conn): Validation[String, Unit] = {
+    val runningSharedClusters = for {
+      clusterId <- serviceManager.clusterIds
+      clusterDescription <- serviceManager.describeCluster(clusterId)
+      if clusterDescription.state.isActive
+      cluster = store.cluster.get(clusterId) if cluster.shared
+      owner <- store.profile.lookupByProfileId(cluster.ownerId) if owner.group == group
+    } yield clusterId
+
+    if (runningSharedClusters.isEmpty) ().success
+    else (s"Cannot delete group ${group.name}: " +
+      s"there are running shared clusters (${runningSharedClusters.mkString(", ")})").fail
   }
 
   /** Set an existing group's minimum, guaranteed quota.
@@ -85,6 +111,6 @@ private[admin] class GroupOperations(
   }
 }
 
-private object GroupOperations {
+private object GroupCommands {
   private def toUserFriendly(group: Group): String = s"${group.name} | ${group.minimumQuota}"
 }

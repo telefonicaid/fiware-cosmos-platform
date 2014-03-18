@@ -17,7 +17,7 @@ import org.rogach.scallop.ScallopConf
 
 import es.tid.cosmos.admin.{Profile, Cluster, PersistentStorage}
 import es.tid.cosmos.admin.cli.AdminArguments
-import es.tid.cosmos.admin.groups.GroupOperations
+import es.tid.cosmos.admin.groups.GroupCommands
 import es.tid.cosmos.api.profile.dao.CosmosDataStore
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.ClusterId
@@ -95,13 +95,12 @@ class CommandRunner(
   }
 
   private def processGroupCommand(subCommands: List[ScallopConf]) = {
-    val groups = new GroupOperations(store, serviceManager)
+    val groups = new GroupCommands(store, serviceManager)
     subCommands.headOption match {
       case Some(args.group.create) => CommandResult.fromBlock(groups.create(
         args.group.create.name(), args.group.create.minQuota()))
       case Some(args.group.list) => CommandResult.fromBlockWithOutput(groups.list)
-      case Some(args.group.delete) =>
-        CommandResult.fromBlock(groups.delete(args.group.delete.name()))
+      case Some(args.group.delete) => groups.delete(args.group.delete.name())
       case Some(args.group.setMinQuota) => CommandResult.fromBlock(groups.setMinQuota(
         args.group.setMinQuota.name(), args.group.setMinQuota.quota()))
       case _ => help(args.group)

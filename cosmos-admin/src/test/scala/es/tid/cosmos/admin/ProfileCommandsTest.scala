@@ -34,17 +34,17 @@ class ProfileCommandsTest extends FlatSpec with MustMatchers {
     store.withTransaction { implicit c =>
       store.profile.setMachineQuota(cosmosId, EmptyQuota)
     }
-    instance.removeMachineQuota(handle) must be (true)
+    instance.removeMachineQuota(handle) must be ('success)
     userProfile.quota must be (UnlimitedQuota)
   }
 
   it must "set a valid quota" in new WithMockCosmosProfileDao {
-    instance.setMachineQuota(handle, 15) must be (true)
+    instance.setMachineQuota(handle, 15) must be ('success)
     userProfile.quota must be (Quota(15))
   }
 
   it must "enable user capabilities" in new WithMockCosmosProfileDao {
-    instance.enableCapability(handle, "is_sudoer") must be (true)
+    instance.enableCapability(handle, "is_sudoer") must be ('success)
     userProfile.capabilities.hasCapability(Capability.IsSudoer) must be (true)
   }
 
@@ -52,15 +52,15 @@ class ProfileCommandsTest extends FlatSpec with MustMatchers {
     store.withTransaction { implicit c =>
       store.capability.enable(cosmosId, Capability.IsSudoer)
     }
-    instance.disableCapability(handle, "is_sudoer") must be (true)
-    userProfile.capabilities.hasCapability(Capability.IsSudoer) must be (false)
+    instance.disableCapability(handle, "is_sudoer") must be ('success)
+    userProfile.capabilities.hasCapability(Capability.IsSudoer) must not  be 'success
   }
 
   it must "set to an existing group" in new WithMockCosmosProfileDao {
     val group = GuaranteedGroup("mygroup", Quota(3))
     store.withTransaction{ implicit c =>
       store.group.register(group)
-      new ProfileCommands(store).setGroup(handle, group.name) must be (true)
+      new ProfileCommands(store).setGroup(handle, group.name) must be ('success)
       userProfile.group must be (group)
     }
   }
@@ -70,7 +70,7 @@ class ProfileCommandsTest extends FlatSpec with MustMatchers {
     store.withTransaction{ implicit c =>
       store.group.register(group)
       store.profile.setGroup(cosmosId, Some("mygroup"))
-      new ProfileCommands(store).removeGroup(handle) must be (true)
+      new ProfileCommands(store).removeGroup(handle) must be ('success)
       userProfile.group must be (NoGroup)
     }
   }
@@ -78,7 +78,7 @@ class ProfileCommandsTest extends FlatSpec with MustMatchers {
   it must "list existing profile handles ordered alphabetically" in new WithMockCosmosProfileDao {
     registerUser("imontoya")(store)
     store.withTransaction { implicit c =>
-      new ProfileCommands(store).list must include("imontoya\njsmith")
+      new ProfileCommands(store).list().message must include("imontoya\njsmith")
     }
   }
 
@@ -87,7 +87,7 @@ class ProfileCommandsTest extends FlatSpec with MustMatchers {
       store.profile.list().foreach { profile =>
         store.profile.setUserState(profile.id, UserState.Deleted)
       }
-      new ProfileCommands(store).list must equal("No users found")
+      new ProfileCommands(store).list().message must equal("No users found")
     }
   }
 }

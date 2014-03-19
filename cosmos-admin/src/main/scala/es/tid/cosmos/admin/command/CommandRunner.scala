@@ -59,35 +59,26 @@ class CommandRunner(
   }
 
   private def processProfileCommand(subCommands: List[ScallopConf]) = {
-    val playDbProfile = new ProfileCommands(store)
+    val profileCommands = new ProfileCommands(store)
     subCommands.headOption match {
-      case Some(args.profile.setMachineQuota) =>
-        CommandResult.fromBlock(playDbProfile.setMachineQuota(
-          args.profile.setMachineQuota.handle(), args.profile.setMachineQuota.limit())
-        )
+      case Some(args.profile.setMachineQuota) => profileCommands.setMachineQuota(
+        args.profile.setMachineQuota.handle(), args.profile.setMachineQuota.limit()
+      )
       case Some(args.profile.removeMachineQuota) =>
-        CommandResult.fromBlock(playDbProfile.removeMachineQuota(
-          args.profile.setMachineQuota.handle()
-        ))
-      case Some(args.profile.enableCapability) =>
-        CommandResult.fromBlock(playDbProfile.enableCapability(
-          args.profile.enableCapability.handle(),
-          args.profile.enableCapability.capability()
-        ))
-      case Some(args.profile.disableCapability) =>
-        CommandResult.fromBlock(playDbProfile.disableCapability(
-          args.profile.disableCapability.handle(),
-          args.profile.disableCapability.capability()
-        ))
+        profileCommands.removeMachineQuota(args.profile.setMachineQuota.handle())
+      case Some(args.profile.enableCapability) => profileCommands.enableCapability(
+        args.profile.enableCapability.handle(),
+        args.profile.enableCapability.capability()
+      )
+      case Some(args.profile.disableCapability) => profileCommands.disableCapability(
+        args.profile.disableCapability.handle(),
+        args.profile.disableCapability.capability()
+      )
       case Some(args.profile.setGroup) =>
-        CommandResult.fromBlock(playDbProfile.setGroup(
-          args.profile.setGroup.handle(), args.profile.setGroup.group()
-        ))
+        profileCommands.setGroup(args.profile.setGroup.handle(), args.profile.setGroup.group())
       case Some(args.profile.removeGroup) =>
-        CommandResult.fromBlock(playDbProfile.removeGroup(
-          args.profile.setGroup.handle()
-        ))
-      case Some(args.profile.list) => CommandResult.fromBlockWithOutput(playDbProfile.list)
+        profileCommands.removeGroup(args.profile.setGroup.handle())
+      case Some(args.profile.list) => profileCommands.list()
       case _ => help(args.profile)
     }
   }

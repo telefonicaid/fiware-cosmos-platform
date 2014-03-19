@@ -11,74 +11,77 @@
 
 package es.tid.cosmos.admin
 
-import es.tid.cosmos.admin.Util._
+import scalaz.{Scalaz, Validation}
+
+import es.tid.cosmos.admin.command.CommandResult
 import es.tid.cosmos.admin.validation.GroupChecks
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.Capability.Capability
 import es.tid.cosmos.api.profile.dao.{CapabilityDataStore, ProfileDataStore, GroupDataStore}
-import es.tid.cosmos.api.quota.{UnlimitedQuota, Quota}
+import es.tid.cosmos.api.quota.{NoGroup, UnlimitedQuota, Quota}
 
 private[admin] class ProfileCommands(
     override val store: ProfileDataStore with GroupDataStore with CapabilityDataStore
   ) extends GroupChecks {
 
-  def setMachineQuota(handle: String, limit: Int): Boolean = setMachineQuota(handle, Quota(limit))
+  import Scalaz._
 
-  def removeMachineQuota(handle: String): Boolean = setMachineQuota(handle, UnlimitedQuota)
+  def setMachineQuota(handle: String, limit: Int): CommandResult =
+    setMachineQuota(handle, Quota(limit))
 
-  private def setMachineQuota(handle: String, quota: Quota): Boolean =
-    store.withTransaction { implicit c =>  tryAction {
+  def removeMachineQuota(handle: String): CommandResult = setMachineQuota(handle, UnlimitedQuota)
+
+  private def setMachineQuota(handle: String, quota: Quota) =
+    transactionalValidationCommand { implicit c =>
       for {
-        cosmosProfile <- withProfile(handle)
-      } yield {
-        store.profile.setMachineQuota(cosmosProfile.id, quota)
-        println(s"Machine quota for user $handle changed to $quota")
-      }
-    }}
+        cosmosProfile <- requireProfileWithHandle(handle)
+        _ <- Validation.fromTryCatch(
+          store.profile.setMachineQuota(cosmosProfile.id, quota)
+        ).leftMap(_.getMessage)
+      } yield CommandResult.success(s"Machine quota for user $handle changed to $quota")
+    }
 
-  def enableCapability(handle: String, capability: String): Boolean =
+  def enableCapability(handle: String, capability: String): CommandResult =
     modifyCapability(handle, capability, enable = true)
 
-  def disableCapability(handle: String, capability: String): Boolean =
+  def disableCapability(handle: String, capability: String): CommandResult =
     modifyCapability(handle, capability, enable = false)
 
-  def setGroup(handle: String, groupName: String): Boolean = handleGroup(handle, Some(groupName))
+  def setGroup(handle: String, groupName: String): CommandResult =
+    changeToGroup(handle, Some(groupName))
 
-  def removeGroup(handle: String): Boolean = handleGroup(handle, groupName = None)
+  def removeGroup(handle: String): CommandResult = changeToGroup(handle, groupName = None)
 
-  def list: String = store.withTransaction { implicit c =>
+  def list(): CommandResult = store.withTransaction { implicit c =>
     val handles = for (
       profile <- store.profile.list() if profile.state != UserState.Deleted
     ) yield profile.handle
-    if (handles.isEmpty) "No users found"
-    else s"Users found (handles):\n${handles.sorted.mkString("\n")}"
+    CommandResult.success(
+      if (handles.isEmpty) "No users found"
+      else s"Users found (handles):\n${handles.sorted.mkString("\n")}"
+    )
   }
 
-  private def withProfile(handle: String)(implicit c: store.Conn): Option[CosmosProfile] =
-    whenEmpty(store.profile.lookupByHandle(handle)) {
-      println(s"No user with handle $handle")
-    }
-
-  private def modifyCapability(handle: String, capability: String, enable: Boolean): Boolean =
-    store.withTransaction { implicit c => tryAction {
-      val action = if (enable) store.capability.enable _ else store.capability.disable _
+  private def modifyCapability(handle: String, capability: String, enable: Boolean): CommandResult =
+    transactionalValidationCommand { implicit c =>
+      val (verb, action) =
+        if (enable) ("enabled", store.capability.enable _)
+        else ("disabled", store.capability.disable _)
       for {
-        cosmosProfile <- withProfile(handle)
-        parsedCapability <- parseCapability(capability)
+        cosmosProfile <- requireProfileWithHandle(handle)
+        parsedCapability <- requireValidCapability(capability)
       } yield {
         action(cosmosProfile.id, parsedCapability)
-        val verb = if (enable) "enabled" else "disabled"
-        println(s"$parsedCapability $verb for user $handle")
+        CommandResult.success(s"$parsedCapability $verb for user $handle")
       }
-    }}
-
-  private def parseCapability(input: String): Option[Capability] =
-    whenEmpty(Capability.values.find(_.toString == input)) {
-      println(s"Unknown capability '$input', one of ${Capability.values.mkString(", ")} was expected")
     }
 
-  /**
-    * Handle setting or removing a group from a user based on the `groupName` option.
+  private def requireValidCapability(input: String): Validation[String, Capability] =
+    Capability.values.find(_.toString == input).toSuccess(
+      s"Unknown capability '$input', one of ${Capability.values.mkString(", ")} was expected"
+    )
+
+  /** Handle setting or removing a group from a user based on the `groupName` option.
     *
     * @param handle the user's handle
     * @param groupName the optional group name. If a name is provided then the user will be set
@@ -86,17 +89,23 @@ private[admin] class ProfileCommands(
     *                  the user from any group that they might have belonged to.
     * @return          true iff the operation was successful
     */
-  private def handleGroup(handle: String, groupName: Option[String]): Boolean =
-    store.withTransaction { implicit c => tryAction {
-      val maybeGroupName = groupName.flatMap(withGroup).map(_.name)
-      val groupNameGivenButNotFound = groupName.isDefined && maybeGroupName.isEmpty
-      if (groupNameGivenButNotFound)
-        None
-      else for {
-        cosmosProfile <- withProfile(handle)
+  private def changeToGroup(handle: String, groupName: Option[String]): CommandResult =
+    transactionalValidationCommand { implicit c =>
+      for {
+        cosmosProfile <- requireProfileWithHandle(handle)
+        targetGroup <- if (groupName.isDefined) requireExistingGroup(groupName.get)
+                       else NoGroup.success
       } yield {
-        store.profile.setGroup(cosmosProfile.id, maybeGroupName)
-        println(s"User $handle now belongs to group $groupName")
+        store.profile.setGroup(cosmosProfile.id, targetGroup)
+        CommandResult.success(s"User $handle now belongs to group $groupName")
       }
-    }}
+    }
+
+  private def requireProfileWithHandle(handle: String)
+                                      (implicit c: store.Conn): Validation[String, CosmosProfile] =
+    store.profile.lookupByHandle(handle).toSuccess(s"No user with handle $handle")
+
+  private def transactionalValidationCommand(
+      command: store.Conn => Validation[String, CommandResult]): CommandResult =
+    CommandResult.fromValidation(store.withTransaction(command))
 }

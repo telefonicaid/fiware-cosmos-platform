@@ -56,6 +56,7 @@ cosmos::params::ambari_reduce_heap_memory: 2304
 cosmos::params::ambari_yarn_total_memory: 28672
 cosmos::params::ambari_yarn_container_min_memory: 128
 cosmos::params::ambari_yarn_virtual_physical_memory_ratio: 2.1
+cosmos::params::infinity_proxy_secure_phrase: 'c0sm0s'
 cosmos::openvz::network::host_iface: 'bond0.1'
 slave_hosts:
     - 'andromeda02'

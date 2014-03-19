@@ -124,8 +124,8 @@ object Build extends sbt.Build {
     dependsOn(
       ambariServiceManager,
       serviceManager,
-      cosmosApi % "compile->compile;test->test",
-      common    % "compile->compile:test->test"
+      cosmosApi % "compile->compile;test->test,it",
+      common % "compile->compile;test->test"
     )
   )
 

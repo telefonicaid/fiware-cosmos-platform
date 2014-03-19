@@ -59,7 +59,7 @@ class CommandRunner(
   }
 
   private def processProfileCommand(subCommands: List[ScallopConf]) = {
-    val profileCommands = new ProfileCommands(store)
+    val profileCommands = new ProfileCommands(store, serviceManager)
     subCommands.headOption match {
       case Some(args.profile.setMachineQuota) => profileCommands.setMachineQuota(
         args.profile.setMachineQuota.handle(), args.profile.setMachineQuota.limit()

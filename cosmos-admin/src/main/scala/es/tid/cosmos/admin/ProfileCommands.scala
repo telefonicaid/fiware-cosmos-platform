@@ -17,12 +17,12 @@ import es.tid.cosmos.admin.command.CommandResult
 import es.tid.cosmos.admin.validation.GroupChecks
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.Capability.Capability
-import es.tid.cosmos.api.profile.dao.{CapabilityDataStore, ProfileDataStore, GroupDataStore}
+import es.tid.cosmos.api.profile.dao.CosmosDataStore
 import es.tid.cosmos.api.quota.{NoGroup, UnlimitedQuota, Quota}
+import es.tid.cosmos.servicemanager.ServiceManager
 
 private[admin] class ProfileCommands(
-    override val store: ProfileDataStore with GroupDataStore with CapabilityDataStore
-  ) extends GroupChecks {
+    override val store: CosmosDataStore, serviceManager: ServiceManager) extends GroupChecks {
 
   import Scalaz._
 
@@ -95,15 +95,28 @@ private[admin] class ProfileCommands(
         cosmosProfile <- requireProfileWithHandle(handle)
         targetGroup <- if (groupName.isDefined) requireExistingGroup(groupName.get)
                        else NoGroup.success
+        _ <- requireNoActiveSharedClusterOwnedBy(cosmosProfile)
       } yield {
         store.profile.setGroup(cosmosProfile.id, targetGroup)
-        CommandResult.success(s"User $handle now belongs to group $groupName")
+        CommandResult.success(s"User $handle now belongs to $targetGroup")
       }
     }
 
   private def requireProfileWithHandle(handle: String)
                                       (implicit c: store.Conn): Validation[String, CosmosProfile] =
     store.profile.lookupByHandle(handle).toSuccess(s"No user with handle $handle")
+
+  private def requireNoActiveSharedClusterOwnedBy(
+      profile: CosmosProfile)(implicit c: store.Conn): Validation[String, Unit] = {
+    val offendingClusters = for {
+      cluster <- store.cluster.ownedBy(profile.id)
+      description <- serviceManager.describeCluster(cluster.clusterId)
+      if description.state.isActive
+    } yield cluster.clusterId
+    if (offendingClusters.isEmpty) ().success
+    else s"User ${profile.handle} owns shared clusters: ${offendingClusters.mkString(", ")}".fail
+  }
+
 
   private def transactionalValidationCommand(
       command: store.Conn => Validation[String, CommandResult]): CommandResult =

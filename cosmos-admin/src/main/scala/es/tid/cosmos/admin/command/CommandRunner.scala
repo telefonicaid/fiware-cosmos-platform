@@ -95,12 +95,12 @@ class CommandRunner(
   private def processGroupCommand(subCommands: List[ScallopConf]) = {
     val groups = new GroupCommands(store, serviceManager)
     subCommands.headOption match {
-      case Some(args.group.create) => CommandResult.fromBlock(groups.create(
-        args.group.create.name(), args.group.create.minQuota()))
-      case Some(args.group.list) => CommandResult.fromBlockWithOutput(groups.list)
+      case Some(args.group.create) =>
+        groups.create(args.group.create.name(), args.group.create.minQuota())
+      case Some(args.group.list) => groups.list()
       case Some(args.group.delete) => groups.delete(args.group.delete.name())
-      case Some(args.group.setMinQuota) => CommandResult.fromBlock(groups.setMinQuota(
-        args.group.setMinQuota.name(), args.group.setMinQuota.quota()))
+      case Some(args.group.setMinQuota) =>
+        groups.setMinQuota(args.group.setMinQuota.name(), args.group.setMinQuota.quota())
       case _ => help(args.group)
     }
   }

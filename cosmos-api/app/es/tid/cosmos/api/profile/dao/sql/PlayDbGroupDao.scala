@@ -16,9 +16,15 @@ import java.sql.Connection
 import anorm._
 
 import es.tid.cosmos.api.profile.dao.GroupDao
-import es.tid.cosmos.api.quota.{LimitedQuota, NoGroup, Group}
+import es.tid.cosmos.api.quota._
 
 private[sql] object PlayDbGroupDao extends GroupDao[Connection] {
+
+  override def lookupByName(name: String)(implicit c: Connection): Option[GuaranteedGroup] =
+    SQL("SELECT name, min_quota FROM user_group WHERE name = {name}")
+      .on("name" -> name)
+      .apply()
+      .collectFirst(PlayDbGroupDao.ToGroup)
 
   override def register(group: Group)(implicit c: Connection) = {
     SQL("""INSERT INTO user_group(name, min_quota)
@@ -40,7 +46,7 @@ private[sql] object PlayDbGroupDao extends GroupDao[Connection] {
   override def list()(implicit c: Connection): Set[Group] = {
     val registeredGroups = SQL("SELECT name, min_quota FROM user_group")
       .apply()
-      .collect(PlayDbProfileDao.ToGroup)
+      .collect(ToGroup)
       .force
     Set[Group](NoGroup) ++ registeredGroups
   }
@@ -48,5 +54,10 @@ private[sql] object PlayDbGroupDao extends GroupDao[Connection] {
   override def setQuota(name: String, minQuota: LimitedQuota)(implicit c: Connection) {
     SQL("UPDATE user_group SET min_quota = {min_quota} where name = {name}")
       .on("min_quota" -> minQuota.toOptInt, "name" -> name).executeUpdate()
+  }
+
+  val ToGroup: PartialFunction[Row, GuaranteedGroup] = {
+    case Row(name: String, minimumQuota: Int) =>
+      GuaranteedGroup(name, Quota(minimumQuota))
   }
 }

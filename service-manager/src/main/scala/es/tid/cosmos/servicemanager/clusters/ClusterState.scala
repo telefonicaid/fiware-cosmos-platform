@@ -15,6 +15,7 @@ sealed trait ClusterState {
   val name: String
   val descLine: String
   val canTerminate: Boolean
+  def isActive: Boolean = ClusterState.ActiveStates.contains(this)
 }
 
 case object Provisioning extends ClusterState {

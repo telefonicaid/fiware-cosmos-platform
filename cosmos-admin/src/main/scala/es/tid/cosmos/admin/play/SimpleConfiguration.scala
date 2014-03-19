@@ -11,35 +11,12 @@
 
 package es.tid.cosmos.admin.play
 
-import java.io.File
-
 import com.typesafe.config.Config
 import play.api._
-import play.api.db.BoneCPPlugin
-import play.core.SourceMapper
 import play.utils.Threads
 
-/** Simplified Play application that allows using Play's DB configuration and Data Access Layer.
-  *
-  * @param config the application configuration
-  */
-private[admin] class DataAccessApplication(override val config: Config) extends Application
-    with SimpleConfiguration with WithDefaultGlobal {
-
-  override val mode = Mode.Prod
-
-  override def classloader = this.getClass.getClassLoader
-
-  override lazy val plugins = Seq(new BoneCPPlugin(this))
-
-  override def path: File = new File(".")
-
-  override def sources: Option[SourceMapper] = None
-}
-
 /** Simplified Play app configuration mix-in trait based on Typesafe's config. */
-private[admin] trait SimpleConfiguration extends WithDefaultConfiguration {
-  self: Application =>
+private[play] trait SimpleConfiguration extends WithDefaultConfiguration { self: Application =>
 
   def config: Config
 

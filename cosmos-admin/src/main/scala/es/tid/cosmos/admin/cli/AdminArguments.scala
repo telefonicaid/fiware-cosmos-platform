@@ -13,8 +13,6 @@ package es.tid.cosmos.admin.cli
 
 import org.rogach.scallop._
 
-import es.tid.cosmos.api.profile.Capability.Capability
-
 class AdminArguments(args: Seq[String]) extends ScallopConf(args) {
 
   val setup = new Subcommand("setup")

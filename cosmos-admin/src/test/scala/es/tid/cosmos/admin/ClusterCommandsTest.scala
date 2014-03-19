@@ -23,7 +23,7 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.clusters._
 
-class ClusterTest extends FlatSpec with MustMatchers with MockitoSugar {
+class ClusterCommandsTest extends FlatSpec with MustMatchers with MockitoSugar {
 
   val clusterId = ClusterId("booya")
 
@@ -50,14 +50,14 @@ class ClusterTest extends FlatSpec with MustMatchers with MockitoSugar {
   }
 
   it must "not terminate the cluster if it hasn't been found" in new WithMissingStorage {
-    Cluster.terminate(sm, clusterId) must be (false)
+    ClusterCommands.terminate(sm, clusterId) must not be 'success
     verify(sm).describeCluster(clusterId)
     verify(sm, never()).terminateCluster(clusterId)
   }
 
   it must "terminate the cluster if it has been found" in new WithExistingStorage {
     given(sm.terminateCluster(clusterId)).willReturn(Future.successful())
-    Cluster.terminate(sm, clusterId) must be (true)
+    ClusterCommands.terminate(sm, clusterId) must be ('success)
     verify(sm).describeCluster(clusterId)
   }
 }

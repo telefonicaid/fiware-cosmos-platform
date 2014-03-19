@@ -11,13 +11,12 @@
 
 package es.tid.cosmos.admin.command
 
+import java.io.{StringWriter, PrintWriter}
+import java.util.concurrent.TimeoutException
 import scala.concurrent.{Future, Await}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.util.control.NonFatal
-
-import java.io.{StringWriter, PrintWriter}
-import java.util.concurrent.TimeoutException
 import scalaz.Validation
 
 /** Represents the result of a command */

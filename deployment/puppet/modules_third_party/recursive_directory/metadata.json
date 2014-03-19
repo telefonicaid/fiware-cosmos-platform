@@ -1,0 +1,37 @@
+{
+  "name": "mozrtucker-recursive_directory",
+  "version": "0.10.1",
+  "source": "UNKNOWN",
+  "author": "mozrtucker",
+  "license": "Apache License, Version 2.0",
+  "summary": "UNKNOWN",
+  "description": "Module that will recusively interpolate directories of templates to the catalog",
+  "project_page": "UNKNOWN",
+  "dependencies": [
+
+  ],
+  "types": [
+
+  ],
+  "checksums": {
+    "LICENSE": "b278a92d2c1509760384428817710378",
+    "Modulefile": "3686963ef46595d5ecb1cb1bda8fdcb6",
+    "README.md": "6182ace5306053f75a57eaf96b94c619",
+    "Rakefile": "f39450f89f23380c06f6d6a36d0ec017",
+    "lib/puppet/parser/functions/recurse_directory.rb": "fdd5d5b3a5a5e750eae438d84b8bc2fb",
+    "manifests/init.pp": "efe773de6bdcb83cf4186404b525c7e0",
+    "manifests/test.pp": "2650623ed94ec89da55cf5e04a4e2c75",
+    "spec/defines/recursive_directory_spec.rb": "eeaf892e365ec1ce420f9da7e62141c3",
+    "spec/fixtures/manifests/site.pp": "d41d8cd98f00b204e9800998ecf8427e",
+    "spec/fixtures/modules/recursive_directory/templates/custom.conf": "6d7585ff125c845fcbfb1d344288c0d7",
+    "spec/fixtures/modules/recursive_directory/templates/example.conf.erb": "e39a668fb79c5627e758ee9e9f55e37e",
+    "spec/fixtures/modules/recursive_directory/templates/foo.txt.erb": "d41d8cd98f00b204e9800998ecf8427e",
+    "spec/fixtures/modules/recursive_directory/templates/foo2.txt": "d41d8cd98f00b204e9800998ecf8427e",
+    "spec/fixtures/modules/recursive_directory/templates/foobar2.py.erb": "e39a668fb79c5627e758ee9e9f55e37e",
+    "spec/fixtures/modules/recursive_directory/templates/testdir/index.conf.erb": "e39a668fb79c5627e758ee9e9f55e37e",
+    "spec/fixtures/modules/recursive_directory/templates/testdir/nested/index.conf.erb": "e39a668fb79c5627e758ee9e9f55e37e",
+    "spec/fixtures/modules/test/templates/example.conf.erb": "e39a668fb79c5627e758ee9e9f55e37e",
+    "spec/functions/basic_spec.rb": "60498815099cd823395379b10895a8ad",
+    "spec/spec_helper.rb": "792eeb7aa7edafb93e2bc1d27c5e75c5"
+  }
+}

@@ -19,12 +19,12 @@ import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
 import es.tid.cosmos.api.quota._
 
-class ProfileTest extends FlatSpec with MustMatchers {
+class ProfileCommandsTest extends FlatSpec with MustMatchers {
 
   trait WithMockCosmosProfileDao extends MockCosmosDataStoreComponent {
     val handle = "jsmith"
     val cosmosId = registerUser(handle)(store).id
-    val instance = new Profile(store)
+    val instance = new ProfileCommands(store)
     def userProfile = store.withTransaction { implicit c =>
       store.profile.lookupByHandle(handle)
     }.get
@@ -60,7 +60,7 @@ class ProfileTest extends FlatSpec with MustMatchers {
     val group = GuaranteedGroup("mygroup", Quota(3))
     store.withTransaction{ implicit c =>
       store.group.register(group)
-      new Profile(store).setGroup(handle, group.name) must be (true)
+      new ProfileCommands(store).setGroup(handle, group.name) must be (true)
       userProfile.group must be (group)
     }
   }
@@ -70,7 +70,7 @@ class ProfileTest extends FlatSpec with MustMatchers {
     store.withTransaction{ implicit c =>
       store.group.register(group)
       store.profile.setGroup(cosmosId, Some("mygroup"))
-      new Profile(store).removeGroup(handle) must be (true)
+      new ProfileCommands(store).removeGroup(handle) must be (true)
       userProfile.group must be (NoGroup)
     }
   }
@@ -78,7 +78,7 @@ class ProfileTest extends FlatSpec with MustMatchers {
   it must "list existing profile handles ordered alphabetically" in new WithMockCosmosProfileDao {
     registerUser("imontoya")(store)
     store.withTransaction { implicit c =>
-      new Profile(store).list must include("imontoya\njsmith")
+      new ProfileCommands(store).list must include("imontoya\njsmith")
     }
   }
 
@@ -87,7 +87,7 @@ class ProfileTest extends FlatSpec with MustMatchers {
       store.profile.list().foreach { profile =>
         store.profile.setUserState(profile.id, UserState.Deleted)
       }
-      new Profile(store).list must equal("No users found")
+      new ProfileCommands(store).list must equal("No users found")
     }
   }
 }

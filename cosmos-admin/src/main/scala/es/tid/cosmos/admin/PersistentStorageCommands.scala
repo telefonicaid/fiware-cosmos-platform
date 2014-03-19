@@ -14,9 +14,9 @@ package es.tid.cosmos.admin
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters._
 
-private[admin] object PersistentStorage {
+private[admin] object PersistentStorageCommands {
 
-  def setup(serviceManager: ServiceManager) = {
+  def setup(serviceManager: ServiceManager): Boolean = {
     storageState(serviceManager) match {
       case Some(Running) =>
         println("Persistent Storage found. Not changing anything...")
@@ -30,7 +30,7 @@ private[admin] object PersistentStorage {
     }
   }
 
-  def terminate(serviceManager: ServiceManager) = {
+  def terminate(serviceManager: ServiceManager): Boolean = {
     storageState(serviceManager) match {
       case Some(Running) =>
         println("Persistent Storage found. Terminating...")

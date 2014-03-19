@@ -18,7 +18,7 @@ import es.tid.cosmos.api.profile.Capability.Capability
 import es.tid.cosmos.api.profile.dao.{CapabilityDataStore, ProfileDataStore, GroupDataStore}
 import es.tid.cosmos.api.quota.{UnlimitedQuota, Quota}
 
-private[admin] class Profile(
+private[admin] class ProfileCommands(
     override val store: ProfileDataStore with GroupDataStore with CapabilityDataStore
   ) extends GroupChecks {
 

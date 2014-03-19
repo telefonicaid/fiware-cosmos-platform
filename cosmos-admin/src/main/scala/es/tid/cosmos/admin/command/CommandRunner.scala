@@ -15,7 +15,7 @@ import scala.language.reflectiveCalls
 
 import org.rogach.scallop.ScallopConf
 
-import es.tid.cosmos.admin.{Profile, Cluster, PersistentStorage}
+import es.tid.cosmos.admin.{ProfileCommands, ClusterCommands, PersistentStorageCommands}
 import es.tid.cosmos.admin.cli.AdminArguments
 import es.tid.cosmos.admin.groups.GroupCommands
 import es.tid.cosmos.api.profile.dao.CosmosDataStore
@@ -46,22 +46,20 @@ class CommandRunner(
   private def processPersistentStorageCommand(subCommands: List[ScallopConf]): CommandResult =
     subCommands.headOption match {
       case Some(args.persistentStorage.setup) =>
-        CommandResult.fromBlock(PersistentStorage.setup(serviceManager))
+        CommandResult.fromBlock(PersistentStorageCommands.setup(serviceManager))
       case Some(args.persistentStorage.terminate) =>
-        CommandResult.fromBlock(PersistentStorage.terminate(serviceManager))
+        CommandResult.fromBlock(PersistentStorageCommands.terminate(serviceManager))
       case _ => help(args.persistentStorage)
     }
 
   private def processClusterCommand(subCommands: List[ScallopConf]) = subCommands.headOption match {
       case Some(args.cluster.terminate) =>
-        CommandResult.fromBlock(
-          Cluster.terminate(serviceManager, ClusterId(args.cluster.terminate.clusterId()))
-        )
+        ClusterCommands.terminate(serviceManager, ClusterId(args.cluster.terminate.clusterId()))
       case _ => help(args.cluster)
   }
 
   private def processProfileCommand(subCommands: List[ScallopConf]) = {
-    val playDbProfile = new Profile(store)
+    val playDbProfile = new ProfileCommands(store)
     subCommands.headOption match {
       case Some(args.profile.setMachineQuota) =>
         CommandResult.fromBlock(playDbProfile.setMachineQuota(
@@ -111,7 +109,7 @@ class CommandRunner(
     * @param serviceManager The service manager to use.
     * @return Whether the operation succeeded.
     */
-  private def setupAll(serviceManager: ServiceManager) = PersistentStorage.setup(serviceManager)
+  private def setupAll(serviceManager: ServiceManager) = PersistentStorageCommands.setup(serviceManager)
 
   private def help(conf: ScallopConf) = {
     conf.printHelp()

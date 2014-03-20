@@ -22,12 +22,12 @@ import akka.testkit.{TestProbe, TestKit}
 import akka.util.Timeout
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 import org.scalatest.matchers._
-import spray.http._
 import spray.can.Http
+import spray.http._
+import spray.httpx.RequestBuilding
 
 import es.tid.cosmos.infinity.server.auth._
 import es.tid.cosmos.infinity.server.config.ServiceConfig
-import es.tid.cosmos.infinity.server.util.Path
 
 class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
     with FlatSpec
@@ -104,7 +104,7 @@ class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
       expectTermination()
     }
 
-  val sampleUri = "/webhdfs/v1/foo/bar?op=OPEN"
+  val sampleUri = "/webhdfs/v1/foo/bar?op=OPEN&api.key=user-key&api.secret=user-secret"
   val datanodeService = "datanode1"
   val tokenGenerator = TokenGenerator("c0sm0s")
 
@@ -125,20 +125,8 @@ class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
     uri.copy(authority = Uri.Authority(Uri.Host(cfg.webhdfsHostname), cfg.webhdfsPort))
   }
 
-  case class SampleRequest(
-      credentials: Credentials,
-      requester: ActorRef) extends Request {
-    private val service = ServiceConfig.active
-    override val httpRequest = HttpRequest(
-      method = HttpMethods.GET,
-      uri = Uri(
-        s"http://${service.infinityHostname}:${service.infinityPort}/webhdfs/v1/foo/bar?op=OPEN"),
-      headers = List(HttpHeaders.Host(s"${service.infinityHostname}:${service.infinityPort}"))
-    )
-    override val action = ReadAction(Path.absolute("/foo/bar"))
-  }
-
-  class SampleProcessor(requestTimeout: FiniteDuration = 1.minute) {
+  class SampleProcessor(requestTimeout: FiniteDuration = 1.minute) extends RequestBuilding {
+    val remoteAddress = new InetSocketAddress("remote", 9999)
     val requester = TestProbe()
     val authenticator = TestProbe()
     val authorizator = TestProbe()
@@ -148,7 +136,7 @@ class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
       group = "cosmos",
       unixPermissionMask = UnixFilePermissions.fromOctal("777")
     )
-    val request = SampleRequest(credentials, requester.ref)
+    val request = Request(remoteAddress, requester.ref, Get(sampleUri))
     val processorConfig = RequestProcessor.Configuration.fromSystemConfig(system.settings.config)
       .copy(requestTimeout = requestTimeout)
     val processor = system.actorOf(

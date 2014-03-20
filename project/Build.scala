@@ -155,6 +155,7 @@ object Build extends sbt.Build {
     settings(assemblySettings: _*)
     settings(mainClass in assembly := Some("es.tid.cosmos.infinity.server.Boot"))
     settings(RpmSettings.infinityServerSettings: _*)
+    dependsOn(common)
   )
 
   def rootPackageSettings: Seq[Setting[_]] = Seq(

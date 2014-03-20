@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.infinity.server.auth
 
+import es.tid.cosmos.infinity.server.actions.Action
+
 object AuthorizationProvider {
 
   /** A message requesting the authorization to execute an action on a path. */

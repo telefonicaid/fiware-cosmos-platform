@@ -11,6 +11,9 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
+import java.io.File
+import java.nio.file.{StandardCopyOption, Files}
+
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
@@ -24,4 +27,19 @@ trait ConfiguredServiceTest extends FlatSpec with MustMatchers with TestResource
   def configurator: ConfigurationContributor
 
   def contributions = configurator.contributions(dynamicProperties)
+
+  ConfiguredServiceTest.synchronized {
+    new File(resourcesConfigDirectory)
+      .listFiles()
+      .filter(_.getName.endsWith(".erb"))
+      .foreach(file => {
+        val path = file.getAbsolutePath
+        Files.move(
+          file.toPath,
+          new File(path.take(path.lastIndexOf('.'))).toPath,
+          StandardCopyOption.REPLACE_EXISTING)
+      })
+  }
 }
+
+object ConfiguredServiceTest

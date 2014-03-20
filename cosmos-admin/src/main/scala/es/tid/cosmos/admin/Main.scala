@@ -16,11 +16,13 @@ import _root_.play.api.Play
 import es.tid.cosmos.admin.cli.AdminArguments
 import es.tid.cosmos.admin.command.CommandRunnerComponent
 import es.tid.cosmos.admin.play.DataAccessApplicationComponent
+import es.tid.cosmos.admin.profile.DefaultProfileCommandsComponent
 import es.tid.cosmos.api.profile.dao.sql.PlayDbDataStoreComponent
 import es.tid.cosmos.common.ApplicationConfigComponent
 import es.tid.cosmos.servicemanager.production.ProductionServiceManagerComponent
 
 object Main extends CommandRunnerComponent
+  with DefaultProfileCommandsComponent
   with DataAccessApplicationComponent
   with ProductionServiceManagerComponent
   with PlayDbDataStoreComponent

@@ -22,13 +22,13 @@ import es.tid.cosmos.api.quota._
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.clusters.Running
 
-class ProfileCommandsTest extends FlatSpec with MustMatchers with CapabilityMatchers {
+class ProfileCommandsImplementationTest extends FlatSpec with MustMatchers with CapabilityMatchers {
 
   trait WithMockCosmosProfileDao extends MockCosmosDataStoreComponent
       with MockedServiceManagerComponent {
     val handle = "jsmith"
     val cosmosId = registerUser(handle)(store).id
-    val instance = new ProfileCommands(store, serviceManager)
+    val instance = new ProfileCommandsImplementation(store, serviceManager)
     val group = GuaranteedGroup("mygroup", Quota(3))
 
     def userProfile() = store.withTransaction { implicit c =>

@@ -109,11 +109,27 @@ class ProfileCommandsTest extends FlatSpec with MustMatchers with CapabilityMatc
         fakeCluster
       }
       instance.removeGroup(handle) must be ('success)
-      store.withTransaction { implicit c =>
-        store.profile.lookupByProfileId(cosmosId)
-      }.map(_.group) must be (Some(NoGroup))
       val disabledUser = cluster.view.users.get.find(_.username == handle)
       disabledUser.map(_.isEnabled) must be (Some(false))
+    }
+
+  it must "add user to shared clusters when entering a group" in
+    new WithMockCosmosProfileDao {
+      val cluster = store.withTransaction { implicit c =>
+        store.group.register(group)
+        val ownerId = registerUser(store, "owner").id
+        store.profile.setGroup(ownerId, group)
+        val fakeCluster = mockedServiceManager.defineCluster(
+          users = Set(ClusterUser("owner", "key1")),
+          initialState = Some(Running)
+        )
+        store.cluster.register(fakeCluster.view.id, ownerId, shared = true)
+        fakeCluster
+      }
+      instance.setGroup(handle, group.name) must be ('success)
+      cluster.view.users.get.collectFirst {
+        case user if user.username == handle && user.isEnabled => user
+      } must be ('defined)
     }
 
   it must "list existing profile handles ordered alphabetically" in new WithMockCosmosProfileDao {

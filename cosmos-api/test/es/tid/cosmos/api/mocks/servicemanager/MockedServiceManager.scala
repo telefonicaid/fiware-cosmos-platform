@@ -58,7 +58,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
       setUserOperation._2.future
     }
 
-    def completeSetUsers(): Boolean = { synchronized {
+    def completeSetUsers(): Boolean = synchronized {
       if (pendingSetUserOperations.isEmpty)
         return false
       for {
@@ -69,7 +69,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
       }
       pendingSetUserOperations = Seq()
       true
-    }}
+    }
 
     def setState(newState: ClusterState): Future[Unit] = synchronized {
       statePromises.get(state).foreach(_.success(()))

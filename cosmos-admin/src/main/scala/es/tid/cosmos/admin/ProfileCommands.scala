@@ -11,6 +11,10 @@
 
 package es.tid.cosmos.admin
 
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import scala.util.control.NonFatal
 import scalaz.{Scalaz, Validation}
 
 import es.tid.cosmos.admin.command.CommandResult
@@ -18,8 +22,9 @@ import es.tid.cosmos.admin.validation.GroupChecks
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.Capability.Capability
 import es.tid.cosmos.api.profile.dao.CosmosDataStore
-import es.tid.cosmos.api.quota.{NoGroup, UnlimitedQuota, Quota}
+import es.tid.cosmos.api.quota.{Group, NoGroup, UnlimitedQuota, Quota}
 import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ClusterId}
 
 private[admin] class ProfileCommands(
     override val store: CosmosDataStore, serviceManager: ServiceManager) extends GroupChecks {
@@ -90,17 +95,56 @@ private[admin] class ProfileCommands(
     * @return          true iff the operation was successful
     */
   private def changeToGroup(handle: String, groupName: Option[String]): CommandResult =
-    transactionalValidationCommand { implicit c =>
+    CommandResult.fromValidation {
+      for {
+        groupChange <- requireGroupChange(handle, groupName)
+        (sourceGroup, targetGroup) = groupChange
+        clusterUpdates = removeFromSharedClusters(handle, sourceGroup)
+          .map(_ => CommandResult.success(s"User $handle now belongs to $targetGroup"))
+      } yield CommandResult.await(clusterUpdates, ProfileCommands.ClusterUpdateTimeout)
+    }
+
+  private def requireGroupChange(
+      handle: String, groupName: Option[String]): Validation[String, (Group, Group)] =
+    store.withTransaction { implicit c =>
       for {
         cosmosProfile <- requireProfileWithHandle(handle)
         targetGroup <- if (groupName.isDefined) requireExistingGroup(groupName.get)
-                       else NoGroup.success
+        else NoGroup.success
         _ <- requireNoActiveSharedClusterOwnedBy(cosmosProfile)
       } yield {
         store.profile.setGroup(cosmosProfile.id, targetGroup)
-        CommandResult.success(s"User $handle now belongs to $targetGroup")
+        (cosmosProfile.group, targetGroup)
       }
     }
+
+  private def removeFromSharedClusters(handle: String, group: Group): Future[Unit] = {
+    val clustersToUpdate = store.withTransaction { implicit c =>
+      for {
+        description <- activeSharedClusters(group)
+        users <- description.users if users.exists(_.username == handle)
+      } yield description.id
+    }
+    for {
+      updateResults <- Future.traverse(clustersToUpdate) { clusterId: ClusterId =>
+        serviceManager.disableUser(clusterId, handle)
+          .map(_ => None)
+          .recover { case NonFatal(ex) => Some(clusterId) }
+      }
+      failedUpdates = updateResults.flatten
+    } yield require(
+      failedUpdates.isEmpty,
+      s"Cannot remove user $handle from: ${failedUpdates.mkString(", ")}"
+    )
+  }
+
+  private def activeSharedClusters(group: Group)(implicit c: store.Conn): Seq[ClusterDescription] =
+    for {
+      clusterId <- serviceManager.clusterIds
+      ownerId <- store.cluster.ownerOf(clusterId)
+      owner <- store.profile.lookupByProfileId(ownerId) if owner.group == group
+      description <- serviceManager.describeCluster(clusterId) if description.state.isActive
+    } yield description
 
   private def requireProfileWithHandle(handle: String)
                                       (implicit c: store.Conn): Validation[String, CosmosProfile] =
@@ -121,4 +165,8 @@ private[admin] class ProfileCommands(
   private def transactionalValidationCommand(
       command: store.Conn => Validation[String, CommandResult]): CommandResult =
     CommandResult.fromValidation(store.withTransaction(command))
+}
+
+object ProfileCommands {
+  val ClusterUpdateTimeout = 20.minutes
 }

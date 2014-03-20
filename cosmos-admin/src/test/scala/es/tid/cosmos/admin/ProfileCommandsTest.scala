@@ -19,19 +19,21 @@ import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
 import es.tid.cosmos.api.quota._
-import es.tid.cosmos.servicemanager.clusters.ClusterId
+import es.tid.cosmos.servicemanager.ClusterUser
+import es.tid.cosmos.servicemanager.clusters.Running
 
-class ProfileCommandsTest extends FlatSpec with MustMatchers {
+class ProfileCommandsTest extends FlatSpec with MustMatchers with CapabilityMatchers {
 
   trait WithMockCosmosProfileDao extends MockCosmosDataStoreComponent
       with MockedServiceManagerComponent {
     val handle = "jsmith"
     val cosmosId = registerUser(handle)(store).id
     val instance = new ProfileCommands(store, serviceManager)
+    val group = GuaranteedGroup("mygroup", Quota(3))
+
     def userProfile() = store.withTransaction { implicit c =>
       store.profile.lookupByHandle(handle)
     }.get
-    val group = GuaranteedGroup("mygroup", Quota(3))
   }
 
   "A profile" must "unset quota" in new WithMockCosmosProfileDao {
@@ -49,7 +51,7 @@ class ProfileCommandsTest extends FlatSpec with MustMatchers {
 
   it must "enable user capabilities" in new WithMockCosmosProfileDao {
     instance.enableCapability(handle, "is_sudoer") must be ('success)
-    userProfile().capabilities.hasCapability(Capability.IsSudoer) must be (true)
+    userProfile().capabilities must containCapability(Capability.IsSudoer)
   }
 
   it must "disable user capabilities" in new WithMockCosmosProfileDao {
@@ -69,12 +71,12 @@ class ProfileCommandsTest extends FlatSpec with MustMatchers {
   }
 
   it must "remove user from its assigned group" in new WithMockCosmosProfileDao {
-    store.withTransaction{ implicit c =>
+    store.withTransaction { implicit c =>
       store.group.register(group)
-      store.profile.setGroup(cosmosId, Some("mygroup"))
+      store.profile.setGroup(cosmosId, group)
     }
     instance.removeGroup(handle) must be ('success)
-    store.withTransaction{ implicit c =>
+    store.withTransaction { implicit c =>
       userProfile().group must be (NoGroup)
     }
   }
@@ -82,14 +84,36 @@ class ProfileCommandsTest extends FlatSpec with MustMatchers {
   it must "reject removing user from group if he owns a shared cluster" in
     new WithMockCosmosProfileDao {
       val clusterId = mockedServiceManager.defineCluster().view.id
-      store.withTransaction{ implicit c =>
+      store.withTransaction { implicit c =>
         store.group.register(group)
-        store.profile.setGroup(cosmosId, Some("mygroup"))
+        store.profile.setGroup(cosmosId, group)
         store.cluster.register(clusterId, cosmosId, shared = true)
       }
       val result = instance.removeGroup(handle)
       result must not be 'success
       result.message must include (clusterId.toString)
+    }
+
+  it must "disable user from shared clusters when leaving a group" in
+    new WithMockCosmosProfileDao {
+      val cluster = store.withTransaction { implicit c =>
+        store.group.register(group)
+        store.profile.setGroup(cosmosId, group)
+        val ownerId = registerUser(store, "owner").id
+        store.profile.setGroup(ownerId, group)
+        val fakeCluster = mockedServiceManager.defineCluster(
+          users = Set(ClusterUser("owner", "key1"), ClusterUser(handle, "key2")),
+          initialState = Some(Running)
+        )
+        store.cluster.register(fakeCluster.view.id, ownerId, shared = true)
+        fakeCluster
+      }
+      instance.removeGroup(handle) must be ('success)
+      store.withTransaction { implicit c =>
+        store.profile.lookupByProfileId(cosmosId)
+      }.map(_.group) must be (Some(NoGroup))
+      val disabledUser = cluster.view.users.get.find(_.username == handle)
+      disabledUser.map(_.isEnabled) must be (Some(false))
     }
 
   it must "list existing profile handles ordered alphabetically" in new WithMockCosmosProfileDao {

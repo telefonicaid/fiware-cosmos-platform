@@ -62,23 +62,23 @@ class CommandRunner(
 
   private def processProfileCommand(subCommands: List[ScallopConf]) = {
     subCommands.headOption match {
-      case Some(args.profile.setMachineQuota) => profileCommands.setMachineQuota(
+      case Some(args.profile.setMachineQuota) => profileCommands.quota.set(
         args.profile.setMachineQuota.handle(), args.profile.setMachineQuota.limit()
       )
       case Some(args.profile.removeMachineQuota) =>
-        profileCommands.removeMachineQuota(args.profile.setMachineQuota.handle())
-      case Some(args.profile.enableCapability) => profileCommands.enableCapability(
+        profileCommands.quota.remove(args.profile.setMachineQuota.handle())
+      case Some(args.profile.enableCapability) => profileCommands.capability.enable(
         args.profile.enableCapability.handle(),
         args.profile.enableCapability.capability()
       )
-      case Some(args.profile.disableCapability) => profileCommands.disableCapability(
+      case Some(args.profile.disableCapability) => profileCommands.capability.disable(
         args.profile.disableCapability.handle(),
         args.profile.disableCapability.capability()
       )
       case Some(args.profile.setGroup) =>
-        profileCommands.setGroup(args.profile.setGroup.handle(), args.profile.setGroup.group())
+        profileCommands.group.set(args.profile.setGroup.handle(), args.profile.setGroup.group())
       case Some(args.profile.removeGroup) =>
-        profileCommands.removeGroup(args.profile.setGroup.handle())
+        profileCommands.group.remove(args.profile.setGroup.handle())
       case Some(args.profile.list) => profileCommands.list()
       case _ => help(args.profile)
     }

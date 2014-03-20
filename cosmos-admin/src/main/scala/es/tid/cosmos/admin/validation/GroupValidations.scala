@@ -17,7 +17,7 @@ import es.tid.cosmos.api.profile.dao.GroupDataStore
 import es.tid.cosmos.api.quota.GuaranteedGroup
 
 /** Mix-in trait for adding user-group related checks */
-trait GroupChecks {
+trait GroupValidations {
   import Scalaz._
 
   val store: GroupDataStore

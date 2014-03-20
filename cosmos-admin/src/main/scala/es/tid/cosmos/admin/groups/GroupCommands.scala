@@ -14,7 +14,7 @@ package es.tid.cosmos.admin.groups
 import scalaz.{Scalaz, Validation}
 
 import es.tid.cosmos.admin.command.CommandResult
-import es.tid.cosmos.admin.validation.GroupChecks
+import es.tid.cosmos.admin.validation.GroupValidations
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.dao.{ClusterDataStore, GroupDataStore, ProfileDataStore}
 import es.tid.cosmos.api.quota._
@@ -24,7 +24,7 @@ import es.tid.cosmos.servicemanager.ServiceManager
 /** Admin commands for managing groups. */
 private[admin] class GroupCommands(
     override val store: ProfileDataStore with GroupDataStore with ClusterDataStore,
-    serviceManager: ServiceManager) extends GroupChecks {
+    serviceManager: ServiceManager) extends GroupValidations {
   import Scalaz._
   import GroupCommands._
 

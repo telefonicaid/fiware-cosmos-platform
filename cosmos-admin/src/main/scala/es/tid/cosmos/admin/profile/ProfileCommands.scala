@@ -4,10 +4,25 @@ import es.tid.cosmos.admin.command.CommandResult
 
 trait ProfileCommands {
   def list(): CommandResult
-  def setMachineQuota(handle: String, limit: Int): CommandResult
-  def removeMachineQuota(handle: String): CommandResult
-  def enableCapability(handle: String, capability: String): CommandResult
-  def disableCapability(handle: String, capability: String): CommandResult
-  def setGroup(handle: String, groupName: String): CommandResult
-  def removeGroup(handle: String): CommandResult
+  def quota: ProfileCommands.QuotaCommands
+  def capability: ProfileCommands.CapabilityCommands
+  def group: ProfileCommands.GroupCommands
+}
+
+object ProfileCommands {
+
+  trait QuotaCommands {
+    def set(handle: String, limit: Int): CommandResult
+    def remove(handle: String): CommandResult
+  }
+
+  trait CapabilityCommands {
+    def enable(handle: String, capability: String): CommandResult
+    def disable(handle: String, capability: String): CommandResult
+  }
+
+  trait GroupCommands {
+    def set(handle: String, groupName: String): CommandResult
+    def remove(handle: String): CommandResult
+  }
 }

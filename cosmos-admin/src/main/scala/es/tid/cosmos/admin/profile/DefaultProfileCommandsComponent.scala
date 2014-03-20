@@ -6,6 +6,5 @@ import es.tid.cosmos.servicemanager.ServiceManagerComponent
 trait DefaultProfileCommandsComponent extends ProfileCommandsComponent {
   this: CosmosDataStoreComponent with ServiceManagerComponent =>
 
-  lazy val profileCommands: ProfileCommands =
-    new ProfileCommandsImplementation(store, serviceManager)
+  lazy val profileCommands: ProfileCommands = new DefaultProfileCommands(store, serviceManager)
 }

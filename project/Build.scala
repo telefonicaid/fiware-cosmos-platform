@@ -54,7 +54,7 @@ object Build extends sbt.Build {
   }
 
   object ExternalSources {
-    lazy val servicesConfigDirectory = (baseDirectory) {_ / "../deployment/puppet/modules/cosmos/files/services"}
+    lazy val servicesConfigDirectory = (baseDirectory) {_ / "../deployment/puppet/modules/cosmos/templates/services"}
   }
 
   override lazy val settings = super.settings ++ Seq(Keys.version in ThisBuild := projectVersion)

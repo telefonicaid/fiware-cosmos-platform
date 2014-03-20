@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.admin
+package es.tid.cosmos.admin.profile
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global

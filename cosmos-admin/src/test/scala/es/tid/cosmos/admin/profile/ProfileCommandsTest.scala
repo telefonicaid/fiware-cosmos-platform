@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.admin
+package es.tid.cosmos.admin.profile
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers

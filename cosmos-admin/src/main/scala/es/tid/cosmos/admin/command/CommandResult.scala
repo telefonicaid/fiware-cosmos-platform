@@ -71,10 +71,4 @@ object CommandResult {
   } catch {
     case NonFatal(ex) => CommandResult.fromThrowable(ex)
   }
-
-  def fromBlockWithOutput(block: => String): CommandResult = try {
-    CommandResult.success(block)
-  } catch {
-    case NonFatal(ex) => CommandResult.fromThrowable(ex)
-  }
 }

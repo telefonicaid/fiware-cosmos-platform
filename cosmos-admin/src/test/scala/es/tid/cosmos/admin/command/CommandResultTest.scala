@@ -51,9 +51,4 @@ class CommandResultTest extends FlatSpec with MustMatchers {
     CommandResult.fromBlock(block = true) must be ('success)
     CommandResult.fromBlock(block = false) must not be 'success
   }
-
-  it must "be get from a boolean block with output message" in {
-    CommandResult.fromBlockWithOutput("all right") must be (CommandResult.success("all right"))
-    CommandResult.fromBlockWithOutput(throw new Error()) must not be 'success
-  }
 }

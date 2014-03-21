@@ -80,9 +80,9 @@ case class QuotaContext[ConsumerId](
     (consumerValidation |@| groupValidation |@| overallValidation) { (_, _, last) => last }
   }
 
-  def isGroupQuotaFeasible(group: GuaranteedGroup): Validation[String, GuaranteedGroup] = {
+  def isGroupQuotaFeasible(group: GuaranteedGroup): Validation[String, Unit] = {
     val maxGuaranteedQuota = groupQuotas.get(group.name) + Quota(totalUnreserved)
-    if (maxGuaranteedQuota.withinQuota(group.minimumQuota)) group.success
+    if (maxGuaranteedQuota.withinQuota(group.minimumQuota)) ().success
     else s"Group ${group.name} can have a minimum quota of up to $maxGuaranteedQuota.".failure
   }
 

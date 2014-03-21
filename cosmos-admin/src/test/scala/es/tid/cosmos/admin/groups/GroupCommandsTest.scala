@@ -29,8 +29,8 @@ class GroupCommandsTest extends FlatSpec with MustMatchers with OneInstancePerTe
   }
 
   "Group commands" must "support creating a new group" in new WithGroups {
-    groupCommands.create(name = "mygroup", minQuota = 3) must be (true)
-    groupCommands.create(name = "my-noquota-group", minQuota = 0) must be (true)
+    groupCommands.create(name = "mygroup", minQuota = 3) must be ('success)
+    groupCommands.create(name = "my-noquota-group", minQuota = 0) must be ('success)
     store.withConnection { implicit c =>
       store.group.list() must be (Set(
         NoGroup,
@@ -45,17 +45,17 @@ class GroupCommandsTest extends FlatSpec with MustMatchers with OneInstancePerTe
       store.group.register(GuaranteedGroup("groupA", Quota(3)))
       store.group.register(GuaranteedGroup("groupB", Quota(4)))
     }
-    groupCommands.list must include("groupA")
-    groupCommands.list must include("groupB")
+    groupCommands.list().message must include("groupA")
+    groupCommands.list().message must include("groupB")
   }
 
   it must "support deleting an existing group" in new WithGroups {
     store.withTransaction { implicit c =>
       store.group.register(GuaranteedGroup("groupA", Quota(3)))
     }
-    groupCommands.list must include("groupA")
+    groupCommands.list().message must include("groupA")
     groupCommands.delete("groupA")
-    groupCommands.list must be ("No groups available")
+    groupCommands.list().message must be ("No groups available")
   }
 
   it must "reject deleting groups with shared clusters" in new WithGroups {
@@ -84,11 +84,11 @@ class GroupCommandsTest extends FlatSpec with MustMatchers with OneInstancePerTe
   }
 
   it must "validate feasibility before creating a new group" in new WithGroups {
-    groupCommands.create("hugeGroup", 100) must be (false)
+    groupCommands.create("hugeGroup", 100) must not be 'success
     store.withTransaction { implicit c =>
       store.group.list() must be (Set(NoGroup))
     }
-    groupCommands.create("validGroup", 6) must be (true)
+    groupCommands.create("validGroup", 6) must be ('success)
     store.withTransaction { implicit c =>
       store.group.list() must be (Set(NoGroup, GuaranteedGroup("validGroup", Quota(6))))
     }
@@ -102,7 +102,7 @@ class GroupCommandsTest extends FlatSpec with MustMatchers with OneInstancePerTe
       store.group.register(group)
       store.cluster.register(clusterId, profile.id)
     }
-    groupCommands.setMinQuota("groupA", 5) must be (false)
+    groupCommands.setMinQuota("groupA", 5) must not be 'success
     store.withTransaction { implicit c =>
       store.group.list() must be (Set(NoGroup, GuaranteedGroup("groupA", Quota(3))))
     }

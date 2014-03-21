@@ -13,19 +13,18 @@ package es.tid.cosmos.admin.groups
 
 import scalaz.{Scalaz, Validation}
 
-import es.tid.cosmos.admin.Util._
-import es.tid.cosmos.admin.validation.GroupChecks
+import es.tid.cosmos.admin.command.CommandResult
+import es.tid.cosmos.admin.validation.GroupValidations
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.dao.{ClusterDataStore, GroupDataStore, ProfileDataStore}
 import es.tid.cosmos.api.quota._
 import es.tid.cosmos.api.usage.DynamicMachineUsage
 import es.tid.cosmos.servicemanager.ServiceManager
-import es.tid.cosmos.admin.command.CommandResult
 
 /** Admin commands for managing groups. */
 private[admin] class GroupCommands(
     override val store: ProfileDataStore with GroupDataStore with ClusterDataStore,
-    serviceManager: ServiceManager) extends GroupChecks {
+    serviceManager: ServiceManager) extends GroupValidations {
   import Scalaz._
   import GroupCommands._
 
@@ -37,12 +36,14 @@ private[admin] class GroupCommands(
     * @param minQuota the group's minimum, guaranteed quota
     * @return         true iff the group was successfully created
     */
-  def create(name: String, minQuota: Int): Boolean = store.withTransaction { implicit c =>
-    tryAction {
-      val group = GuaranteedGroup(name, Quota(minQuota))
-      requireFeasibleQuota(group)
-      Some(store.group.register(group))
-    }
+  def create(name: String, minQuota: Int): CommandResult = CommandResult.fromValidation {
+    val group = GuaranteedGroup(name, Quota(minQuota))
+    for {
+      _ <- requireFeasibleQuota(group)
+      _ <- Validation.fromTryCatch(store.withTransaction { implicit c =>
+        store.group.register(group)
+      }).leftMap(_.getMessage)
+    } yield CommandResult.success(s"Group $group created successfully")
   }
 
   /** List the existing groups.
@@ -50,8 +51,10 @@ private[admin] class GroupCommands(
     * @return all the existing groups filtering out the implied
     *         [[es.tid.cosmos.api.quota.NoGroup]]
     */
-  def list: String = store.withConnection { implicit c =>
-    val groups = store.group.list() - NoGroup
+  def list(): CommandResult = CommandResult.success {
+    val groups = store.withConnection { implicit c =>
+      store.group.list() - NoGroup
+    }
     if (groups.isEmpty) "No groups available"
     else s"Available groups: [Name | Minimum Quota]:\n${groups.map(toUserFriendly).mkString("\n")}"
   }
@@ -93,22 +96,20 @@ private[admin] class GroupCommands(
     * @param quota the new minimum quota
     * @return      true if the group was successfully updated with the new minimum quota
     */
-  def setMinQuota(name: String, quota: Int): Boolean = store.withTransaction { implicit c =>
-    tryAction { for (group <- withGroup(name)) yield {
-      requireFeasibleQuota(group.copy(minimumQuota = Quota(quota)))
-      store.group.setQuota(group.name, Quota(quota))
-    }}
+  def setMinQuota(name: String, quota: Int): CommandResult = CommandResult.fromValidation {
+    store.withTransaction { implicit c =>
+      for {
+        group <- requireExistingGroup(name)
+        _ <- requireFeasibleQuota(group.copy(minimumQuota = Quota(quota)))
+      } yield {
+        store.group.setQuota(group.name, Quota(quota))
+        CommandResult.success(s"Quota for group $name changed to $quota")
+      }
+    }
   }
 
-  private def requireFeasibleQuota(group: GuaranteedGroup)(implicit c: store.Conn) {
-    val validation = quotaContext().isGroupQuotaFeasible(group)
-    validation.fold(
-      succ = _ => (),
-      fail = error => throw new IllegalArgumentException(
-        s"Cannot set to ${group.minimumQuota}.\n$error\n"
-      )
-    )
-  }
+  private def requireFeasibleQuota(group: GuaranteedGroup): Validation[String, Unit] =
+    quotaContext().isGroupQuotaFeasible(group)
 }
 
 private object GroupCommands {

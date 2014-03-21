@@ -15,9 +15,10 @@ import scala.language.reflectiveCalls
 
 import org.rogach.scallop.ScallopConf
 
-import es.tid.cosmos.admin.{ProfileCommands, ClusterCommands, PersistentStorageCommands}
+import es.tid.cosmos.admin.{ClusterCommands, PersistentStorageCommands}
 import es.tid.cosmos.admin.cli.AdminArguments
 import es.tid.cosmos.admin.groups.GroupCommands
+import es.tid.cosmos.admin.profile.ProfileCommands
 import es.tid.cosmos.api.profile.dao.CosmosDataStore
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.ClusterId
@@ -25,7 +26,8 @@ import es.tid.cosmos.servicemanager.clusters.ClusterId
 class CommandRunner(
     args: AdminArguments,
     store: CosmosDataStore,
-    serviceManager: => ServiceManager) {
+    serviceManager: ServiceManager,
+    profileCommands: ProfileCommands) {
 
   /** Executes an administration command.
     *
@@ -59,35 +61,25 @@ class CommandRunner(
   }
 
   private def processProfileCommand(subCommands: List[ScallopConf]) = {
-    val playDbProfile = new ProfileCommands(store)
     subCommands.headOption match {
-      case Some(args.profile.setMachineQuota) =>
-        CommandResult.fromBlock(playDbProfile.setMachineQuota(
-          args.profile.setMachineQuota.handle(), args.profile.setMachineQuota.limit())
-        )
+      case Some(args.profile.setMachineQuota) => profileCommands.quota.set(
+        args.profile.setMachineQuota.handle(), args.profile.setMachineQuota.limit()
+      )
       case Some(args.profile.removeMachineQuota) =>
-        CommandResult.fromBlock(playDbProfile.removeMachineQuota(
-          args.profile.setMachineQuota.handle()
-        ))
-      case Some(args.profile.enableCapability) =>
-        CommandResult.fromBlock(playDbProfile.enableCapability(
-          args.profile.enableCapability.handle(),
-          args.profile.enableCapability.capability()
-        ))
-      case Some(args.profile.disableCapability) =>
-        CommandResult.fromBlock(playDbProfile.disableCapability(
-          args.profile.disableCapability.handle(),
-          args.profile.disableCapability.capability()
-        ))
+        profileCommands.quota.remove(args.profile.setMachineQuota.handle())
+      case Some(args.profile.enableCapability) => profileCommands.capability.enable(
+        args.profile.enableCapability.handle(),
+        args.profile.enableCapability.capability()
+      )
+      case Some(args.profile.disableCapability) => profileCommands.capability.disable(
+        args.profile.disableCapability.handle(),
+        args.profile.disableCapability.capability()
+      )
       case Some(args.profile.setGroup) =>
-        CommandResult.fromBlock(playDbProfile.setGroup(
-          args.profile.setGroup.handle(), args.profile.setGroup.group()
-        ))
+        profileCommands.group.set(args.profile.setGroup.handle(), args.profile.setGroup.group())
       case Some(args.profile.removeGroup) =>
-        CommandResult.fromBlock(playDbProfile.removeGroup(
-          args.profile.setGroup.handle()
-        ))
-      case Some(args.profile.list) => CommandResult.fromBlockWithOutput(playDbProfile.list)
+        profileCommands.group.remove(args.profile.setGroup.handle())
+      case Some(args.profile.list) => profileCommands.list()
       case _ => help(args.profile)
     }
   }
@@ -95,12 +87,12 @@ class CommandRunner(
   private def processGroupCommand(subCommands: List[ScallopConf]) = {
     val groups = new GroupCommands(store, serviceManager)
     subCommands.headOption match {
-      case Some(args.group.create) => CommandResult.fromBlock(groups.create(
-        args.group.create.name(), args.group.create.minQuota()))
-      case Some(args.group.list) => CommandResult.fromBlockWithOutput(groups.list)
+      case Some(args.group.create) =>
+        groups.create(args.group.create.name(), args.group.create.minQuota())
+      case Some(args.group.list) => groups.list()
       case Some(args.group.delete) => groups.delete(args.group.delete.name())
-      case Some(args.group.setMinQuota) => CommandResult.fromBlock(groups.setMinQuota(
-        args.group.setMinQuota.name(), args.group.setMinQuota.quota()))
+      case Some(args.group.setMinQuota) =>
+        groups.setMinQuota(args.group.setMinQuota.name(), args.group.setMinQuota.quota())
       case _ => help(args.group)
     }
   }

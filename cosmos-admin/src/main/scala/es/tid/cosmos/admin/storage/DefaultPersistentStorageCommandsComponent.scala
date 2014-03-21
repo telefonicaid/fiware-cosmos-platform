@@ -11,13 +11,11 @@
 
 package es.tid.cosmos.admin.storage
 
-import es.tid.cosmos.admin.command.CommandResult
+import es.tid.cosmos.servicemanager.ServiceManagerComponent
 
-trait PersistentStorageCommands {
+trait DefaultPersistentStorageCommandsComponent extends PersistentStorageCommandsComponent {
+  this: ServiceManagerComponent =>
 
-  /** Create a persistent storage if missing */
-  def setup(): CommandResult
-
-  /** Terminate the persistent storage cluster */
-  def terminate(): CommandResult
+  override lazy val persistentStorageCommands: PersistentStorageCommands =
+    new DefaultPersistentStorageCommands(serviceManager)
 }

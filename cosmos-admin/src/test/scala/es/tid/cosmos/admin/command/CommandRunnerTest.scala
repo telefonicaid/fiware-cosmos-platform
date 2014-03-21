@@ -18,17 +18,18 @@ import org.mockito.BDDMockito._
 
 import es.tid.cosmos.admin.cli.AdminArguments
 import es.tid.cosmos.admin.profile.{ProfileCommands, ProfileCommandsComponent}
+import es.tid.cosmos.admin.storage.{PersistentStorageCommands, PersistentStorageCommandsComponent}
 import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
 import es.tid.cosmos.servicemanager.{ServiceManagerComponent, ServiceManager}
-import es.tid.cosmos.servicemanager.clusters.{Failed, Running, ImmutableClusterDescription}
 
 class CommandRunnerTest extends FlatSpec with MustMatchers with MockitoSugar {
 
   class WithArguments(arguments: String*) extends CommandRunnerComponent
-      with ServiceManagerComponent with MockCosmosDataStoreComponent with ProfileCommandsComponent {
-    override lazy val serviceManager = mock[ServiceManager]
-    val clusterDesc = mock[ImmutableClusterDescription]
-    val profileCommands = mock[ProfileCommands]
+      with ServiceManagerComponent with MockCosmosDataStoreComponent with ProfileCommandsComponent
+      with PersistentStorageCommandsComponent {
+    override val serviceManager = mock[ServiceManager]
+    override val persistentStorageCommands = mock[PersistentStorageCommands]
+    override val profileCommands = mock[ProfileCommands]
     val runner = commandRunner(new AdminArguments(arguments.toSeq))
   }
 
@@ -37,35 +38,18 @@ class CommandRunnerTest extends FlatSpec with MustMatchers with MockitoSugar {
       runner.run().exitStatus must not be 0
     }
 
-  it must "exit with non-zero status when exceptions are thrown" in
-    new WithArguments("setup") {
-      given(serviceManager.describePersistentHdfsCluster())
-        .willThrow(new UnsupportedOperationException())
-      runner.run().exitStatus must not be 0
-    }
+  it must "exit with non-zero status when setup fails" in new WithArguments("setup") {
+    given(persistentStorageCommands.setup()).willReturn(CommandResult.error())
+    runner.run().exitStatus must not be 0
+  }
 
-  it must "exit with zero status when everything goes OK" in
-    new WithArguments("setup") {
-      given(clusterDesc.state).willReturn(Running)
-      given(serviceManager.describePersistentHdfsCluster())
-        .willReturn(Some(clusterDesc))
-      runner.run().exitStatus must be (0)
-    }
+  it must "exit with zero status when everything goes OK" in new WithArguments("setup") {
+    given(persistentStorageCommands.setup()).willReturn(CommandResult.success())
+    runner.run().exitStatus must be (0)
+  }
 
-  it must "exit status non-zero when storage cluster in state failed" in
-    new WithArguments("setup") {
-      given(clusterDesc.state).willReturn(Failed("state failed"))
-      given(serviceManager.describePersistentHdfsCluster())
-        .willReturn(Some(clusterDesc))
-      runner.run().exitStatus must be (-1)
-    }
-
-
-  it must "work with multi-subcommand arguments" in
-    new WithArguments("persistent-storage", "setup") {
-      given(clusterDesc.state).willReturn(Running)
-      given(serviceManager.describePersistentHdfsCluster())
-        .willReturn(Some(clusterDesc))
-      runner.run().exitStatus must be (0)
-    }
+  it must "work with multi-subcommand arguments" in new WithArguments("persistent-storage", "setup") {
+    given(persistentStorageCommands.setup()).willReturn(CommandResult.success())
+    runner.run().exitStatus must be (0)
+  }
 }

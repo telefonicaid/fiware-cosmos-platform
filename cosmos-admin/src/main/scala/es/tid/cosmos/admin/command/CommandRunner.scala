@@ -28,6 +28,7 @@ class CommandRunner(
     args: AdminArguments,
     store: CosmosDataStore,
     serviceManager: ServiceManager,
+    storageCommands: PersistentStorageCommands,
     profileCommands: ProfileCommands) {
 
   /** Executes an administration command.
@@ -38,7 +39,7 @@ class CommandRunner(
 
   private def processCommands(subCommands: List[ScallopConf]): CommandResult =
     subCommands.headOption match {
-      case Some(args.setup) => setupAll(serviceManager)
+      case Some(args.setup) => setupAll()
       case Some(args.persistentStorage) => processPersistentStorageCommand(subCommands.tail)
       case Some(args.cluster) => processClusterCommand(subCommands.tail)
       case Some(args.profile) => processProfileCommand(subCommands.tail)
@@ -48,8 +49,8 @@ class CommandRunner(
 
   private def processPersistentStorageCommand(subCommands: List[ScallopConf]): CommandResult =
     subCommands.headOption match {
-      case Some(args.persistentStorage.setup) => PersistentStorageCommands.setup(serviceManager)
-      case Some(args.persistentStorage.terminate) => PersistentStorageCommands.terminate(serviceManager)
+      case Some(args.persistentStorage.setup) => storageCommands.setup()
+      case Some(args.persistentStorage.terminate) => storageCommands.terminate()
       case _ => help(args.persistentStorage)
     }
 
@@ -97,11 +98,9 @@ class CommandRunner(
   }
 
   /** Performs a setup of all platform components.
-    * @param serviceManager The service manager to use.
     * @return Whether the operation succeeded.
     */
-  private def setupAll(serviceManager: ServiceManager) =
-    PersistentStorageCommands.setup(serviceManager)
+  private def setupAll() = storageCommands.setup()
 
   private def help(conf: ScallopConf) = {
     conf.printHelp()

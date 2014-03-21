@@ -11,13 +11,6 @@
 
 package es.tid.cosmos.admin.storage
 
-import es.tid.cosmos.admin.command.CommandResult
-
-trait PersistentStorageCommands {
-
-  /** Create a persistent storage if missing */
-  def setup(): CommandResult
-
-  /** Terminate the persistent storage cluster */
-  def terminate(): CommandResult
+trait PersistentStorageCommandsComponent {
+  def persistentStorageCommands: PersistentStorageCommands
 }

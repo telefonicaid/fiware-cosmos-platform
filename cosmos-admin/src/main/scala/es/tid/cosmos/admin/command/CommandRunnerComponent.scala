@@ -13,12 +13,16 @@ package es.tid.cosmos.admin.command
 
 import es.tid.cosmos.admin.cli.AdminArguments
 import es.tid.cosmos.admin.profile.ProfileCommandsComponent
+import es.tid.cosmos.admin.storage.PersistentStorageCommandsComponent
 import es.tid.cosmos.api.profile.dao.CosmosDataStoreComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
 
 trait CommandRunnerComponent {
-  this: CosmosDataStoreComponent with ServiceManagerComponent with ProfileCommandsComponent =>
+  this: CosmosDataStoreComponent
+    with ServiceManagerComponent
+    with PersistentStorageCommandsComponent
+    with ProfileCommandsComponent =>
 
   def commandRunner(args: AdminArguments): CommandRunner =
-    new CommandRunner(args, store, serviceManager, profileCommands)
+    new CommandRunner(args, store, serviceManager, persistentStorageCommands, profileCommands)
 }

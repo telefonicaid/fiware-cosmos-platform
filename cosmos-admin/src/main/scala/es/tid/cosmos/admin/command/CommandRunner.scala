@@ -21,15 +21,14 @@ import es.tid.cosmos.admin.groups.GroupCommands
 import es.tid.cosmos.admin.profile.ProfileCommands
 import es.tid.cosmos.admin.storage.PersistentStorageCommands
 import es.tid.cosmos.api.profile.dao.CosmosDataStore
-import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 class CommandRunner(
     args: AdminArguments,
     store: CosmosDataStore,
-    serviceManager: ServiceManager,
     storageCommands: PersistentStorageCommands,
     profileCommands: ProfileCommands,
+    groupCommands: GroupCommands,
     clusterCommands: ClusterCommands) {
 
   /** Executes an administration command.
@@ -85,17 +84,14 @@ class CommandRunner(
     }
   }
 
-  private def processGroupCommand(subCommands: List[ScallopConf]) = {
-    val groups = new GroupCommands(store, serviceManager)
-    subCommands.headOption match {
-      case Some(args.group.create) =>
-        groups.create(args.group.create.name(), args.group.create.minQuota())
-      case Some(args.group.list) => groups.list()
-      case Some(args.group.delete) => groups.delete(args.group.delete.name())
-      case Some(args.group.setMinQuota) =>
-        groups.setMinQuota(args.group.setMinQuota.name(), args.group.setMinQuota.quota())
-      case _ => help(args.group)
-    }
+  private def processGroupCommand(subCommands: List[ScallopConf]) = subCommands.headOption match {
+    case Some(args.group.create) =>
+      groupCommands.create(args.group.create.name(), args.group.create.minQuota())
+    case Some(args.group.list) => groupCommands.list()
+    case Some(args.group.delete) => groupCommands.delete(args.group.delete.name())
+    case Some(args.group.setMinQuota) =>
+      groupCommands.setMinQuota(args.group.setMinQuota.name(), args.group.setMinQuota.quota())
+    case _ => help(args.group)
   }
 
   /** Performs a setup of all platform components.

@@ -21,11 +21,11 @@ import es.tid.cosmos.api.quota.{NoGroup, GuaranteedGroup, Quota, EmptyQuota}
 import es.tid.cosmos.servicemanager.ClusterName
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers
 
-class GroupCommandsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
+class DefaultGroupCommandsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
 
   trait WithGroups extends MockCosmosDataStoreComponent {
     val serviceManager = new MockedServiceManager(maxPoolSize = 6)
-    val groupCommands = new GroupCommands(store, serviceManager)
+    val groupCommands = new DefaultGroupCommands(store, serviceManager)
   }
 
   "Group commands" must "support creating a new group" in new WithGroups {

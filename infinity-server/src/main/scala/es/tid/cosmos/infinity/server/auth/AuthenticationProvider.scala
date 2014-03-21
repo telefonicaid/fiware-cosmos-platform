@@ -11,8 +11,6 @@
 
 package es.tid.cosmos.infinity.server.auth
 
-import scala.util.Try
-
 object AuthenticationProvider {
 
   /** A message to request the authentication of the given credentials. */

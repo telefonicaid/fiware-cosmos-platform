@@ -11,15 +11,11 @@
 
 package es.tid.cosmos.infinity.server.auth
 
-import scala.util.Try
-
-import es.tid.cosmos.infinity.server.util.Path
-
 /** A permission class (owner, group, others). */
 case class PermissionClass(read: Boolean, write: Boolean, execute: Boolean) {
 
   override def toString: String = {
-    val bin = 0 | (if (read) 0x4 else 0) | (if (write) 0x2 else 0) | (if (execute) 0x1 else 0)
+    val bin = (if (read) 0x4 else 0) | (if (write) 0x2 else 0) | (if (execute) 0x1 else 0)
     bin.toString
   }
 }

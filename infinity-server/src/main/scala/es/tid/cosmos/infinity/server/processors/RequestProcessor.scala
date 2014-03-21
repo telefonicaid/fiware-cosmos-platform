@@ -50,7 +50,7 @@ class RequestProcessor(
   import AuthorizationProvider._
   import context.system
 
-  val authTokenConfig = AuthTokenConfig()
+  val authTokenConfig = AuthTokenConfig.fromConfig(context.system.settings.config)
   val serviceConfig = ServiceConfig.active
   val tokenGenerator = TokenGenerator(authTokenConfig)
 
@@ -142,7 +142,7 @@ object RequestProcessor {
   /** The state of a living processor. */
   sealed trait StateName
 
-  /** The processor is ready to attent a new request. */
+  /** The processor is ready to attempt a new request. */
   case object Ready extends StateName
 
   /** The processor is authenticating the request against an authentication provider. */

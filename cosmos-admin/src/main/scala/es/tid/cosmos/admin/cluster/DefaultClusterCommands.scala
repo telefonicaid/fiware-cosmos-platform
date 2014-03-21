@@ -9,20 +9,21 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.admin
+package es.tid.cosmos.admin.cluster
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
+import es.tid.cosmos.admin.command.CommandResult
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.ClusterId
-import es.tid.cosmos.admin.command.CommandResult
 
-private[admin] object ClusterCommands {
+private[cluster] class DefaultClusterCommands(serviceManager: ServiceManager)
+  extends ClusterCommands {
 
   private val commandTimeout = 15.minutes
 
-  def terminate(serviceManager: ServiceManager, clusterId: ClusterId): CommandResult = {
+  override def terminate(clusterId: ClusterId): CommandResult =
     serviceManager.describeCluster(clusterId) match {
       case None =>
         CommandResult.error("Cluster not found. Cannot terminate...")
@@ -32,5 +33,4 @@ private[admin] object ClusterCommands {
           .map(_ => CommandResult.success("Cluster terminated successfully"))
         CommandResult.await(clusterTermination, commandTimeout)
     }
-  }
 }

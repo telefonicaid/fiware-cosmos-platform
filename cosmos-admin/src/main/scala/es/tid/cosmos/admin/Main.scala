@@ -17,18 +17,20 @@ import es.tid.cosmos.admin.cli.AdminArguments
 import es.tid.cosmos.admin.command.CommandRunnerComponent
 import es.tid.cosmos.admin.play.DataAccessApplicationComponent
 import es.tid.cosmos.admin.profile.DefaultProfileCommandsComponent
+import es.tid.cosmos.admin.storage.DefaultPersistentStorageCommandsComponent
 import es.tid.cosmos.api.profile.dao.sql.PlayDbDataStoreComponent
 import es.tid.cosmos.common.ApplicationConfigComponent
 import es.tid.cosmos.servicemanager.production.ProductionServiceManagerComponent
 
 object Main extends CommandRunnerComponent
+  with DefaultPersistentStorageCommandsComponent
   with DefaultProfileCommandsComponent
   with DataAccessApplicationComponent
   with ProductionServiceManagerComponent
   with PlayDbDataStoreComponent
   with ApplicationConfigComponent {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     Play.start(playApplication)
     val result = try {
       commandRunner(new AdminArguments(args)).run()

@@ -64,11 +64,4 @@ object CommandResult {
       fail = cause => CommandResult.error(cause),
       succ = identity
     )
-
-  def fromBlock(block: => Boolean): CommandResult = try {
-    if (block) CommandResult.success()
-    else CommandResult.error()
-  } catch {
-    case NonFatal(ex) => CommandResult.fromThrowable(ex)
-  }
 }

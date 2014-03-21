@@ -46,9 +46,4 @@ class CommandResultTest extends FlatSpec with MustMatchers {
     CommandResult.fromValidation(Success(CommandResult.success())) must be ('success)
     CommandResult.fromValidation(Failure("ko")) must not be 'success
   }
-
-  it must "be get from a boolean block" in {
-    CommandResult.fromBlock(block = true) must be ('success)
-    CommandResult.fromBlock(block = false) must not be 'success
-  }
 }

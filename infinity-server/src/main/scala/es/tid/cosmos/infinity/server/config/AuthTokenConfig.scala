@@ -13,8 +13,7 @@ package es.tid.cosmos.infinity.server.config
 
 import java.util.concurrent.TimeUnit
 
-import akka.actor.ActorSystem
-import com.typesafe.config.ConfigException
+import com.typesafe.config.{Config, ConfigException}
 
 /** The auth token configuration of Infinity Server. */
 case class AuthTokenConfig(
@@ -36,8 +35,7 @@ object AuthTokenConfig extends ConfigUtils {
   val DefaultDuration = 60
 
   /** Retrieve the auth token configuration from the actor system config. */
-  def apply()(implicit system: ActorSystem): AuthTokenConfig = try {
-    val config = system.settings.config
+  def fromConfig(config: Config): AuthTokenConfig = try {
     new AuthTokenConfig(
       secret = config.getString(SecretProperty),
       pathTemplate = config.getStringOpt(PathTemplateProperty).getOrElse(DefaultPathTemplate),

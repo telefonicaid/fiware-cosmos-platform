@@ -12,6 +12,7 @@
 package es.tid.cosmos.infinity.server.config
 
 import scala.collection.JavaConversions._
+import scala.util.control.NonFatal
 
 import akka.actor.ActorSystem
 import com.typesafe.config.ConfigException
@@ -49,8 +50,7 @@ object ServiceConfig {
     ))
   } catch {
     case e: ConfigException.Missing => None
-    case e @ _ =>
-      throw new IllegalStateException(s"cannot service config for '$name'", e)
+    case NonFatal(e) => throw new IllegalStateException(s"cannot service config for '$name'", e)
   }
 
   def active(implicit system: ActorSystem): ServiceConfig = try {

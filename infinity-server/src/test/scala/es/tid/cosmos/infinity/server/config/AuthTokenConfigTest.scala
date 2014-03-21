@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.infinity.server.config
 
-import akka.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -29,8 +28,7 @@ class AuthTokenConfigTest extends FlatSpec with MustMatchers {
         |  }
         |}
       """.stripMargin)
-    implicit val system = ActorSystem("AuthTokenConfig", config)
-    val authTokenConfig = AuthTokenConfig()
+    val authTokenConfig = AuthTokenConfig.fromConfig(config)
     authTokenConfig.secret must be ("c0sm0s")
     authTokenConfig.pathTemplate must be ("/private/url/${token}/${expire}${path}")
     authTokenConfig.phraseTemplate must be ("${secret}::${expire}::${path}::${query}")
@@ -45,8 +43,7 @@ class AuthTokenConfigTest extends FlatSpec with MustMatchers {
         |  }
         |}
       """.stripMargin)
-    implicit val system = ActorSystem("AuthTokenConfig", config)
-    val authTokenConfig = AuthTokenConfig()
+    val authTokenConfig = AuthTokenConfig.fromConfig(config)
     authTokenConfig.secret must be ("c0sm0s")
     authTokenConfig.pathTemplate must be ("/p/${token}/${expire}${path}")
     authTokenConfig.phraseTemplate must be ("${secret}${expire}${path}${query}")

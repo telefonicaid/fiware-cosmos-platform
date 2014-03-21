@@ -17,6 +17,7 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.BDDMockito._
 
 import es.tid.cosmos.admin.cli.AdminArguments
+import es.tid.cosmos.admin.cluster.{ClusterCommands, ClusterCommandsComponent}
 import es.tid.cosmos.admin.profile.{ProfileCommands, ProfileCommandsComponent}
 import es.tid.cosmos.admin.storage.{PersistentStorageCommands, PersistentStorageCommandsComponent}
 import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
@@ -26,10 +27,11 @@ class CommandRunnerTest extends FlatSpec with MustMatchers with MockitoSugar {
 
   class WithArguments(arguments: String*) extends CommandRunnerComponent
       with ServiceManagerComponent with MockCosmosDataStoreComponent with ProfileCommandsComponent
-      with PersistentStorageCommandsComponent {
+      with PersistentStorageCommandsComponent with ClusterCommandsComponent {
     override val serviceManager = mock[ServiceManager]
     override val persistentStorageCommands = mock[PersistentStorageCommands]
     override val profileCommands = mock[ProfileCommands]
+    override def clusterCommands = mock[ClusterCommands]
     val runner = commandRunner(new AdminArguments(arguments.toSeq))
   }
 

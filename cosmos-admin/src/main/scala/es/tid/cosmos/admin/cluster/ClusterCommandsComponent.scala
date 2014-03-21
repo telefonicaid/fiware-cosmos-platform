@@ -11,9 +11,6 @@
 
 package es.tid.cosmos.admin.cluster
 
-import es.tid.cosmos.admin.command.CommandResult
-import es.tid.cosmos.servicemanager.clusters.ClusterId
-
-trait ClusterCommands {
-  def terminate(clusterId: ClusterId): CommandResult
+trait ClusterCommandsComponent {
+  def clusterCommands: ClusterCommands
 }

@@ -29,7 +29,8 @@ class CommandRunner(
     store: CosmosDataStore,
     serviceManager: ServiceManager,
     storageCommands: PersistentStorageCommands,
-    profileCommands: ProfileCommands) {
+    profileCommands: ProfileCommands,
+    clusterCommands: ClusterCommands) {
 
   /** Executes an administration command.
     *
@@ -56,7 +57,7 @@ class CommandRunner(
 
   private def processClusterCommand(subCommands: List[ScallopConf]) = subCommands.headOption match {
     case Some(args.cluster.terminate) =>
-      ClusterCommands.terminate(serviceManager, ClusterId(args.cluster.terminate.clusterId()))
+      clusterCommands.terminate(ClusterId(args.cluster.terminate.clusterId()))
     case _ => help(args.cluster)
   }
 

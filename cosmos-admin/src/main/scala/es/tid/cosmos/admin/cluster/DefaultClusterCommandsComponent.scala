@@ -11,9 +11,10 @@
 
 package es.tid.cosmos.admin.cluster
 
-import es.tid.cosmos.admin.command.CommandResult
-import es.tid.cosmos.servicemanager.clusters.ClusterId
+import es.tid.cosmos.servicemanager.ServiceManagerComponent
 
-trait ClusterCommands {
-  def terminate(clusterId: ClusterId): CommandResult
+trait DefaultClusterCommandsComponent extends ClusterCommandsComponent {
+  this: ServiceManagerComponent =>
+
+  override lazy val clusterCommands: ClusterCommands = new DefaultClusterCommands(serviceManager)
 }

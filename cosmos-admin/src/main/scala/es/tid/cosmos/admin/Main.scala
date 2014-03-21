@@ -14,6 +14,7 @@ package es.tid.cosmos.admin
 import _root_.play.api.Play
 
 import es.tid.cosmos.admin.cli.AdminArguments
+import es.tid.cosmos.admin.cluster.DefaultClusterCommandsComponent
 import es.tid.cosmos.admin.command.CommandRunnerComponent
 import es.tid.cosmos.admin.play.DataAccessApplicationComponent
 import es.tid.cosmos.admin.profile.DefaultProfileCommandsComponent
@@ -25,6 +26,7 @@ import es.tid.cosmos.servicemanager.production.ProductionServiceManagerComponent
 object Main extends CommandRunnerComponent
   with DefaultPersistentStorageCommandsComponent
   with DefaultProfileCommandsComponent
+  with DefaultClusterCommandsComponent
   with DataAccessApplicationComponent
   with ProductionServiceManagerComponent
   with PlayDbDataStoreComponent

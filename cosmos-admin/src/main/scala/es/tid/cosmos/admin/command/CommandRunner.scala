@@ -15,8 +15,8 @@ import scala.language.reflectiveCalls
 
 import org.rogach.scallop.ScallopConf
 
-import es.tid.cosmos.admin.ClusterCommands
 import es.tid.cosmos.admin.cli.AdminArguments
+import es.tid.cosmos.admin.cluster.ClusterCommands
 import es.tid.cosmos.admin.groups.GroupCommands
 import es.tid.cosmos.admin.profile.ProfileCommands
 import es.tid.cosmos.admin.storage.PersistentStorageCommands

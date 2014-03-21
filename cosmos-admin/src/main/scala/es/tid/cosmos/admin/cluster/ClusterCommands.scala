@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.admin
+package es.tid.cosmos.admin.cluster
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._

@@ -83,7 +83,8 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $ambari_reduce_task_memory,
   $ambari_map_heap_memory,
   $ambari_reduce_heap_memory,
-  $ambari_mr_app_master_memory
+  $ambari_mr_app_master_memory,
+  $infinity_proxy_secure_phrase
 ) {
   $cosmos_public_key          = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
   $cosmos_cli_filename        = "cosmos-${version}-py2.7.egg"

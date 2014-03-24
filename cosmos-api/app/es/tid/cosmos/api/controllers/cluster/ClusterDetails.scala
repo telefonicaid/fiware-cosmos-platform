@@ -20,7 +20,7 @@ import play.api.mvc.RequestHeader
 import es.tid.cosmos.api.profile.Cluster
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters.{HostDetails, ClusterDescription}
-import es.tid.cosmos.servicemanager.services.{CosmosUserService, InfinityfsDriver}
+import es.tid.cosmos.servicemanager.services.{CosmosUserService, InfinityDriver}
 
 /** A cluster from the perspective of API clients. */
 case class ClusterDetails(
@@ -42,7 +42,7 @@ case class ClusterDetails(
 object ClusterDetails {
 
   /** Services hidden from the API user. */
-  val unlistedServices: Set[String] = Set(CosmosUserService.name, InfinityfsDriver.name)
+  val unlistedServices: Set[String] = Set(CosmosUserService.name, InfinityDriver.name)
 
   /**
    * Create a ClusterDetails from a description in the context of a request.

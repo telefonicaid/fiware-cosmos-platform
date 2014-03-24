@@ -1,4 +1,4 @@
-name := "infinityfs"
+name := "infinity-driver"
 
 description := "Infinity HFS driver"
 

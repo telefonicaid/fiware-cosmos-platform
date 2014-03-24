@@ -102,12 +102,12 @@ object RpmSettings {
       }
     )
 
-  val JarPath = "/opt/pdi-cosmos/infinityfs.jar"
+  val JarPath = "/opt/pdi-cosmos/infinity-driver.jar"
   val JarLinks = for (service <- Seq("hdfs", "mapreduce", "yarn"))
-    yield s"/usr/lib/hadoop-$service/lib/infinityfs.jar"
+    yield s"/usr/lib/hadoop-$service/lib/infinity-driver.jar"
 
   val infinitySettings: Seq[Setting[_]] = assemblySettings ++ packagerSettings ++ commonRpmSettings ++ Seq(
-    name in Rpm := "infinityfs",
+    name in Rpm := "infinity-driver",
     packageSummary := "Infinity HFS driver",
     packageDescription in Rpm := "Library that enables the infinity:// scheme.",
     linuxPackageMappings in Rpm := Seq(

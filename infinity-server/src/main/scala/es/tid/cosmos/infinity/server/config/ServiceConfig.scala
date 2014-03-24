@@ -15,7 +15,7 @@ import scala.collection.JavaConversions._
 import scala.util.control.NonFatal
 
 import akka.actor.ActorSystem
-import com.typesafe.config.ConfigException
+import com.typesafe.config.{Config, ConfigException}
 
 case class ServiceConfig(
   name: String,
@@ -39,8 +39,10 @@ object ServiceConfig {
   def infinityPortProperty(serviceName: String) =
     s"infinity.server.services.$serviceName.infinity.port"
 
-  def apply(name: String)(implicit system: ActorSystem): Option[ServiceConfig] = try {
-    val config = system.settings.config
+  def apply(name: String)(implicit system: ActorSystem): Option[ServiceConfig] =
+    apply(name, system.settings.config)
+
+  def apply(name: String, config: Config): Option[ServiceConfig] = try {
     Some(ServiceConfig(
       name = name,
       webhdfsHostname = config.getString(webhdfsHostnameProperty(name)),
@@ -53,9 +55,11 @@ object ServiceConfig {
     case NonFatal(e) => throw new IllegalStateException(s"cannot service config for '$name'", e)
   }
 
-  def active(implicit system: ActorSystem): ServiceConfig = try {
+  def active(implicit system: ActorSystem): ServiceConfig = active(system.settings.config)
+
+  def active(config: Config): ServiceConfig = try {
     val activeServiceProperty = "infinity.server.services.active"
-    ServiceConfig(system.settings.config.getString(activeServiceProperty)).getOrElse(
+    ServiceConfig(config.getString(activeServiceProperty), config).getOrElse(
       throw new IllegalArgumentException(
         s"missing $activeServiceProperty property in application config"))
 

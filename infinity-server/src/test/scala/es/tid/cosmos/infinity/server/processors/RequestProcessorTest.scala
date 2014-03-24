@@ -21,7 +21,7 @@ import akka.pattern.ask
 import akka.testkit.{TestProbe, TestKit}
 import akka.util.Timeout
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
-import org.scalatest.matchers.{MatchResult, BeMatcher, MustMatchers}
+import org.scalatest.matchers._
 import spray.http._
 import spray.can.Http
 
@@ -44,56 +44,65 @@ class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
   "Request processor" must "request authentication to its provider" in new SampleProcessor {
     shouldAuthenticate()
   }
-  
-  it must "return Unauthorized on invalid credentials" in new SampleProcessor {
+
+  it must "return Unauthorized on invalid credentials and stop" in new SampleProcessor {
     onceAuthenticationFailed(new AuthenticationException("your credentials are invalid")) {
-      requester.expectMsgPF() {
-        case rep: HttpResponse =>
-          rep.status must be (StatusCodes.Unauthorized)
-      }
+      expectHttpResponse(StatusCodes.Unauthorized)
+      expectTermination()
     }
   }
 
-  it must "return InternalServerError on unexpected error while authenticating" in new SampleProcessor {
-    onceAuthenticationFailed(new Error("unexpected error")) {
-      requester.expectMsgPF() {
-        case rep: HttpResponse =>
-          rep.status must be (StatusCodes.InternalServerError)
+  it must "return InternalServerError on unexpected error while authenticating and stop" in
+    new SampleProcessor {
+      onceAuthenticationFailed(new Error("unexpected error")) {
+        expectHttpResponse(StatusCodes.InternalServerError)
+        expectTermination()
       }
     }
-  }
 
   it must "request authorization after successful authentication" in new SampleProcessor {
     shouldAuthorize()
   }
 
-  it must "return Forbidden on lack of permissions" in new SampleProcessor {
+  it must "return Forbidden on lack of permissions and stop" in new SampleProcessor {
     onceAuthorizationFailed(new AuthorizationException("you lack the permissions")) {
-      requester.expectMsgPF() {
-        case rep: HttpResponse =>
-          rep.status must be (StatusCodes.Forbidden)
-      }
+      expectHttpResponse(StatusCodes.Forbidden)
+      expectTermination()
     }
   }
 
-  it must "return InternalServerError on unexpected error while authorizing" in new SampleProcessor {
-    onceAuthorizationFailed(new Error("unexpected error")) {
-      requester.expectMsgPF() {
-        case rep: HttpResponse =>
-          rep.status must be (StatusCodes.InternalServerError)
+  it must "return InternalServerError on unexpected error while authorizing and stop" in
+    new SampleProcessor {
+      onceAuthorizationFailed(new Error("unexpected error")) {
+        expectHttpResponse(StatusCodes.InternalServerError)
+        expectTermination()
       }
     }
+
+  it must "return TemporaryRedirect on success authentication and authorization and stop" in
+    new SampleProcessor {
+      withRedirectionServer { onceAuthorizationSucceeds {
+        expectHttpResponse(have(status(StatusCodes.TemporaryRedirect)) and be(ValidRedirection))
+        expectTermination()
+      }}
+    }
+
+  it must "timeout after a finite delay" in new SampleProcessor(requestTimeout = 500.millis) {
+    processor ! request
+    expectTermination()
   }
 
-  it must "return TemporaryRedirect on success authentication and authorization" in new SampleProcessor {
-    withRedirectionServer { onceAuthorizationSucceeds {
-      requester.expectMsgPF() {
-        case rep: HttpResponse =>
-          rep.status must be (StatusCodes.TemporaryRedirect)
-          rep must be (ValidRedirection)
-      }
-    }}
-  }
+  it must "timeout after authentication and a finite delay" in
+    new SampleProcessor(requestTimeout = 500.millis) {
+      shouldAuthenticate()
+      expectTermination()
+    }
+
+  it must "timeout after authorization and a finite delay" in
+    new SampleProcessor(requestTimeout = 500.millis) {
+      shouldAuthorize()
+      expectTermination()
+    }
 
   val sampleUri = "/webhdfs/v1/foo/bar?op=OPEN"
   val datanodeService = "datanode1"
@@ -129,7 +138,7 @@ class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
     override val action = ReadAction(Path.absolute("/foo/bar"))
   }
 
-  trait SampleProcessor {
+  class SampleProcessor(requestTimeout: FiniteDuration = 1.minute) {
     val requester = TestProbe()
     val authenticator = TestProbe()
     val authorizator = TestProbe()
@@ -140,7 +149,12 @@ class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
       unixPermissionMask = UnixFilePermissions.fromOctal("777")
     )
     val request = SampleRequest(credentials, requester.ref)
-    val processor = system.actorOf(RequestProcessor.props(authenticator.ref, authorizator.ref))
+    val processorConfig = RequestProcessor.Configuration.fromSystemConfig(system.settings.config)
+      .copy(requestTimeout = requestTimeout)
+    val processor = system.actorOf(
+      RequestProcessor.props(authenticator.ref, authorizator.ref, processorConfig)
+    )
+    requester.watch(processor)
 
     def shouldAuthenticate(): Unit = {
       processor ! request
@@ -175,6 +189,19 @@ class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
       body
     }
 
+    def expectHttpResponse(statusCode: StatusCode): Unit =
+      expectHttpResponse(have(status(statusCode)))
+
+    def expectHttpResponse(matcher: Matcher[HttpResponse]): Unit = {
+      requester.expectMsgPF() {
+        case rep: HttpResponse => rep
+      } must matcher
+    }
+
+    def expectTermination() {
+      requester.expectTerminated(processor)
+    }
+
     def withRedirectionServer(body: => Unit): Unit = {
       implicit val bindTimeout = Timeout(5.seconds)
 
@@ -199,6 +226,15 @@ class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
       body
       listener ! Http.Unbind
     }
+  }
+
+  private def status(statusCode: StatusCode) = new HavePropertyMatcher[HttpResponse, StatusCode] {
+    override def apply(response: HttpResponse) = HavePropertyMatchResult[StatusCode](
+      matches = response.status == statusCode,
+      propertyName = "status code",
+      expectedValue = statusCode,
+      actualValue = response.status
+    )
   }
 
   private object ValidRedirection extends BeMatcher[HttpResponse] {

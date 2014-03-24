@@ -11,7 +11,11 @@
 
 package es.tid.cosmos.infinity.server.processors
 
-import akka.actor.{Props, ActorRef, FSM, Actor}
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration._
+
+import akka.actor._
+import akka.actor.FSM.{Failure, Normal}
 import akka.io.IO
 import spray.can.Http
 import spray.http._
@@ -19,6 +23,7 @@ import spray.httpx.ResponseTransformation
 
 import es.tid.cosmos.infinity.server.auth._
 import es.tid.cosmos.infinity.server.config.{ServiceConfig, AuthTokenConfig}
+import com.typesafe.config.Config
 
 /** Request processor actor class.
   *
@@ -34,31 +39,34 @@ import es.tid.cosmos.infinity.server.config.{ServiceConfig, AuthTokenConfig}
   *   <li>The processor submits the request to the appropriate HDFS name node and receives the
   *   response, which is intercepted and modified to reflect the appropriate redirection to
   *   the data node proxy with the corresponding authentication token.
+  *   <li>The processor terminates itself.
   * </ul>
   *
-  * @param authenticationProvider the actor that provides the authentication logic
-  * @param authorizationProvider the actor that provides the authorization logic
+  * This lifecycle is intended for just one request (an instances of RequestProcessor per request).
+  *
+  * @param authenticationProvider  the actor that provides the authentication logic
+  * @param authorizationProvider   the actor that provides the authorization logic
+  * @param configuration           actor's configuration
   */
 class RequestProcessor(
     authenticationProvider: ActorRef,
-    authorizationProvider: ActorRef) extends Actor
+    authorizationProvider: ActorRef,
+    configuration: RequestProcessor.Configuration) extends Actor
   with FSM[RequestProcessor.StateName, RequestProcessor.StateData]
   with ResponseTransformation {
 
   import RequestProcessor._
   import AuthenticationProvider._
   import AuthorizationProvider._
-  import context.system
 
-  val authTokenConfig = AuthTokenConfig.fromConfig(context.system.settings.config)
-  val serviceConfig = ServiceConfig.active
-  val tokenGenerator = TokenGenerator(authTokenConfig)
+  val tokenGenerator = TokenGenerator(configuration.authTokenConfig)
 
   startWith(Ready, NoData)
 
   when(Ready) {
     case Event(req: Request, _) =>
       authenticationProvider ! Authenticate(req.credentials)
+      scheduleRequestTimeout()
       goto(Authenticating) using UnauthenticatedRequest(req)
   }
 
@@ -66,50 +74,54 @@ class RequestProcessor(
     case Event(Authenticated(profile), UnauthenticatedRequest(req)) =>
       authorizationProvider ! Authorize(req.action, profile)
       goto(Authorizing) using AuthenticatedRequest(req, profile)
-    case Event(AuthenticationFailed(error), UnauthenticatedRequest(req)) =>
-      error match {
-        case _: AuthenticationException => req.requester ! HttpResponse(
-          status = StatusCodes.Unauthorized,
-          entity = HttpEntity(error.toString)
-        )
-        case _ => req.requester ! HttpResponse(
-          status = StatusCodes.InternalServerError,
-          entity = HttpEntity(error.toString)
-        )
-      }
-      goto(Ready) using NoData
+
+    case Event(AuthenticationFailed(error: AuthenticationException), UnauthenticatedRequest(req)) =>
+      stopReportingUnauthorized(error, req)
+
+    case Event(AuthenticationFailed(unexpectedError), UnauthenticatedRequest(req)) =>
+      stopReportingFailure(unexpectedError, req)
   }
 
   when (Authorizing) {
+
     case Event(Authorized, AuthenticatedRequest(req, _)) =>
       IO(Http)(context.system) ! Http.Connect(
-        host = serviceConfig.webhdfsHostname,
-        port = serviceConfig.webhdfsPort)
+        host = configuration.serviceConfig.webhdfsHostname,
+        port = configuration.serviceConfig.webhdfsPort)
       goto(Forwarding)
-    case Event(AuthorizationFailed(error), AuthenticatedRequest(req, _)) =>
-      error match {
-        case _: AuthorizationException => req.requester ! HttpResponse(
-          status = StatusCodes.Forbidden,
-          entity = HttpEntity(error.toString)
-        )
-        case _ => req.requester ! HttpResponse(
-          status = StatusCodes.InternalServerError,
-          entity = HttpEntity(error.toString)
-        )
-      }
-      goto(Ready) using NoData
+
+    case Event(AuthorizationFailed(error: AuthorizationException), AuthenticatedRequest(req, _)) =>
+      stopReportingForbidden(error, req)
+
+    case Event(AuthorizationFailed(unexpectedError), AuthenticatedRequest(req, _)) =>
+      stopReportingFailure(unexpectedError, req)
   }
 
   when (Forwarding) {
     case Event(Http.Connected(_, _), AuthenticatedRequest(req, _)) =>
       sender ! req.httpRequest
       stay()
+
     case Event(rep: HttpResponse, AuthenticatedRequest(req, _)) =>
       req.requester ! mapResponse(rep)
-      goto(Ready) using NoData
+      stop(Normal)
+
     case Event(rep: Http.ConnectionClosed, AuthenticatedRequest(req, _)) =>
       req.requester ! rep
-      goto(Ready) using NoData
+      stop(Normal)
+  }
+
+  whenUnhandled {
+    case Event(RequestTimeout, _) => stop(Failure(RequestTimeout))
+  }
+
+  private def scheduleRequestTimeout(): Unit = {
+    import context.dispatcher
+    context.system.scheduler.scheduleOnce(
+      delay = configuration.requestTimeout,
+      receiver = self,
+      message = RequestTimeout
+    )
   }
 
   private def mapResponse(rep: HttpResponse): HttpResponse = rep.withHeaders(rep.headers.map {
@@ -129,15 +141,47 @@ class RequestProcessor(
   }
 
   private def tokenizePath(uri: Uri): Uri = {
-    val expireOn = (System.currentTimeMillis() / 1000) + authTokenConfig.duration
-    uri.withPath(Uri.Path(authTokenConfig.pathTemplate.toString
+    val expireOn = (System.currentTimeMillis() / 1000) + configuration.authTokenConfig.duration
+    uri.withPath(Uri.Path(configuration.authTokenConfig.pathTemplate.toString
       .replace("${token}", tokenGenerator.encode(uri, expireOn))
       .replace("${expire}", expireOn.toString)
       .replace("${path}", uri.path.toString())))
   }
+
+  private def stopReportingFailure(error: Throwable, req: Request): State = {
+    reportError(StatusCodes.InternalServerError, error, req)
+    stop(Failure(error))
+  }
+
+  private def stopReportingForbidden(error: AuthorizationException, req: Request): State = {
+    reportError(StatusCodes.Forbidden, error, req)
+    stop(Normal)
+  }
+
+  private def stopReportingUnauthorized(error: AuthenticationException, req: Request): State = {
+    reportError(StatusCodes.Unauthorized, error, req)
+    stop(Normal)
+  }
+
+  private def reportError(status: StatusCode, error: Throwable, req: Request): Unit =
+    req.requester ! HttpResponse(status = status, entity = HttpEntity(error.toString))
 }
 
 object RequestProcessor {
+
+  case class Configuration(
+    requestTimeout: FiniteDuration,
+    authTokenConfig: AuthTokenConfig,
+    serviceConfig: ServiceConfig
+  )
+
+  object Configuration {
+    def fromSystemConfig(systemConfig: Config): Configuration = Configuration(
+      requestTimeout = systemConfig.getDuration(RequestTimeoutProperty, TimeUnit.MILLISECONDS).millis,
+      authTokenConfig = AuthTokenConfig.fromConfig(systemConfig),
+      serviceConfig = ServiceConfig.active(systemConfig)
+    )
+  }
 
   /** The state of a living processor. */
   sealed trait StateName
@@ -167,6 +211,20 @@ object RequestProcessor {
   case class AuthenticatedRequest[R <: Request](req: R, profile: UserProfile) extends StateData
 
   /** Obtain the props object of a [[RequestProcessor]] from its construction params. */
-  def props(authenticationProvider: ActorRef, authorizationProvider: ActorRef): Props =
-    Props(classOf[RequestProcessor], authenticationProvider, authorizationProvider)
+  def props(
+      authenticationProvider: ActorRef,
+      authorizationProvider: ActorRef,
+      configuration: Configuration): Props =
+    Props(classOf[RequestProcessor], authenticationProvider, authorizationProvider, configuration)
+
+  /** Props of a [[RequestProcessor]] inferring the configuration from an implicit actor system. */
+  def props(authenticationProvider: ActorRef, authorizationProvider: ActorRef)
+           (implicit system: ActorSystem): Props = props(
+    authenticationProvider, authorizationProvider,
+    Configuration.fromSystemConfig(system.settings.config)
+  )
+
+  private val RequestTimeoutProperty = "cosmos.infinity.server.requestTimeout"
+
+  private case object RequestTimeout
 }

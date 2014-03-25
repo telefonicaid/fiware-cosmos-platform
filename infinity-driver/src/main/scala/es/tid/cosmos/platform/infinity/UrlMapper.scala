@@ -15,17 +15,17 @@ import java.net.URI
 
 import org.apache.hadoop.fs.{FileStatus, Path}
 
-/** It translates from the infinity to hdfs schemes ("transform") and back ("transform back").
+/** It translates from the infinity scheme to another scheme ("transform") and back ("transform back").
   *
   * @constructor
   * @param defaultAuthority   Authority (host and port) of the default Infinity instance
   */
-class UrlMapper(defaultAuthority: Option[String]) {
+class UrlMapper(defaultAuthority: Option[String], targetScheme: String = "webhdfs") {
   import UrlMapper._
 
   def uri = new URI(s"$InfinityScheme:///")
 
-  def transform(name: URI): URI = prependUserPath(setDefaultAuthority(setHdfsScheme(name)))
+  def transform(name: URI): URI = prependUserPath(setDefaultAuthority(setTargetScheme(name)))
 
   def transform(path: Path): Path = new Path(transform(path.toUri))
 
@@ -48,7 +48,7 @@ class UrlMapper(defaultAuthority: Option[String]) {
     transformBack(s.getPath)
   )
 
-  private def setHdfsScheme(name: URI) = UriUtil.replaceScheme(name, HdfsScheme)
+  private def setTargetScheme(name: URI) = UriUtil.replaceScheme(name, targetScheme)
 
   private def setDefaultAuthority(name: URI) = {
     val currentAuthority = name.getAuthority match {
@@ -73,5 +73,4 @@ class UrlMapper(defaultAuthority: Option[String]) {
 
 object UrlMapper {
   val InfinityScheme = "infinity"
-  val HdfsScheme = "hdfs"
 }

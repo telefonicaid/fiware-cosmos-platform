@@ -16,17 +16,17 @@ import java.net.URI
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 import org.apache.hadoop.fs.permission.FsPermission
-import org.apache.hadoop.hdfs.DistributedFileSystem
+import org.apache.hadoop.hdfs.web.SecureWebHdfsFS
 import org.apache.hadoop.util.Progressable
 
-/** Wraps a filesystem (HDFS by default) to change the scheme to infinity://
+/** Wraps a filesystem (SecureWebHDFS by default) to change the scheme to infinity://
   *
   * It just translates from the infinity to hdfs schemes ("transform") and back ("transform back").
   */
 class InfinityFileSystem(fs: FileSystem) extends FileSystem {
 
   /** Explicit default constructor that Hadoop looks for */
-  def this() = this(new DistributedFileSystem())
+  def this() = this(new SecureWebHdfsFS)
 
   import InfinityFileSystem._
 

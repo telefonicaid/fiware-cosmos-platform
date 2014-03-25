@@ -47,7 +47,7 @@ class InfinityAuthenticatorTest extends FlatSpec with MustMatchers {
     }
 
     def registerCluster(shared: Boolean = false) = store.withTransaction { implicit c =>
-      store.cluster.register(clusterId, profile.id, shared)
+      store.cluster.register(clusterId, profile.id, ClusterSecret.random(), shared)
     }.secret.get
   }
 

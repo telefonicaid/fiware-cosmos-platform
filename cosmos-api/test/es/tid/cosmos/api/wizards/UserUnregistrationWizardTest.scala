@@ -76,7 +76,7 @@ class UserUnregistrationWizardTest
       cluster.immediateTermination()
     }
     store.withTransaction { implicit c =>
-      store.cluster.register(clusterId, cosmosProfile.id)
+      store.cluster.register(clusterId, cosmosProfile.id, ClusterSecret.random())
     }
   }
 

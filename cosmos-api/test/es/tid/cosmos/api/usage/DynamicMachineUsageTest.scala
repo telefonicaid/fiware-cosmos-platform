@@ -17,6 +17,7 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.time.{Second, Seconds, Span}
 
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
+import es.tid.cosmos.api.profile.ClusterSecret
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
 import es.tid.cosmos.api.quota._
@@ -85,7 +86,7 @@ class DynamicMachineUsageTest
         val clusterId = serviceManager.createCluster(
           ClusterName("failedCluster"), 2, Set.empty, Seq.empty, failedPreconditions)
         store.withTransaction { implicit c =>
-          store.cluster.register(clusterId, myUserProfile.id)(c)
+          store.cluster.register(clusterId, myUserProfile.id, ClusterSecret.random())
         }
         machineUsage.usageByProfile(requestedClusterId = None) must be (Map(
           myUserProfile.id -> 13
@@ -116,9 +117,9 @@ class DynamicMachineUsageTest
     serviceManager.withCluster(clusterId2)(_.completeProvisioning())
     serviceManager.withCluster(terminated)(_.immediateTermination())
 
-    store.withTransaction { c =>
+    store.withTransaction { implicit c =>
       for (clusterId <- Seq(clusterId1, clusterId2, terminated)) {
-        store.cluster.register(clusterId, myUserProfile.id)(c)
+        store.cluster.register(clusterId, myUserProfile.id, ClusterSecret.random())
       }
     }
   }
@@ -142,11 +143,11 @@ class DynamicMachineUsageTest
       store.profile.setGroup(profileA2.id, Some("A"))
       store.profile.setGroup(profileB1.id, Some("B"))
       store.profile.setGroup(profileB2.id, Some("B"))
-      store.cluster.register(clusterA1, myUserProfile.id)
-      store.cluster.register(clusterA2, profileA2.id)
-      store.cluster.register(clusterB1, profileB1.id)
-      store.cluster.register(clusterB2, profileB2.id)
-      store.cluster.register(terminated, profileB2.id)
+      store.cluster.register(clusterA1, myUserProfile.id, ClusterSecret.random())
+      store.cluster.register(clusterA2, profileA2.id, ClusterSecret.random())
+      store.cluster.register(clusterB1, profileB1.id, ClusterSecret.random())
+      store.cluster.register(clusterB2, profileB2.id, ClusterSecret.random())
+      store.cluster.register(terminated, profileB2.id, ClusterSecret.random())
     }
   }
 }

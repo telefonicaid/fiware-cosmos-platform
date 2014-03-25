@@ -24,15 +24,16 @@ import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
-import es.tid.cosmos.api.profile.{Capability, CosmosProfile, QuotaContextFactory}
+import es.tid.cosmos.api.profile.{ClusterSecret, Capability, CosmosProfile, QuotaContextFactory}
 import es.tid.cosmos.api.profile.dao.{ClusterDataStore, ProfileDataStore}
 import es.tid.cosmos.api.quota.{Group, NoGroup}
 import es.tid.cosmos.api.task.TaskDao
 import es.tid.cosmos.api.usage.MachineUsage
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
-import es.tid.cosmos.servicemanager.services.{CosmosUserService, Hdfs}
+import es.tid.cosmos.servicemanager.services.{InfinityDriver, CosmosUserService, Hdfs}
 import es.tid.cosmos.servicemanager.services.Hdfs.HdfsParameters
+import es.tid.cosmos.servicemanager.services.InfinityDriver.InfinityDriverParameters
 
 /** Resource that represents a single cluster. */
 @Api(value = "/cosmos/v1/cluster", listingPath = "/doc/cosmos/v1/cluster",
@@ -94,16 +95,17 @@ class ClusterResource(
       profile: CosmosProfile): SimpleResult = {
 
     val users = usersForCluster(clusterParameters, profile)
+    val clusterSecret = ClusterSecret.random()
     val clusterId = serviceManager.createCluster(
       name = clusterParameters.name,
       clusterSize = clusterParameters.size,
-      services = servicesToInstall(clusterParameters, users),
+      services = servicesToInstall(clusterParameters, users, clusterSecret),
       users = users,
       preConditions = executableWithinQuota(profile, clusterParameters.size)
     )
     Logger.info(s"Provisioning new cluster $clusterId")
     val cluster = store.withTransaction { implicit c =>
-      store.cluster.register(clusterId, profile.id, clusterParameters.shared)
+      store.cluster.register(clusterId, profile.id, clusterSecret, clusterParameters.shared)
     }
     val clusterDescription = serviceManager.describeCluster(clusterId).get
     val reference = ClusterReference(clusterDescription, cluster).withAbsoluteUri(request)
@@ -112,13 +114,15 @@ class ClusterResource(
 
   private def servicesToInstall(
       clusterParameters: CreateClusterParams,
-      users: Seq[ClusterUser]): Set[AnyServiceInstance] = {
+      users: Seq[ClusterUser],
+      clusterSecret: ClusterSecret): Set[AnyServiceInstance] = {
     val cosmosUsers = CosmosUserService.instance(users)
     val hdfs = Hdfs.instance(HdfsParameters(if (clusterParameters.shared) "007" else "027"))
+    val infinityDriver = InfinityDriver.instance(InfinityDriverParameters(clusterSecret.underlying))
     val optionalServices = serviceManager.optionalServices.filter(
-      serviceInstance => clusterParameters.optionalServices.contains(serviceInstance.service.name)
-    )
-    Set(cosmosUsers, hdfs) ++ optionalServices
+      service => clusterParameters.optionalServices.contains(service.name)
+    ).map(_.defaultInstance.get)
+    Set(cosmosUsers, hdfs, infinityDriver) ++ optionalServices
   }
 
   private def usersForCluster(

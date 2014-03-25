@@ -19,7 +19,7 @@ import scala.util.Random
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.clusters.ImmutableClusterDescription
-import es.tid.cosmos.servicemanager.services.{Pig, Hive}
+import es.tid.cosmos.servicemanager.services.{Service, Pig, Hive}
 
 /** In-memory, simulated service manager. */
 class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
@@ -149,7 +149,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
 
   override def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
-  override val optionalServices: Set[AnyServiceInstance] = Set(Pig, Hive).map(_.instance)
+  override val optionalServices: Set[Service] = Set(Pig, Hive)
 
   override def createCluster(
       name: ClusterName,

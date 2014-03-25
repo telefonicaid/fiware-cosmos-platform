@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.services
 
-/** Component that enables the infinity:// scheme in Hadoop. */
-object InfinityfsDriver extends Service with NoParametrization {
-  override val name = "INFINITYFS_DRIVER"
+object InfinityServer extends Service with NoParametrization {
+  override val name: String = "INFINITY_SERVER"
+  override val dependencies: Set[Service] = Set(Hdfs)
 }

@@ -67,7 +67,7 @@ object Build extends sbt.Build {
     settings(projectArtifact: _*)
     aggregate(
       cosmosApi, ambariServiceManager, serviceManager, ial, cosmosAdmin, common, common_test,
-      platformTests, infinityfs, infinityServer
+      platformTests, infinityDriver, infinityServer
     )
   )
 
@@ -140,7 +140,7 @@ object Build extends sbt.Build {
       cosmosApi % "compile->compile;test->test")
   )
 
-  lazy val infinityfs = (Project(id = "infinityfs", base = file("infinityfs"))
+  lazy val infinityDriver = (Project(id = "infinity-driver", base = file("infinity-driver"))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
@@ -181,7 +181,7 @@ object Build extends sbt.Build {
       IO.copyFile(cosmosAdminRPM, filesDir / cosmosAdminRPM.name)
 
       s.log.info("Copying infinity RPM to project dist directory...")
-      val infinityRPM = (dist in infinityfs).value
+      val infinityRPM = (dist in infinityDriver).value
       IO.copyFile(infinityRPM, filesDir / infinityRPM.name)
 
       s.log.info("Copying infinity-server RPM to project dist directory...")

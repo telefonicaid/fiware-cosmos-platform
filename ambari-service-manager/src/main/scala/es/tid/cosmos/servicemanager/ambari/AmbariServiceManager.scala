@@ -191,10 +191,10 @@ class AmbariServiceManager(
 
 private[ambari] object AmbariServiceManager {
   val BasicHadoopServices: Set[AnyServiceInstance] =
-    Set(MapReduce2, InfinityfsDriver).map(_.instance) ++ Hdfs.defaultInstance
+    Set(MapReduce2, InfinityDriver).map(_.instance) ++ Hdfs.defaultInstance
   val OptionalServices: Set[AnyServiceInstance] = Set(Hive, Oozie, Pig, Sqoop).map(_.instance)
   val PersistentHdfsServices: Seq[AnyServiceInstance] = Seq(Zookeeper.defaultInstance,
-    InfinityfsServer.defaultInstance, Hdfs.defaultInstance,
+    InfinityServer.defaultInstance, Hdfs.defaultInstance,
     CosmosUserService.defaultInstance).flatten
 
   private def setMachineInfo(

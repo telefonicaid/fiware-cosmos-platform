@@ -5,31 +5,31 @@ HFS driver rebranding HDFS as Infinity by using a ``infinity://`` URI scheme.
 Apart from that, it can be configured to point to the infinity instance of
 the cluster in which Hadoop is deployed.
 
-Build infinityfs
+Build infinity-driver
 ----------------
 
 You can get a distributable JAR at
-``infinityfs/target/scala-2.10/infinityfs.jar`` by running::
+``infinity-driver/target/scala-2.10/infinity-driver.jar`` by running::
 
     $ sbt
-    > project infinityfs
+    > project infinity-driver
     > assembly
 
 
 Configuration
 -------------
 
-You can use infinityfs on any cluster by adding the configuration on a per job
+You can use infinity-driver on any cluster by adding the configuration on a per job
 basis. Sample execution of the standard wordcount example:
 
     hadoop jar /usr/lib/hadoop/hadoop-examples.jar wordcount \
     	-Dfs.infinity.impl=es.tid.cosmos.platform.infinity.InfinityFileSystem \
     	-Dfs.infinity.defaultAuthority=foo-infinity.hi.inet \
-    	-libjars infinityfs.jar \
+    	-libjars infinity-driver.jar \
     	infinity:///path/to/input infinity:///path/to/output
 
 
-To configure a cluster for infinityfs you must add the same properties to the
+To configure a cluster for infinity-driver you must add the same properties to the
 ``core-site.xml`` at Hadoop's conf::
 
     <property>
@@ -41,4 +41,4 @@ To configure a cluster for infinityfs you must add the same properties to the
         <value>foo-infinity.hi.inet</value>
     </property>
 
-And add the ``infinityfs.jar`` to ``/usr/lib/hadoop/lib`` in every host.
+And add the ``infinity-driver.jar`` to ``/usr/lib/hadoop/lib`` in every host.

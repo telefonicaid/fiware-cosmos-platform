@@ -118,7 +118,7 @@ The following services are supported in compute clusters (a (*) means that the s
 * HCatalog
 * (*) Hdfs
 * Hive
-* (*) Infinityfs Driver
+* (*) Infinity Driver
 * (*) MapReduce
 * Oozie
 * Pig

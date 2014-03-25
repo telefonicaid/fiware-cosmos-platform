@@ -43,7 +43,7 @@ class ServiceDependencyMappingTest extends FlatSpec with MustMatchers {
   }
 
   "Services potentially using infinity" must "depend on infinity FS driver" in {
-    val requiredDependency: Service = InfinityfsDriver
+    val requiredDependency: Service = InfinityDriver
     dependencies(Hdfs) must contain (requiredDependency)
     dependencies(MapReduce2) must contain (requiredDependency)
     dependencies(Yarn) must contain (requiredDependency)

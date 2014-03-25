@@ -23,5 +23,5 @@ object Hdfs extends Service {
   override val name: String = "HDFS"
   override type Parametrization = HdfsParameters
   override val defaultParametrization: Option[HdfsParameters] = Some(HdfsParameters("022"))
-  override val dependencies: Set[Service] = Set(Zookeeper, InfinityfsDriver)
+  override val dependencies: Set[Service] = Set(Zookeeper, InfinityDriver)
 }

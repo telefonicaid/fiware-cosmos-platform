@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import java.net.InetSocketAddress
+import java.net.InetAddress
 
 import spray.http.HttpRequest
 
@@ -26,7 +26,7 @@ sealed trait Action {
 
 object Action extends ActionMapping {
 
-  def apply(remoteAddress: InetSocketAddress, request: HttpRequest): Action =
+  def apply(remoteAddress: InetAddress, request: HttpRequest): Action =
     opQueryParam(request) match {
       case "OPEN" => Open(remoteAddress, request)
       case "GETFILESTATUS" => GetFileStatus(remoteAddress, request)
@@ -59,7 +59,7 @@ object Action extends ActionMapping {
 
   object Open {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): Open =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): Open =
       withGetBasicProps(remoteAddress, request) { (path, credentials) =>
         Open(
           on = path,
@@ -76,7 +76,7 @@ object Action extends ActionMapping {
 
   object GetFileStatus {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): GetFileStatus =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): GetFileStatus =
       withGetBasicProps(remoteAddress, request)(GetFileStatus.apply)
   }
 
@@ -85,7 +85,7 @@ object Action extends ActionMapping {
 
   object ListStatus {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): ListStatus =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): ListStatus =
       withGetBasicProps(remoteAddress, request)(ListStatus.apply)
   }
 
@@ -94,7 +94,7 @@ object Action extends ActionMapping {
 
   object GetContentSummary {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): GetContentSummary =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): GetContentSummary =
       withGetBasicProps(remoteAddress, request)(GetContentSummary.apply)
   }
 
@@ -103,7 +103,7 @@ object Action extends ActionMapping {
 
   object GetFileChecksum {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): GetFileChecksum =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): GetFileChecksum =
       withGetBasicProps(remoteAddress, request)(GetFileChecksum.apply)
   }
 
@@ -112,7 +112,7 @@ object Action extends ActionMapping {
 
   object GetHomeDirectory {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): GetHomeDirectory =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): GetHomeDirectory =
       withGetBasicProps(remoteAddress, request)(GetHomeDirectory.apply)
   }
 
@@ -124,7 +124,7 @@ object Action extends ActionMapping {
 
   object GetDelegationToken {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): GetDelegationToken =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): GetDelegationToken =
       withGetBasicProps(remoteAddress, request) { (path, credentials) =>
         GetDelegationToken(
           on = path,
@@ -146,7 +146,7 @@ object Action extends ActionMapping {
 
   object Create {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): Create =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): Create =
       withPutBasicProps(remoteAddress, request) { (path, credentials) =>
         Create(
           on = path,
@@ -168,7 +168,7 @@ object Action extends ActionMapping {
 
   object Mkdirs {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): Mkdirs =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): Mkdirs =
       withPutBasicProps(remoteAddress, request) { (path, credentials) =>
         Mkdirs(
           on = path,
@@ -183,7 +183,7 @@ object Action extends ActionMapping {
 
   object Rename {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): Rename =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): Rename =
       withPutBasicProps(remoteAddress, request) { (path, credentials) =>
         Rename(
           on = path,
@@ -201,7 +201,7 @@ object Action extends ActionMapping {
 
   object SetReplication {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): SetReplication =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): SetReplication =
       withPutBasicProps(remoteAddress, request) { (path, credentials) =>
         SetReplication(
           on = path,
@@ -220,7 +220,7 @@ object Action extends ActionMapping {
 
   object SetOwner {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): SetOwner =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): SetOwner =
       withPutBasicProps(remoteAddress, request) { (path, credentials) =>
         SetOwner(
           on = path,
@@ -239,7 +239,7 @@ object Action extends ActionMapping {
 
   object SetPermission {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): SetPermission =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): SetPermission =
       withPutBasicProps(remoteAddress, request) { (path, credentials) =>
         SetPermission(
           on = path,
@@ -258,7 +258,7 @@ object Action extends ActionMapping {
 
   object SetTimes {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): SetTimes =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): SetTimes =
       withPutBasicProps(remoteAddress, request) { (path, credentials) =>
         SetTimes(
           on = path,
@@ -275,7 +275,7 @@ object Action extends ActionMapping {
 
   object RenewDelegationToken {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): RenewDelegationToken =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): RenewDelegationToken =
       withPutBasicProps(remoteAddress, request) { (path, credentials) =>
         RenewDelegationToken(
           on = path,
@@ -291,7 +291,7 @@ object Action extends ActionMapping {
 
   object CancelDelegationToken {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): CancelDelegationToken =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): CancelDelegationToken =
       withPutBasicProps(remoteAddress, request) { (path, credentials) =>
         CancelDelegationToken(
           on = path,
@@ -309,7 +309,7 @@ object Action extends ActionMapping {
 
   object Append {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): Append =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): Append =
       withPostBasicProps(remoteAddress, request) { (path, credentials) =>
         Append(
           on = path,
@@ -327,7 +327,7 @@ object Action extends ActionMapping {
 
   object Delete {
 
-    def apply(remoteAddress: InetSocketAddress, request: HttpRequest): Delete =
+    def apply(remoteAddress: InetAddress, request: HttpRequest): Delete =
       withDeleteBasicProps(remoteAddress, request) { (path, credentials) =>
         Delete(
           on = path,

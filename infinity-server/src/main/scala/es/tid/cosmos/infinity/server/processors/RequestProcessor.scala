@@ -85,7 +85,6 @@ private[processors] class RequestProcessor(
   }
 
   when (Authorizing) {
-
     case Event(Authorized, AuthenticatedRequest(req, _)) =>
       IO(Http)(context.system) ! Http.Connect(
         host = configuration.serviceConfig.webhdfsHostname,

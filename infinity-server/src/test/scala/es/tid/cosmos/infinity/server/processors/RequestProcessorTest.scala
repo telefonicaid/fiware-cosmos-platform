@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.infinity.server.processors
 
-import java.net.InetSocketAddress
+import java.net.{InetAddress, InetSocketAddress}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
@@ -128,7 +128,7 @@ class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
   }
 
   class SampleProcessor(requestTimeout: FiniteDuration = 1.minute) extends RequestBuilding {
-    val remoteAddress = new InetSocketAddress("remote", 9999)
+    val remoteAddress = InetAddress.getLocalHost
     val requester = TestProbe()
     val authenticator = TestProbe()
     val authorizator = TestProbe()

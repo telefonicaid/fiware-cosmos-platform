@@ -28,6 +28,6 @@ class ServicesResource(serviceManager: ServiceManager) extends Controller with J
     notes = "The response is a bare array of strings (e.g. [\"service1\", \"service2\"])",
     responseClass = "java.lang.String", multiValueResponse = true)
   def list = Action { implicit request =>
-    Ok(Json.toJson(serviceManager.optionalServices.map(_.service.name)))
+    Ok(Json.toJson(serviceManager.optionalServices.map(_.name)))
   }
 }

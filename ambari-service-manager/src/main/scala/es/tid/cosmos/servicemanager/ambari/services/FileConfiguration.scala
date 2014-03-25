@@ -11,12 +11,15 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
+import es.tid.cosmos.servicemanager.ambari.configuration._
 
 /** Mix-in for ambari services that populates the configuration from a file named as the
   * lowercased name of the service.
   */
 trait FileConfiguration { this: AmbariService =>
+
+  def extraProperties(parametrization: service.Parametrization): ConfigProperties = Map.empty
+
   override def configurator(parametrization: service.Parametrization, configPath: String) =
-    new FileConfigurationContributor(configPath, service.name.toLowerCase)
+    new FileConfigurationContributor(configPath, service.name.toLowerCase, extraProperties(parametrization))
 }

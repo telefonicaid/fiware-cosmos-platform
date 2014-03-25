@@ -19,6 +19,7 @@ import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.{MaintenanceModeBehaviors, AuthBehaviors}
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
+import es.tid.cosmos.api.profile.ClusterSecret
 import es.tid.cosmos.platform.ial.MachineProfile._
 import es.tid.cosmos.servicemanager.ClusterName
 import es.tid.cosmos.servicemanager.clusters.ClusterId
@@ -45,8 +46,8 @@ class StatsResourceIT
     )
     val terminatedClusterId = ClusterId.random()
     store.withTransaction { implicit c =>
-      store.cluster.register(activeClusterId, regUserInGroup.cosmosProfile.id, shared = false)
-      store.cluster.register(terminatedClusterId, opUser.cosmosProfile.id, shared = false)
+      store.cluster.register(activeClusterId, regUserInGroup.cosmosProfile.id, ClusterSecret.random(), shared = false)
+      store.cluster.register(terminatedClusterId, opUser.cosmosProfile.id, ClusterSecret.random(), shared = false)
     }
 
     val json = contentAsJson(opUser.doRequest(clusterStatsRequest))

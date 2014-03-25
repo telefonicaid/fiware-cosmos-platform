@@ -4,7 +4,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManagerComponent
-import es.tid.cosmos.api.profile.ProfileId
+import es.tid.cosmos.api.profile.{ClusterSecret, ProfileId}
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
 import es.tid.cosmos.api.quota.{NoGroup, Quota, GuaranteedGroup}
@@ -37,7 +37,7 @@ class ProfileGroupCommandsTest extends FlatSpec with MustMatchers {
           initialState = Some(Running)
         )
         val ownerId = store.profile.lookupByHandle(owner).get.id
-        store.cluster.register(fakeCluster.view.id, ownerId, shared = true)
+        store.cluster.register(fakeCluster.view.id, ownerId, ClusterSecret.random(), shared = true)
         fakeCluster
       }
 
@@ -67,7 +67,7 @@ class ProfileGroupCommandsTest extends FlatSpec with MustMatchers {
       val clusterId = mockedServiceManager.defineCluster().view.id
       addToGroup(cosmosId)
       store.withTransaction { implicit c =>
-        store.cluster.register(clusterId, cosmosId, shared = true)
+        store.cluster.register(clusterId, cosmosId, ClusterSecret.random(), shared = true)
       }
       val result = groupCommands.remove(handle)
       result must not be 'success

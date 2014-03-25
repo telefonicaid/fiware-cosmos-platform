@@ -14,6 +14,7 @@ package es.tid.cosmos.admin.groups
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.api.profile.ClusterSecret
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
@@ -65,7 +66,7 @@ class DefaultGroupCommandsTest extends FlatSpec with MustMatchers with OneInstan
       store.group.register(groupA)
       val ownerId = CosmosProfileTestHelpers.registerUser(store, "user").id
       store.profile.setGroup(ownerId, groupA)
-      store.cluster.register(clusterId, ownerId, shared = true)
+      store.cluster.register(clusterId, ownerId, ClusterSecret.random(), shared = true)
     }
     val result = groupCommands.delete(groupA.name)
     result must not be 'success
@@ -100,7 +101,7 @@ class DefaultGroupCommandsTest extends FlatSpec with MustMatchers with OneInstan
     store.withTransaction { implicit c =>
       val profile = registerUser(store, "myUser")
       store.group.register(group)
-      store.cluster.register(clusterId, profile.id)
+      store.cluster.register(clusterId, profile.id, ClusterSecret.random())
     }
     groupCommands.setMinQuota("groupA", 5) must not be 'success
     store.withTransaction { implicit c =>

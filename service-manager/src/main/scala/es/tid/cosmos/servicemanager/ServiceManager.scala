@@ -15,6 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.Service
 
 /**
  * Cluster manager that allows cluster creation, termination as well as
@@ -29,7 +30,7 @@ trait ServiceManager {
   def clusterIds: Seq[ClusterId]
 
   /** A sequence of all services this service manager supports. */
-  val optionalServices: Set[AnyServiceInstance]
+  val optionalServices: Set[Service]
 
   /**
    * Create a cluster of a given size with a specified set of services.

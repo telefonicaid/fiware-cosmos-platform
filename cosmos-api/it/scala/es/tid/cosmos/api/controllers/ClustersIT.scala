@@ -20,6 +20,7 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.controllers.cluster.CreateClusterParams
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.mocks.SampleClusters
+import es.tid.cosmos.api.profile.ClusterSecret
 import es.tid.cosmos.servicemanager.ClusterName
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 import es.tid.cosmos.servicemanager.services.Hdfs
@@ -55,8 +56,8 @@ class ClustersIT
     val ownCluster = SampleClusters.RunningClusterProps.id
     val otherCluster = ClusterId.random()
     store.withTransaction { implicit c =>
-      store.cluster.register(ownCluster, user1.cosmosProfile.id)
-      store.cluster.register(otherCluster, user2.cosmosProfile.id)
+      store.cluster.register(ownCluster, user1.cosmosProfile.id, ClusterSecret.random())
+      store.cluster.register(otherCluster, user2.cosmosProfile.id, ClusterSecret.random())
     }
 
     val resource = user1.doRequest(listClusters)

@@ -70,7 +70,7 @@ trait WithSampleSessions extends WithTestApplication with WithSampleGroups {
 
     def assignCluster(cluster: ClusterId, shared: Boolean) = {
       store.withConnection { implicit c =>
-        store.cluster.register(cluster, cosmosProfile.id, shared)
+        store.cluster.register(cluster, cosmosProfile.id, ClusterSecret.random(), shared)
       }
     }
 

@@ -12,6 +12,10 @@
 package es.tid.cosmos.servicemanager.services
 
 /** Component that enables the infinity:// scheme in Hadoop. */
-object InfinityDriver extends Service with NoParametrization {
+object InfinityDriver extends Service {
+
+  case class InfinityDriverParameters(clusterSecret: String)
+
+  override type Parametrization = InfinityDriverParameters
   override val name = "INFINITY_DRIVER"
 }

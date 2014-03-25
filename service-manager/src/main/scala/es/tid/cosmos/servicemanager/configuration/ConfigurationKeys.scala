@@ -13,6 +13,7 @@ package es.tid.cosmos.servicemanager.configuration
 
 object ConfigurationKeys extends Enumeration {
    val MasterNode,
+       ClusterSecret,
        HdfsReplicationFactor,
        NameNodeHttpPort,
        UmaskMode,

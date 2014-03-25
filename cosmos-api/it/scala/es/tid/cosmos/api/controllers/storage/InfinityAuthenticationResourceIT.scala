@@ -23,7 +23,7 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager.ClusterProperties
 import es.tid.cosmos.api.profile.{ClusterSecret, ApiCredentials}
-import es.tid.cosmos.servicemanager.{ClusterUser, ClusterName}
+import es.tid.cosmos.servicemanager.ClusterName
 import es.tid.cosmos.servicemanager.clusters.{Running, ClusterId}
 
 class InfinityAuthenticationResourceIT extends FlatSpec with MustMatchers {
@@ -68,7 +68,8 @@ class InfinityAuthenticationResourceIT extends FlatSpec with MustMatchers {
       initialState = Some(Running)
     ))
     val clusterSecret = store.withTransaction { implicit c =>
-      store.cluster.register(cluster.view.id, regUserNoGroup.cosmosProfile.id)
+      store.cluster.register(
+        cluster.view.id, regUserNoGroup.cosmosProfile.id, ClusterSecret.random())
     }.secret.get
     val res = request(clusterSecret)
     status(res) must be (OK)

@@ -66,15 +66,16 @@ trait ClusterDao[Conn] {
     * @param clusterId  The cluster ID to assign
     * @param ownerId    The unique Cosmos ID of the new owner
     * @param c          The connection to use
+    * @param secret     The cluster secret for Infinity access
     * @param shared     Whether the cluster is shared or not
     * @return           Newly registered cluster
     */
-  def register(clusterId: ClusterId, ownerId: Long, shared: Boolean = false)
+  def register(clusterId: ClusterId, ownerId: Long, secret: ClusterSecret, shared: Boolean = false)
               (implicit c: Conn): Cluster = register(Cluster(
     clusterId,
     ownerId,
     creationDate = new Timestamp(new Date().getTime),
     shared,
-    secret = Some(ClusterSecret.random())
+    Some(secret)
   ))
 }

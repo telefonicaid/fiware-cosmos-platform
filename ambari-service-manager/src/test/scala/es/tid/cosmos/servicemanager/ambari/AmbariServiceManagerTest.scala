@@ -22,7 +22,7 @@ import scalaz.syntax.validation._
 
 import org.mockito.ArgumentMatcher
 import org.mockito.BDDMockito.given
-import org.mockito.Matchers.{any, eq => the, argThat}
+import org.mockito.Matchers.{eq => the, _}
 import org.mockito.Mockito._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.mock.MockitoSugar
@@ -37,7 +37,8 @@ import es.tid.cosmos.servicemanager.ambari.clusters.InMemoryClusterDao
 import es.tid.cosmos.servicemanager.ambari.mocks.MockAmbariClusterManager
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariTestBase
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.services.{CosmosUserService, ServiceDependencyMapping, Pig, Hive}
+import es.tid.cosmos.servicemanager.services._
+import es.tid.cosmos.servicemanager.services.InfinityDriver.InfinityDriverParameters
 import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
 
 class AmbariServiceManagerTest
@@ -53,7 +54,10 @@ class AmbariServiceManagerTest
 
     val exclusiveMasterSizeCutoff = 10
     val clusterManager = new MockAmbariClusterManager
-    val serviceDescriptions: Set[AnyServiceInstance] = Set(Hive.instance, Pig.instance)
+    val serviceDescriptions: Set[AnyServiceInstance] = Set(
+      Hive.instance,
+      Pig.instance,
+      InfinityDriver.instance(InfinityDriverParameters("secret")))
     lazy val instance = new AmbariServiceManager(
       clusterManager, infrastructureProvider,
       ClusterId("HDFS"), exclusiveMasterSizeCutoff, TestHadoopConfig,
@@ -265,13 +269,51 @@ class AmbariServiceManagerTest
 
   it must "create cluster including service bundles" in new WithMachines(3) {
     val clusterId = instance.createCluster(
-      ClusterName("clusterName"), 3, Set(Hive.instance), Seq.empty, UnfilteredPassThrough
+      ClusterName("clusterName"),
+      3,
+      Set(Hive.instance, InfinityDriver.instance(InfinityDriverParameters("secret"))),
+      Seq.empty,
+      UnfilteredPassThrough
     )
     waitForClusterCompletion(clusterId, instance)
     val description = instance.describeCluster(clusterId)
     val expectedServices = new ServiceDependencyMapping(ServiceDependencies.ServiceCatalogue)
-      .resolve(AmbariServiceManager.BasicHadoopServices.map(_.service) + Hive + CosmosUserService)
+      .resolve(AmbariServiceManager.BasicHadoopServices + Hive + CosmosUserService)
     description.get.services must be (expectedServices.map(_.name))
+  }
+
+  it must "be able to deploy the persistent hdfs" in new MockIalComponent with WithServiceManager {
+    val nameNode = MachineState(
+      new Id(s"NN"), s"TheNameNode",
+      MachineProfile.HdfsMaster, MachineStatus.Running,
+      s"hostname-namenode", s"ipAddress-namenode")
+    val dataNode = MachineState(
+      new Id(s"DN"), s"TheDataNode",
+      MachineProfile.HdfsSlave, MachineStatus.Running,
+      s"hostname-datanode", s"ipAddress-datanode")
+    given(infrastructureProvider.releaseMachines(any())).willReturn(successful())
+    given(infrastructureProvider.availableMachineCount(the(MachineProfile.HdfsSlave)))
+      .willReturn(Future.successful(1))
+    given(infrastructureProvider.createMachines(any(), the(MachineProfile.HdfsMaster), any(), any()))
+      .willReturn(Future.successful(Seq(nameNode)))
+    given(infrastructureProvider.createMachines(any(), the(MachineProfile.HdfsSlave), any(), any()))
+      .willReturn(Future.successful(Seq(dataNode)))
+    instance.describePersistentHdfsCluster() must be (None)
+    val hdfsDeployment = instance.deployPersistentHdfsCluster()
+    hdfsDeployment must eventuallySucceed
+    val description = instance.describePersistentHdfsCluster().get
+    val expectedServices = AmbariServiceManager.PersistentHdfsServices.map(_.service).toSet
+    description.services must be (expectedServices.map(_.name))
+  }
+
+  it must "fail creation if a basic service that needs configuration is not configured" in new WithMachines(3) {
+    evaluating { instance.createCluster(
+      ClusterName("clusterName"),
+      3,
+      Set(Hive.instance),
+      Seq.empty,
+      UnfilteredPassThrough
+    ) } must produce [IllegalArgumentException]
   }
 
   private def matchesValidation(expected: ExecutableValidation) =

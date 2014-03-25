@@ -32,7 +32,7 @@ trait ClusterDataStoreBehavior extends MustMatchers { this: FlatSpec =>
         val clusterId = ClusterId.random()
         val id1 = registerUser(store, "user1").id
         val id2 = registerUser(store, "user2").id
-        store.cluster.register(clusterId, id2)
+        store.cluster.register(clusterId, id2, ClusterSecret.random())
         store.cluster.ownedBy(id1).map(_.clusterId).toList must not contain clusterId
         store.cluster.ownedBy(id2).map(_.clusterId).toList must contain (clusterId)
       }
@@ -42,7 +42,7 @@ trait ClusterDataStoreBehavior extends MustMatchers { this: FlatSpec =>
       val clusterId = ClusterId.random()
       val profileId = store.withTransaction { implicit c =>
         val profileId = registerUser(store, "user1").id
-        store.cluster.register(clusterId, profileId)
+        store.cluster.register(clusterId, profileId, ClusterSecret.random())
         profileId
       }
       store.withTransaction { implicit c =>

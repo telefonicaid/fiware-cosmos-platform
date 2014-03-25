@@ -58,7 +58,7 @@ class AmbariServiceManager(
   override def describeCluster(id: ClusterId): Option[ImmutableClusterDescription] =
     clusterDao.getDescription(id).map(_.view)
 
-  override val optionalServices: Set[AnyServiceInstance] = OptionalServices
+  override val optionalServices: Set[Service] = OptionalServices
 
   override def createCluster(
       name: ClusterName,
@@ -67,7 +67,7 @@ class AmbariServiceManager(
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = {
     val servicesWithDependencies = ServiceDependencies.executionPlan(
-      BasicHadoopServices ++ serviceInstances + CosmosUserService.instance(Seq.empty)
+      missingBasicServices(serviceInstances) ++ serviceInstances + CosmosUserService.instance(users)
     )
     val clusterDescription = clusterDao.registerCluster(
       name = name,
@@ -86,6 +86,11 @@ class AmbariServiceManager(
     }
     clusterDescription.id
   }
+
+  private def missingBasicServices(serviceInstances: Set[AnyServiceInstance]) =
+    (BasicHadoopServices diff serviceInstances.map(_.service)).map(
+      service => service.defaultInstance.getOrElse(throw new IllegalArgumentException(
+        s"A basic service that needs configuration was not configured: ${service.name}")))
 
   private def masterAndSlaves(machines: Seq[MachineState]) = machines match {
     case Seq(master, slaves @ _*) if machines.length < exclusiveMasterSizeCutoff =>
@@ -190,9 +195,9 @@ class AmbariServiceManager(
 }
 
 private[ambari] object AmbariServiceManager {
-  val BasicHadoopServices: Set[AnyServiceInstance] =
-    Set(MapReduce2, InfinityDriver).map(_.instance) ++ Hdfs.defaultInstance
-  val OptionalServices: Set[AnyServiceInstance] = Set(Hive, Oozie, Pig, Sqoop).map(_.instance)
+  val BasicHadoopServices: Set[Service] =
+    Set(MapReduce2, InfinityDriver, Hdfs)
+  val OptionalServices: Set[Service] = Set(Hive, Oozie, Pig, Sqoop)
   val PersistentHdfsServices: Seq[AnyServiceInstance] = Seq(Zookeeper.defaultInstance,
     InfinityServer.defaultInstance, Hdfs.defaultInstance,
     CosmosUserService.defaultInstance).flatten

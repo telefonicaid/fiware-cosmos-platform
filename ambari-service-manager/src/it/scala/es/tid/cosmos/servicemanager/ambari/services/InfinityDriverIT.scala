@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.configuration.ConfigurationKeys.InfinityMasterNode
+import es.tid.cosmos.servicemanager.services.InfinityDriver.InfinityDriverParameters
 
 class InfinityDriverIT extends ConfiguredServiceTest {
 
@@ -19,7 +20,8 @@ class InfinityDriverIT extends ConfiguredServiceTest {
     InfinityMasterNode -> "andromeda-infinity"
   )
 
-  override def configurator = AmbariInfinityDriver.configurator((), resourcesConfigDirectory)
+  override def configurator = AmbariInfinityDriver.configurator(
+    InfinityDriverParameters("secret"), resourcesConfigDirectory)
 
   val contributedConfig = contributions.core.get
 

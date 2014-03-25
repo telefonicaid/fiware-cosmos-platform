@@ -17,20 +17,32 @@ import akka.actor.{ActorSystem, Props}
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
-import com.typesafe.config.ConfigFactory
 import spray.can.Http
 
-object Boot extends App {
+import es.tid.cosmos.common.ConfigComponent
+import es.tid.cosmos.infinity.server.app.{InfinityAppComponent, InfinityApp}
+import es.tid.cosmos.infinity.server.authentication.cosmosapi.CosmosApiAuthenticationComponent
+import es.tid.cosmos.infinity.server.authorization.PersistentAuthorizationComponent
+import es.tid.cosmos.infinity.server.processors.DefaultRequestProcessorComponent
 
-  val config = ConfigFactory.load()
+object Boot extends App
+  with InfinityAppComponent
+  with CosmosApiAuthenticationComponent
+  with PersistentAuthorizationComponent
+  with DefaultRequestProcessorComponent
+  with ConfigComponent {
 
   implicit val system = ActorSystem("infinity-server")
 
-  val service = system.actorOf(Props[InfinityActor], "infinity-server-service")
+  override val config = system.settings.config
+
+  val service = system.actorOf(Props[InfinityApp])
 
   implicit val timeout = Timeout(5.seconds)
 
-  IO(Http) ? Http.Bind(service,
+  IO(Http) ? Http.Bind(
+    listener = service,
     interface = config.getString("cosmos.infinity.server.interface"),
-    port = config.getInt("cosmos.infinity.server.port"))
+    port = config.getInt("cosmos.infinity.server.port")
+  )
 }

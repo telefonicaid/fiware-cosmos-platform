@@ -9,9 +9,10 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.auth
+package es.tid.cosmos.infinity.server.authorization
 
 import es.tid.cosmos.infinity.server.actions.Action
+import es.tid.cosmos.infinity.server.authentication.UserProfile
 
 object AuthorizationProvider {
 

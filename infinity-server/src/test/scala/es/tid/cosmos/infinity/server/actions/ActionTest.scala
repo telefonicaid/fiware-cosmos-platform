@@ -18,7 +18,7 @@ import org.scalatest.matchers.MustMatchers
 import spray.httpx.RequestBuilding
 import spray.http.{HttpMethods, HttpMethod}
 
-import es.tid.cosmos.infinity.server.auth.{ClusterCredentials, UserCredentials}
+import es.tid.cosmos.infinity.server.authentication.{ClusterCredentials, UserCredentials}
 import es.tid.cosmos.infinity.server.util.Path
 
 class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {

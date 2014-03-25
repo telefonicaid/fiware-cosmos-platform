@@ -20,13 +20,15 @@ import akka.actor._
 import akka.pattern.ask
 import akka.testkit.{TestProbe, TestKit}
 import akka.util.Timeout
+import com.typesafe.config.ConfigFactory
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 import org.scalatest.matchers._
 import spray.can.Http
 import spray.http._
 import spray.httpx.RequestBuilding
 
-import es.tid.cosmos.infinity.server.auth._
+import es.tid.cosmos.infinity.server.authentication._
+import es.tid.cosmos.infinity.server.authorization._
 import es.tid.cosmos.infinity.server.config.ServiceConfig
 
 class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
@@ -137,8 +139,9 @@ class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
       unixPermissionMask = UnixFilePermissions.fromOctal("777")
     )
     val request = Request(remoteAddress, requester.ref, Get(sampleUri))
-    val processorConfig = RequestProcessor.Configuration.fromSystemConfig(system.settings.config)
-      .copy(requestTimeout = requestTimeout)
+    val processorConfig = ConfigFactory.parseString(s"""
+      cosmos.infinity.server.request-timeout = ${requestTimeout.toMillis} ms
+    """).withFallback(system.settings.config)
     val processor = system.actorOf(
       RequestProcessor.props(authenticator.ref, authorizator.ref, processorConfig)
     )

@@ -15,7 +15,7 @@ import java.net.InetSocketAddress
 
 import spray.http.HttpRequest
 
-import es.tid.cosmos.infinity.server.auth.Credentials
+import es.tid.cosmos.infinity.server.authentication.Credentials
 import es.tid.cosmos.infinity.server.util.Path
 
 /** An action performed on a Infinity path. */

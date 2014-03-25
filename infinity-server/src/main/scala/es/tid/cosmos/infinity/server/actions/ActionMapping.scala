@@ -15,7 +15,7 @@ import java.net.InetSocketAddress
 
 import spray.http.{HttpMethods, HttpMethod, HttpRequest}
 
-import es.tid.cosmos.infinity.server.auth.{ClusterCredentials, UserCredentials, Credentials}
+import es.tid.cosmos.infinity.server.authentication.{ClusterCredentials, UserCredentials, Credentials}
 import es.tid.cosmos.infinity.server.util.Path
 
 trait ActionMapping {

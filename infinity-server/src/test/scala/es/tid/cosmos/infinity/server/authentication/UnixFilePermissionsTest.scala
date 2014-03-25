@@ -9,10 +9,11 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.auth
+package es.tid.cosmos.infinity.server.authentication
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
+import es.tid.cosmos.infinity.server.authorization.{UnixFilePermissions, PermissionClass}
 
 class UnixFilePermissionsTest extends FlatSpec with MustMatchers {
 

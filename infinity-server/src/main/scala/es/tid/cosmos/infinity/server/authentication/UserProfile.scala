@@ -9,7 +9,9 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.auth
+package es.tid.cosmos.infinity.server.authentication
+
+import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions
 
 /** The profile of a user in Infinity.
   *

@@ -17,13 +17,14 @@ import scala.concurrent.duration._
 import akka.actor._
 import akka.actor.FSM.{Failure, Normal}
 import akka.io.IO
+import com.typesafe.config.Config
 import spray.can.Http
 import spray.http._
 import spray.httpx.ResponseTransformation
 
-import es.tid.cosmos.infinity.server.auth._
-import es.tid.cosmos.infinity.server.config.{ServiceConfig, AuthTokenConfig}
-import com.typesafe.config.Config
+import es.tid.cosmos.infinity.server.authentication._
+import es.tid.cosmos.infinity.server.authorization.{AuthorizationException, AuthorizationProvider}
+import es.tid.cosmos.infinity.server.config.{AuthTokenConfig, ServiceConfig}
 
 /** Request processor actor class.
   *
@@ -44,14 +45,15 @@ import com.typesafe.config.Config
   *
   * This lifecycle is intended for just one request (an instances of RequestProcessor per request).
   *
-  * @param authenticationProvider  the actor that provides the authentication logic
-  * @param authorizationProvider   the actor that provides the authorization logic
-  * @param configuration           actor's configuration
+  * @param authenticationRef  the actor providing the authentication logic
+  * @param authorizationRef   the actor that provides the authorization logic
+  * @param configuration      actor configuration
   */
-class RequestProcessor(
-    authenticationProvider: ActorRef,
-    authorizationProvider: ActorRef,
-    configuration: RequestProcessor.Configuration) extends Actor
+private[processors] class RequestProcessor(
+    authenticationRef: ActorRef,
+    authorizationRef: ActorRef,
+    configuration: RequestProcessor.Configuration
+  ) extends Actor
   with FSM[RequestProcessor.StateName, RequestProcessor.StateData]
   with ResponseTransformation {
 
@@ -65,14 +67,14 @@ class RequestProcessor(
 
   when(Ready) {
     case Event(req: Request, _) =>
-      authenticationProvider ! Authenticate(req.credentials)
+      requestAuthentication(req.credentials)
       scheduleRequestTimeout()
       goto(Authenticating) using UnauthenticatedRequest(req)
   }
 
   when (Authenticating) {
     case Event(Authenticated(profile), UnauthenticatedRequest(req)) =>
-      authorizationProvider ! Authorize(req.action, profile)
+      authorizationRef ! Authorize(req.action, profile)
       goto(Authorizing) using AuthenticatedRequest(req, profile)
 
     case Event(AuthenticationFailed(error: AuthenticationException), UnauthenticatedRequest(req)) =>
@@ -103,11 +105,11 @@ class RequestProcessor(
       stay()
 
     case Event(rep: HttpResponse, AuthenticatedRequest(req, _)) =>
-      req.requester ! mapResponse(rep)
+      req.responder ! mapResponse(rep)
       stop(Normal)
 
     case Event(rep: Http.ConnectionClosed, AuthenticatedRequest(req, _)) =>
-      req.requester ! rep
+      req.responder ! rep
       stop(Normal)
   }
 
@@ -123,6 +125,9 @@ class RequestProcessor(
       message = RequestTimeout
     )
   }
+
+  private def requestAuthentication(credentials: Credentials): Unit =
+    authenticationRef ! Authenticate(credentials)
 
   private def mapResponse(rep: HttpResponse): HttpResponse = rep.withHeaders(rep.headers.map {
     case HttpHeaders.Location(uri) => HttpHeaders.Location(mapUri(uri))
@@ -164,7 +169,7 @@ class RequestProcessor(
   }
 
   private def reportError(status: StatusCode, error: Throwable, req: Request): Unit =
-    req.requester ! HttpResponse(status = status, entity = HttpEntity(error.toString))
+    req.responder ! HttpResponse(status = status, entity = HttpEntity(error.toString))
 }
 
 object RequestProcessor {
@@ -211,20 +216,11 @@ object RequestProcessor {
   case class AuthenticatedRequest[R <: Request](req: R, profile: UserProfile) extends StateData
 
   /** Obtain the props object of a [[RequestProcessor]] from its construction params. */
-  def props(
-      authenticationProvider: ActorRef,
-      authorizationProvider: ActorRef,
-      configuration: Configuration): Props =
-    Props(classOf[RequestProcessor], authenticationProvider, authorizationProvider, configuration)
+  def props(authenticationRef: ActorRef, authorizationRef: ActorRef, config: Config): Props =
+    Props(new RequestProcessor(authenticationRef, authorizationRef,
+      Configuration.fromSystemConfig(config)))
 
-  /** Props of a [[RequestProcessor]] inferring the configuration from an implicit actor system. */
-  def props(authenticationProvider: ActorRef, authorizationProvider: ActorRef)
-           (implicit system: ActorSystem): Props = props(
-    authenticationProvider, authorizationProvider,
-    Configuration.fromSystemConfig(system.settings.config)
-  )
-
-  private val RequestTimeoutProperty = "cosmos.infinity.server.requestTimeout"
+  private val RequestTimeoutProperty = "cosmos.infinity.server.request-timeout"
 
   private case object RequestTimeout
 }

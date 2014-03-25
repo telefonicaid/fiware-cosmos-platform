@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.auth
+package es.tid.cosmos.infinity.server.authorization
 
 /** An exception thrown when a request cannot be authorized. */
 class AuthorizationException(msg: String, cause: Throwable = null) extends Exception(msg, cause)

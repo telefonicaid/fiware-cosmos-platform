@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.auth
+package es.tid.cosmos.infinity.server.authorization
 
 /** A permission class (owner, group, others). */
 case class PermissionClass(read: Boolean, write: Boolean, execute: Boolean) {

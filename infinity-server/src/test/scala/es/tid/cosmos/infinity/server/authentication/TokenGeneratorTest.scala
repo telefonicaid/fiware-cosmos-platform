@@ -9,12 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.auth
+package es.tid.cosmos.infinity.server.authentication
 
-import akka.actor.ActorSystem
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import spray.http.Uri
+
 import es.tid.cosmos.infinity.server.config.AuthTokenConfig
 
 class TokenGeneratorTest extends FlatSpec with MustMatchers {

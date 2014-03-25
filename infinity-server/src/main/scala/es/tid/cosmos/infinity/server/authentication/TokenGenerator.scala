@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.auth
+package es.tid.cosmos.infinity.server.authentication
 
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.codec.binary.Base64

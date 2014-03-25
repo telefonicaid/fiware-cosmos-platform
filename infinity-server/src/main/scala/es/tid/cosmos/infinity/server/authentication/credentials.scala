@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.auth
+package es.tid.cosmos.infinity.server.authentication
 
 /** The credentials used by a Infinity client to authenticate a request. */
 sealed trait Credentials

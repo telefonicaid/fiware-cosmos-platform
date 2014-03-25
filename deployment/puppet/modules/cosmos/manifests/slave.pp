@@ -27,12 +27,19 @@ class cosmos::slave (
   }
 
   service { 'iptables':
-    ensure  => stopped
+    ensure  => running
   }
 
   file { '/etc/sysconfig/iptables-config':
     ensure => present,
     source => "puppet:///modules/${module_name}/iptables-config",
+    owner  => root,
+    group  => root
+  }
+
+  file { '/etc/sysconfig/iptables':
+    ensure => present,
+    source => "puppet:///modules/${module_name}/iptables",
     owner  => root,
     group  => root
   }
@@ -72,7 +79,10 @@ class cosmos::slave (
     onlyif  => 'vzctl status 101 | grep running',
   }
 
-  Class['cosmos::openvz::service', 'cosmos::openvz::network'] -> Exec['Update CT Ambari Agent']
+  File['/etc/sysconfig/iptables-config', '/etc/sysconfig/iptables']
+    ~> Service['iptables']
+    -> Class['cosmos::openvz::service', 'cosmos::openvz::network']
+    -> Exec['Update CT Ambari Agent']
 
   anchor {'cosmos::slave::begin': }
     -> Class['cosmos::openvz::service', 'libvirt', 'cosmos::base']

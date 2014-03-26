@@ -3,22 +3,16 @@ package es.tid.cosmos.infinity.server.app
 import java.net.InetAddress
 
 import akka.actor._
-import akka.testkit.{TestKit, TestProbe}
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
-import org.scalatest.matchers.MustMatchers
+import akka.testkit.TestProbe
 import spray.http._
 import spray.http.HttpHeaders.`Remote-Address`
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationComponent
 import es.tid.cosmos.infinity.server.authorization.AuthorizationComponent
 import es.tid.cosmos.infinity.server.processors.{Request, RequestProcessorComponent}
-import es.tid.cosmos.infinity.test.MockActor
+import es.tid.cosmos.infinity.test.{ActorFlatSpec, MockActor}
 
-class InfinityAppTest extends TestKit(ActorSystem(classOf[InfinityAppTest].getSimpleName))
-  with FlatSpec with MustMatchers with BeforeAndAfterAll {
-
-  override def afterAll() = TestKit.shutdownActorSystem(system)
-
+class InfinityAppTest extends ActorFlatSpec("InfinityAppTest") {
   val probe = TestProbe()
   val app = system.actorOf(TestInfinityAppComponent.infinityAppProps)
   var servicesCreated: Seq[MockActor.Created] = _

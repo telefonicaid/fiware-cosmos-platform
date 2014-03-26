@@ -18,10 +18,9 @@ import scala.concurrent.duration._
 import akka.io.IO
 import akka.actor._
 import akka.pattern.ask
-import akka.testkit.{TestProbe, TestKit}
+import akka.testkit.TestProbe
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 import org.scalatest.matchers._
 import spray.can.Http
 import spray.http._
@@ -30,18 +29,11 @@ import spray.httpx.RequestBuilding
 import es.tid.cosmos.infinity.server.authentication._
 import es.tid.cosmos.infinity.server.authorization._
 import es.tid.cosmos.infinity.server.config.ServiceConfig
+import es.tid.cosmos.infinity.test.ActorFlatSpec
 
-class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
-    with FlatSpec
-    with BeforeAndAfterAll
-    with MustMatchers {
-
+class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
   import AuthenticationProvider._
   import AuthorizationProvider._
-
-  override def afterAll() {
-    TestKit.shutdownActorSystem(system)
-  }
 
   "Request processor" must "request authentication to its provider" in new SampleProcessor {
     shouldAuthenticate()

@@ -13,7 +13,11 @@ package es.tid.cosmos.infinity.server.app
 
 import akka.actor.{ActorRef, Props, ActorLogging, Actor}
 import spray.http.MediaTypes._
+import spray.http.HttpRequest
+import spray.http.HttpHeaders.`Remote-Address`
 import spray.routing._
+
+import es.tid.cosmos.infinity.server.processors.Request
 
 class InfinityApp(
     authenticationProps: Props,
@@ -29,7 +33,7 @@ class InfinityApp(
   def receive = runRoute(routes)
 
   private val routes =
-    path("webhdfs/v1") {
+    pathPrefix("webhdfs" / "v1") {
       delegateToRequestProcessor
     } ~
     path("") {
@@ -49,7 +53,21 @@ class InfinityApp(
     }
 
   private def delegateToRequestProcessor(ctx: RequestContext): Unit =
-    startRequestProcessor() ! ctx
+    startRequestProcessor() ! parseRequest(ctx)
+
+  private def parseRequest(ctx: RequestContext) = Request(
+    remoteAddress = remoteAddress(ctx.request),
+    responder = ctx.responder,
+    httpRequest = ctx.request
+  )
+
+  private def remoteAddress(request: HttpRequest) = (for {
+    header <- request.header[`Remote-Address`]
+    address <- header.address.toOption
+  } yield address).getOrElse(throw new IllegalArgumentException(
+    "Remote address not found. This should not happen if " +
+      "spray.can.server.remote-address-header setting is on"
+  ))
 
   private def startRequestProcessor(): ActorRef =
     context.actorOf(requestProcessorProps(authenticationRef, authorizationRef))

@@ -265,14 +265,16 @@ In case of success, a JSON document with the following structure is returned wit
        "user": <string>,
        "group": <string>,
        "accessMask": <string>,
-       "origins": <origin policy>
+       "origins": ["10.2.0.1", ... ]
     }
 
 Where ``accessMask`` is a string with a unix-style access mask such as "777" or "077" and
-``origins`` can be ``anyHost`` or a JSON array of the allowed IPs (e.g. ``["10.2.0.1", ... ]``).
+``origins`` is optional.  A missing ``origins`` means that the identity can be used from any origin
+host but, when present, the identity is restricted to the whitelist it represents.
 
-In case of malformed input or invalid credentials a BAD REQUEST status will be returned with a
-message with additional details as body.
+If the credentials are invalid, e.g. associated with no user, a NOT FOUND status is returned with
+a message body in JSON with further details.  In case of malformed inputs a BAD REQUEST status and a
+message will be returned.
 
 
 GET ``/cosmos/v1/maintenance``

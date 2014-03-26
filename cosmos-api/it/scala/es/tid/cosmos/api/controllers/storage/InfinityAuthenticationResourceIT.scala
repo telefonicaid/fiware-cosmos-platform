@@ -56,7 +56,7 @@ class InfinityAuthenticationResourceIT extends FlatSpec with MustMatchers {
   }
 
   it must "reject unknown API credentials" in new WithFixture {
-    status(request(ApiCredentials.random())) must be (BAD_REQUEST)
+    status(request(ApiCredentials.random())) must be (NOT_FOUND)
   }
 
   it must "provide an identity from a cluster secret" in new WithFixture {
@@ -77,7 +77,7 @@ class InfinityAuthenticationResourceIT extends FlatSpec with MustMatchers {
   }
 
   it must "reject unknown cluster secret" in new WithFixture {
-    status(request(ClusterSecret.random())) must be (BAD_REQUEST)
+    status(request(ClusterSecret.random())) must be (NOT_FOUND)
   }
 
   it must "reject request with both API credentials and cluster secret" in new WithFixture {

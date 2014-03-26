@@ -4,6 +4,7 @@ description := "Infinity Server"
 
 libraryDependencies ++= Dependencies.spray ++ Dependencies.akka ++ Seq(
   Dependencies.commonsCodec,
+  Dependencies.liftJson,
   Dependencies.logbackClassic
 )
 

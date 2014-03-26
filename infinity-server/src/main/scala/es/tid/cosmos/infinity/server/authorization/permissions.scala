@@ -60,6 +60,12 @@ object UnixFilePermissions {
     case _ =>
       throw new IllegalArgumentException(s"invalid octal UNIX permissions in $octal")
   }
+
+  /** Check whether given string is a valid octal representation for UNIX permissions. */
+  def isValidOctal(expression: String): Boolean = try {
+    fromOctal(expression)
+    true
+  } catch { case _: IllegalArgumentException => false }
 }
 
 /** The permissions of a file in Infinity. */

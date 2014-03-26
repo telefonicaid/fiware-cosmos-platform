@@ -9,6 +9,7 @@
 # Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
 # All rights reserved.
 #
+set -e
 
 cat >test.txt <<EOB
 To Infinity and beyond!

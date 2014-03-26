@@ -9,6 +9,8 @@
 # Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
 # All rights reserved.
 #
+set -e
+
 HADOOP_EXAMPLES_JAR=/usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples*.jar
 TERAGEN_SIZE=10000
 TERASORT_INPUT=hdfs:///user/${USER}/terasort-input

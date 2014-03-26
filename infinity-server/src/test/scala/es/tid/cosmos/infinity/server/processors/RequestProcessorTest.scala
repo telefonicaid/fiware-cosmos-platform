@@ -196,7 +196,7 @@ class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
     def withRedirectionServer(body: => Unit): Unit = {
       implicit val bindTimeout = Timeout(5.seconds)
 
-      val listener = system.actorOf(Props(new Actor with ActorLogging {
+      val server = system.actorOf(Props(new Actor with ActorLogging {
         override def receive = {
           case Http.Connected(_, _) =>
             sender ! Http.Register(handler = context.self)
@@ -210,12 +210,16 @@ class RequestProcessorTest extends TestKit(ActorSystem("RequestProcessorTest"))
             log.error(s"unexpected message arrived: $msg")
         }
       }))
-      val bindResponse = Await.result(
-        ask(IO(Http), Http.Bind(listener, interface = "localhost", port = 8008)),
-        bindTimeout.duration)
-      bindResponse must be (Http.Bound(new InetSocketAddress("localhost", 8008)))
-      body
-      listener ! Http.Unbind
+      val bindProbe = TestProbe()
+      bindProbe.send(IO(Http), Http.Bind(server, interface = "localhost", port = 8008))
+      bindProbe.expectMsg(Http.Bound(new InetSocketAddress("localhost", 8008)))
+      val listener = bindProbe.sender()
+
+      try { body }
+      finally {
+        bindProbe.send(listener, Http.Unbind)
+        bindProbe.expectMsg(Http.Unbound)
+      }
     }
   }
 

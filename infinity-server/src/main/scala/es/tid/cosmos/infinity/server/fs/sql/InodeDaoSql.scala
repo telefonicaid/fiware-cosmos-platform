@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.fs
+package es.tid.cosmos.infinity.server.fs.sql
 
 import java.sql.Connection
 import scala.annotation.tailrec
@@ -18,9 +18,9 @@ import scalaz._
 import anorm._
 
 import es.tid.cosmos.infinity.server.authentication.UserProfile
-import es.tid.cosmos.infinity.server.authorization.FilePermissions
 import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
-import es.tid.cosmos.infinity.server.db.IntegritySqlException
+import es.tid.cosmos.infinity.server.authorization.FilePermissions
+import es.tid.cosmos.infinity.server.fs._
 import es.tid.cosmos.infinity.server.util.Path
 
 class InodeDaoSql extends InodeDao[Connection] {

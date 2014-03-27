@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.fs
+package es.tid.cosmos.infinity.server.fs.sql
 
 import scalaz._
 
@@ -20,10 +20,10 @@ import scalikejdbc.ConnectionPool
 
 import es.tid.cosmos.infinity.server.authorization.FilePermissions
 import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
-import es.tid.cosmos.infinity.server.db.InfinityDataStoreSql
-import es.tid.cosmos.infinity.server.db.migrations.Migrate_1_InitialVersion
+import es.tid.cosmos.infinity.server.db.sql.migrations.Migrate_1_InitialVersion
+import es.tid.cosmos.infinity.server.fs.{RootInode, MysqlH2DatabaseAdapter, SomeUserProfiles}
 
-class InodeDaoSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
+class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
     with SomeUserProfiles {
 
   override protected def beforeAll(): Unit = {
@@ -178,5 +178,4 @@ class InodeDaoSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
       } yield store.inodeDao.delete(file, bob) must be ('failure)
     }
   }
-
 }

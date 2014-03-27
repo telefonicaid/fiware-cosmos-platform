@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.db.migrations
+package es.tid.cosmos.infinity.server.db.sql.migrations
 
 import com.imageworks.migration.Migration
 

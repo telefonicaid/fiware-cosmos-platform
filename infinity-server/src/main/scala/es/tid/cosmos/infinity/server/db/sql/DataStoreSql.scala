@@ -9,21 +9,22 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.db
+package es.tid.cosmos.infinity.server.db.sql
 
 import java.sql.Connection
 import javax.sql.DataSource
+import es.tid.cosmos.infinity.server.db.DataStore
 
 trait DataStoreSql extends DataStore {
 
-  val datasource: DataSource
+  val dataSource: DataSource
 
   override type Conn = Connection
 
   override def withConnection[A](block: Conn => A): A =
-    DB.withConnection(datasource.getConnection)(block)
+    DB.withConnection(dataSource.getConnection)(block)
 
   override def withTransaction[A](block: Conn => A): A =
-    DB.withTransaction(datasource.getConnection)(block)
+    DB.withTransaction(dataSource.getConnection)(block)
 
 }

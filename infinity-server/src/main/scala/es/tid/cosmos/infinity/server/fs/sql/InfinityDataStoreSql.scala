@@ -8,10 +8,15 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-package es.tid.cosmos.infinity.server.fs
 
-import es.tid.cosmos.infinity.server.db.DataStoreSql
+package es.tid.cosmos.infinity.server.fs.sql
 
-trait InodeDataStoreSql extends InodeDataStore { self: DataStoreSql =>
-  override val inodeDao = new InodeDaoSql
-}
+import javax.sql.DataSource
+
+import es.tid.cosmos.infinity.server.db.InfinityDataStore
+import es.tid.cosmos.infinity.server.db.sql.DataStoreSql
+
+private[sql] class InfinityDataStoreSql(override val dataSource: DataSource)
+  extends InfinityDataStore
+  with DataStoreSql
+  with InodeDataStoreSql

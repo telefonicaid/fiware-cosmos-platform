@@ -35,7 +35,7 @@ import es.tid.cosmos.infinity.server.config.{AuthTokenConfig, ServiceConfig}
   * <ul>
   *   <li>Upon creation, it's ready to receive a [[Request]] message that contains all the
   *   relevant information to process the request.
-  *   <li>The processor requests its [[AuthenticationProvider]] to authenticate the requester.
+  *   <li>The processor requests its [[Authentication]] to authenticate the requester.
   *   <li>The processor requests its [[AuthorizationProvider]] to authorize the action.
   *   <li>The processor submits the request to the appropriate HDFS name node and receives the
   *   response, which is intercepted and modified to reflect the appropriate redirection to
@@ -58,7 +58,7 @@ private[processors] class RequestProcessor(
   with ResponseTransformation {
 
   import RequestProcessor._
-  import AuthenticationProvider._
+  import Authentication._
   import AuthorizationProvider._
 
   val tokenGenerator = TokenGenerator(configuration.authTokenConfig)

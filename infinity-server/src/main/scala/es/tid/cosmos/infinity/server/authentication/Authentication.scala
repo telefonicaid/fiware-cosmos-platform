@@ -11,7 +11,10 @@
 
 package es.tid.cosmos.infinity.server.authentication
 
-object AuthenticationProvider {
+object Authentication {
+
+  case class InvalidCredentialsException(credentials: Credentials, cause: Throwable = null)
+    extends Exception(s"credentials $credentials are not valid", cause)
 
   /** A message to request the authentication of the given credentials. */
   case class Authenticate(credentials: Credentials)

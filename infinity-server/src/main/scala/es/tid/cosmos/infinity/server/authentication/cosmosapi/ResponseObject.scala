@@ -32,8 +32,7 @@ private[cosmosapi] case class ResponseObject(
   def toUserProfile = UserProfile(
     username = user,
     group = group,
-    unixPermissionMask = UnixFilePermissions.fromOctal(accessMask),
-    accessFrom = origins.getOrElse(Seq.empty).toSet
+    unixPermissionMask = UnixFilePermissions.fromOctal(accessMask)
   )
 }
 

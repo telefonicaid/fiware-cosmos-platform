@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.infinity.server.processors
 
-import java.net.InetSocketAddress
+import java.net.InetAddress
 
 import akka.actor.ActorRef
 import spray.http.HttpRequest
@@ -19,8 +19,7 @@ import spray.http.HttpRequest
 import es.tid.cosmos.infinity.server.authentication._
 import es.tid.cosmos.infinity.server.actions.Action
 
-case class Request(
-    remoteAddress: InetSocketAddress, responder: ActorRef, httpRequest: HttpRequest) {
-  val action: Action = Action(remoteAddress, httpRequest)
-  val credentials: Credentials = action.credentials
+case class Request(remoteAddress: InetAddress, responder: ActorRef, httpRequest: HttpRequest) {
+  lazy val action: Action = Action(remoteAddress, httpRequest)
+  lazy val credentials: Credentials = action.credentials
 }

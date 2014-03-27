@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import java.net.InetSocketAddress
+import java.net.InetAddress
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -23,9 +23,11 @@ import es.tid.cosmos.infinity.server.util.Path
 
 class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
+  val remoteAddress = InetAddress.getByName("10.0.0.1")
+
   "Action" must "be instantiated from user authentication request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = uriWithParams(
         HttpMethods.GET,
         "op" -> "GETFILESTATUS",
@@ -39,7 +41,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from cluster authentication request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = uriWithParams(
         HttpMethods.GET,
         "op" -> "GETFILESTATUS",
@@ -47,12 +49,12 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
         "cluster.secret" -> "secret"
       )
     )
-    action.credentials must be (ClusterCredentials("remote", "secret"))
+    action.credentials must be (ClusterCredentials("10.0.0.1", "secret"))
   }
 
   it must "fail to be instantiated from request with missing auth params" in {
     evaluating { Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = uriWithParams(
         HttpMethods.GET,
         "op" -> "GETFILESTATUS",
@@ -63,7 +65,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "fail to be instantiated from user authentication request with missing API key param" in {
     evaluating { Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = uriWithParams(
         HttpMethods.GET,
         "op" -> "GETFILESTATUS",
@@ -75,7 +77,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "fail to be instantiated from user authentication request with missing API secret param" in {
     evaluating { Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = uriWithParams(
         HttpMethods.GET,
         "op" -> "GETFILESTATUS",
@@ -87,7 +89,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "fail to be instantiated from request with mixing user & authentication params" in {
     evaluating { Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = uriWithParams(
         HttpMethods.GET,
         "op" -> "GETFILESTATUS",
@@ -101,7 +103,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "fail to be instantiated from unknown 'op' param" in {
     evaluating { Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = uriWithParams(
         HttpMethods.GET,
         "op" -> "UNKNOWN"
@@ -111,14 +113,14 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "fail to be instantiated from missing 'op' param" in {
     evaluating { Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = uriWithParams(HttpMethods.GET)
     )} must produce [IllegalArgumentException]
   }
 
   it must "be instantiated from OPEN request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpGetWithParams("OPEN",
         "offset" -> "1024",
         "length" -> "500",
@@ -136,7 +138,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from OPEN request with missing optional params" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpGetWithParams("OPEN")
     )
     action must be (Action.Open(
@@ -152,7 +154,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from GETFILESTATUS request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpGetWithParams("GETFILESTATUS")
     )
     action must be (Action.GetFileStatus(
@@ -165,7 +167,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from LISTSTATUS request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpGetWithParams("LISTSTATUS")
     )
     action must be (Action.ListStatus(
@@ -178,7 +180,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from GETCONTENTSUMMARY request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpGetWithParams("GETCONTENTSUMMARY")
     )
     action must be (Action.GetContentSummary(
@@ -191,7 +193,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from GETFILECHECKSUM request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpGetWithParams("GETFILECHECKSUM")
     )
     action must be (Action.GetFileChecksum(
@@ -204,7 +206,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from GETHOMEDIRECTORY request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpGetWithParams("GETHOMEDIRECTORY")
     )
     action must be (Action.GetHomeDirectory(
@@ -217,7 +219,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from GETDELEGATIONTOKEN request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpGetWithParams("GETDELEGATIONTOKEN",
         "renewer" -> "pepito"
       )
@@ -231,7 +233,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "fail to be instantiated from GETDELEGATIONTOKEN request with missing required params" in {
     evaluating { Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpGetWithParams("GETDELEGATIONTOKEN")
     )} must produce [IllegalArgumentException]
   }
@@ -241,7 +243,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from CREATE request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("CREATE",
         "overwrite" -> "true",
         "blocksize" -> "4096",
@@ -263,7 +265,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from CREATE request with omitted optional params" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("CREATE")
     )
     action must be (Action.Create(
@@ -276,7 +278,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from MKDIRS request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("MKDIRS",
         "permission" -> "755"
       )
@@ -290,7 +292,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from MKDIRS request with omitted optional params" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("MKDIRS")
     )
     action must be (Action.Mkdirs(
@@ -303,7 +305,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from RENAME request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("RENAME",
         "destination" -> "/bar/foo"
       )
@@ -317,7 +319,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "fail to be instantiated from RENAME request with missing required params" in {
     evaluating { Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("RENAME")
     )} must produce [IllegalArgumentException]
   }
@@ -327,7 +329,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from SETREPLICATION request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("SETREPLICATION",
         "replication" -> "2"
       )
@@ -341,7 +343,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from SETREPLICATION request with omitted optional params" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("SETREPLICATION")
     )
     action must be (Action.SetReplication(
@@ -354,7 +356,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from SETOWNER request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("SETOWNER",
         "owner" -> "gandalf",
         "group" -> "istari"
@@ -370,7 +372,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from SETOWNER request with omitted optional params" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("SETOWNER")
     )
     action must be (Action.SetOwner(
@@ -383,7 +385,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from SETPERMISSION request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("SETPERMISSION",
         "permission" -> "755"
       )
@@ -397,7 +399,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from SETPERMISSION request with omitted optional params" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("SETPERMISSION")
     )
     action must be (Action.SetPermission(
@@ -410,7 +412,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from SETTIMES request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("SETTIMES",
         "modificationtime" -> "1395656039",
         "accesstime" -> "1395656074"
@@ -426,7 +428,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from SETTIMES request with omitted optional params" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("SETTIMES")
     )
     action must be (Action.SetTimes(
@@ -439,7 +441,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from RENEWDELEGATIONTOKEN request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("RENEWDELEGATIONTOKEN",
         "token" -> "GbsDtWmD9XlnUUWbY/nhBveW8I"
       )
@@ -453,7 +455,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "fail to be instantiated from RENEWDELEGATIONTOKEN request with missing required params" in {
     evaluating { Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("RENEWDELEGATIONTOKEN")
     )} must produce [IllegalArgumentException]
   }
@@ -463,7 +465,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from CANCELDELEGATIONTOKEN request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("CANCELDELEGATIONTOKEN",
         "token" -> "GbsDtWmD9XlnUUWbY/nhBveW8I"
       )
@@ -477,7 +479,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "fail to be instantiated from CANCELDELEGATIONTOKEN request with missing required params" in {
     evaluating { Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPutWithParams("CANCELDELEGATIONTOKEN")
     )} must produce [IllegalArgumentException]
   }
@@ -487,7 +489,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from APPEND request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPostWithParams("APPEND",
         "buffersize" -> "65536"
       )
@@ -501,7 +503,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from APPEND request with omitted optional params" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpPostWithParams("APPEND")
     )
     action must be (Action.Append(
@@ -514,7 +516,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from DELETE request" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpDeleteWithParams("DELETE",
         "recursive" -> "true"
       )
@@ -528,7 +530,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
 
   it must "be instantiated from DELETE request with omitted optional params" in {
     val action = Action(
-      remoteAddress = new InetSocketAddress("remote", 8888),
+      remoteAddress,
       request = authenticatedHttpDeleteWithParams("DELETE")
     )
     action must be (Action.Delete(
@@ -574,7 +576,7 @@ class ActionTest extends FlatSpec with MustMatchers with RequestBuilding {
       it must s"fail to be instantiated on $op request with HTTP $method" in {
         evaluating {
           Action(
-          remoteAddress = new InetSocketAddress("remote", 8888),
+          remoteAddress,
           request = authenticatedUriWithParams(method, op, params: _*)
         )} must produce [IllegalArgumentException]
       }

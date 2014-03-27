@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import java.net.InetSocketAddress
+import java.net.InetAddress
 
 import spray.http.{HttpMethods, HttpMethod, HttpRequest}
 
@@ -22,7 +22,7 @@ trait ActionMapping {
 
   protected def opQueryParam(request: HttpRequest): String = queryParam(request, "op")
 
-  protected def credentialsFrom(remoteAddress: InetSocketAddress, request: HttpRequest): Credentials = {
+  protected def credentialsFrom(remoteAddress: InetAddress, request: HttpRequest): Credentials = {
     val apiKey = queryParamOpt(request, "api.key")
     val apiSecret = queryParamOpt(request, "api.secret")
     val clusterSecret = queryParamOpt(request, "cluster.secret")
@@ -51,7 +51,7 @@ trait ActionMapping {
   protected def requireDeleteMethod(request: HttpRequest): Unit = requireMethod(HttpMethods.DELETE, request)
 
   protected def withBasicProps[T](
-      remoteAddress: InetSocketAddress,
+      remoteAddress: InetAddress,
       request: HttpRequest,
       expectedMethod: HttpMethod)(eval: (Path, Credentials) => T): T = {
     requireMethod(expectedMethod, request)
@@ -61,19 +61,19 @@ trait ActionMapping {
   }
 
   protected def withGetBasicProps[T](
-      remoteAddress: InetSocketAddress, request: HttpRequest)(eval: (Path, Credentials) => T) =
+      remoteAddress: InetAddress, request: HttpRequest)(eval: (Path, Credentials) => T) =
     withBasicProps(remoteAddress, request, HttpMethods.GET)(eval)
 
   protected def withPutBasicProps[T](
-      remoteAddress: InetSocketAddress, request: HttpRequest)(eval: (Path, Credentials) => T) =
+      remoteAddress: InetAddress, request: HttpRequest)(eval: (Path, Credentials) => T) =
     withBasicProps(remoteAddress, request, HttpMethods.PUT)(eval)
 
   protected def withPostBasicProps[T](
-      remoteAddress: InetSocketAddress, request: HttpRequest)(eval: (Path, Credentials) => T) =
+      remoteAddress: InetAddress, request: HttpRequest)(eval: (Path, Credentials) => T) =
     withBasicProps(remoteAddress, request, HttpMethods.POST)(eval)
 
   protected def withDeleteBasicProps[T](
-      remoteAddress: InetSocketAddress, request: HttpRequest)(eval: (Path, Credentials) => T) =
+      remoteAddress: InetAddress, request: HttpRequest)(eval: (Path, Credentials) => T) =
     withBasicProps(remoteAddress, request, HttpMethods.DELETE)(eval)
 
 }

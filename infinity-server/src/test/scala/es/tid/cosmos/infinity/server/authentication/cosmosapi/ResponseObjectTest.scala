@@ -87,32 +87,4 @@ class ResponseObjectTest extends FlatSpec with MustMatchers {
       )).get
     } must produce [IllegalArgumentException]
   }
-
-  it must "be converted to user profile with no host access restriction" in {
-    ResponseObject(
-      user = "gandalf",
-      group = "istari",
-      accessMask = "755",
-      origins = None
-    ).toUserProfile must be (UserProfile(
-      username = "gandalf",
-      group = "istari",
-      unixPermissionMask = UnixFilePermissions.fromOctal("755"),
-      accessFrom = Set.empty
-    ))
-  }
-
-  it must "be converted to user profile with host access restriction" in {
-    ResponseObject(
-      user = "gandalf",
-      group = "istari",
-      accessMask = "755",
-      origins = Some(Seq("192.168.44.86"))
-    ).toUserProfile must be (UserProfile(
-      username = "gandalf",
-      group = "istari",
-      unixPermissionMask = UnixFilePermissions.fromOctal("755"),
-      accessFrom = Set("192.168.44.86")
-    ))
-  }
 }

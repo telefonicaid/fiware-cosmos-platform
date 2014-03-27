@@ -12,12 +12,10 @@
 package es.tid.cosmos.infinity.server.processors
 
 import java.net.{InetAddress, InetSocketAddress}
-import scala.concurrent.Await
 import scala.concurrent.duration._
 
-import akka.io.IO
 import akka.actor._
-import akka.pattern.ask
+import akka.io.IO
 import akka.testkit.TestProbe
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
@@ -32,7 +30,7 @@ import es.tid.cosmos.infinity.server.config.ServiceConfig
 import es.tid.cosmos.infinity.test.ActorFlatSpec
 
 class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
-  import AuthenticationProvider._
+  import Authentication._
   import AuthorizationProvider._
 
   "Request processor" must "request authentication to its provider" in new SampleProcessor {

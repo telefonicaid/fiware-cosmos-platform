@@ -56,8 +56,7 @@ class InfinityAuthenticatorTest extends FlatSpec with MustMatchers {
       instance.authenticateApiCredentials(profile.apiCredentials) must be (InfinityIdentity(
         user = "user",
         group = "No Group",
-        accessMask = AccessMask("777"),
-        origins = AnyHost
+        accessMask = AccessMask("777")
       ).success)
     }
 
@@ -91,7 +90,7 @@ class InfinityAuthenticatorTest extends FlatSpec with MustMatchers {
       val clusterSecret = registerCluster()
       val result = instance.authenticateClusterSecret(clusterSecret)
       result.map(_.accessMask) must be (AccessMask("777").success)
-      result.map(_.origins) must be (WhiteList(cluster.hosts.map(_.ipAddress)).success)
+      result.map(_.origins) must be (Some(cluster.hosts.map(_.ipAddress)).success)
     }
 
   it must "be rejected if cluster is defined but not yet exists" in new WithAuthentication {

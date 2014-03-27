@@ -20,14 +20,12 @@ class InfinityIdentityTest extends FlatSpec with MustMatchers {
   val auth = InfinityIdentity(
     user = "jsmith",
     group = "analytics",
-    accessMask = AccessMask("777"),
-    origins = AnyHost
+    accessMask = AccessMask("777")
   )
   val authJson = Json.obj(
     "user" -> "jsmith",
     "group" -> "analytics",
-    "accessMask" -> "777",
-    "origins" -> "anyHost"
+    "accessMask" -> "777"
   )
 
   "An authentication" must "be convertible to JSON" in {
@@ -35,7 +33,9 @@ class InfinityIdentityTest extends FlatSpec with MustMatchers {
   }
 
   it must "have a list of valid hosts when using white lists" in {
-    Json.toJson(auth.copy(origins = WhiteList(Set("10.0.0.2", "10.0.0.3")))) must
-      be (authJson ++ Json.obj("origins" -> Json.arr("10.0.0.2", "10.0.0.3")))
+    val authWithWhiteList = auth.copy(origins = Some(Set("10.0.0.2", "10.0.0.3")))
+    Json.toJson(authWithWhiteList) must be (authJson ++ Json.obj(
+      "origins" -> Json.arr("10.0.0.2", "10.0.0.3")
+    ))
   }
 }

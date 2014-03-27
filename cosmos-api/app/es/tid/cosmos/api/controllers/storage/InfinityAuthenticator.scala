@@ -29,7 +29,7 @@ class InfinityAuthenticator(
     for {
       profile <- requireProfileWithCredentials(credentials)
       _ <- requireEnabledProfile(profile)
-    } yield identifyAs(profile, shared = false, originPolicy = AnyHost)
+    } yield identifyAs(profile, shared = false)
 
   private def requireProfileWithCredentials(
       credentials: ApiCredentials): Validation[Message, CosmosProfile] =
@@ -49,8 +49,11 @@ class InfinityAuthenticator(
         profile <- store.profile.lookupByProfileId(cluster.ownerId)
           .toSuccess(Message("Orphan cluster: the user associated with it doesn't exist"))
         _ <- requireEnabledProfile(profile)
-      } yield identifyAs(profile, cluster.shared, WhiteList(description.hosts.map(_.ipAddress)))
+      } yield identifyAs(profile, cluster.shared, Some(clusterHosts(description)))
     }
+
+  private def clusterHosts(cluster: ClusterDescription): Set[String] =
+    cluster.hosts.map(_.ipAddress).toSet
 
   private def requireRunningCluster(clusterId: ClusterId): Validation[Message, ClusterDescription] =
     for {
@@ -60,15 +63,17 @@ class InfinityAuthenticator(
            else ().success
     } yield description
 
-  private def identifyAs(profile: CosmosProfile, shared: Boolean, originPolicy: OriginPolicy) =
-    InfinityIdentity(
-      user = profile.handle,
-      group = profile.group.name,
-      accessMask =
-        if (shared) InfinityAuthenticator.SharedMask
-        else InfinityAuthenticator.IndividualMask,
-      origins = originPolicy
-    )
+  private def identifyAs(
+      profile: CosmosProfile,
+      shared: Boolean,
+      whiteList: Option[Set[String]] = None) = InfinityIdentity(
+    user = profile.handle,
+    group = profile.group.name,
+    accessMask =
+      if (shared) InfinityAuthenticator.SharedMask
+      else InfinityAuthenticator.IndividualMask,
+    origins = whiteList
+  )
 }
 
 object InfinityAuthenticator {

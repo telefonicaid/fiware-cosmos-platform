@@ -13,11 +13,19 @@ package es.tid.cosmos.api.controllers.storage
 
 import play.api.libs.json.{Json, Writes}
 
+/** Identity of an Infinity's user.
+  *
+  * @param user  User handle
+  * @param group  User group
+  * @param accessMask  Unix-style access mask
+  * @param origins  Optionally, the set of allowed origins this identity can be used
+  *                 from. When missing, all origins are OK.
+  */
 case class InfinityIdentity(
     user: String,
     group: String,
     accessMask: AccessMask,
-    origins: OriginPolicy
+    origins: Option[Set[String]] = None
 )
 
 object InfinityIdentity {

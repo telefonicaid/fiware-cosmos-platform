@@ -15,7 +15,7 @@ import scalaz._
 
 import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
-import play.api.mvc.{Controller, Action}
+import play.api.mvc.{Results, Controller, Action}
 
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.dao.{ClusterDataStore, ProfileDataStore}
@@ -31,6 +31,7 @@ class InfinityAuthenticationResource(
   private val authenticator = new InfinityAuthenticator(store, serviceManager)
 
   import Scalaz._
+  import InfinityAuthenticationResource._
 
   @ApiOperation(value = "Authenticate users credentials for Infinity", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.storage.InfinityIdentity", notes ="""
@@ -49,24 +50,38 @@ class InfinityAuthenticationResource(
       @ApiParam(name="Cluster secret")
       clusterSecret: Option[String]) = Action { implicit request =>
     for {
-      identity <- ((apiKey, apiSecret, clusterSecret) match {
-        case (None, None, Some(secret)) => authenticateClusterSecret(secret)
-        case (Some(key), Some(secret), None) => authenticateApiCredentials(key, secret)
-        case _ => Message("Invalid parameters. " +
-          "Fill in either apiKey/apiSecret or clusterSecret but not both").failure
-      }).leftMap(message => BadRequest(Json.toJson(message)))
+      identity <- authenticateFromParameters(apiKey, apiSecret, clusterSecret)
     } yield Ok(Json.toJson(identity))
   }
 
-  private def authenticateClusterSecret(secret: String): Validation[Message, InfinityIdentity] =
-    useExceptionAsMessage(ClusterSecret(secret))
-      .flatMap(authenticator.authenticateClusterSecret)
+  private def authenticateFromParameters(
+      apiKey: Option[String],
+      apiSecret: Option[String],
+      clusterSecret: Option[String]): ActionValidation[InfinityIdentity] =
+    (apiKey, apiSecret, clusterSecret) match {
+      case (None, None, Some(secret)) => authenticateClusterSecret(secret)
+      case (Some(key), Some(secret), None) => authenticateApiCredentials(key, secret)
+      case _ => InvalidParametersResponse.failure
+    }
+
+  private def authenticateClusterSecret(secret: String): ActionValidation[InfinityIdentity] = for {
+    clusterSecret <- exceptionAsBadRequest(ClusterSecret(secret))
+    identity <- authenticator.authenticateClusterSecret(clusterSecret).leftMap(notFoundResponse)
+  } yield identity
 
   private def authenticateApiCredentials(
-      apiKey: String, apiSecret: String): Validation[Message, InfinityIdentity] =
-    useExceptionAsMessage(ApiCredentials(apiKey, apiSecret))
-      .flatMap(authenticator.authenticateApiCredentials)
+      apiKey: String, apiSecret: String): ActionValidation[InfinityIdentity] = for {
+    credentials <- exceptionAsBadRequest(ApiCredentials(apiKey, apiSecret))
+    identity <- authenticator.authenticateApiCredentials(credentials).leftMap(notFoundResponse)
+  } yield identity
 
-  private def useExceptionAsMessage[T](block: => T): Validation[Message, T] =
-    Validation.fromTryCatch(block).leftMap(ex => Message(ex.getMessage))
+  private def exceptionAsBadRequest[T](block: => T): ActionValidation[T] =
+    Validation.fromTryCatch(block).leftMap(ex => BadRequest(Json.toJson(Message(ex.getMessage))))
+
+  private def notFoundResponse(message: Message) = NotFound(Json.toJson(message))
+}
+
+object InfinityAuthenticationResource extends Results {
+  private val InvalidParametersResponse = BadRequest(Json.toJson(Message("Invalid parameters. " +
+    "Fill in either apiKey/apiSecret or clusterSecret but not both")))
 }

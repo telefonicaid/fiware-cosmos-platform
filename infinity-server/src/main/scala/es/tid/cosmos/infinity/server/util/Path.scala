@@ -83,7 +83,7 @@ object Path {
       p / n
     }
 
-  private def pathElements(path: String, separator: Char): Seq[String] = {
+  def pathElements(path: String, separator: Char = Separator): Seq[String] = {
     val stripped = path.stripPrefix(separator.toString).stripSuffix(separator.toString)
     if (stripped.isEmpty) Seq.empty else stripped.split(separator)
   }

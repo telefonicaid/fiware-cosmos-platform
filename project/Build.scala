@@ -51,6 +51,10 @@ object Build extends sbt.Build {
     )
     lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
     lazy val typesafeConfig = "com.typesafe" % "config" % "1.0.0"
+    lazy val anorm = "play" %% "anorm" % "2.1.5"
+    lazy val scalalikejdbc = "com.github.seratch" %% "scalikejdbc" % "[0.5,)"
+    lazy val h2database = "com.h2database" % "h2" % "1.3.175"
+    lazy val scalaMigrations = "com.imageworks.scala-migrations" %% "scala-migrations" % "1.1.1"
   }
 
   object ExternalSources {

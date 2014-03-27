@@ -6,7 +6,7 @@ compile in IntegrationTest <<= compile in IntegrationTest dependsOn (compile in 
 
 libraryDependencies ++= Seq(
   "com.jcraft" % "jsch" % "0.1.49",
-  "com.imageworks.scala-migrations" %% "scala-migrations" % "1.1.1",
+  Dependencies.scalaMigrations,
   "mysql" % "mysql-connector-java" % "5.1.10",
   Dependencies.dispatch,
   Dependencies.liftJson,

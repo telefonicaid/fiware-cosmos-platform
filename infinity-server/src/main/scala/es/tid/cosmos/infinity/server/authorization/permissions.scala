@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.infinity.server.authorization
 
+import es.tid.cosmos.infinity.server.authentication.UserProfile
+
 /** A permission class (owner, group, others). */
 case class PermissionClass(read: Boolean, write: Boolean, execute: Boolean) {
 
@@ -42,8 +44,10 @@ object PermissionClass {
 case class UnixFilePermissions(
   owner: PermissionClass,
   group: PermissionClass,
-  others: PermissionClass
-)
+  others: PermissionClass) {
+
+  override def toString: String = owner.toString + group.toString + others.toString
+}
 
 object UnixFilePermissions {
 
@@ -72,5 +76,18 @@ object UnixFilePermissions {
 case class FilePermissions(
   owner: String,
   group: String,
-  unix: UnixFilePermissions
-)
+  unix: UnixFilePermissions) {
+
+  def canRead(user: UserProfile): Boolean = can(user, p => p.read)
+
+  def canWrite(user: UserProfile): Boolean = can(user, p => p.write)
+
+  def canExec(user: UserProfile): Boolean = can(user, p => p.execute)
+
+  private def can(user: UserProfile, op: PermissionClass => Boolean) =
+    user.superuser ||
+      (user.username == owner && op(unix.owner) && op(user.unixPermissionMask.owner)) ||
+      (user.group == group && op(unix.group) && op(user.unixPermissionMask.group)) ||
+      (op(unix.others) && op(user.unixPermissionMask.others))
+
+}

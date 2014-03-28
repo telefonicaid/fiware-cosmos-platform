@@ -14,6 +14,7 @@ package es.tid.cosmos.infinity.server.fs
 import scalaz.Validation
 
 import es.tid.cosmos.infinity.server.authentication.UserProfile
+import es.tid.cosmos.infinity.server.util.Path
 
 trait InodeDao[Conn] {
 
@@ -29,7 +30,7 @@ trait InodeDao[Conn] {
     * @throws InodeAccessException if path does not exists or cannot be reached
     *                              due to permission restrictions.
     */
-  def load(path: String, user: UserProfile)(implicit c: Conn):
+  def load(path: Path, user: UserProfile)(implicit c: Conn):
     Validation[InodeAccessException, Inode]
 
 }

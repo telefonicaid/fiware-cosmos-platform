@@ -21,7 +21,7 @@ import es.tid.cosmos.infinity.server.authentication.UserProfile
 import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
 import es.tid.cosmos.infinity.server.authorization.FilePermissions
 import es.tid.cosmos.infinity.server.fs._
-import es.tid.cosmos.infinity.server.util.Path
+import es.tid.cosmos.infinity.server.util.{RootPath, Path, SubPath}
 
 class InodeDaoSql extends InodeDao[Connection] {
 
@@ -42,7 +42,7 @@ class InodeDaoSql extends InodeDao[Connection] {
       .executeInsert()
     ().success
   } catch {
-    case IntegritySqlException(_) => NoSuchFileOrDirectory(inode.id).failure
+    case IntegritySqlException(_) => NoSuchInode(inode.id).failure
   }
 
 
@@ -63,17 +63,17 @@ class InodeDaoSql extends InodeDao[Connection] {
 
   override def delete(inode: Inode, user: UserProfile)(implicit c: Connection):
       Validation[InodeAccessException, Unit] = {
-    if (!inode.canWrite(user)) return PermissionDenied(inode.id).failure
-    if (inode == RootInode) return PermissionDenied(inode.id).failure
+    if (!inode.canWrite(user)) return PermissionDenied(pathOf(inode)).failure
+    if (inode == RootInode) return PermissionDenied(RootPath).failure
     try {
       SQL("""delete from `inode` where `id` = {id}""")
         .on("id" -> inode.id)
         .execute() match {
           case true => ().success
-          case false => NoSuchFileOrDirectory(inode.id).failure
+          case false => NoSuchInode(inode.id).failure
         }
     } catch {
-      case IntegritySqlException(_) => DirectoryNonEmpty(inode.id).failure
+      case IntegritySqlException(_) => DirectoryNonEmpty(pathOf(inode)).failure
     }
   }
 
@@ -87,7 +87,16 @@ class InodeDaoSql extends InodeDao[Connection] {
       .apply()
       .collectFirst(asInode)
 
-  override def load(path: String, user: UserProfile)(implicit c: Connection):
+  private def findBy(id: String)(implicit c: Connection): Option[Inode] =
+    SQL(
+      """select `id`, `name`, `directory`, `owner`, `group`, `permissions`, `parent_id`
+        | from `inode` where `id` = {id}
+      """.stripMargin)
+      .on("id" -> id)
+      .apply()
+      .collectFirst(asInode)
+
+  override def load(path: Path, user: UserProfile)(implicit c: Connection):
       Validation[InodeAccessException, Inode]  = {
 
     def find(parent: Inode, name: String) = findBy(parent.id, name) match {
@@ -103,10 +112,24 @@ class InodeDaoSql extends InodeDao[Connection] {
     }
 
     try {
-      pathWalker(RootInode.name +: Path.pathElements(path), RootInode).success
+      pathWalker(RootInode.name +: pathElements(path), RootInode).success
     } catch {
       case e: InodeAccessException => e.failure
     }
+  }
+
+  private def pathElements(path: Path): Seq[String] = path match {
+    case RootPath => Seq(RootInode.name)
+    case subPath: SubPath => pathElements(subPath.parent.get) :+ subPath.name
+  }
+
+  private def pathOf(inode: Inode)(implicit c: Connection): Path = inode match {
+    case RootInode => RootPath
+    case Inode(nodeId, name, _, _, parentId) =>
+      val parentNode = findBy(parentId).getOrElse(throw new IllegalStateException(
+        s"Cannot load inode '$parentId' so '$nodeId' is an orphan inode."
+      ))
+      pathOf(parentNode) / name
   }
 
   private val asInode: PartialFunction[Row, Inode] = {
@@ -114,5 +137,4 @@ class InodeDaoSql extends InodeDao[Connection] {
     group: String, permissions: String, parentId: String) =>
       new Inode(id, name, directory, FilePermissions(owner, group, fromOctal(permissions)), parentId)
   }
-
 }

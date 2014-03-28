@@ -11,8 +11,11 @@
 
 package es.tid.cosmos.infinity.server.fs
 
+import es.tid.cosmos.infinity.server.util.Path
+
 sealed trait InodeAccessException extends Exception
 
-case class PermissionDenied(path: String) extends InodeAccessException
-case class NoSuchFileOrDirectory(path: String) extends InodeAccessException
-case class DirectoryNonEmpty(path: String) extends InodeAccessException
+case class PermissionDenied(path: Path) extends InodeAccessException
+case class NoSuchInode(id: String) extends InodeAccessException
+case class NoSuchFileOrDirectory(path: Path) extends InodeAccessException
+case class DirectoryNonEmpty(path: Path) extends InodeAccessException

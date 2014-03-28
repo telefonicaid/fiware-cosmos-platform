@@ -90,24 +90,20 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
     }
   }
 
-  it must "fail to authenticate when server request timeouts" in new FreshInstance {
-    withRunningServer(notResponding) {
-      probe.send(instance, Authenticate(UserCredentials("api-key", "api-secret")))
-      probe.expectMsgPF() {
-        case AuthenticationFailed(_: CosmosApiAuthentication.TimeoutException) => ()
+  it must "fail to authenticate when server request timeouts" in
+    new FreshInstance(fastTimeout = true) {
+      withRunningServer(notResponding) {
+        probe.send(instance, Authenticate(UserCredentials("api-key", "api-secret")))
+        probe.expectMsgPF() {
+          case AuthenticationFailed(_: CosmosApiAuthentication.TimeoutException) => ()
+        }
       }
     }
-  }
 
   type ErrorMessage = String
 
   private val serverHost = "localhost"
   private val serverPort = 6750
-
-  private val config = CosmosApiAuthentication.Configuration(
-    authResourceUri = Uri(s"http://$serverHost:$serverPort/"),
-    requestTimeout = 1.seconds
-  )
 
   private def sampleIdentity(whitelist: String*) = {
     val originsLine =
@@ -115,7 +111,7 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
     HttpEntity(s"""{ "user": "gandalf", "group": "istari", "accessMask": "777" $originsLine }""")
   }
 
-  private def withRunningServer(respond: (Uri) => Option[HttpResponse])(body: => Unit) {
+  private def withRunningServer(respond: (Uri) => Option[HttpResponse])(body: => Unit): Unit = {
     implicit val bindTimeout = Timeout(5.seconds)
 
     val server = system.actorOf(Props(new Actor with ActorLogging {
@@ -166,7 +162,11 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
     entity = entity
   )
 
-  trait FreshInstance {
+  class FreshInstance(fastTimeout: Boolean = false) {
+    val config = CosmosApiAuthentication.Configuration(
+      authResourceUri = Uri(s"http://$serverHost:$serverPort/"),
+      requestTimeout = if (fastTimeout) 500.millis else 1.minute
+    )
     val instance = system.actorOf(CosmosApiAuthentication.props(config))
     val probe = TestProbe()
   }

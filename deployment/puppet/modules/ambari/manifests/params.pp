@@ -15,7 +15,6 @@ class ambari::params (
   $enable_repo_mirroring,
   $cosmos_stack_repo_url,
   $hdp_utils_repo_url,
-  $hdp_utils_gpg_url,
   $install_ensure  = 'latest',
   $jdk_url,
   $jce_url

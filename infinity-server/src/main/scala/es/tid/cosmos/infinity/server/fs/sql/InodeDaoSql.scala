@@ -27,7 +27,7 @@ class InodeDaoSql extends InodeDao[Connection] {
 
   import Scalaz._
 
-  override def insert(inode: Inode)(implicit c: Connection): Validation[InodeAccessException, Unit] = try {
+  override def insert(inode: Inode)(implicit c: Connection): Validation[AccessException, Unit] = try {
     SQL(
       """insert into `inode` (`id`, `name`, `directory`, `owner`, `group`, `permissions`, `parent_id`)
         |             values ({id}, {name}, {directory}, {owner}, {group}, {permissions}, {parent_id})
@@ -62,7 +62,7 @@ class InodeDaoSql extends InodeDao[Connection] {
       .executeUpdate()
 
   override def delete(inode: Inode, user: UserProfile)(implicit c: Connection):
-      Validation[InodeAccessException, Unit] = {
+      Validation[AccessException, Unit] = {
     if (!inode.canWrite(user)) return PermissionDenied(pathOf(inode)).failure
     if (inode == RootInode) return PermissionDenied(RootPath).failure
     try {
@@ -97,7 +97,7 @@ class InodeDaoSql extends InodeDao[Connection] {
       .collectFirst(asInode)
 
   override def load(path: Path, user: UserProfile)(implicit c: Connection):
-      Validation[InodeAccessException, Inode]  = {
+      Validation[AccessException, Inode]  = {
 
     def find(parent: Inode, name: String) = findBy(parent.id, name) match {
       case Some(inode) if !inode.canExec(user) => throw PermissionDenied(path)
@@ -114,7 +114,7 @@ class InodeDaoSql extends InodeDao[Connection] {
     try {
       pathWalker(RootInode.name +: pathElements(path), RootInode).success
     } catch {
-      case e: InodeAccessException => e.failure
+      case e: AccessException => e.failure
     }
   }
 

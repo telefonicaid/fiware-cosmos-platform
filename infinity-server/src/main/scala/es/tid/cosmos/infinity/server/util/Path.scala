@@ -33,7 +33,7 @@ object RootPath extends Path {
 }
 
 /** A subpath that have a parent and an element name. */
-final class SubPath(parentPath: Path, val name: String) extends Path {
+case class SubPath(parentPath: Path, name: String) extends Path {
 
   require(!name.contains(Path.Separator),
     s"invalid path element $name (it cannot contain ${Path.Separator} symbol)")

@@ -14,7 +14,7 @@ package es.tid.cosmos.infinity.server.auth.cosmosapi
 import java.net.InetSocketAddress
 import scala.concurrent.duration._
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.{Terminated, Actor, ActorLogging, Props}
 import akka.io.IO
 import akka.testkit.TestProbe
 import akka.util.Timeout
@@ -41,6 +41,7 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
         group = "istari",
         unixPermissionMask = UnixFilePermissions.fromOctal("777")
       )))
+      shouldTerminateInstance()
     }
   }
 
@@ -52,6 +53,7 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
         group = "istari",
         unixPermissionMask = UnixFilePermissions.fromOctal("777")
       )))
+      shouldTerminateInstance()
     }
   }
 
@@ -61,6 +63,7 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
       probe.expectMsgPF() {
         case AuthenticationFailed(InvalidCredentialsException(_, _)) => ()
       }
+      shouldTerminateInstance()
     }
   }
 
@@ -70,6 +73,7 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
       probe.expectMsgPF() {
         case AuthenticationFailed(InvalidCredentialsException(_, _)) => ()
       }
+      shouldTerminateInstance()
     }
   }
 
@@ -80,6 +84,7 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
         case AuthenticationFailed(
           CosmosApiAuthentication.StatusException(StatusCodes.ServiceUnavailable)) => ()
       }
+      shouldTerminateInstance()
     }
   }
 
@@ -88,6 +93,7 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
     probe.expectMsgPF() {
       case AuthenticationFailed(_: CosmosApiAuthentication.ConnectionException) => ()
     }
+    shouldTerminateInstance()
   }
 
   it must "fail to authenticate when server request timeouts" in
@@ -98,6 +104,7 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
           case AuthenticationFailed(_: CosmosApiAuthentication.TimeoutException) => ()
         }
       }
+      shouldTerminateInstance()
     }
 
   type ErrorMessage = String
@@ -169,5 +176,10 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
     )
     val instance = system.actorOf(CosmosApiAuthentication.props(config))
     val probe = TestProbe()
+
+    protected def shouldTerminateInstance(): Unit =
+      probe.expectMsgPF() { case Terminated(`instance`) => () }
+
+    probe.watch(instance)
   }
 }

@@ -31,7 +31,7 @@ import es.tid.cosmos.infinity.test.ActorFlatSpec
 
 class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
   import Authentication._
-  import AuthorizationProvider._
+  import Authorization._
 
   "Request processor" must "request authentication to its provider" in new SampleProcessor {
     shouldAuthenticate()

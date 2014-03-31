@@ -16,7 +16,7 @@ import scalaz.{Scalaz, Validation}
 import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.actions.Action._
 import es.tid.cosmos.infinity.server.authentication.UserProfile
-import es.tid.cosmos.infinity.server.authorization.AuthorizationProvider._
+import es.tid.cosmos.infinity.server.authorization.Authorization._
 import es.tid.cosmos.infinity.server.db.InfinityDataStore
 import es.tid.cosmos.infinity.server.fs._
 import es.tid.cosmos.infinity.server.util.Path

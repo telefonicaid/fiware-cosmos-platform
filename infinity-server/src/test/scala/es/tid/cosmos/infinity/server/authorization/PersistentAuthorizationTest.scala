@@ -21,7 +21,7 @@ import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication.{UserCredentials, UserProfile}
-import es.tid.cosmos.infinity.server.authorization.AuthorizationProvider.{AuthorizationFailed, Authorized}
+import es.tid.cosmos.infinity.server.authorization.Authorization.{AuthorizationFailed, Authorized}
 import es.tid.cosmos.infinity.server.db.InfinityDataStore
 import es.tid.cosmos.infinity.server.fs._
 import es.tid.cosmos.infinity.server.util.{RootPath, Path}

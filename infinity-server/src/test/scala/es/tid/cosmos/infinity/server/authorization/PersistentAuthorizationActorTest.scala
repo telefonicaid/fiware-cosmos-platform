@@ -18,7 +18,7 @@ import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication.{UserCredentials, UserProfile}
-import es.tid.cosmos.infinity.server.authorization.AuthorizationProvider._
+import es.tid.cosmos.infinity.server.authorization.Authorization._
 import es.tid.cosmos.infinity.server.util.Path
 import es.tid.cosmos.infinity.test.ActorFlatSpec
 

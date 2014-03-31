@@ -2,7 +2,7 @@ package es.tid.cosmos.infinity.server.authorization
 
 import akka.actor.Actor
 
-import es.tid.cosmos.infinity.server.authorization.AuthorizationProvider.Authorize
+import es.tid.cosmos.infinity.server.authorization.Authorization.Authorize
 
 private[authorization] class PersistentAuthorizationActor(
     authorization: PersistentAuthorization) extends Actor {

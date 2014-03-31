@@ -14,7 +14,7 @@ package es.tid.cosmos.infinity.server.authorization
 import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication.UserProfile
 
-object AuthorizationProvider {
+object Authorization {
 
   /** A message requesting the authorization to execute an action on a path. */
   case class Authorize(action: Action, profile: UserProfile)

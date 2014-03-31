@@ -60,6 +60,11 @@ class cosmos::openvz::network($host_iface) {
     exec { '/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE':
       user => 'root',
     }
+    exec { '/sbin/service iptables save':
+      user => 'root',
+    }
+    Exec['/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE']
+      -> Exec['/sbin/service iptables save']
   }
 
   File['/etc/sysconfig/network-scripts/ifcfg-vzbr0', '/etc/vz/vznet.conf']

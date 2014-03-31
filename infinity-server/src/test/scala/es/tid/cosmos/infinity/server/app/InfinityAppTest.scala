@@ -27,19 +27,11 @@ class InfinityAppTest extends ActorFlatSpec("InfinityAppTest") {
     with AuthorizationComponent with RequestProcessorComponent{
     override val authenticationProps = MockActor.props("authentication", probe)
     override val authorizationProps = MockActor.props("authorization", probe)
-    override def requestProcessorProps(authenticationRef: ActorRef, authorizationRef: ActorRef) = {
-      servicesCreated.map(_.ref).toSet must be (Set(authenticationRef, authorizationRef))
-      MockActor.props("request", probe)
-    }
+    override def requestProcessorProps(
+      authenticationProps: Props, authorizationProps: Props) = MockActor.props("request", probe)
   }
 
-  "An infinity app" must "spawn authentication and authorization components" in {
-    servicesCreated =
-      probe.expectMsgAllClassOf(classOf[MockActor.Created], classOf[MockActor.Created])
-    servicesCreated.map(_.name).toSet must be (Set("authentication", "authorization"))
-  }
-
-  it must "spawn a request processor per request" in {
+  "An infinity app" must "spawn a request processor per request" in {
     probe.send(app, httpRequest)
     probe.expectMsgClass(classOf[MockActor.Created])
   }

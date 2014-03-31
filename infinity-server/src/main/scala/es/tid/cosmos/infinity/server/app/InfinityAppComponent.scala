@@ -10,5 +10,5 @@ trait InfinityAppComponent {
   this: AuthenticationComponent with AuthorizationComponent with RequestProcessorComponent =>
 
   lazy val infinityAppProps: Props =
-    Props(new InfinityApp(authenticationProps, authorizationProps, requestProcessorProps))
+    Props(new InfinityApp(requestProcessorProps(authenticationProps, authorizationProps)))
 }

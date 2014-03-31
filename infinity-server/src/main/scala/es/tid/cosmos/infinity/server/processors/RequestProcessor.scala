@@ -45,13 +45,13 @@ import es.tid.cosmos.infinity.server.config.{AuthTokenConfig, ServiceConfig}
   *
   * This lifecycle is intended for just one request (an instances of RequestProcessor per request).
   *
-  * @param authenticationRef  the actor providing the authentication logic
-  * @param authorizationRef   the actor that provides the authorization logic
+  * @param authenticationProps  the props of the actor providing the authentication logic
+  * @param authorizationProps   the props of the actor that provides the authorization logic
   * @param configuration      actor configuration
   */
 private[processors] class RequestProcessor(
-    authenticationRef: ActorRef,
-    authorizationRef: ActorRef,
+    authenticationProps: Props,
+    authorizationProps: Props,
     configuration: RequestProcessor.Configuration
   ) extends Actor
   with FSM[RequestProcessor.StateName, RequestProcessor.StateData]
@@ -62,6 +62,8 @@ private[processors] class RequestProcessor(
   import AuthorizationProvider._
 
   val tokenGenerator = TokenGenerator(configuration.authTokenConfig)
+  val authenticationRef = context.actorOf(authenticationProps, "authentication")
+  val authorizationRef = context.actorOf(authorizationProps, "authorization")
 
   startWith(Ready, NoData)
 
@@ -215,8 +217,8 @@ object RequestProcessor {
   case class AuthenticatedRequest[R <: Request](req: R, profile: UserProfile) extends StateData
 
   /** Obtain the props object of a [[RequestProcessor]] from its construction params. */
-  def props(authenticationRef: ActorRef, authorizationRef: ActorRef, config: Config): Props =
-    Props(new RequestProcessor(authenticationRef, authorizationRef,
+  def props(authenticationProps: Props, authorizationProps: Props, config: Config): Props =
+    Props(new RequestProcessor(authenticationProps, authorizationProps,
       Configuration.fromSystemConfig(config)))
 
   private val RequestTimeoutProperty = "cosmos.infinity.server.request-timeout"

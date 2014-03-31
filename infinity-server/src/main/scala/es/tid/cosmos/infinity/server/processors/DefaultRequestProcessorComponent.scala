@@ -4,6 +4,6 @@ import akka.actor.{Props, ActorRef}
 import es.tid.cosmos.common.ConfigComponent
 
 trait DefaultRequestProcessorComponent extends RequestProcessorComponent { this: ConfigComponent =>
-  override def requestProcessorProps(authenticationRef: ActorRef, authorizationRef: ActorRef): Props =
-    RequestProcessor.props(authenticationRef, authorizationRef, config)
+  override def requestProcessorProps(authenticationProps: Props, authorizationProps: Props): Props =
+    RequestProcessor.props(authenticationProps, authorizationProps, config)
 }

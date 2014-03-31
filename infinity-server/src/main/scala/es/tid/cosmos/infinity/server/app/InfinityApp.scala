@@ -19,14 +19,8 @@ import spray.routing._
 
 import es.tid.cosmos.infinity.server.processors.Request
 
-class InfinityApp(
-    authenticationProps: Props,
-    authorizationProps: Props,
-    requestProcessorProps: (ActorRef, ActorRef) => Props)
+class InfinityApp(requestProcessorProps: Props)
   extends Actor with HttpService with ActorLogging {
-
-  private val authenticationRef = context.actorOf(authenticationProps)
-  private val authorizationRef = context.actorOf(authorizationProps)
 
   def actorRefFactory = context
 
@@ -70,5 +64,5 @@ class InfinityApp(
   ))
 
   private def startRequestProcessor(): ActorRef =
-    context.actorOf(requestProcessorProps(authenticationRef, authorizationRef))
+    context.actorOf(requestProcessorProps)
 }

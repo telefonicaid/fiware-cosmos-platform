@@ -27,13 +27,17 @@ import spray.httpx.RequestBuilding
 import es.tid.cosmos.infinity.server.authentication._
 import es.tid.cosmos.infinity.server.authorization._
 import es.tid.cosmos.infinity.server.config.ServiceConfig
-import es.tid.cosmos.infinity.test.ActorFlatSpec
+import es.tid.cosmos.infinity.test.{MockActor, ActorFlatSpec}
 
 class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
   import Authentication._
   import AuthorizationProvider._
 
-  "Request processor" must "request authentication to its provider" in new SampleProcessor {
+  "Request processor" must "instantiate authentication and authorization actors" in new SampleProcessor {
+    shouldCreateChildActors()
+  }
+
+  it must "request authentication to its provider" in new SampleProcessor {
     shouldAuthenticate()
   }
 
@@ -133,13 +137,25 @@ class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
       cosmos.infinity.server.request-timeout = ${requestTimeout.toMillis} ms
     """).withFallback(system.settings.config)
     val processor = system.actorOf(
-      RequestProcessor.props(authenticator.ref, authorizator.ref, processorConfig)
+      RequestProcessor.props(
+        MockActor.props("authenticator", authenticator),
+        MockActor.props("authorizator", authorizator),
+        processorConfig)
     )
     requester.watch(processor)
 
+    def shouldCreateChildActors(): Unit = {
+      authenticator.expectMsgPF() { case MockActor.Created("authenticator", _) => () }
+      authorizator.expectMsgPF() {  case MockActor.Created("authorizator", _) => () }
+    }
+
     def shouldAuthenticate(): Unit = {
+      shouldCreateChildActors()
       processor ! request
-      authenticator.expectMsg(Authenticate(UserCredentials("user-key", "user-secret")))
+      authenticator.expectMsg(MockActor.Received(
+        message = Authenticate(UserCredentials("user-key", "user-secret")),
+        sender = processor
+      ))
     }
 
     def onceAuthenticationSucceeds(body: => Unit): Unit = {
@@ -155,7 +171,10 @@ class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
     }
 
     def shouldAuthorize(): Unit = onceAuthenticationSucceeds {
-      authorizator.expectMsg(Authorize(request.action, profile))
+      authorizator.expectMsg(MockActor.Received(
+        message = Authorize(request.action, profile),
+        sender = processor
+      ))
     }
 
     def onceAuthorizationSucceeds(body: => Unit): Unit = {

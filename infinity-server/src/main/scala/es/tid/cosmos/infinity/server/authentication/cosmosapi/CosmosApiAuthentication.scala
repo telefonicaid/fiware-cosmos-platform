@@ -33,6 +33,7 @@ private[cosmosapi] class CosmosApiAuthentication(config: CosmosApiAuthentication
       context.become(receiveResponse(requestedBy, credentials))
     case Http.CommandFailed(_) =>
       requestedBy ! AuthenticationFailed(ConnectionException(config.authResourceUri))
+      terminate()
   }
 
   private def receiveResponse(requestedBy: ActorRef, credentials: Credentials): Receive = {
@@ -46,12 +47,16 @@ private[cosmosapi] class CosmosApiAuthentication(config: CosmosApiAuthentication
         case Failure(error) =>
           requestedBy ! AuthenticationFailed(error)
       }
+      terminate()
     case HttpResponse(StatusCodes.NotFound, _, _, _) =>
       requestedBy ! AuthenticationFailed(InvalidCredentialsException(credentials))
+      terminate()
     case HttpResponse(statusCode, _, _, _) =>
       requestedBy ! AuthenticationFailed(StatusException(statusCode))
+      terminate()
     case ReceiveTimeout =>
       requestedBy ! AuthenticationFailed(TimeoutException(config.requestTimeout.toMillis))
+      terminate()
   }
 
   private def authorizedAccess(
@@ -72,6 +77,8 @@ private[cosmosapi] class CosmosApiAuthentication(config: CosmosApiAuthentication
 
   private def requestWithParams(params: (String, String)*): HttpRequest =
     Get(config.authResourceUri.withQuery(params: _*))
+
+  private def terminate() = context.stop(self)
 }
 
 object CosmosApiAuthentication {

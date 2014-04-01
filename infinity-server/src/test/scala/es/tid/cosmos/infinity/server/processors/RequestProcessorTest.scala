@@ -31,7 +31,7 @@ import es.tid.cosmos.infinity.test.{MockActor, ActorFlatSpec}
 
 class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
   import Authentication._
-  import AuthorizationProvider._
+  import Authorization._
 
   "Request processor" must "instantiate authentication and authorization actors" in new SampleProcessor {
     shouldCreateChildActors()

@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.fs
+package es.tid.cosmos.infinity.server.fs.sql
 
 import scalaz._
 
@@ -20,10 +20,11 @@ import scalikejdbc.ConnectionPool
 
 import es.tid.cosmos.infinity.server.authorization.FilePermissions
 import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
-import es.tid.cosmos.infinity.server.db.InfinityDataStoreSql
-import es.tid.cosmos.infinity.server.db.migrations.Migrate_1_InitialVersion
+import es.tid.cosmos.infinity.server.db.sql.migrations.Migrate_1_InitialVersion
+import es.tid.cosmos.infinity.server.fs.{RootInode, MysqlH2DatabaseAdapter, SomeUserProfiles}
+import es.tid.cosmos.infinity.server.util.{Path, RootPath}
 
-class InodeDaoSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
+class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
     with SomeUserProfiles {
 
   override protected def beforeAll(): Unit = {
@@ -45,10 +46,11 @@ class InodeDaoSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
   override protected def afterAll(): Unit = ConnectionPool.closeAll()
 
   lazy val store = new InfinityDataStoreSql(ConnectionPool.dataSource())
+  val bobHome = Path.absolute("/users/bob")
 
   "InodeDao" must "be able to find root directory" in  {
     store.withConnection { implicit conn =>
-      val root = store.inodeDao.load("/", bob)
+      val root = store.inodeDao.load(RootPath, bob)
       root map (_.name) must be (Success("/"))
     }
   }
@@ -56,7 +58,7 @@ class InodeDaoSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
   it must "reject / deletion even from super-user" in {
     store.withConnection { implicit conn =>
       for {
-        root <- store.inodeDao.load("/", hdfs)
+        root <- store.inodeDao.load(RootPath, hdfs)
       } yield store.inodeDao.delete(root, hdfs) must be ('failure)
     }
   }
@@ -73,21 +75,21 @@ class InodeDaoSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
 
   it must "allow get /users/bob by bob user" in {
     store.withConnection { implicit conn =>
-      val getBobDir = store.inodeDao.load("/users/bob", bob)
+      val getBobDir = store.inodeDao.load(bobHome, bob)
       getBobDir map (_.name) must be (Success("bob"))
     }
   }
 
   it must "allow get /users/bob by staff group" in {
     store.withConnection { implicit conn =>
-      val getBobDir = store.inodeDao.load("/users/bob", alice)
+      val getBobDir = store.inodeDao.load(bobHome, alice)
       getBobDir map (_.name) must be (Success("bob"))
     }
   }
 
   it must "reject get /users/bob by other user" in {
     store.withConnection { implicit conn =>
-      store.inodeDao.load("/users/bob", john) must be ('failure)
+      store.inodeDao.load(bobHome, john) must be ('failure)
     }
   }
 
@@ -104,7 +106,7 @@ class InodeDaoSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
   it must "allow renaming of /users/bob by bob" in {
     store.withConnection { implicit conn =>
       for {
-        bobDir <- store.inodeDao.load("/users/bob", bob)
+        bobDir <- store.inodeDao.load(bobHome, bob)
         bobRenamed = bobDir.update(name = Some("super-bob"), user = bob)
       } yield store.inodeDao.update(bobRenamed)
     }
@@ -113,8 +115,8 @@ class InodeDaoSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
   it must "allow move /users/super-bob to /super-bob by bob" in {
     store.withConnection { implicit conn =>
       for {
-        root <- store.inodeDao.load("/", bob)
-        bobDir <- store.inodeDao.load("/users/super-bob", bob)
+        root <- store.inodeDao.load(RootPath, bob)
+        bobDir <- store.inodeDao.load(Path.absolute("/users/super-bob"), bob)
         movedBob = bobDir.update(parent = Some(root.id), user = bob)
       } yield store.inodeDao.update(movedBob)
     }
@@ -123,32 +125,32 @@ class InodeDaoSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
   it must "allow deletion /super-bob by bob" in {
     store.withTransaction { implicit conn =>
       for {
-        bobDir <- store.inodeDao.load("/super-bob", bob)
+        bobDir <- store.inodeDao.load(Path.absolute("/super-bob"), bob)
       } yield store.inodeDao.delete(bobDir, bob)
     }
     store.withConnection { implicit conn =>
-      store.inodeDao.load("/super-bob", bob) must be ('failure)
+      store.inodeDao.load(Path.absolute("/super-bob"), bob) must be ('failure)
     }
   }
 
   it must "reject open a file with no read permissions" in {
     store.withConnection { implicit conn =>
       for {
-        parent <- store.inodeDao.load("/", bob)
+        parent <- store.inodeDao.load(RootPath, bob)
       } yield {
         store.inodeDao.insert(parent.create("bob-file.txt", false, bob,
           FilePermissions(bob.username, bob.group, fromOctal("700"))))
       }
     }
     store.withConnection { implicit conn =>
-      store.inodeDao.load("/bob-file.txt", alice) must be ('failure)
+      store.inodeDao.load(Path.absolute("/bob-file.txt"), alice) must be ('failure)
     }
   }
 
   it must "reject delete a file with no write permissions" in {
     store.withConnection { implicit conn =>
       for {
-        parent <- store.inodeDao.load("/", bob)
+        parent <- store.inodeDao.load(RootPath, bob)
       } yield {
         store.inodeDao.insert(parent.create("private-file.txt", false, bob,
           FilePermissions(bob.username, bob.group, fromOctal("644"))))
@@ -156,7 +158,7 @@ class InodeDaoSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
     }
     store.withConnection { implicit conn =>
       for {
-        file <- store.inodeDao.load("/private-file.txt", alice)
+        file <- store.inodeDao.load(Path.absolute("/private-file.txt"), alice)
       } yield store.inodeDao.delete(file, alice) must be ('failure)
     }
   }
@@ -164,7 +166,7 @@ class InodeDaoSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
   it must "reject delete a non-empty directory" in {
     store.withTransaction { implicit conn =>
       for {
-        root <- store.inodeDao.load("/", bob)
+        root <- store.inodeDao.load(RootPath, bob)
       } yield {
         val dataDir = root.create("data", true, bob,
           FilePermissions(bob.username, bob.group, fromOctal("700")))
@@ -174,9 +176,8 @@ class InodeDaoSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
     }
     store.withConnection { implicit conn =>
       for {
-        file <- store.inodeDao.load("/data", bob)
+        file <- store.inodeDao.load(Path.absolute("/data"), bob)
       } yield store.inodeDao.delete(file, bob) must be ('failure)
     }
   }
-
 }

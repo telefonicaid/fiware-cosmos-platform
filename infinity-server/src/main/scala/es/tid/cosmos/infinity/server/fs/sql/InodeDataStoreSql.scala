@@ -8,13 +8,11 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+package es.tid.cosmos.infinity.server.fs.sql
 
-package es.tid.cosmos.infinity.server.db
+import es.tid.cosmos.infinity.server.db.sql.DataStoreSql
+import es.tid.cosmos.infinity.server.fs.InodeDataStore
 
-import java.sql.SQLException
-
-object IntegritySqlException {
-  def unapply(ex: SQLException): Option[SQLException] =
-    if (ex.getMessage.toLowerCase.contains("fk_inode_parent")) Some(ex)
-    else None
+trait InodeDataStoreSql extends InodeDataStore { self: DataStoreSql =>
+  override val inodeDao = new InodeDaoSql
 }

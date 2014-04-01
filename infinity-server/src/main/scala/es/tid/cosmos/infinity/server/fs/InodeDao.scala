@@ -14,22 +14,21 @@ package es.tid.cosmos.infinity.server.fs
 import scalaz.Validation
 
 import es.tid.cosmos.infinity.server.authentication.UserProfile
+import es.tid.cosmos.infinity.server.util.Path
 
 trait InodeDao[Conn] {
 
-  def insert(parent: Inode)(implicit c: Conn): Validation[InodeAccessException, Unit]
+  def insert(parent: Inode)(implicit c: Conn): Validation[AccessException, Unit]
 
   def update(inode: Inode)(implicit c: Conn): Unit
 
   def delete(inode: Inode, user: UserProfile)(implicit c: Conn):
-    Validation[InodeAccessException, Unit]
+    Validation[AccessException, Unit]
 
   /** Find recursively walking from Root directory all the path.
     *
-    * @throws InodeAccessException if path does not exists or cannot be reached
+    * @throws AccessException if path does not exists or cannot be reached
     *                              due to permission restrictions.
     */
-  def load(path: String, user: UserProfile)(implicit c: Conn):
-    Validation[InodeAccessException, Inode]
-
+  def load(path: Path, user: UserProfile)(implicit c: Conn): Validation[AccessException, Inode]
 }

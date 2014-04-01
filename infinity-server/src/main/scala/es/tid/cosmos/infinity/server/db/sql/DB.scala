@@ -9,12 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.db
+package es.tid.cosmos.infinity.server.db.sql
 
 import java.sql.Connection
 import scala.util.control.NonFatal
 
-object DB {
+private[sql] object DB {
 
   def withConnection[A](conn: Connection)(block: Connection => A): A = {
     try {

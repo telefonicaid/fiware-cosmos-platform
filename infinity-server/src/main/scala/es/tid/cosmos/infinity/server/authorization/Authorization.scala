@@ -14,14 +14,16 @@ package es.tid.cosmos.infinity.server.authorization
 import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication.UserProfile
 
-object AuthorizationProvider {
+object Authorization {
 
   /** A message requesting the authorization to execute an action on a path. */
   case class Authorize(action: Action, profile: UserProfile)
 
+  sealed trait AuthorizationResponse
+
   /** A message responding with a success authorization. */
-  case object Authorized
+  case object Authorized extends AuthorizationResponse
 
   /** A message responding with a failed authorization. */
-  case class AuthorizationFailed(error: Throwable)
+  case class AuthorizationFailed(error: Throwable) extends AuthorizationResponse
 }

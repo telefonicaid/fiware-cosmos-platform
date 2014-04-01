@@ -23,7 +23,7 @@ import spray.http._
 import spray.httpx.ResponseTransformation
 
 import es.tid.cosmos.infinity.server.authentication._
-import es.tid.cosmos.infinity.server.authorization.{AuthorizationException, AuthorizationProvider}
+import es.tid.cosmos.infinity.server.authorization.{AuthorizationException, Authorization}
 import es.tid.cosmos.infinity.server.config.{AuthTokenConfig, ServiceConfig}
 
 /** Request processor actor class.
@@ -36,7 +36,7 @@ import es.tid.cosmos.infinity.server.config.{AuthTokenConfig, ServiceConfig}
   *   <li>Upon creation, it's ready to receive a [[Request]] message that contains all the
   *   relevant information to process the request.
   *   <li>The processor requests its [[Authentication]] to authenticate the requester.
-  *   <li>The processor requests its [[AuthorizationProvider]] to authorize the action.
+  *   <li>The processor requests its [[Authorization]] to authorize the action.
   *   <li>The processor submits the request to the appropriate HDFS name node and receives the
   *   response, which is intercepted and modified to reflect the appropriate redirection to
   *   the data node proxy with the corresponding authentication token.
@@ -59,7 +59,7 @@ private[processors] class RequestProcessor(
 
   import RequestProcessor._
   import Authentication._
-  import AuthorizationProvider._
+  import Authorization._
 
   val tokenGenerator = TokenGenerator(configuration.authTokenConfig)
   val authenticationRef = context.actorOf(authenticationProps, "authentication")

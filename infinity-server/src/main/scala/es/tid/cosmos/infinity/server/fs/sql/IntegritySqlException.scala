@@ -9,13 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.db
+package es.tid.cosmos.infinity.server.fs.sql
 
-import javax.sql.DataSource
+import java.sql.SQLException
 
-import es.tid.cosmos.infinity.server.fs.InodeDataStoreSql
-
-class InfinityDataStoreSql(override val datasource: DataSource)
-  extends InfinityDataStore
-  with DataStoreSql
-  with InodeDataStoreSql
+private[sql] object IntegritySqlException {
+  def unapply(ex: SQLException): Option[SQLException] =
+    if (ex.getMessage.toLowerCase.contains("fk_inode_parent")) Some(ex)
+    else None
+}

@@ -14,37 +14,33 @@ package es.tid.cosmos.infinity.server.fs
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.server.authorization.{FilePermissions, UnixFilePermissions}
+import es.tid.cosmos.infinity.server.authentication.UserProfile
+import es.tid.cosmos.infinity.server.authorization.FilePermissions
+import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
 
-class InodeTest extends FlatSpec with MustMatchers with SomeUserProfiles {
+class InodeTest extends FlatSpec with MustMatchers {
 
-  "Inode" must "allow creation of directories from root" in {
-    val usersDir = RootInode.create("users", true, hdfs)
+  val sampleUser = UserProfile("bob", "staff")
+
+  val sampleInode = Inode (
+    id = "325124356",
+    name = "sample",
+    isDirectory = true,
+    permissions = FilePermissions("root", "root", fromOctal("777")),
+    parentId = "67531465"
+  )
+  
+  "Inode" must "instantiate a new child inode" in {
+    val usersDir = sampleInode.newChild("users", isDirectory = true, user = sampleUser)
     assert(usersDir.id != null)
     assert(usersDir.name == "users")
-    assert(usersDir.parentId == RootInode.id)
+    assert(usersDir.parentId == sampleInode.id)
   }
 
   it must "reject creation of inode from non-directory inode" in {
-    val file = RootInode.create("my-file.txt", false, bob)
-    intercept[IllegalArgumentException] {
-      file.create("other-file.txt", false, bob)
-    }
+    val file = sampleInode.newChild("my-file.txt", isDirectory = false, user = sampleUser)
+    evaluating {
+      file.newChild("other-file.txt", isDirectory = false, user = sampleUser)
+    } must produce[UnsupportedOperationException]
   }
-
-  it must "reject creation of inode with no write permissions in parent" in {
-    val bobHome = RootInode.create("bobhome", true, bob,
-      FilePermissions("bob", "staff", UnixFilePermissions.fromOctal("755")))
-    intercept[IllegalArgumentException] {
-      bobHome.create("other-file.txt", false, alice)
-    }
-  }
-
-  it must "allow renaming with super-user" in {
-    val bobHome = RootInode.create("bobhome", true, bob,
-      FilePermissions("bob", "staff", UnixFilePermissions.fromOctal("700")))
-    val newBob = bobHome.update(name = Some("newbob"), user = hdfs)
-    newBob.name must be ("newbob")
-  }
-
 }

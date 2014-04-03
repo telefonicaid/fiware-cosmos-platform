@@ -19,6 +19,7 @@ sealed trait Path {
 
   override def equals(what: Any) = what match {
     case p: Path => p.toString == toString
+    case _ => false
   }
 
   /** Retrieve a child path with this as parent. */

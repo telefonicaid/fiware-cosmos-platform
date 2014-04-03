@@ -21,39 +21,31 @@ import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
 case class Inode(
     id: String,
     name: String,
-    directory: Boolean,
+    isDirectory: Boolean,
     permissions: FilePermissions,
     parentId: String) {
+
+  val isRoot: Boolean = id == Inode.RootId
 
   def canRead(user: UserProfile): Boolean = permissions.canRead(user)
   def canWrite(user: UserProfile): Boolean = permissions.canWrite(user)
   def canExec(user: UserProfile): Boolean = permissions.canExec(user)
 
-  def update(name: Option[String] = None, permissions: Option[FilePermissions] = None,
-            parent: Option[String] = None, user: UserProfile): Inode = {
-    require(canWrite(user), "Permission denied")
-    new Inode(id, name.getOrElse(this.name), directory,
-      permissions.getOrElse(this.permissions), parent.getOrElse(this.parentId))
-  }
-
-  def create(name: String, directory: Boolean, user: UserProfile,
+  def newChild(name: String, isDirectory: Boolean, user: UserProfile,
              permissions: FilePermissions = permissions) = {
-    require(this.directory, "No such file or directory")
-    require(canWrite(user), "Permission denied")
-    new Inode(Inode.randomId(), name, directory, permissions, id)
+    if (!this.isDirectory) {
+      throw new UnsupportedOperationException(
+        s"cannot create new child inode from non-directory $this")
+    }
+    new Inode(Inode.randomId(), name, isDirectory, permissions, id)
   }
 
-  override def toString = s"Inode[$id, $name, $directory, $permissions, $parentId]"
+  override def toString = s"Inode[$id, $name, $isDirectory, $permissions, $parentId]"
 }
 
 object Inode {
   private def randomId() = UUID.randomUUID().toString.replace("-", "")
-}
 
-object RootInode extends Inode (
-  id = "0",
-  name = "/",
-  directory = true,
-  permissions = FilePermissions("root", "root", fromOctal("777")),
-  parentId = "0"
-)
+  val RootId = "0"
+  val RootName = "/"
+}

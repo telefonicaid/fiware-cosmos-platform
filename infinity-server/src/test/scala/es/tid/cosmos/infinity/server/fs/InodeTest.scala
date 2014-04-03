@@ -14,33 +14,22 @@ package es.tid.cosmos.infinity.server.fs
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.server.authentication.UserProfile
 import es.tid.cosmos.infinity.server.authorization.FilePermissions
 import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
 
 class InodeTest extends FlatSpec with MustMatchers {
 
-  val sampleUser = UserProfile("bob", "staff")
+  val samplePermissions = FilePermissions("root", "root", fromOctal("777"))
 
-  val sampleInode = Inode (
-    id = "325124356",
-    name = "sample",
-    isDirectory = true,
-    permissions = FilePermissions("root", "root", fromOctal("777")),
-    parentId = "67531465"
-  )
-  
-  "Inode" must "instantiate a new child inode" in {
-    val usersDir = sampleInode.newChild("users", isDirectory = true, user = sampleUser)
-    assert(usersDir.id != null)
-    assert(usersDir.name == "users")
-    assert(usersDir.parentId == sampleInode.id)
+  "Child inode" must "require not to be its own parent" in {
+    evaluating {
+      FileInode("id", "id", "name", samplePermissions)
+    } must produce [IllegalArgumentException]
   }
 
-  it must "reject creation of inode from non-directory inode" in {
-    val file = sampleInode.newChild("my-file.txt", isDirectory = false, user = sampleUser)
+  it must "require not to contain slashes in its name" in {
     evaluating {
-      file.newChild("other-file.txt", isDirectory = false, user = sampleUser)
-    } must produce[UnsupportedOperationException]
+      FileInode("id", "parentId", "/name", samplePermissions)
+    } must produce [IllegalArgumentException]
   }
 }

@@ -19,11 +19,11 @@ import org.scalatest.matchers.MustMatchers
 import scalikejdbc.ConnectionPool
 
 import es.tid.cosmos.infinity.server.authentication.UserProfile
-import es.tid.cosmos.infinity.server.authorization.{FilePermissions, UnixFilePermissions}
+import es.tid.cosmos.infinity.server.authorization.FilePermissions
 import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
 import es.tid.cosmos.infinity.server.db.sql.migrations.Migrate_1_InitialVersion
 import es.tid.cosmos.infinity.server.fs._
-import es.tid.cosmos.infinity.server.util.{Path, RootPath}
+import es.tid.cosmos.infinity.server.util.{Path, RootPath, SubPath}
 
 class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAndAfter {
 
@@ -38,16 +38,16 @@ class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAnd
     store.withConnection { implicit conn =>
       val root = store.inodeDao.lookup(RootPath)
       root must be ('defined)
-      root.get.name must be ("/")
+      root.get.id must be (RootInode.Id)
     }
   }
 
   it must "find an existing path" in new Fixture {
     store.withConnection { implicit conn =>
-      val (path, _) = givenRandomPath()
+      val (path, _) = givenRandomFile()
       val inode = store.inodeDao.lookup(path)
       inode must be ('defined)
-      s"/${inode.get.name}" must be (path.toString)
+      store.inodeDao.pathOf(inode.get) must be (path)
     }
   }
 
@@ -58,7 +58,7 @@ class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAnd
   }
 
   "Inode creation" must "allow creation of path" in new Fixture {
-    val (path, inode) = givenPath("name", isDirectory = true, exists = false)
+    val (path, inode) = givenRandomDirectory(exists = false)
     store.withTransaction { implicit conn =>
       store.inodeDao.insert(inode)
       store.inodeDao.lookup(path) must be (Some(inode))
@@ -66,31 +66,24 @@ class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAnd
   }
 
   it must "reject creation of inode with unknown parent inode" in new Fixture {
-    val (_, dataDir) = givenPath("data", isDirectory = true, exists = false)
+    val (_, dataDir) = givenRandomDirectory(exists = false)
     store.withTransaction { implicit conn =>
-      val bobDir = dataDir.newChild("bob-data", isDirectory = true, user = sampleUser,
-        FilePermissions("bob", "staff", fromOctal("750")))
+      val bobDir = dataDir.newDirectory(
+        "bob-data", FilePermissions("bob", "staff", fromOctal("750")))
       evaluating { store.inodeDao.insert(bobDir) } must produce [NoSuchInode]
     }
   }
 
-  "Deleting inodes" must "be rejected on root path" in new Fixture {
-    store.withConnection { implicit conn =>
-      evaluating { store.inodeDao.delete(rootInode) } must produce [InvalidOperation]
-    }
-  }
-
-  it must "be rejected on a non-empty directory" in new Fixture {
-    val (dataDir, dataInode) = givenRandomPath(isDirectory = true)
+  "Deleting inodes" must "be rejected on a non-empty directory" in new Fixture {
+    val (filePath, _) = givenRandomFile()
     store.withTransaction { implicit conn =>
-      store.inodeDao.insert(dataInode.newChild("file", isDirectory = false, user = sampleUser))
-      evaluating { store.inodeDao.delete(dataInode) } must produce [DirectoryNonEmpty]
+      val Some(inode: SubDirectoryInode) = store.inodeDao.lookup(filePath.parent.get)
+      evaluating { store.inodeDao.delete(inode) } must produce [DirectoryNonEmpty]
     }
   }
 
   it must "be rejected on a non-existing inode" in new Fixture {
-    val inode = rootInode.newChild("bob-data", isDirectory = true, user = sampleUser,
-      FilePermissions("bob", "staff", fromOctal("750")))
+    val (_, inode) = givenRandomFile(exists = false)
     store.withConnection { implicit conn =>
       evaluating { store.inodeDao.delete(inode) } must produce [NoSuchInode]
     }
@@ -98,8 +91,8 @@ class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAnd
 
   "Updating inodes" must "allow changing inode name, owner, group, permissions and parent" in
     new Fixture {
-      val (_, inode) = givenRandomPath()
-      val (newDirPath, newDir) = givenRandomPath(isDirectory = true)
+      val (_, inode) = givenRandomFile()
+      val (newDirPath, newDir) = givenRandomDirectory()
       val updatedInode = inode.copy(
         name = "new_name",
         permissions = FilePermissions(
@@ -130,47 +123,27 @@ class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAnd
   }
 
   it must "reject changing inode type" in new Fixture {
-    val (_, inode) = givenRandomPath()
-    val updatedInode = inode.copy(isDirectory = true)
+    val (_, inode) = givenRandomFile()
+    val updatedInode = SubDirectoryInode(inode.id, inode.parentId, inode.name, inode.permissions)
     store.withTransaction { implicit conn =>
       evaluating {
         store.inodeDao.update(updatedInode)
-      } must produce [InvalidOperation]
-    }
-  }
-
-  it must "reject changing root inode name" in new Fixture {
-    val updatedRoot = rootInode.copy(name = "my_new_root")
-    store.withTransaction { implicit conn =>
-      evaluating {
-        store.inodeDao.update(updatedRoot)
       } must produce [InvalidOperation]
     }
   }
 
   it must "reject changing non-existing inodes" in new Fixture {
-    val (_, inode) = givenRandomPath()
-    val updatedInode = inode.copy(id = "unknown_id")
+    val (_, inode) = givenRandomFile(exists = false)
     store.withTransaction { implicit conn =>
       evaluating {
-        store.inodeDao.update(updatedInode)
+        store.inodeDao.update(inode)
       } must produce [NoSuchInode]
     }
   }
 
-  it must "reject changing parent on root inode" in new Fixture {
-    val (_, newDir) = givenRandomPath(isDirectory = true)
-    val updatedRoot = rootInode.copy(parentId = newDir.id)
-    store.withTransaction { implicit conn =>
-      evaluating {
-        store.inodeDao.update(updatedRoot)
-      } must produce [InvalidOperation]
-    }
-  }
-
   it must "reject changing parent to non-directory inode" in new Fixture {
-    val (_, inode) = givenRandomPath()
-    val (_, newFile) = givenRandomPath()
+    val (_, inode) = givenRandomFile()
+    val (_, newFile) = givenRandomFile()
     val updatedInode = inode.copy(parentId = newFile.id)
     store.withTransaction { implicit conn =>
       evaluating {
@@ -180,8 +153,8 @@ class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAnd
   }
 
   it must "reject changing parent to non-existing inode" in new Fixture {
-    val (_, inode) = givenRandomPath()
-    val (_, unexistingDir) = givenRandomPath(isDirectory = true, exists = false)
+    val (_, inode) = givenRandomFile()
+    val (_, unexistingDir) = givenRandomDirectory(exists = false)
     val updatedInode = inode.copy(parentId = unexistingDir.id)
     store.withTransaction { implicit conn =>
       evaluating {
@@ -193,25 +166,34 @@ class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAnd
   trait Fixture {
     val sampleUser = UserProfile("bob", "staff")
     val store = new InfinityDataStoreSql(ConnectionPool.dataSource())
-    def rootInode = store.withConnection { implicit conn =>
-      store.inodeDao.lookup(RootPath).get
+    def rootInode: RootInode = store.withConnection { implicit conn =>
+      store.inodeDao.lookup(RootPath).get.asInstanceOf[RootInode]
     }
+    val directoryPermissions = FilePermissions("saruman", "istari", fromOctal("755"))
+    val filePermissions = FilePermissions("saruman", "istari", fromOctal("644"))
 
-    def givenRandomPath(isDirectory: Boolean = false, exists: Boolean = true) =
-      givenPath(Random.alphanumeric.take(16).mkString, isDirectory, exists)
-
-    def givenPath(
-                   inodeName: String, isDirectory: Boolean = false, exists: Boolean = true): (Path, Inode) = {
-      val childInode = rootInode.newChild(
-        name = inodeName,
-        isDirectory = isDirectory,
-        user = UserProfile("saruman", "istari", UnixFilePermissions.fromOctal("755"))
-      )
+    def givenRandomDirectory(exists: Boolean = true): (SubPath, SubDirectoryInode) = {
+      val (parentPath, parentInode: DirectoryInode) =
+        if (Random.nextBoolean()) (RootPath, rootInode) else givenRandomDirectory()
+      val name = randomName()
+      val inode = parentInode.newDirectory(name, directoryPermissions)
       if (exists) {
-        store.withConnection { implicit conn => store.inodeDao.insert(childInode) }
+        store.withTransaction(implicit c => store.inodeDao.insert(inode))
       }
-      (Path.absolute(s"/$inodeName"), childInode)
+      (parentPath / name, inode)
     }
+
+    def givenRandomFile(exists: Boolean = true): (SubPath, FileInode) = {
+      val (parentPath, parentInode) = givenRandomDirectory(exists = true)
+      val name = randomName()
+      val inode = parentInode.newFile(name, filePermissions)
+      if (exists) {
+        store.withTransaction(implicit c => store.inodeDao.insert(inode))
+      }
+      (parentPath / name, inode)
+    }
+
+    private def randomName(): String = Random.alphanumeric.take(16).mkString
   }
 
   private def createDatabase(): Unit = {

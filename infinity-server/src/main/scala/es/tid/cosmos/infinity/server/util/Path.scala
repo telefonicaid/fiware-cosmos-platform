@@ -23,7 +23,7 @@ sealed trait Path {
   }
 
   /** Retrieve a child path with this as parent. */
-  def / (name: String): Path = new SubPath(parentPath = this, name)
+  def / (name: String): SubPath = new SubPath(parentPath = this, name)
 }
 
 /** The path corresponding to the root of Infinity filesystem. */

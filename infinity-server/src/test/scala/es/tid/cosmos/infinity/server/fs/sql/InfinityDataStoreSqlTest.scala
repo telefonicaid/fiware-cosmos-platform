@@ -57,6 +57,34 @@ class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAnd
     } must be ('empty)
   }
 
+  "Directory listing" must "list root children" in new Fixture {
+    val (path1, _) = givenRandomDirectory()
+    val (path2, _) = givenRandomDirectory()
+    store.withConnection { implicit conn =>
+      store.inodeDao.list(rootInode)
+    } must have size 2
+  }
+
+  it must "list directory children" in new Fixture {
+    val (basePath, baseInode) = givenRandomDirectory()
+    val inode1 = baseInode.newFile("file1")
+    val inode2 = baseInode.newFile("file2")
+
+    store.withConnection { implicit conn =>
+      store.inodeDao.insert(inode1)
+      store.inodeDao.insert(inode2)
+      store.inodeDao.list(baseInode)
+    } must be (Set(inode1, inode2))
+  }
+
+  it must "fail on unexisting directory" in new Fixture {
+    val (_, baseInode) = givenRandomDirectory(exists = false)
+
+    store.withConnection { implicit conn =>
+      evaluating { store.inodeDao.list(baseInode) } must produce [NoSuchInode]
+    }
+  }
+
   "Inode creation" must "allow creation of path" in new Fixture {
     val (path, inode) = givenRandomDirectory(exists = false)
     store.withTransaction { implicit conn =>

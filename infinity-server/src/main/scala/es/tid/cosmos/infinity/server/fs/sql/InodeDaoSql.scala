@@ -31,6 +31,17 @@ class InodeDaoSql extends InodeDao[Connection] {
     } yield inode
   }
 
+  override def list(directoryInode: DirectoryInode)(implicit c: Connection): Set[ChildInode] = {
+    if (findBy(directoryInode.id).isEmpty) throw NoSuchInode(directoryInode.id)
+    SQL(
+      """select `id`, `name`, `directory`, `owner`, `group`, `permissions`, `parent_id`
+        | from `inode` where `parent_id` = {id}
+      """.stripMargin)
+      .on("id" -> directoryInode.id)
+      .apply()
+      .collect(asChildInode).toSet
+  }
+
   override def insert(inode: ChildInode)(implicit c: Connection): Unit = try {
     SQL(
       """insert into `inode` (`id`, `name`, `directory`, `owner`, `group`, `permissions`, `parent_id`)
@@ -130,16 +141,18 @@ class InodeDaoSql extends InodeDao[Connection] {
       .apply()
       .collectFirst(asInode)
 
-  private val asInode: PartialFunction[Row, Inode] = {
-    case Row(id: String, name: String, directory: Boolean, owner: String,
-    group: String, permissions: String, parentId: String) =>
-      val perm = FilePermissions(owner, group, fromOctal(permissions))
-      if (id == RootInode.Id) {
-        RootInode(perm)
-      } else if (directory) {
-        SubDirectoryInode(id, parentId, name, perm)
-      } else {
-        FileInode(id, parentId, name, perm)
-      }
+  private val asRootInode: PartialFunction[Row, RootInode] = {
+    case Row(RootInode.Id, _, _, owner: String, group: String, permissions: String, _) =>
+      RootInode(FilePermissions(owner, group, fromOctal(permissions)))
   }
+
+  private val asChildInode: PartialFunction[Row, ChildInode] = {
+    case Row(id: String, name: String, directory: Boolean, owner: String,
+    group: String, permissions: String, parentId: String) if id != RootInode.Id =>
+      val perm = FilePermissions(owner, group, fromOctal(permissions))
+      if (directory) SubDirectoryInode(id, parentId, name, perm)
+      else FileInode(id, parentId, name, perm)
+  }
+
+  private val asInode: PartialFunction[Row, Inode] = asRootInode orElse asChildInode
 }

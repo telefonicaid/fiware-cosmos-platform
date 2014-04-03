@@ -23,6 +23,15 @@ trait InodeDao[Conn] {
     */
   def lookup(path: Path)(implicit c: Conn): Option[Inode]
 
+  /** List the entries on a directory inode.
+    *
+    * @param directoryInode The inode to list
+    * @param c The connection to the persistent store
+    * @return A set of children
+    * @throws NoSuchInode if the inode doesn't exist
+    */
+  def list(directoryInode: DirectoryInode)(implicit c: Conn): Set[ChildInode]
+
   /** Insert a new object in the store.
     *
     * @param inode The new inode to be inserted in the persistent store.

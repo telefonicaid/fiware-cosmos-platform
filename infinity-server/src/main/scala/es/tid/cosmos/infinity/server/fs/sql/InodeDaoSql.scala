@@ -43,6 +43,9 @@ class InodeDaoSql extends InodeDao[Connection] {
   }
 
   override def insert(inode: ChildInode)(implicit c: Connection): Unit = try {
+    if (lookup(inode.parentId, inode.name).isDefined) {
+      throw new PathAlreadyExists(pathOf(inode))
+    }
     SQL(
       """insert into `inode` (`id`, `name`, `directory`, `owner`, `group`, `permissions`, `parent_id`)
         |             values ({id}, {name}, {directory}, {owner}, {group}, {permissions}, {parent_id})

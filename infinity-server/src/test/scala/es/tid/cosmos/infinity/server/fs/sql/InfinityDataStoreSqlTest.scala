@@ -102,6 +102,16 @@ class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAnd
     }
   }
 
+  it must "fail when creating a sibling path with the same name" in new Fixture {
+    val (path, inode) = givenRandomFile()
+    store.withTransaction { implicit conn =>
+      val Some(parentInode: DirectoryInode) = store.inodeDao.lookup(path.parent.get)
+      evaluating {
+        store.inodeDao.insert(parentInode.newFile(inode.name))
+      } must produce [PathAlreadyExists]
+    }
+  }
+
   "Deleting inodes" must "be rejected on a non-empty directory" in new Fixture {
     val (filePath, _) = givenRandomFile()
     store.withTransaction { implicit conn =>

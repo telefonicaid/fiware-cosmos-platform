@@ -11,27 +11,215 @@
 
 package es.tid.cosmos.infinity.server.fs.sql
 
-import scalaz._
+import scala.util.Random
 
 import com.imageworks.migration._
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
+import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 import scalikejdbc.ConnectionPool
 
-import es.tid.cosmos.infinity.server.authorization.FilePermissions
+import es.tid.cosmos.infinity.server.authentication.UserProfile
+import es.tid.cosmos.infinity.server.authorization.{FilePermissions, UnixFilePermissions}
 import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
 import es.tid.cosmos.infinity.server.db.sql.migrations.Migrate_1_InitialVersion
-import es.tid.cosmos.infinity.server.fs.{RootInode, MysqlH2DatabaseAdapter, SomeUserProfiles}
+import es.tid.cosmos.infinity.server.fs._
 import es.tid.cosmos.infinity.server.util.{Path, RootPath}
 
-class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAndAfterAll
-    with SomeUserProfiles {
+class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAndAfter {
 
-  override protected def beforeAll(): Unit = {
+  before {
+    createDatabase()
+    populateDatabase()
+  }
 
+  after { shutdownDatabase() }
+
+  "Inode lookup" must "find the root directory" in new Fixture {
+    store.withConnection { implicit conn =>
+      val root = store.inodeDao.lookup(RootPath)
+      root must be ('defined)
+      root.get.name must be ("/")
+    }
+  }
+
+  it must "find an existing path" in new Fixture {
+    store.withConnection { implicit conn =>
+      val (path, _) = givenRandomPath()
+      val inode = store.inodeDao.lookup(path)
+      inode must be ('defined)
+      s"/${inode.get.name}" must be (path.toString)
+    }
+  }
+
+  it must "not find a non existing path" in new Fixture {
+    store.withConnection { implicit conn =>
+      store.inodeDao.lookup(Path.absolute("/non/existing/path"))
+    } must be ('empty)
+  }
+
+  "Inode creation" must "allow creation of path" in new Fixture {
+    val (path, inode) = givenPath("name", isDirectory = true, exists = false)
+    store.withTransaction { implicit conn =>
+      store.inodeDao.insert(inode)
+      store.inodeDao.lookup(path) must be (Some(inode))
+    }
+  }
+
+  it must "reject creation of inode with unknown parent inode" in new Fixture {
+    val (_, dataDir) = givenPath("data", isDirectory = true, exists = false)
+    store.withTransaction { implicit conn =>
+      val bobDir = dataDir.newChild("bob-data", isDirectory = true, user = sampleUser,
+        FilePermissions("bob", "staff", fromOctal("750")))
+      evaluating { store.inodeDao.insert(bobDir) } must produce [NoSuchInode]
+    }
+  }
+
+  "Deleting inodes" must "be rejected on root path" in new Fixture {
+    store.withConnection { implicit conn =>
+      evaluating { store.inodeDao.delete(rootInode) } must produce [InvalidOperation]
+    }
+  }
+
+  it must "be rejected on a non-empty directory" in new Fixture {
+    val (dataDir, dataInode) = givenRandomPath(isDirectory = true)
+    store.withTransaction { implicit conn =>
+      store.inodeDao.insert(dataInode.newChild("file", isDirectory = false, user = sampleUser))
+      evaluating { store.inodeDao.delete(dataInode) } must produce [DirectoryNonEmpty]
+    }
+  }
+
+  it must "be rejected on a non-existing inode" in new Fixture {
+    val inode = rootInode.newChild("bob-data", isDirectory = true, user = sampleUser,
+      FilePermissions("bob", "staff", fromOctal("750")))
+    store.withConnection { implicit conn =>
+      evaluating { store.inodeDao.delete(inode) } must produce [NoSuchInode]
+    }
+  }
+
+  "Updating inodes" must "allow changing inode name, owner, group, permissions and parent" in
+    new Fixture {
+      val (_, inode) = givenRandomPath()
+      val (newDirPath, newDir) = givenRandomPath(isDirectory = true)
+      val updatedInode = inode.copy(
+        name = "new_name",
+        permissions = FilePermissions(
+          owner = "other",
+          group = "other_group",
+          unix = fromOctal("666")
+        ),
+        parentId = newDir.id
+      )
+      store.withTransaction { implicit conn =>
+        store.inodeDao.update(updatedInode)
+        store.inodeDao.lookup(newDirPath / "new_name") must be (Some(updatedInode))
+      }
+    }
+
+  it must "allow changing root inode owner, group and permissions" in new Fixture {
+    val updatedInode = rootInode.copy(
+      permissions = FilePermissions(
+        owner = "other",
+        group = "other_group",
+        unix = fromOctal("666")
+      )
+    )
+    store.withTransaction { implicit conn =>
+      store.inodeDao.update(updatedInode)
+      store.inodeDao.lookup(RootPath) must be (Some(updatedInode))
+    }
+  }
+
+  it must "reject changing inode type" in new Fixture {
+    val (_, inode) = givenRandomPath()
+    val updatedInode = inode.copy(isDirectory = true)
+    store.withTransaction { implicit conn =>
+      evaluating {
+        store.inodeDao.update(updatedInode)
+      } must produce [InvalidOperation]
+    }
+  }
+
+  it must "reject changing root inode name" in new Fixture {
+    val updatedRoot = rootInode.copy(name = "my_new_root")
+    store.withTransaction { implicit conn =>
+      evaluating {
+        store.inodeDao.update(updatedRoot)
+      } must produce [InvalidOperation]
+    }
+  }
+
+  it must "reject changing non-existing inodes" in new Fixture {
+    val (_, inode) = givenRandomPath()
+    val updatedInode = inode.copy(id = "unknown_id")
+    store.withTransaction { implicit conn =>
+      evaluating {
+        store.inodeDao.update(updatedInode)
+      } must produce [NoSuchInode]
+    }
+  }
+
+  it must "reject changing parent on root inode" in new Fixture {
+    val (_, newDir) = givenRandomPath(isDirectory = true)
+    val updatedRoot = rootInode.copy(parentId = newDir.id)
+    store.withTransaction { implicit conn =>
+      evaluating {
+        store.inodeDao.update(updatedRoot)
+      } must produce [InvalidOperation]
+    }
+  }
+
+  it must "reject changing parent to non-directory inode" in new Fixture {
+    val (_, inode) = givenRandomPath()
+    val (_, newFile) = givenRandomPath()
+    val updatedInode = inode.copy(parentId = newFile.id)
+    store.withTransaction { implicit conn =>
+      evaluating {
+        store.inodeDao.update(updatedInode)
+      } must produce [InvalidOperation]
+    }
+  }
+
+  it must "reject changing parent to non-existing inode" in new Fixture {
+    val (_, inode) = givenRandomPath()
+    val (_, unexistingDir) = givenRandomPath(isDirectory = true, exists = false)
+    val updatedInode = inode.copy(parentId = unexistingDir.id)
+    store.withTransaction { implicit conn =>
+      evaluating {
+        store.inodeDao.update(updatedInode)
+      } must produce [NoSuchInode]
+    }
+  }
+
+  trait Fixture {
+    val sampleUser = UserProfile("bob", "staff")
+    val store = new InfinityDataStoreSql(ConnectionPool.dataSource())
+    def rootInode = store.withConnection { implicit conn =>
+      store.inodeDao.lookup(RootPath).get
+    }
+
+    def givenRandomPath(isDirectory: Boolean = false, exists: Boolean = true) =
+      givenPath(Random.alphanumeric.take(16).mkString, isDirectory, exists)
+
+    def givenPath(
+                   inodeName: String, isDirectory: Boolean = false, exists: Boolean = true): (Path, Inode) = {
+      val childInode = rootInode.newChild(
+        name = inodeName,
+        isDirectory = isDirectory,
+        user = UserProfile("saruman", "istari", UnixFilePermissions.fromOctal("755"))
+      )
+      if (exists) {
+        store.withConnection { implicit conn => store.inodeDao.insert(childInode) }
+      }
+      (Path.absolute(s"/$inodeName"), childInode)
+    }
+  }
+
+  private def createDatabase(): Unit = {
     java.sql.DriverManager.registerDriver(new org.h2.Driver)
     ConnectionPool.singleton("jdbc:h2:mem:InodeDaoTest;MODE=MYSQL", "", "")
+  }
 
+  private def populateDatabase(): Unit = {
     val migrator = new Migrator(
       new ConnectionBuilder(ConnectionPool.dataSource()),
       new MysqlH2DatabaseAdapter(schemaNameOpt = None))
@@ -40,144 +228,7 @@ class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAnd
       InstallAllMigrations,
       packageName = classOf[Migrate_1_InitialVersion].getPackage.getName,
       searchSubPackages = false)
-
   }
 
-  override protected def afterAll(): Unit = ConnectionPool.closeAll()
-
-  lazy val store = new InfinityDataStoreSql(ConnectionPool.dataSource())
-  val bobHome = Path.absolute("/users/bob")
-
-  "InodeDao" must "be able to find root directory" in  {
-    store.withConnection { implicit conn =>
-      val root = store.inodeDao.load(RootPath, bob)
-      root map (_.name) must be (Success("/"))
-    }
-  }
-
-  it must "reject / deletion even from super-user" in {
-    store.withConnection { implicit conn =>
-      for {
-        root <- store.inodeDao.load(RootPath, hdfs)
-      } yield store.inodeDao.delete(root, hdfs) must be ('failure)
-    }
-  }
-
-  it must "allow creation of /users/bob" in {
-    store.withTransaction { implicit conn =>
-      val usersDir = RootInode.create("users", true, hdfs)
-      store.inodeDao.insert(usersDir)
-      val bobDir = usersDir.create("bob", true, bob,
-          FilePermissions("bob", "staff", fromOctal("750")))
-      store.inodeDao.insert(bobDir)
-    }
-  }
-
-  it must "allow get /users/bob by bob user" in {
-    store.withConnection { implicit conn =>
-      val getBobDir = store.inodeDao.load(bobHome, bob)
-      getBobDir map (_.name) must be (Success("bob"))
-    }
-  }
-
-  it must "allow get /users/bob by staff group" in {
-    store.withConnection { implicit conn =>
-      val getBobDir = store.inodeDao.load(bobHome, alice)
-      getBobDir map (_.name) must be (Success("bob"))
-    }
-  }
-
-  it must "reject get /users/bob by other user" in {
-    store.withConnection { implicit conn =>
-      store.inodeDao.load(bobHome, john) must be ('failure)
-    }
-  }
-
-  it must "reject creation of inode with non-persisted parent" in {
-    store.withTransaction { implicit conn =>
-      val dataDir = RootInode.create("data", true, hdfs)
-      // note: dataDir not inserted
-      val bobDir = dataDir.create("bob-data", true, bob,
-          FilePermissions("bob", "staff", fromOctal("750")))
-      store.inodeDao.insert(bobDir) must be ('failure)
-    }
-  }
-
-  it must "allow renaming of /users/bob by bob" in {
-    store.withConnection { implicit conn =>
-      for {
-        bobDir <- store.inodeDao.load(bobHome, bob)
-        bobRenamed = bobDir.update(name = Some("super-bob"), user = bob)
-      } yield store.inodeDao.update(bobRenamed)
-    }
-  }
-
-  it must "allow move /users/super-bob to /super-bob by bob" in {
-    store.withConnection { implicit conn =>
-      for {
-        root <- store.inodeDao.load(RootPath, bob)
-        bobDir <- store.inodeDao.load(Path.absolute("/users/super-bob"), bob)
-        movedBob = bobDir.update(parent = Some(root.id), user = bob)
-      } yield store.inodeDao.update(movedBob)
-    }
-  }
-
-  it must "allow deletion /super-bob by bob" in {
-    store.withTransaction { implicit conn =>
-      for {
-        bobDir <- store.inodeDao.load(Path.absolute("/super-bob"), bob)
-      } yield store.inodeDao.delete(bobDir, bob)
-    }
-    store.withConnection { implicit conn =>
-      store.inodeDao.load(Path.absolute("/super-bob"), bob) must be ('failure)
-    }
-  }
-
-  it must "reject open a file with no read permissions" in {
-    store.withConnection { implicit conn =>
-      for {
-        parent <- store.inodeDao.load(RootPath, bob)
-      } yield {
-        store.inodeDao.insert(parent.create("bob-file.txt", false, bob,
-          FilePermissions(bob.username, bob.group, fromOctal("700"))))
-      }
-    }
-    store.withConnection { implicit conn =>
-      store.inodeDao.load(Path.absolute("/bob-file.txt"), alice) must be ('failure)
-    }
-  }
-
-  it must "reject delete a file with no write permissions" in {
-    store.withConnection { implicit conn =>
-      for {
-        parent <- store.inodeDao.load(RootPath, bob)
-      } yield {
-        store.inodeDao.insert(parent.create("private-file.txt", false, bob,
-          FilePermissions(bob.username, bob.group, fromOctal("644"))))
-      }
-    }
-    store.withConnection { implicit conn =>
-      for {
-        file <- store.inodeDao.load(Path.absolute("/private-file.txt"), alice)
-      } yield store.inodeDao.delete(file, alice) must be ('failure)
-    }
-  }
-
-  it must "reject delete a non-empty directory" in {
-    store.withTransaction { implicit conn =>
-      for {
-        root <- store.inodeDao.load(RootPath, bob)
-      } yield {
-        val dataDir = root.create("data", true, bob,
-          FilePermissions(bob.username, bob.group, fromOctal("700")))
-        store.inodeDao.insert(dataDir)
-        store.inodeDao.insert(dataDir.create("file", false, bob))
-      }
-    }
-    store.withConnection { implicit conn =>
-      for {
-        file <- store.inodeDao.load(Path.absolute("/data"), bob)
-      } yield store.inodeDao.delete(file, bob) must be ('failure)
-    }
-  }
+  private def shutdownDatabase(): Unit = ConnectionPool.closeAll()
 }

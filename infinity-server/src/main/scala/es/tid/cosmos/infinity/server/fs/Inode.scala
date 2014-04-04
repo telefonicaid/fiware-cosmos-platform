@@ -15,37 +15,52 @@ import java.util.UUID
 
 import es.tid.cosmos.infinity.server.authentication.UserProfile
 import es.tid.cosmos.infinity.server.authorization.FilePermissions
-import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
 
-/** Represents files and directories */
-case class Inode(
-    id: String,
-    name: String,
-    isDirectory: Boolean,
-    permissions: FilePermissions,
-    parentId: String) {
-
-  val isRoot: Boolean = id == Inode.RootId
+sealed trait Inode {
+  val id: String
+  val permissions: FilePermissions
+  val isDirectory: Boolean
 
   def canRead(user: UserProfile): Boolean = permissions.canRead(user)
   def canWrite(user: UserProfile): Boolean = permissions.canWrite(user)
   def canExec(user: UserProfile): Boolean = permissions.canExec(user)
-
-  def newChild(name: String, isDirectory: Boolean, user: UserProfile,
-             permissions: FilePermissions = permissions) = {
-    if (!this.isDirectory) {
-      throw new UnsupportedOperationException(
-        s"cannot create new child inode from non-directory $this")
-    }
-    new Inode(Inode.randomId(), name, isDirectory, permissions, id)
-  }
-
-  override def toString = s"Inode[$id, $name, $isDirectory, $permissions, $parentId]"
 }
 
-object Inode {
-  private def randomId() = UUID.randomUUID().toString.replace("-", "")
+sealed trait DirectoryInode extends Inode {
 
-  val RootId = "0"
-  val RootName = "/"
+  override val isDirectory = true
+
+  def newFile(name: String, permissions: FilePermissions = permissions) =
+    FileInode(id = Inode.randomId(), parentId = id, name, permissions)
+
+  def newDirectory(name: String, permissions: FilePermissions = permissions) =
+    SubDirectoryInode(id = Inode.randomId(), parentId = id, name, permissions)
+}
+
+case class RootInode(permissions: FilePermissions) extends DirectoryInode {
+  override val id: String = RootInode.Id
+}
+object RootInode {
+  val Id = "0"
+  val Name = "/"
+}
+
+sealed trait ChildInode extends Inode {
+  val parentId: String
+  val name: String
+  require(id != parentId)
+  require(!name.contains("/"))
+}
+
+case class FileInode(
+    id: String, parentId: String, name: String, permissions: FilePermissions) extends ChildInode {
+  override val isDirectory = false
+}
+
+case class SubDirectoryInode(
+    id: String, parentId: String, name: String, permissions: FilePermissions)
+  extends DirectoryInode with ChildInode
+
+object Inode {
+  def randomId() = UUID.randomUUID().toString.replace("-", "")
 }

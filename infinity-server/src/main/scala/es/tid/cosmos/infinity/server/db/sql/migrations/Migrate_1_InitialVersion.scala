@@ -13,7 +13,7 @@ package es.tid.cosmos.infinity.server.db.sql.migrations
 
 import com.imageworks.migration.Migration
 
-import es.tid.cosmos.infinity.server.fs.Inode
+import es.tid.cosmos.infinity.server.fs.RootInode
 
 class Migrate_1_InitialVersion extends Migration {
 
@@ -38,7 +38,7 @@ class Migrate_1_InitialVersion extends Migration {
 
     execute(s"""INSERT INTO `inode` (`id`, `name`, `directory`, `owner`,
               |  `group`, `permissions`, `parent_id`)
-              |  VALUES ('${Inode.RootId}', '${Inode.RootName}', true, 'root', 'root', '777', '0')
+              |  VALUES ('${RootInode.Id}', '${RootInode.Name}', true, 'root', 'root', '777', '0')
             """.stripMargin)
 
   }

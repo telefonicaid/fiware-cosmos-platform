@@ -15,23 +15,37 @@ import java.sql.Connection
 
 import anorm._
 
-import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
 import es.tid.cosmos.infinity.server.authorization.FilePermissions
+import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
 import es.tid.cosmos.infinity.server.fs._
-import es.tid.cosmos.infinity.server.util.{RootPath, Path, SubPath}
+import es.tid.cosmos.infinity.server.util.{Path, RootPath, SubPath}
 
 class InodeDaoSql extends InodeDao[Connection] {
 
 
   override def lookup(path: Path)(implicit c: Connection): Option[Inode] = path match {
-    case RootPath => lookup(Inode.RootId, Inode.RootName)
+    case RootPath => lookup(RootInode.Id, RootInode.Name)
     case SubPath(parent, name) => for {
       parentInode <- lookup(parent)
       inode <- lookup(parentInode.id, name)
     } yield inode
   }
 
-  override def insert(inode: Inode)(implicit c: Connection): Unit = try {
+  override def list(directoryInode: DirectoryInode)(implicit c: Connection): Set[ChildInode] = {
+    if (findBy(directoryInode.id).isEmpty) throw NoSuchInode(directoryInode.id)
+    SQL(
+      """select `id`, `name`, `directory`, `owner`, `group`, `permissions`, `parent_id`
+        | from `inode` where `parent_id` = {id}
+      """.stripMargin)
+      .on("id" -> directoryInode.id)
+      .apply()
+      .collect(asChildInode).toSet
+  }
+
+  override def insert(inode: ChildInode)(implicit c: Connection): Unit = try {
+    if (lookup(inode.parentId, inode.name).isDefined) {
+      throw new PathAlreadyExists(pathOf(inode))
+    }
     SQL(
       """insert into `inode` (`id`, `name`, `directory`, `owner`, `group`, `permissions`, `parent_id`)
         |             values ({id}, {name}, {directory}, {owner}, {group}, {permissions}, {parent_id})
@@ -50,14 +64,30 @@ class InodeDaoSql extends InodeDao[Connection] {
       throw NoSuchInode(inode.id)
   }
 
-  override def update(inode: Inode)(implicit c: Connection): Unit = {
-    val prevInode = findBy(inode.id).getOrElse(throw NoSuchInode(inode.id))
-    val isValidRoot = inode.name == Inode.RootName && inode.parentId == Inode.RootId
-    val isSameType = prevInode.isDirectory == inode.isDirectory
+  override def update(inode: Inode)(implicit c: Connection): Unit = inode match {
+    case RootInode(permissions) => updateRootPermissions(permissions)
+    case childInode: ChildInode => updateChildInode(childInode)
+  }
+
+  private def updateRootPermissions(permissions: FilePermissions)(implicit c: Connection): Unit =
+    SQL("""update `inode` set `owner` = {owner}, `group` = {group}, `permissions` = {permissions}
+          | where `id` = {id}
+        """.stripMargin)
+      .on("id" -> RootInode.Id)
+      .on("owner" -> permissions.owner)
+      .on("group" -> permissions.group)
+      .on("permissions" -> permissions.unix.toString)
+      .executeUpdate()
+
+  private def updateChildInode(inode: ChildInode)(implicit c: Connection): Unit = {
+    val prevInode = findBy(inode.id) match {
+      case Some(childInode: ChildInode) => childInode
+      case _ => throw NoSuchInode(inode.id)
+    }
+    val hasSameType = prevInode.isDirectory == inode.isDirectory
     val newParentIsDirectory = (prevInode.parentId == inode.parentId) ||
       findBy(inode.parentId).getOrElse(throw NoSuchInode(inode.parentId)).isDirectory
-    val isValidUpdate: Boolean =
-      isSameType && (!prevInode.isRoot || isValidRoot) && newParentIsDirectory
+    val isValidUpdate: Boolean = hasSameType && newParentIsDirectory
 
     if (!isValidUpdate) throw InvalidOperation(pathOf(prevInode))
     SQL(
@@ -75,8 +105,7 @@ class InodeDaoSql extends InodeDao[Connection] {
       .executeUpdate()
   }
 
-  override def delete(inode: Inode)(implicit c: Connection): Unit = {
-    if (inode.isRoot) throw InvalidOperation(RootPath)
+  override def delete(inode: ChildInode)(implicit c: Connection): Unit = {
     val success = try {
       SQL( """delete from `inode` where `id` = {id}""")
         .on("id" -> inode.id)
@@ -85,6 +114,15 @@ class InodeDaoSql extends InodeDao[Connection] {
       case IntegritySqlException(_) => throw DirectoryNonEmpty(pathOf(inode))
     }
     if (!success) throw NoSuchInode(inode.id)
+  }
+
+  override def pathOf(inode: Inode)(implicit c: Connection): Path = inode match {
+    case RootInode(_) => RootPath
+    case child : ChildInode =>
+      val parentNode = findBy(child.parentId).getOrElse(throw new IllegalStateException(
+        s"Cannot load inode '${child.parentId}' so '${child.id}' is an orphan inode."
+      ))
+      pathOf(parentNode) / child.name
   }
 
   private def lookup(parentId: String, name: String)(implicit c: Connection): Option[Inode] =
@@ -106,18 +144,18 @@ class InodeDaoSql extends InodeDao[Connection] {
       .apply()
       .collectFirst(asInode)
 
-  private def pathOf(inode: Inode)(implicit c: Connection): Path = inode match {
-    case Inode(Inode.RootId, _, _, _, _) => RootPath
-    case Inode(nodeId, name, _, _, parentId) =>
-      val parentNode = findBy(parentId).getOrElse(throw new IllegalStateException(
-        s"Cannot load inode '$parentId' so '$nodeId' is an orphan inode."
-      ))
-      pathOf(parentNode) / name
+  private val asRootInode: PartialFunction[Row, RootInode] = {
+    case Row(RootInode.Id, _, _, owner: String, group: String, permissions: String, _) =>
+      RootInode(FilePermissions(owner, group, fromOctal(permissions)))
   }
 
-  private val asInode: PartialFunction[Row, Inode] = {
+  private val asChildInode: PartialFunction[Row, ChildInode] = {
     case Row(id: String, name: String, directory: Boolean, owner: String,
-    group: String, permissions: String, parentId: String) =>
-      new Inode(id, name, directory, FilePermissions(owner, group, fromOctal(permissions)), parentId)
+    group: String, permissions: String, parentId: String) if id != RootInode.Id =>
+      val perm = FilePermissions(owner, group, fromOctal(permissions))
+      if (directory) SubDirectoryInode(id, parentId, name, perm)
+      else FileInode(id, parentId, name, perm)
   }
+
+  private val asInode: PartialFunction[Row, Inode] = asRootInode orElse asChildInode
 }

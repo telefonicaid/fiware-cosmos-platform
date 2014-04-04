@@ -23,15 +23,22 @@ trait InodeDao[Conn] {
     */
   def lookup(path: Path)(implicit c: Conn): Option[Inode]
 
-  /** Insert a new inode object in the store.
+  /** List the entries on a directory inode.
     *
-    * The inode object shall be obtained as result of [[Inode.newChild()]] operation.
+    * @param directoryInode The inode to list
+    * @param c The connection to the persistent store
+    * @return A set of children
+    * @throws NoSuchInode if the inode doesn't exist
+    */
+  def list(directoryInode: DirectoryInode)(implicit c: Conn): Set[ChildInode]
+
+  /** Insert a new object in the store.
     *
     * @param inode The new inode to be inserted in the persistent store.
     * @param c The connection to the persistent store.
     * @throws NoSuchInode if the parent of the given inode is not found.
     */
-  def insert(inode: Inode)(implicit c: Conn): Unit
+  def insert(inode: ChildInode)(implicit c: Conn): Unit
 
   /** Update inode in the store.
     *
@@ -51,7 +58,15 @@ trait InodeDao[Conn] {
     * @param c The connection to the persistent store
     * @throws NoSuchInode if the given inode doesn't exist
     * @throws DirectoryNonEmpty if the given inode corresponds to a non-empty directory
-    * @throws InvalidOperation if the given inode corresponds to root inode
     */
-  def delete(inode: Inode)(implicit c: Conn): Unit
+  def delete(inode: ChildInode)(implicit c: Conn): Unit
+
+  /** Retrieve the path corresponding to given inode.
+    *
+    * @param inode The inode whose path is to be obtained.
+    * @param c The connection to the persistent store
+    * @return The path of the given inode
+    * @throws NoSuchInode if the given inode doesn't exist
+    */
+  def pathOf(inode: Inode)(implicit c: Conn): Path
 }

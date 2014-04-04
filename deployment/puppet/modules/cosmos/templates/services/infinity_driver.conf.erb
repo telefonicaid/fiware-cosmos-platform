@@ -18,3 +18,10 @@ include "cluster-properties"
         "es.tid.cosmos.clustersecret" = ${ClusterSecret}
     }
 }
+
+"infinity_driver" {
+    "configType"="infinity-driver"
+    "properties" {
+      "blocked_ports" = "8088,8032,50060,19888"
+    }
+}

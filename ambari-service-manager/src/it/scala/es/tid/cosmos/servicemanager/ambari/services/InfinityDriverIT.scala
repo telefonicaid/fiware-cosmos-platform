@@ -24,11 +24,12 @@ class InfinityDriverIT extends ConfiguredServiceTest {
     InfinityDriverParameters("secret"), resourcesConfigDirectory)
 
   val contributedConfig = contributions.core.get
+  val serviceConfig = contributions.services.head
 
-  "An infinity service" must "only have core contributions" in {
+  "An infinity service" must "only have core and service contributions" in {
     contributions.global must not be 'defined
     contributions.core must be ('defined)
-    contributions.services must be ('empty)
+    contributions.services must have length (1)
   }
 
   it must "have the default infinity's cluster configured" in {
@@ -37,5 +38,9 @@ class InfinityDriverIT extends ConfiguredServiceTest {
 
   it must "configure the infinity HFS driver" in {
     contributedConfig.properties("fs.infinity.impl").toString must include ("InfinityFileSystem")
+  }
+
+  it must "provide a list of ports to be blocked" in {
+    serviceConfig.properties("blocked_ports").toString must include ("8088")
   }
 }

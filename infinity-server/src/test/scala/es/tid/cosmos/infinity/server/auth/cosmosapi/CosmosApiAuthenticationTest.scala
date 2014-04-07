@@ -140,6 +140,8 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
     } finally {
       bindProbe.send(listener, Http.Unbind)
       bindProbe.expectMsg(Http.Unbound)
+      bindProbe.send(IO(Http), Http.CloseAll)
+      bindProbe.expectMsg(Http.ClosedAll)
     }
   }
 

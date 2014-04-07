@@ -33,7 +33,7 @@ class cosmos::apache::setup inherits cosmos::params {
     source => $cosmos::params::cosmos_ssl_cert_source,
     owner  => 'root',
     group  => 'root',
-    mode   => '0644',
+    mode   => '0640',
   }
 
   file { $cosmos::params::ssl_key_file:
@@ -41,7 +41,7 @@ class cosmos::apache::setup inherits cosmos::params {
     source => $cosmos::params::cosmos_ssl_key_source,
     owner  => 'root',
     group  => 'root',
-    mode   => '0644',
+    mode   => '0640',
   }
 
   file { $cosmos::params::ssl_ca_file:
@@ -49,7 +49,7 @@ class cosmos::apache::setup inherits cosmos::params {
     source => "puppet:///modules/${module_name}/${cosmos::params::ssl_ca_filename}",
     owner  => 'root',
     group  => 'root',
-    mode   => '0644',
+    mode   => '0640',
   }
 
   apache::vhost { 'cli.repo':

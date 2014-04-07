@@ -19,6 +19,8 @@ include "cluster-properties"
       "server_port_master" = "51070",
       "server_port_slave" = "51075",
       "proxy_secure_phrase_template" = "<%= @infinity_proxy_secure_phrase %>$2$3$args",
-      "hdfs_datanode_port" = "50075"
+      "hdfs_datanode_port" = "50075",
+      "ssl_certificate_content" = "<%= @infinity_proxy_ssl_cert %>",
+      "ssl_certificate_key_content" = "<%= @infinity_proxy_ssl_key %>"
     }
 }

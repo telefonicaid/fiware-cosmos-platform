@@ -17,6 +17,7 @@ import akka.actor.ActorSystem
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
+import org.apache.hadoop.hdfs.server.namenode.NameNode
 import spray.can.Http
 
 import es.tid.cosmos.common.ConfigComponent
@@ -25,26 +26,31 @@ import es.tid.cosmos.infinity.server.authentication.cosmosapi.CosmosApiAuthentic
 import es.tid.cosmos.infinity.server.authorization.PersistentAuthorizationComponent
 import es.tid.cosmos.infinity.server.fs.sql.InfinityDataStoreSqlComponent
 import es.tid.cosmos.infinity.server.processors.DefaultRequestProcessorComponent
+import com.typesafe.config.Config
 
-object Boot extends App
-  with InfinityAppComponent
+class MetadataServer(nameNode: NameNode, override val config: Config)
+  extends InfinityAppComponent
   with CosmosApiAuthenticationComponent
   with PersistentAuthorizationComponent
   with InfinityDataStoreSqlComponent
   with DefaultRequestProcessorComponent
   with ConfigComponent {
 
-  implicit val system = ActorSystem("infinity-server")
-
-  override val config = system.settings.config
+  implicit val system = ActorSystem("infinity-server", config)
 
   val service = system.actorOf(infinityAppProps)
 
   implicit val timeout = Timeout(5.seconds)
 
-  IO(Http) ? Http.Bind(
+
+  def start(): Unit = IO(Http) ? Http.Bind(
     listener = service,
     interface = config.getString("cosmos.infinity.server.interface"),
     port = config.getInt("cosmos.infinity.server.port")
   )
+
+  def shutdown(): Unit = {
+    system.shutdown()
+    system.awaitTermination()
+  }
 }

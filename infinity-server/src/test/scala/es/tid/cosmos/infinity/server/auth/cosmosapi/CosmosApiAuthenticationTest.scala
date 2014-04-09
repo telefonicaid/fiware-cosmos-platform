@@ -13,6 +13,7 @@ package es.tid.cosmos.infinity.server.auth.cosmosapi
 
 import java.net.InetSocketAddress
 import scala.concurrent.duration._
+import scala.util.Random
 
 import akka.actor.{Terminated, Actor, ActorLogging, Props}
 import akka.io.IO
@@ -110,39 +111,11 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
   type ErrorMessage = String
 
   private val serverHost = "localhost"
-  private val serverPort = 6750
 
   private def sampleIdentity(whitelist: String*) = {
     val originsLine =
       if (whitelist.isEmpty) "" else s""","origins":["${whitelist.mkString(", ")}"]"""
     HttpEntity(s"""{ "user": "gandalf", "group": "istari", "accessMask": "777" $originsLine }""")
-  }
-
-  private def withRunningServer(respond: (Uri) => Option[HttpResponse])(body: => Unit): Unit = {
-    implicit val bindTimeout = Timeout(5.seconds)
-
-    val server = system.actorOf(Props(new Actor with ActorLogging {
-      override def receive = {
-        case Http.Connected(_, _) =>
-          sender ! Http.Register(handler = context.self)
-        case HttpRequest(HttpMethods.GET, uri, _, _, _) =>
-          respond(uri).foreach(sender ! _)
-        case msg =>
-          log.error(s"unexpected message arrived: $msg")
-      }
-    }))
-    val bindProbe = TestProbe()
-    bindProbe.send(IO(Http), Http.Bind(server, interface = serverHost, port = serverPort))
-    bindProbe.expectMsg(Http.Bound(new InetSocketAddress(serverHost, serverPort)))
-    val listener = bindProbe.sender()
-    try {
-      body
-    } finally {
-      bindProbe.send(listener, Http.Unbind)
-      bindProbe.expectMsg(Http.Unbound)
-      bindProbe.send(IO(Http), Http.CloseAll)
-      bindProbe.expectMsg(30 seconds, Http.ClosedAll)
-    }
   }
 
   private def expectingUserCredentials(
@@ -171,7 +144,7 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
     entity = entity
   )
 
-  class FreshInstance(fastTimeout: Boolean = false) {
+  class FreshInstance(fastTimeout: Boolean = false, serverPort: Int = 6750 + Random.nextInt(5000)) {
     val config = CosmosApiAuthentication.Configuration(
       authResourceUri = Uri(s"http://$serverHost:$serverPort/"),
       requestTimeout = if (fastTimeout) 500.millis else 1.minute
@@ -181,6 +154,31 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
 
     protected def shouldTerminateInstance(): Unit =
       probe.expectMsgPF() { case Terminated(`instance`) => () }
+
+    protected def withRunningServer(respond: (Uri) => Option[HttpResponse])(body: => Unit): Unit = {
+      implicit val bindTimeout = Timeout(5.seconds)
+
+      val server = system.actorOf(Props(new Actor with ActorLogging {
+        override def receive = {
+          case Http.Connected(_, _) =>
+            sender ! Http.Register(handler = context.self)
+          case HttpRequest(HttpMethods.GET, uri, _, _, _) =>
+            respond(uri).foreach(sender ! _)
+          case msg =>
+            log.error(s"unexpected message arrived: $msg")
+        }
+      }))
+      val bindProbe = TestProbe()
+      bindProbe.send(IO(Http), Http.Bind(server, interface = serverHost, port = serverPort))
+      bindProbe.expectMsg(Http.Bound(new InetSocketAddress(serverHost, serverPort)))
+      val listener = bindProbe.sender()
+      try {
+        body
+      } finally {
+        bindProbe.send(listener, Http.Unbind)
+        bindProbe.expectMsg(Http.Unbound)
+      }
+    }
 
     probe.watch(instance)
   }

@@ -14,14 +14,14 @@ package es.tid.cosmos.servicemanager
 import scala.concurrent.Future
 
 import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClusterDescription}
-import es.tid.cosmos.servicemanager.configuration.DynamicPropertiesFactory
+import es.tid.cosmos.servicemanager.configuration.{ConfigurationBundle, DynamicPropertiesFactory}
 
 trait ClusterManager {
 
   def deployCluster(
     clusterDescription: ImmutableClusterDescription,
     services: Seq[AnyServiceInstance],
-    dynamicProperties: DynamicPropertiesFactory): Future[Any]
+    dynamicProperties: DynamicPropertiesFactory): Future[ConfigurationBundle]
 
   def removeCluster(cluster: ClusterDescription): Future[Any]
 

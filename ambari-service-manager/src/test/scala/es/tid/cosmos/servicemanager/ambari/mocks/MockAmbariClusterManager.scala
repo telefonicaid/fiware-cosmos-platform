@@ -17,7 +17,7 @@ import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.AmbariClusterManager
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceFactory
 import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClusterDescription}
-import es.tid.cosmos.servicemanager.configuration.DynamicPropertiesFactory
+import es.tid.cosmos.servicemanager.configuration.{ConfigurationBundle, DynamicPropertiesFactory}
 
 class MockAmbariClusterManager extends AmbariClusterManager(
     ambariServer = null,
@@ -27,9 +27,10 @@ class MockAmbariClusterManager extends AmbariClusterManager(
   ) {
 
   override def deployCluster(
-    clusterDescription: ImmutableClusterDescription,
-    serviceDescriptions: Seq[AnyServiceInstance],
-    dynamicProperties: DynamicPropertiesFactory): Future[Unit] = Future.successful()
+      clusterDescription: ImmutableClusterDescription,
+      serviceDescriptions: Seq[AnyServiceInstance],
+      dynamicProperties: DynamicPropertiesFactory): Future[ConfigurationBundle] =
+    Future.successful(ConfigurationBundle.NoConfiguration)
 
   override def removeCluster(cluster: ClusterDescription): Future[Unit] = Future.successful()
 

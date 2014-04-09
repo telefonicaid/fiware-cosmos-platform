@@ -38,16 +38,17 @@ object Configurator {
   def applyConfiguration(
     cluster: Cluster,
     properties: ConfigProperties,
-    contributors: Seq[ConfigurationContributor]): Future[Seq[Unit]] = {
+    contributors: Seq[ConfigurationContributor]): Future[ConfigurationBundle] = {
     val tag = timestampedTag()
-    val configurations = consolidateConfiguration(contributors, properties)
-    Future.traverse(configurations)(cluster.applyConfiguration(_, tag))
+    val configurationBundle = consolidateConfiguration(contributors, properties)
+    Future.traverse(configurationBundle.configurations)(cluster.applyConfiguration(_, tag)).map(
+      _ => configurationBundle)
   }
 
   private def consolidateConfiguration(
       contributors: Seq[ConfigurationContributor],
-      properties: ConfigProperties): List[Configuration] =
-    contributors.map(_.contributions(properties)).foldLeft(empty)(consolidate).configurations
+      properties: ConfigProperties): ConfigurationBundle =
+    contributors.map(_.contributions(properties)).foldLeft(empty)(consolidate)
 
   private def consolidate(
     alreadyMerged: ConfigurationBundle, toMerge: ConfigurationBundle): ConfigurationBundle = {

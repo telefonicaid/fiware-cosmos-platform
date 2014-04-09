@@ -15,6 +15,7 @@ import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.services.{AmbariServiceFactory, AmbariService}
 import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
+import es.tid.cosmos.servicemanager.configuration.{ConfigurationBundle, ServiceConfiguration, CoreConfiguration, GlobalConfiguration}
 
 class ConfiguratorTestHelpers(
     masterName: String,

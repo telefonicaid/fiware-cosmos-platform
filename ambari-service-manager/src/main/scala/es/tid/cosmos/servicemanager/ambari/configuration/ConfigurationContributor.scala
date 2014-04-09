@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.servicemanager.ambari.configuration
 
+import es.tid.cosmos.servicemanager.configuration.ConfigurationBundle
+
 /** Trait for contributing cluster configuration.
   * A contributor can offer partial Global and Core configuration as well as the complete
   * configuration of a given Service.

@@ -19,7 +19,7 @@ import org.mockito.Mockito.verify
 import org.scalatest.BeforeAndAfter
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.servicemanager.ambari.configuration.{Configuration, HeaderOnlyConfiguration}
+import es.tid.cosmos.servicemanager.configuration.{HeaderOnlyConfiguration, Configuration}
 
 class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   var cluster: Cluster with MockedRestResponsesComponent = _

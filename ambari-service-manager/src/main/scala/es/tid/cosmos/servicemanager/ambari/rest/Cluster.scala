@@ -20,7 +20,7 @@ import net.liftweb.json.JsonAST.{JValue, JString, JArray}
 import net.liftweb.json.Extraction._
 
 import es.tid.cosmos.servicemanager.ServiceError
-import es.tid.cosmos.servicemanager.ambari.configuration.{Configuration, HeaderOnlyConfiguration}
+import es.tid.cosmos.servicemanager.configuration.{HeaderOnlyConfiguration, Configuration}
 
 /**
  * Wraps Ambari's cluster-related REST API calls.

@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.configuration
+package es.tid.cosmos.servicemanager.configuration
 
 trait ConfigurationHeader {
   def configType: String

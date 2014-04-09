@@ -16,9 +16,9 @@ import scala.collection.JavaConversions._
 
 import com.typesafe.config._
 
-import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes._
-import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits._
-import es.tid.cosmos.servicemanager.configuration.ConfigurationKeys
+import es.tid.cosmos.servicemanager.configuration._
+import es.tid.cosmos.servicemanager.configuration.FactoryTypes.Factory
+import es.tid.cosmos.servicemanager.configuration.FactoryTypes.Implicits._
 
 /** Read configuration contributions from file.
   *

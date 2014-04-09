@@ -15,7 +15,7 @@ import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
-import es.tid.cosmos.servicemanager.configuration.ConfigurationKeys
+import es.tid.cosmos.servicemanager.configuration.{ServiceConfiguration, CoreConfiguration, GlobalConfiguration, ConfigurationKeys}
 
 class FileConfigurationContributorTest extends FlatSpec with MustMatchers with OneInstancePerTest
     with TestResourcePaths {

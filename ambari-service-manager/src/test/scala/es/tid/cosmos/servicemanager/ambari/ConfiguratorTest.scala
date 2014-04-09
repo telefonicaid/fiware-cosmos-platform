@@ -22,6 +22,7 @@ import es.tid.cosmos.servicemanager.ambari.Configurator.ConfigurationConflict
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers.contributionsWithNumber
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.rest.Cluster
+import es.tid.cosmos.servicemanager.configuration.{ConfigurationBundle, ServiceConfiguration, CoreConfiguration, GlobalConfiguration}
 
 class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatchers
     with MockitoSugar {

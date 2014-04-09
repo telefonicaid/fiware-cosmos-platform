@@ -157,7 +157,6 @@ object Build extends sbt.Build {
     settings(Defaults.itSettings: _*)
     settings(buildSettings: _*)
     settings(assemblySettings: _*)
-    settings(mainClass in assembly := Some("es.tid.cosmos.infinity.server.Boot"))
     settings(RpmSettings.infinityServerSettings: _*)
     dependsOn(common)
   )

@@ -13,14 +13,14 @@ package es.tid.cosmos.infinity.server
 
 import scala.concurrent.duration._
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.ActorSystem
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
 import spray.can.Http
 
 import es.tid.cosmos.common.ConfigComponent
-import es.tid.cosmos.infinity.server.app.{InfinityApp, InfinityAppComponent}
+import es.tid.cosmos.infinity.server.app.InfinityAppComponent
 import es.tid.cosmos.infinity.server.authentication.cosmosapi.CosmosApiAuthenticationComponent
 import es.tid.cosmos.infinity.server.authorization.PersistentAuthorizationComponent
 import es.tid.cosmos.infinity.server.fs.sql.InfinityDataStoreSqlComponent
@@ -38,7 +38,7 @@ object Boot extends App
 
   override val config = system.settings.config
 
-  val service = system.actorOf(Props[InfinityApp])
+  val service = system.actorOf(infinityAppProps)
 
   implicit val timeout = Timeout(5.seconds)
 

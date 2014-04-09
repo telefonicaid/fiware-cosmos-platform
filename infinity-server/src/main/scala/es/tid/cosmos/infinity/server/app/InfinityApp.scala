@@ -35,7 +35,9 @@ class InfinityApp(requestProcessorProps: Props)
         respondWithMediaType(`text/html`) {
           complete {
             <html>
-              <head><h1>Infinity server</h1></head>
+              <head>
+                <title>Infinity server</title>
+              </head>
               <body>
                 <h1>Infinity server</h1>
                 <p>Running!</p>

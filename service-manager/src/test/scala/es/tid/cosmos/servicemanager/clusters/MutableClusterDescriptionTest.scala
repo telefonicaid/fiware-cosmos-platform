@@ -40,6 +40,8 @@ class MutableClusterDescriptionTest
     override def master: Option[HostDetails] = ???
     override def nameNode_=(nameNode: URI): Unit = ???
     override def nameNode: Option[URI] = ???
+    override def blockedPorts_=(blockedPorts: Set[Int]) = ???
+    override def blockedPorts: Set[Int] = ???
   }
 
   "A mutable cluster description" must "be able to guard against failures" in {

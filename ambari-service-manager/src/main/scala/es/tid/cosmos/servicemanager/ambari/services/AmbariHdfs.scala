@@ -11,12 +11,11 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
 import es.tid.cosmos.servicemanager.services.Hdfs
 import es.tid.cosmos.servicemanager.services.Hdfs.HdfsParameters
 import es.tid.cosmos.servicemanager.configuration.ConfigurationKeys
 
-object AmbariHdfs extends AmbariService {
+object AmbariHdfs extends AmbariService with FileConfiguration {
 
   override val service = Hdfs
 
@@ -26,8 +25,6 @@ object AmbariHdfs extends AmbariService {
     ComponentDescription.masterComponent("HDFS_CLIENT").makeClient
   )
 
-  override def configurator(parameters: HdfsParameters, configPath: String) =
-    new FileConfigurationContributor(configPath, service.name.toLowerCase,
-      extraProperties = Map(ConfigurationKeys.UmaskMode -> parameters.umask)
-    )
+  override def extraProperties(parameters: HdfsParameters) =
+    Map(ConfigurationKeys.UmaskMode -> parameters.umask)
 }

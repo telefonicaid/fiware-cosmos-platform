@@ -35,6 +35,7 @@ class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
       i => HostDetails(s"host$i", s"ip$i"))
     override val users = Some(Set(ClusterUser("jsmith", "jsmith-public-key")))
     override val services = Set("ServiceA", "ServiceB")
+    override val blockedPorts = Set(1, 2, 3)
   }
 
   /** Create a ClusterReference with a given name and state and randomize the other fields. */

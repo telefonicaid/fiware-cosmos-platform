@@ -107,6 +107,21 @@ private[sql] class SqlMutableClusterDescription(
     }
   }
 
+  override def blockedPorts: Set[Int] = dao.newTransaction {
+    from(ClusterSchema.blockedPorts)(s => where (s.clusterId === this.id.toString) select s)
+      .map(_.port).toSet
+  }
+
+  override def blockedPorts_=(blockedPorts: Set[Int]) {
+    dao.newTransaction {
+      val cluster = clusterState.lookup(this.id.toString).get
+      cluster.blockedPorts.deleteAll
+      blockedPorts.foreach { blockedPort =>
+        cluster.blockedPorts.associate(new ClusterBlockedPortEntity(blockedPort))
+      }
+    }
+  }
+
   private def getField[A](field: ClusterEntity => A) = dao.newTransaction {
     from(clusterState)(c => where (c.id === this.id.toString) select(field(c))).single
   }

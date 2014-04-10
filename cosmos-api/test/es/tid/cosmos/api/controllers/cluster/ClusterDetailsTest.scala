@@ -110,7 +110,8 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
       master = None,
       slaves = Seq.empty,
       users = None,
-      services = Set(Hdfs.name, MapReduce2.name) ++ ClusterDetails.unlistedServices
+      services = Set(Hdfs.name, MapReduce2.name) ++ ClusterDetails.unlistedServices,
+      blockedPorts = Set.empty
     )
     val assignment = Cluster(description.id, 13L, new Timestamp(0))
     val details = ClusterDetails(description, assignment, "href")

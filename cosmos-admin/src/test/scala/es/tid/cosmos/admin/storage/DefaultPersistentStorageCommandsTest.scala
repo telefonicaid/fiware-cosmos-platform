@@ -58,7 +58,8 @@ class DefaultPersistentStorageCommandsTest extends FlatSpec with MustMatchers wi
       master = Some(HostDetails("host", "ipAddress")),
       slaves  = Seq(HostDetails("host2", "ipAddress2"), HostDetails("host3", "ipAddress3")),
       users = None,
-      services = Set("HDFS")
+      services = Set("HDFS"),
+      blockedPorts = Set(2, 4, 6)
     )
 
     def givenStorageState(state: ClusterState): Unit = given(sm.describePersistentHdfsCluster())

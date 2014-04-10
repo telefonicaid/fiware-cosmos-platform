@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ambari.configuration._
+import es.tid.cosmos.servicemanager.configuration.ConfigurationBundle
 
 trait NoConfiguration { this: AmbariService =>
   override def configurator(

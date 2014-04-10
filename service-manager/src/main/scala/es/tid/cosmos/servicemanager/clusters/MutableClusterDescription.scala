@@ -34,6 +34,8 @@ trait MutableClusterDescription extends ClusterDescription {
   def users_=(users: Set[ClusterUser])
   override def services: Set[String]
   def services_=(services: Set[String])
+  override def blockedPorts: Set[Int]
+  def blockedPorts_=(blockedPorts: Set[Int])
 
   /** This function handles any errors in the body by marking the cluster as failed. */
   def withFailsafe[A](body: Future[A]): Future[A] = body.transform(identity, err => {
@@ -42,5 +44,5 @@ trait MutableClusterDescription extends ClusterDescription {
   })
 
   final def view: ImmutableClusterDescription = new ImmutableClusterDescription(
-    id, name, size, state, nameNode, master, slaves, users, services)
+    id, name, size, state, nameNode, master, slaves, users, services, blockedPorts)
 }

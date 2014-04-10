@@ -9,12 +9,10 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.configuration
+package es.tid.cosmos.servicemanager.ambari.services
 
-trait ConfigurationHeader {
-  def configType: String
-}
+import es.tid.cosmos.servicemanager.services.{NoParametrization, Service}
 
-case class HeaderOnlyConfiguration(configType: String, tag: String) extends ConfigurationHeader {
-  override def toString = "[Configuration] Type = " + configType + ", Tag = " + tag
+object TestService extends Service with NoParametrization {
+  override val name: String = "Test"
 }

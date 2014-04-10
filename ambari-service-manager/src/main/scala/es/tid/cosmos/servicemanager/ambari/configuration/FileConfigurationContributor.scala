@@ -16,9 +16,10 @@ import scala.collection.JavaConversions._
 
 import com.typesafe.config._
 
-import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes._
-import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits._
-import es.tid.cosmos.servicemanager.configuration.ConfigurationKeys
+import es.tid.cosmos.servicemanager.configuration._
+import es.tid.cosmos.servicemanager.configuration.FactoryTypes.Factory
+import es.tid.cosmos.servicemanager.configuration.FactoryTypes.Implicits._
+import es.tid.cosmos.servicemanager.services.Service
 
 /** Read configuration contributions from file.
   *
@@ -34,6 +35,7 @@ import es.tid.cosmos.servicemanager.configuration.ConfigurationKeys
 class FileConfigurationContributor(
     configPath: String,
     configName: String,
+    associatedService: Option[Service] = None,
     extraProperties: ConfigProperties = Map.empty)
   extends ConfigurationContributor {
 
@@ -135,11 +137,14 @@ class FileConfigurationContributor(
 
   private def service(config: Config) =
     if (config.hasPath(configName)) {
+      require(associatedService.isDefined, "A file configuration contributor cannot " +
+        "contribute to a service if no associated service exists")
       val maybeSingleConfig = properties(configName, config).map(
-        props => List(ServiceConfiguration(config.getString(s"$configName.configType"), props)))
+        props => List(ServiceConfiguration(
+          config.getString(s"$configName.configType"),props, associatedService.get)))
 
       def multipleConfig = (for ((configName, props) <- multipleProperties(configName, config))
-        yield ServiceConfiguration(configName, props)).toList
+        yield ServiceConfiguration(configName, props, associatedService.get)).toList
 
       maybeSingleConfig.getOrElse(multipleConfig)
     } else Nil

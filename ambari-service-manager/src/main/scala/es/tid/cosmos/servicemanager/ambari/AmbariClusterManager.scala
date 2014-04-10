@@ -19,7 +19,7 @@ import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationContribut
 import es.tid.cosmos.servicemanager.ambari.rest.{Host, ServiceClient, AmbariServer, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services.{ComponentDescription, AmbariService}
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.configuration.DynamicPropertiesFactory
+import es.tid.cosmos.servicemanager.configuration.{ConfigurationBundle, DynamicPropertiesFactory}
 import es.tid.cosmos.servicemanager.services.Service
 
 private[ambari] class AmbariClusterManager(
@@ -33,7 +33,7 @@ private[ambari] class AmbariClusterManager(
   override def deployCluster(
       clusterDescription: ImmutableClusterDescription,
       serviceInstances: Seq[AnyServiceInstance],
-      dynamicProperties: DynamicPropertiesFactory): Future[Unit] = {
+      dynamicProperties: DynamicPropertiesFactory): Future[ConfigurationBundle] = {
     val services: Seq[AmbariService] = serviceInstances.map(_.service).map(serviceLookup)
     for {
       cluster <- initCluster(clusterDescription)
@@ -42,7 +42,7 @@ private[ambari] class AmbariClusterManager(
       hosts <- cluster.addHosts(clusterDescription.machines.map(_.hostname))
       masterHost = hosts.find(_.name == master.hostname).get
       slaveHosts = hosts.filter(host => slaves.exists(_.hostname == host.name))
-      _ <- Configurator.applyConfiguration(
+      configuration <- Configurator.applyConfiguration(
         cluster,
         properties = dynamicProperties.forCluster(masterHost.name, slaveHosts.map(_.name)),
         contributors = configuratorContributors(serviceInstances)
@@ -51,7 +51,7 @@ private[ambari] class AmbariClusterManager(
         createService(srv, cluster, masterHost, slaveHosts)
       }
       deployedServices <- installInOrder(serviceClients)
-    } yield ()
+    } yield configuration
   }
 
   private def configuratorContributors(

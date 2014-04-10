@@ -108,11 +108,15 @@ class AmbariServiceManager(
       "This function cannot be called if the slaves have not been set")
     val master = dbClusterDescription.master.get
     val deployment_> = for {
-      _ <- clusterManager.deployCluster(
+      configuration <- clusterManager.deployCluster(
         dbClusterDescription.view, serviceDescriptions, dynamicProperties)
     } yield {
       dbClusterDescription.nameNode = toNameNodeUri(master)
       dbClusterDescription.state = Running
+      configuration.services.find(_.service == InfinityDriver).foreach { serviceConfig =>
+        val blockedPortsString = serviceConfig.properties("blocked_ports").asInstanceOf[String]
+        dbClusterDescription.blockedPorts = blockedPortsString.split(',').map(_.toInt).toSet
+      }
     }
     deployment_>
   }

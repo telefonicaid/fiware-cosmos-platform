@@ -9,13 +9,14 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server
+package es.tid.cosmos.infinity.server.plugin
 
-import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.commons.logging.LogFactory
 import org.apache.hadoop.conf.{Configurable, Configuration}
 import org.apache.hadoop.hdfs.server.namenode.NameNode
 import org.apache.hadoop.util.ServicePlugin
+
+import es.tid.cosmos.infinity.server.MetadataServer
 
 /** Namenode plugin to serve Infinity metadada. */
 class MetadataPlugin extends ServicePlugin with Configurable {
@@ -34,7 +35,7 @@ class MetadataPlugin extends ServicePlugin with Configurable {
   override def start(service: Any): Unit = service match {
     case nameNode: NameNode =>
       log.info("Starting Infinity metadata server as a namenode plugin")
-      val server = new MetadataServer(nameNode, metadataServerConfig)
+      val server = new MetadataServer(nameNode.getRpcServer, PluginConfig.load(getConf))
       server.start()
       serverOpt = Some(server)
     case other =>
@@ -43,11 +44,6 @@ class MetadataPlugin extends ServicePlugin with Configurable {
           | was found. Make sure you have configured it as namenode plugin instead of datanode one.
         """.stripMargin
       )
-  }
-
-  private def metadataServerConfig: Config = {
-    // TODO: use hadoop config at least for overrides
-    ConfigFactory.load()
   }
 
   override def stop(): Unit = {

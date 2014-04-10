@@ -19,7 +19,6 @@ import play.api.libs.json.Json
 
 import es.tid.cosmos.api.profile.Cluster
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
-import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.services.{Hdfs, MapReduce2}
 
@@ -44,6 +43,7 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
     slaves = Some(Seq(host(2), host(3))),
     users = Some(Seq(clusterOwner, extraUser)),
     services = Set("ServiceB", "ServiceA"),
+    blockedPorts = Set(2, 1, 3),
     shared = true
   )
   val sampleJson = Json.obj(
@@ -68,7 +68,8 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
         "isSudoer" -> false
       )
     ),
-    "services" -> Json.arr("ServiceA", "ServiceB")
+    "services" -> Json.arr("ServiceA", "ServiceB"),
+    "blockedPorts" -> Json.arr(1, 2, 3)
   )
 
   "Cluster details" must "be serialized to JSON" in {

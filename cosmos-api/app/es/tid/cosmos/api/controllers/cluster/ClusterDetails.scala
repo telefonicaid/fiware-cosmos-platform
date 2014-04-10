@@ -36,7 +36,8 @@ case class ClusterDetails(
     slaves: Option[Seq[HostDetails]],
     users: Option[Seq[ClusterUser]],
     shared: Boolean,
-    services: Set[String]
+    services: Set[String],
+    blockedPorts: Set[Int]
 )
 
 object ClusterDetails {
@@ -67,7 +68,8 @@ object ClusterDetails {
       slaves = if (desc.slaves.isEmpty) None else Some(desc.slaves),
       shared = assignment.shared,
       users = desc.users.map(_.toSeq),
-      services = desc.services.filterNot(unlistedServices)
+      services = desc.services.filterNot(unlistedServices),
+      blockedPorts = desc.blockedPorts
     )
 
   implicit object HostDetailsWrites extends Writes[HostDetails] {
@@ -97,7 +99,8 @@ object ClusterDetails {
       "state" -> d.state,
       "stateDescription" -> d.stateDescription,
       "shared" -> d.shared,
-      "services" -> d.services.toSeq.sorted
+      "services" -> d.services.toSeq.sorted,
+      "blockedPorts" -> d.blockedPorts.toSeq.sorted
     )
 
     private def machinesInfo(d: ClusterDetails) =

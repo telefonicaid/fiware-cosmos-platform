@@ -28,6 +28,17 @@ object Build extends sbt.Build {
     val spray = "1.3.0"
   }
 
+  object JavaVersions {
+    val java6 = forVersion("1.6")
+    val java7 = forVersion("1.7")
+
+    private def forVersion(version: String) = {
+      val forScala = scalacOptions ++= Seq(s"-target:jvm-$version")
+      val forJava = javacOptions ++= Seq("-source", version, "-target", version)
+      forScala ++ forJava
+    }
+  }
+
   object Dependencies {
     lazy val akka = Seq(
       "com.typesafe.akka" %% "akka-actor" % Versions.akka,
@@ -79,6 +90,7 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
+    settings(JavaVersions.java6: _*)
     dependsOn(common_test % "compile->compile;test->test")
   )
 
@@ -86,12 +98,14 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     settings(Defaults.itSettings: _*)
     configs IntegrationTest
+    settings(JavaVersions.java6: _*)
   )
 
   lazy val ial = (Project(id = "ial", base = file("ial"))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
+    settings(JavaVersions.java7: _*)
     dependsOn(common, common_test % "compile->compile;test->test")
   )
 
@@ -99,6 +113,7 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
+    settings(JavaVersions.java7: _*)
     dependsOn(common, ial, common_test % "compile->compile;test->test")
   )
 
@@ -107,6 +122,7 @@ object Build extends sbt.Build {
       settings(ScctPlugin.instrumentSettings: _*)
       configs IntegrationTest
       settings(Defaults.itSettings: _*)
+      settings(JavaVersions.java7: _*)
       dependsOn(serviceManager % "compile->compile;test->test", common, ial,
         common_test % "compile->compile;test->test")
     )
@@ -117,6 +133,7 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(RpmSettings.cosmosApiSettings: _*)
+    settings(JavaVersions.java7: _*)
     dependsOn(ambariServiceManager, serviceManager, common, ial, common_test % "test->compile")
   )
 
@@ -125,6 +142,7 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(RpmSettings.cosmosAdminSettings: _*)
+    settings(JavaVersions.java7: _*)
     dependsOn(
       ambariServiceManager,
       serviceManager,
@@ -138,6 +156,7 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(parallelExecution in ThisBuild := false)
+    settings(JavaVersions.java7: _*)
     dependsOn(
       common_test % "compile->compile;test->test",
       serviceManager % "compile->compile;test->test",
@@ -149,6 +168,7 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(RpmSettings.infinitySettings: _*)
+    settings(JavaVersions.java6: _*)
   )
 
   lazy val infinityServer = (Project(id = "infinity-server", base = file("infinity-server"))
@@ -158,6 +178,7 @@ object Build extends sbt.Build {
     settings(buildSettings: _*)
     settings(assemblySettings: _*)
     settings(RpmSettings.infinityServerSettings: _*)
+    settings(JavaVersions.java6: _*)
     dependsOn(common)
   )
 

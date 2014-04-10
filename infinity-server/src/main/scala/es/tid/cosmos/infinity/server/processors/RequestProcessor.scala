@@ -23,7 +23,6 @@ import spray.http._
 import spray.httpx.ResponseTransformation
 
 import es.tid.cosmos.infinity.server.authentication._
-import es.tid.cosmos.infinity.server.authorization.{AuthorizationException, Authorization}
 import es.tid.cosmos.infinity.server.config.{AuthTokenConfig, ServiceConfig}
 
 /** Request processor actor class.
@@ -36,7 +35,6 @@ import es.tid.cosmos.infinity.server.config.{AuthTokenConfig, ServiceConfig}
   *   <li>Upon creation, it's ready to receive a [[Request]] message that contains all the
   *   relevant information to process the request.
   *   <li>The processor requests its [[Authentication]] to authenticate the requester.
-  *   <li>The processor requests its [[Authorization]] to authorize the action.
   *   <li>The processor submits the request to the appropriate HDFS name node and receives the
   *   response, which is intercepted and modified to reflect the appropriate redirection to
   *   the data node proxy with the corresponding authentication token.
@@ -46,12 +44,10 @@ import es.tid.cosmos.infinity.server.config.{AuthTokenConfig, ServiceConfig}
   * This lifecycle is intended for just one request (an instances of RequestProcessor per request).
   *
   * @param authenticationProps  the props of the actor providing the authentication logic
-  * @param authorizationProps   the props of the actor that provides the authorization logic
   * @param configuration      actor configuration
   */
 private[processors] class RequestProcessor(
     authenticationProps: Props,
-    authorizationProps: Props,
     configuration: RequestProcessor.Configuration
   ) extends Actor
   with FSM[RequestProcessor.StateName, RequestProcessor.StateData]
@@ -59,11 +55,9 @@ private[processors] class RequestProcessor(
 
   import RequestProcessor._
   import Authentication._
-  import Authorization._
 
   val tokenGenerator = TokenGenerator(configuration.authTokenConfig)
   val authenticationRef = context.actorOf(authenticationProps, "authentication")
-  val authorizationRef = context.actorOf(authorizationProps, "authorization")
 
   startWith(Ready, NoData)
 
@@ -76,27 +70,15 @@ private[processors] class RequestProcessor(
 
   when (Authenticating) {
     case Event(Authenticated(profile), UnauthenticatedRequest(req)) =>
-      authorizationRef ! Authorize(req.action, profile)
-      goto(Authorizing) using AuthenticatedRequest(req, profile)
+      IO(Http)(context.system) ! Http.Connect(
+        host = configuration.serviceConfig.webhdfsHostname,
+        port = configuration.serviceConfig.webhdfsPort)
+      goto(Forwarding) using AuthenticatedRequest(req, profile)
 
     case Event(AuthenticationFailed(error: AuthenticationException), UnauthenticatedRequest(req)) =>
       stopReportingUnauthorized(error, req)
 
     case Event(AuthenticationFailed(unexpectedError), UnauthenticatedRequest(req)) =>
-      stopReportingFailure(unexpectedError, req)
-  }
-
-  when (Authorizing) {
-    case Event(Authorized, AuthenticatedRequest(req, _)) =>
-      IO(Http)(context.system) ! Http.Connect(
-        host = configuration.serviceConfig.webhdfsHostname,
-        port = configuration.serviceConfig.webhdfsPort)
-      goto(Forwarding)
-
-    case Event(AuthorizationFailed(error: AuthorizationException), AuthenticatedRequest(req, _)) =>
-      stopReportingForbidden(error, req)
-
-    case Event(AuthorizationFailed(unexpectedError), AuthenticatedRequest(req, _)) =>
       stopReportingFailure(unexpectedError, req)
   }
 
@@ -159,11 +141,6 @@ private[processors] class RequestProcessor(
     stop(Failure(error))
   }
 
-  private def stopReportingForbidden(error: AuthorizationException, req: Request): State = {
-    reportError(StatusCodes.Forbidden, error, req)
-    stop(Normal)
-  }
-
   private def stopReportingUnauthorized(error: AuthenticationException, req: Request): State = {
     reportError(StatusCodes.Unauthorized, error, req)
     stop(Normal)
@@ -198,9 +175,6 @@ object RequestProcessor {
   /** The processor is authenticating the request against an authentication provider. */
   case object Authenticating extends StateName
 
-  /** The processor is authorizing the request against an authorization provider. */
-  case object Authorizing extends StateName
-
   /** The processor is forwarding the request to the HDFS endpoint. */
   case object Forwarding extends StateName
 
@@ -217,9 +191,8 @@ object RequestProcessor {
   case class AuthenticatedRequest[R <: Request](req: R, profile: UserProfile) extends StateData
 
   /** Obtain the props object of a [[RequestProcessor]] from its construction params. */
-  def props(authenticationProps: Props, authorizationProps: Props, config: Config): Props =
-    Props(new RequestProcessor(authenticationProps, authorizationProps,
-      Configuration.fromSystemConfig(config)))
+  def props(authenticationProps: Props, config: Config): Props =
+    Props(new RequestProcessor(authenticationProps, Configuration.fromSystemConfig(config)))
 
   private val RequestTimeoutProperty = "cosmos.infinity.server.request-timeout"
 

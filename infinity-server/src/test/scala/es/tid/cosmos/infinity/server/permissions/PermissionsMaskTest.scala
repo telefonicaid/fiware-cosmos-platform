@@ -9,17 +9,18 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.infinity.server.authentication
+package es.tid.cosmos.infinity.server.permissions
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.server.authorization.{FilePermissions, PermissionClass, UnixFilePermissions}
+import es.tid.cosmos.infinity.server.authentication.UserProfile
+import es.tid.cosmos.infinity.server.fs.FilePermissions
 
-class UnixFilePermissionsTest extends FlatSpec with MustMatchers {
+class PermissionsMaskTest extends FlatSpec with MustMatchers {
 
   "Unix file permissions" must "be convertible from valid octal representation" in {
-    UnixFilePermissions.fromOctal("752") must be (UnixFilePermissions(
+    PermissionsMask.fromOctal("752") must be (PermissionsMask(
       owner = PermissionClass(read = true, write = true, execute = true),
       group = PermissionClass(read = true, write = false, execute = true),
       others = PermissionClass(read = false, write = true, execute = false)
@@ -27,17 +28,17 @@ class UnixFilePermissionsTest extends FlatSpec with MustMatchers {
   }
 
   it must "print itself as octal value" in {
-    UnixFilePermissions.fromOctal("752").toString must be ("752")
+    PermissionsMask.fromOctal("752").toString must be ("752")
   }
 
   it must "reject conversion from invalid octal representation" in {
-    intercept[IllegalArgumentException] { UnixFilePermissions.fromOctal("ABC") }
-    intercept[IllegalArgumentException] { UnixFilePermissions.fromOctal("759") }
-    intercept[IllegalArgumentException] { UnixFilePermissions.fromOctal("7553") }
+    intercept[IllegalArgumentException] { PermissionsMask.fromOctal("ABC") }
+    intercept[IllegalArgumentException] { PermissionsMask.fromOctal("759") }
+    intercept[IllegalArgumentException] { PermissionsMask.fromOctal("7553") }
   }
 
   "File Permissions" must "check permissions correctly" in {
-    val filePermission = FilePermissions("bob", "staff", UnixFilePermissions.fromOctal("754"))
+    val filePermission = FilePermissions("bob", "staff", PermissionsMask.fromOctal("754"))
 
     val bob = UserProfile("bob", "bob")
 
@@ -45,7 +46,7 @@ class UnixFilePermissionsTest extends FlatSpec with MustMatchers {
     filePermission.canWrite(bob) must be (true)
     filePermission.canExec(bob) must be (true)
 
-    val bobImpersonated = UserProfile("bob", "staff", UnixFilePermissions.fromOctal("077"))
+    val bobImpersonated = UserProfile("bob", "staff", PermissionsMask.fromOctal("077"))
 
     filePermission.canRead(bobImpersonated) must be (true)
     filePermission.canWrite(bobImpersonated) must be (false)
@@ -68,7 +69,5 @@ class UnixFilePermissionsTest extends FlatSpec with MustMatchers {
     filePermission.canRead(superuser) must be (true)
     filePermission.canWrite(superuser) must be (true)
     filePermission.canExec(superuser) must be (true)
-
   }
-
 }

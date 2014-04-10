@@ -18,7 +18,7 @@ import net.liftweb.json.JsonParser.ParseException
 import spray.http.HttpEntity
 
 import es.tid.cosmos.infinity.server.authentication.UserProfile
-import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions
+import es.tid.cosmos.infinity.server.permissions.PermissionsMask
 
 private[cosmosapi] case class ResponseObject(
     user: String,
@@ -26,13 +26,13 @@ private[cosmosapi] case class ResponseObject(
     accessMask: String,
     origins: Option[Seq[String]]) {
 
-  require(UnixFilePermissions.isValidOctal(accessMask),
+  require(PermissionsMask.isValidOctal(accessMask),
     s"invalid access mask expression '$accessMask': octal value was expected")
 
   def toUserProfile = UserProfile(
     username = user,
     group = group,
-    unixPermissionMask = UnixFilePermissions.fromOctal(accessMask)
+    mask = PermissionsMask.fromOctal(accessMask)
   )
 }
 

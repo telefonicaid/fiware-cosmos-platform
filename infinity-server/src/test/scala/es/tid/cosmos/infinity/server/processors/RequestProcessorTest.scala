@@ -25,13 +25,12 @@ import spray.http._
 import spray.httpx.RequestBuilding
 
 import es.tid.cosmos.infinity.server.authentication._
-import es.tid.cosmos.infinity.server.authorization._
 import es.tid.cosmos.infinity.server.config.ServiceConfig
-import es.tid.cosmos.infinity.test.{MockActor, ActorFlatSpec}
+import es.tid.cosmos.infinity.server.permissions.PermissionsMask
+import es.tid.cosmos.infinity.test.{ActorFlatSpec, MockActor}
 
 class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
   import Authentication._
-  import Authorization._
 
   "Request processor" must "instantiate authentication and authorization actors" in new SampleProcessor {
     shouldCreateChildActors()
@@ -56,31 +55,14 @@ class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
       }
     }
 
-  it must "request authorization after successful authentication" in new SampleProcessor {
-    shouldAuthorize()
-  }
-
-  it must "return Forbidden on lack of permissions and stop" in new SampleProcessor {
-    onceAuthorizationFailed(new AuthorizationException("you lack the permissions")) {
-      expectHttpResponse(StatusCodes.Forbidden)
-      expectTermination()
-    }
-  }
-
-  it must "return InternalServerError on unexpected error while authorizing and stop" in
+  it must "return TemporaryRedirect on success authentication and then stop" in
     new SampleProcessor {
-      onceAuthorizationFailed(new Error("unexpected error")) {
-        expectHttpResponse(StatusCodes.InternalServerError)
-        expectTermination()
+      withRedirectionServer {
+        onceAuthenticationSucceeds {
+          expectHttpResponse(have(status(StatusCodes.TemporaryRedirect)) and be(ValidRedirection))
+          expectTermination()
+        }
       }
-    }
-
-  it must "return TemporaryRedirect on success authentication and authorization and stop" in
-    new SampleProcessor {
-      withRedirectionServer { onceAuthorizationSucceeds {
-        expectHttpResponse(have(status(StatusCodes.TemporaryRedirect)) and be(ValidRedirection))
-        expectTermination()
-      }}
     }
 
   it must "timeout after a finite delay" in new SampleProcessor(requestTimeout = 500.millis) {
@@ -91,12 +73,6 @@ class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
   it must "timeout after authentication and a finite delay" in
     new SampleProcessor(requestTimeout = 500.millis) {
       shouldAuthenticate()
-      expectTermination()
-    }
-
-  it must "timeout after authorization and a finite delay" in
-    new SampleProcessor(requestTimeout = 500.millis) {
-      shouldAuthorize()
       expectTermination()
     }
 
@@ -125,12 +101,11 @@ class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
     val remoteAddress = InetAddress.getLocalHost
     val requester = TestProbe()
     val authenticator = TestProbe()
-    val authorizator = TestProbe()
     val credentials = UserCredentials("user-key", "user-secret")
     val profile = UserProfile(
       username = "apv",
       group = "cosmos",
-      unixPermissionMask = UnixFilePermissions.fromOctal("777")
+      mask = PermissionsMask.fromOctal("777")
     )
     val request = Request(remoteAddress, requester.ref, Get(sampleUri))
     val processorConfig = ConfigFactory.parseString(s"""
@@ -139,14 +114,12 @@ class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
     val processor = system.actorOf(
       RequestProcessor.props(
         MockActor.props("authenticator", authenticator),
-        MockActor.props("authorizator", authorizator),
         processorConfig)
     )
     requester.watch(processor)
 
     def shouldCreateChildActors(): Unit = {
       authenticator.expectMsgPF() { case MockActor.Created("authenticator", _) => () }
-      authorizator.expectMsgPF() {  case MockActor.Created("authorizator", _) => () }
     }
 
     def shouldAuthenticate(): Unit = {
@@ -167,25 +140,6 @@ class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
     def onceAuthenticationFailed(error: Throwable)(body: => Unit): Unit = {
       shouldAuthenticate()
       authenticator.send(processor, AuthenticationFailed(error))
-      body
-    }
-
-    def shouldAuthorize(): Unit = onceAuthenticationSucceeds {
-      authorizator.expectMsg(MockActor.Received(
-        message = Authorize(request.action, profile),
-        sender = processor
-      ))
-    }
-
-    def onceAuthorizationSucceeds(body: => Unit): Unit = {
-      shouldAuthorize()
-      authorizator.send(processor, Authorized)
-      body
-    }
-
-    def onceAuthorizationFailed(error: Throwable)(body: => Unit): Unit = {
-      shouldAuthorize()
-      authorizator.send(processor, AuthorizationFailed(error))
       body
     }
 

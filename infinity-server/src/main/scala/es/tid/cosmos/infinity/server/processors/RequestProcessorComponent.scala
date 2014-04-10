@@ -11,8 +11,8 @@
 
 package es.tid.cosmos.infinity.server.processors
 
-import akka.actor.{Props, ActorRef}
+import akka.actor.Props
 
 trait RequestProcessorComponent {
-  def requestProcessorProps(authenticationProps: Props, authorizationProps: Props): Props
+  def requestProcessorProps(authenticationProps: Props): Props
 }

@@ -24,14 +24,12 @@ import spray.can.Http
 import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.infinity.server.app.InfinityAppComponent
 import es.tid.cosmos.infinity.server.authentication.cosmosapi.CosmosApiAuthenticationComponent
-import es.tid.cosmos.infinity.server.authorization.PersistentAuthorizationComponent
 import es.tid.cosmos.infinity.server.fs.sql.InfinityDataStoreSqlComponent
 import es.tid.cosmos.infinity.server.processors.DefaultRequestProcessorComponent
 
 class MetadataServer(namenodeProtocols: NamenodeProtocols, override val config: Config)
   extends InfinityAppComponent
   with CosmosApiAuthenticationComponent
-  with PersistentAuthorizationComponent
   with InfinityDataStoreSqlComponent
   with DefaultRequestProcessorComponent
   with ConfigComponent {

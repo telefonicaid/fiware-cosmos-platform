@@ -11,13 +11,13 @@
 
 package es.tid.cosmos.infinity.server.authentication
 
-import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions
+import es.tid.cosmos.infinity.server.permissions.PermissionsMask
 
 /** The profile of a user in Infinity.
   *
   * @param username The name of the user.
   * @param group The group of the user
-  * @param unixPermissionMask The mask applied to the UNIX permissions for the user.
+  * @param mask The mask applied to the UNIX permissions for the user.
   * @param accessFrom The set of hostnames where this profile is allowed to access from.
   *                   An empty set means any host.
   * @param superuser Superuser can modify filesystem without any restrictions
@@ -25,7 +25,7 @@ import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions
 case class UserProfile(
   username: String,
   group: String,
-  unixPermissionMask: UnixFilePermissions = UnixFilePermissions.fromOctal("777"),
+  mask: PermissionsMask = PermissionsMask.fromOctal("777"),
   accessFrom: Set[String] = Set.empty,
   superuser: Boolean = false
 )

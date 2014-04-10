@@ -15,9 +15,8 @@ import java.sql.Connection
 
 import anorm._
 
-import es.tid.cosmos.infinity.server.authorization.FilePermissions
-import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
 import es.tid.cosmos.infinity.server.fs._
+import es.tid.cosmos.infinity.server.permissions.PermissionsMask._
 import es.tid.cosmos.infinity.server.util.{Path, RootPath, SubPath}
 
 class InodeDaoSql extends InodeDao[Connection] {

@@ -16,9 +16,7 @@ import scala.concurrent.duration._
 
 import akka.actor._
 import akka.actor.FSM.{Failure, Normal}
-import akka.io.IO
 import com.typesafe.config.Config
-import spray.can.Http
 import spray.http._
 import spray.httpx.ResponseTransformation
 
@@ -69,31 +67,15 @@ private[processors] class RequestProcessor(
   }
 
   when (Authenticating) {
-    case Event(Authenticated(profile), UnauthenticatedRequest(req)) =>
-      IO(Http)(context.system) ! Http.Connect(
-        host = configuration.serviceConfig.webhdfsHostname,
-        port = configuration.serviceConfig.webhdfsPort)
-      goto(Forwarding) using AuthenticatedRequest(req, profile)
+    case Event(Authenticated(profile), UnauthenticatedRequest(Request(action, _, responder))) =>
+      responder ! action.run(profile)
+      stop(Normal)
 
     case Event(AuthenticationFailed(error: AuthenticationException), UnauthenticatedRequest(req)) =>
       stopReportingUnauthorized(error, req)
 
     case Event(AuthenticationFailed(unexpectedError), UnauthenticatedRequest(req)) =>
       stopReportingFailure(unexpectedError, req)
-  }
-
-  when (Forwarding) {
-    case Event(Http.Connected(_, _), AuthenticatedRequest(req, _)) =>
-      sender ! req.httpRequest
-      stay()
-
-    case Event(rep: HttpResponse, AuthenticatedRequest(req, _)) =>
-      req.responder ! mapResponse(rep)
-      stop(Normal)
-
-    case Event(rep: Http.ConnectionClosed, AuthenticatedRequest(req, _)) =>
-      req.responder ! rep
-      stop(Normal)
   }
 
   whenUnhandled {
@@ -111,30 +93,6 @@ private[processors] class RequestProcessor(
 
   private def requestAuthentication(credentials: Credentials): Unit =
     authenticationRef ! Authenticate(credentials)
-
-  private def mapResponse(rep: HttpResponse): HttpResponse = rep.withHeaders(rep.headers.map {
-    case HttpHeaders.Location(uri) => HttpHeaders.Location(mapUri(uri))
-    case header => header
-  })
-
-  private def mapUri(uri: Uri): Uri = {
-    val host = uri.authority.host.address
-    val port = uri.authority.port
-    val srv = ServiceConfig.fromWebHdfs(host, port)(context.system).getOrElse(
-      throw new IllegalStateException(s"no service defined for WebHDFS endpoint $host:$port"))
-    val redirectionUri = uri
-      .withHost(srv.infinityHostname)
-      .withPort(srv.infinityPort)
-    tokenizePath(redirectionUri)
-  }
-
-  private def tokenizePath(uri: Uri): Uri = {
-    val expireOn = (System.currentTimeMillis() / 1000) + configuration.authTokenConfig.duration
-    uri.withPath(Uri.Path(configuration.authTokenConfig.pathTemplate.toString
-      .replace("${token}", tokenGenerator.encode(uri, expireOn))
-      .replace("${expire}", expireOn.toString)
-      .replace("${path}", uri.path.toString())))
-  }
 
   private def stopReportingFailure(error: Throwable, req: Request): State = {
     reportError(StatusCodes.InternalServerError, error, req)
@@ -176,7 +134,7 @@ object RequestProcessor {
   case object Authenticating extends StateName
 
   /** The processor is forwarding the request to the HDFS endpoint. */
-  case object Forwarding extends StateName
+  case object Serving extends StateName
 
   /** The data maintained by the request processor. */
   sealed trait StateData

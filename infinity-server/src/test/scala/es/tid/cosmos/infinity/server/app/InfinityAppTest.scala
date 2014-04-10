@@ -18,18 +18,21 @@ import akka.testkit.TestProbe
 import spray.http._
 import spray.http.HttpHeaders.{Authorization, `Remote-Address`}
 
-import es.tid.cosmos.infinity.server.authentication.AuthenticationComponent
+import es.tid.cosmos.infinity.server.actions.Action
+import es.tid.cosmos.infinity.server.authentication.{UserCredentials, AuthenticationComponent}
 import es.tid.cosmos.infinity.server.processors.{Request, RequestProcessorComponent}
+import es.tid.cosmos.infinity.server.util.Path
 import es.tid.cosmos.infinity.test.{ActorFlatSpec, MockActor}
 
 class InfinityAppTest extends ActorFlatSpec("InfinityAppTest") {
   val probe = TestProbe()
+  val mockProbe = TestProbe()
   val app = system.actorOf(TestInfinityAppComponent.infinityAppProps)
   var servicesCreated: Seq[MockActor.Created] = _
   val remoteAddress = InetAddress.getByName("10.0.0.1")
   val httpRequest = HttpRequest(
-    method = HttpMethods.DELETE,
-    uri = Uri("/webhdfs/v1/tmp/foo?op=DELETE&recursive=true")
+    method = HttpMethods.GET,
+    uri = Uri("/infinityfs/v1/metadata/tmp/foo")
   ).withHeaders(List(
     `Remote-Address`(RemoteAddress(remoteAddress)),
     Authorization(BasicHttpCredentials("key", "secret"))
@@ -40,19 +43,19 @@ class InfinityAppTest extends ActorFlatSpec("InfinityAppTest") {
     with RequestProcessorComponent{
     override val authenticationProps = MockActor.props("authentication", probe)
     override def requestProcessorProps(authenticationProps: Props) =
-      MockActor.props("request", probe)
+      MockActor.props("request", mockProbe)
   }
 
   "An infinity app" must "spawn a request processor per request" in {
     probe.send(app, httpRequest)
-    probe.expectMsgClass(classOf[MockActor.Created])
+    mockProbe.expectMsgClass(classOf[MockActor.Created])
   }
 
   it must "delegate requests to it" in {
-    val request = probe.expectMsgPF() {
+    val request = mockProbe.expectMsgPF() {
       case MockActor.Received(r: Request, `app`) => r
     }
-    request.remoteAddress must be (remoteAddress)
-    request.httpRequest must be (httpRequest)
+    request.action must be (Action.GetMetadata(Path.absolute("/tmp/foo")))
+    request.credentials must be (UserCredentials("key", "secret"))
   }
 }

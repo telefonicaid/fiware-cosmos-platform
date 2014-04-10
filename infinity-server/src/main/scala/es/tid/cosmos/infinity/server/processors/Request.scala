@@ -19,7 +19,9 @@ import spray.http.HttpRequest
 import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication._
 
-case class Request(remoteAddress: InetAddress, responder: ActorRef, httpRequest: HttpRequest) {
-  val action: Action = Action(httpRequest)
-  val credentials: Credentials = Credentials.from(remoteAddress, httpRequest)
+case class Request(action: Action, credentials: Credentials, responder: ActorRef)
+
+object Request {
+  def apply(remoteAddress: InetAddress, httpRequest: HttpRequest, responder: ActorRef): Request =
+    Request(Action(httpRequest), Credentials.from(remoteAddress, httpRequest), responder)
 }

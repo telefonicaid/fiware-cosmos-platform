@@ -11,39 +11,54 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import spray.http.HttpRequest
+import spray.http.{HttpResponse, HttpRequest}
 
 import es.tid.cosmos.infinity.server.util.Path
+import es.tid.cosmos.infinity.server.authentication.UserProfile
 
 /** An action performed on a Infinity path. */
 sealed trait Action {
   val on: Path
+
+  def run(user: UserProfile): HttpResponse = ???
 }
 
 object Action extends ActionMapping {
 
-  def apply(request: HttpRequest): Action =
-    opQueryParam(request) match {
-      case "OPEN" => Open(request)
-      case "GETFILESTATUS" => GetFileStatus(request)
-      case "LISTSTATUS" => ListStatus(request)
-      case "GETCONTENTSUMMARY" => GetContentSummary(request)
-      case "GETFILECHECKSUM" => GetFileChecksum(request)
-      case "GETHOMEDIRECTORY" => GetHomeDirectory(request)
-      case "GETDELEGATIONTOKEN" => GetDelegationToken(request)
-      case "CREATE" => Create(request)
-      case "MKDIRS" => Mkdirs(request)
-      case "RENAME" => Rename(request)
-      case "SETREPLICATION" => SetReplication(request)
-      case "SETOWNER" => SetOwner(request)
-      case "SETPERMISSION" => SetPermission(request)
-      case "SETTIMES" => SetTimes(request)
-      case "RENEWDELEGATIONTOKEN" => RenewDelegationToken(request)
-      case "CANCELDELEGATIONTOKEN" => CancelDelegationToken(request)
-      case "APPEND" => Append(request)
-      case "DELETE" => Delete(request)
-      case op => throw new IllegalArgumentException(s"unknown operation '$op' in $request")
+  private val MetadataPath = """/infinityfs/v1/metadata(.*)""".r
+
+  def apply(request: HttpRequest): Action = {
+    request.uri.path.toString() match {
+      case MetadataPath(path) =>
+        makeMetadataAction(Path.absolute(path), request)
+      case _ =>
+        opQueryParam(request) match {
+          case "OPEN" => Open(request)
+          case "GETFILESTATUS" => GetFileStatus(request)
+          case "LISTSTATUS" => ListStatus(request)
+          case "GETCONTENTSUMMARY" => GetContentSummary(request)
+          case "GETFILECHECKSUM" => GetFileChecksum(request)
+          case "GETHOMEDIRECTORY" => GetHomeDirectory(request)
+          case "GETDELEGATIONTOKEN" => GetDelegationToken(request)
+          case "CREATE" => Create(request)
+          case "MKDIRS" => Mkdirs(request)
+          case "RENAME" => Rename(request)
+          case "SETREPLICATION" => SetReplication(request)
+          case "SETOWNER" => SetOwner(request)
+          case "SETPERMISSION" => SetPermission(request)
+          case "SETTIMES" => SetTimes(request)
+          case "RENEWDELEGATIONTOKEN" => RenewDelegationToken(request)
+          case "CANCELDELEGATIONTOKEN" => CancelDelegationToken(request)
+          case "APPEND" => Append(request)
+          case "DELETE" => Delete(request)
+          case op => throw new IllegalArgumentException(s"unknown operation '$op' in $request")
+        }
     }
+  }
+
+  case class GetMetadata(on: Path) extends Action
+
+  private def makeMetadataAction(path: Path, request: HttpRequest): Action = GetMetadata(path)
 
   /** A OPEN action on a Infinity path. */
   case class Open(

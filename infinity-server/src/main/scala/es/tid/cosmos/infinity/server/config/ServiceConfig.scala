@@ -19,19 +19,11 @@ import com.typesafe.config.{Config, ConfigException}
 
 case class ServiceConfig(
   name: String,
-  webhdfsHostname: String,
-  webhdfsPort: Int,
   infinityHostname: String,
   infinityPort: Int
 )
 
 object ServiceConfig {
-
-  def webhdfsHostnameProperty(serviceName: String) =
-    s"infinity.server.services.$serviceName.webhdfs.hostname"
-
-  def webhdfsPortProperty(serviceName: String) =
-    s"infinity.server.services.$serviceName.webhdfs.port"
 
   def infinityHostnameProperty(serviceName: String) =
     s"infinity.server.services.$serviceName.infinity.hostname"
@@ -45,8 +37,6 @@ object ServiceConfig {
   def apply(name: String, config: Config): Option[ServiceConfig] = try {
     Some(ServiceConfig(
       name = name,
-      webhdfsHostname = config.getString(webhdfsHostnameProperty(name)),
-      webhdfsPort = config.getInt(webhdfsPortProperty(name)),
       infinityHostname = config.getString(infinityHostnameProperty(name)),
       infinityPort = config.getInt(infinityPortProperty(name))
     ))
@@ -66,20 +56,5 @@ object ServiceConfig {
   } catch {
     case e: ConfigException =>
       throw new IllegalStateException("cannot obtain active service config", e)
-  }
-
-  def fromWebHdfs(hostname: String, port: Int)(implicit system: ActorSystem): Option[ServiceConfig] = {
-    val config = system.settings.config
-    val serviceConfig = config.getObject("infinity.server.services").withoutKey("active")
-    val services = serviceConfig.toMap.map { case (srv, _) =>
-      (srv,
-        config.getString(s"infinity.server.services.$srv.webhdfs.hostname"),
-        config.getInt(s"infinity.server.services.$srv.webhdfs.port"))
-    }.toSeq
-    val service = services.find {
-      case (_, `hostname`, `port`) => true
-      case _ => false
-    }
-    service.flatMap { case (serviceName, _, _) => ServiceConfig(serviceName) }
   }
 }

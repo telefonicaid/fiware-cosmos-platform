@@ -11,30 +11,31 @@
 
 package es.tid.cosmos.infinity.server.processors
 
-import java.net.{InetAddress, InetSocketAddress}
+import java.net.InetAddress
 import scala.concurrent.duration._
 
 import akka.actor._
-import akka.io.IO
 import akka.testkit.TestProbe
-import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
+import org.mockito.BDDMockito.given
 import org.scalatest.matchers._
-import spray.can.Http
+import org.scalatest.mock.MockitoSugar
 import spray.http._
 import spray.httpx.RequestBuilding
 
+import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication._
 import es.tid.cosmos.infinity.server.config.ServiceConfig
 import es.tid.cosmos.infinity.server.permissions.PermissionsMask
 import es.tid.cosmos.infinity.test.{ActorFlatSpec, MockActor}
 
-class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
+class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") with MockitoSugar {
   import Authentication._
 
-  "Request processor" must "instantiate authentication and authorization actors" in new SampleProcessor {
-    shouldCreateChildActors()
-  }
+  "Request processor" must "instantiate authentication and authorization actors" in
+    new SampleProcessor {
+      shouldCreateChildActors()
+    }
 
   it must "request authentication to its provider" in new SampleProcessor {
     shouldAuthenticate()
@@ -55,13 +56,11 @@ class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
       }
     }
 
-  it must "return TemporaryRedirect on success authentication and then stop" in
+  it must "return action result on success authentication and then stop" in
     new SampleProcessor {
-      withRedirectionServer {
-        onceAuthenticationSucceeds {
-          expectHttpResponse(have(status(StatusCodes.TemporaryRedirect)) and be(ValidRedirection))
-          expectTermination()
-        }
+      onceAuthenticationSucceeds {
+        expectHttpResponse(have(status(StatusCodes.OK)))
+        expectTermination()
       }
     }
 
@@ -88,13 +87,8 @@ class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
   }
 
   def withInfinityUri(service: String, uri: Uri): Uri = {
-    val cfg = ServiceConfig(service).get
+    val cfg = ServiceConfig(service, system.settings.config).get
     uri.copy(authority = Uri.Authority(Uri.Host(cfg.infinityHostname), cfg.infinityPort))
-  }
-
-  def withWebHdfsUri(service: String, uri: Uri): Uri = {
-    val cfg = ServiceConfig(service).get
-    uri.copy(authority = Uri.Authority(Uri.Host(cfg.webhdfsHostname), cfg.webhdfsPort))
   }
 
   class SampleProcessor(requestTimeout: FiniteDuration = 1.minute) extends RequestBuilding {
@@ -107,12 +101,9 @@ class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
       group = "cosmos",
       mask = PermissionsMask.fromOctal("777")
     )
-    val request = Request(remoteAddress, requester.ref, HttpRequest(
-      method = HttpMethods.GET,
-      uri = Uri(sampleUri),
-      headers = List(
-        HttpHeaders.Authorization(BasicHttpCredentials(credentials.apiKey, credentials.apiSecret)))
-    ))
+    val action = mock[Action]
+    given(action.run(profile)).willReturn(HttpResponse(StatusCodes.OK))
+    val request = Request(action, credentials, requester.ref)
     val processorConfig = ConfigFactory.parseString(s"""
       cosmos.infinity.server.request-timeout = ${requestTimeout.toMillis} ms
     """).withFallback(system.settings.config)
@@ -159,35 +150,6 @@ class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
 
     def expectTermination() {
       requester.expectTerminated(processor)
-    }
-
-    def withRedirectionServer(body: => Unit): Unit = {
-      implicit val bindTimeout = Timeout(5.seconds)
-
-      val server = system.actorOf(Props(new Actor with ActorLogging {
-        override def receive = {
-          case Http.Connected(_, _) =>
-            sender ! Http.Register(handler = context.self)
-          case HttpRequest(HttpMethods.GET, uri, _, _, _) =>
-            sender ! HttpResponse(
-              status = StatusCodes.TemporaryRedirect,
-              headers = List(
-                HttpHeaders.Location(withWebHdfsUri(datanodeService, uri)))
-            )
-          case msg =>
-            log.error(s"unexpected message arrived: $msg")
-        }
-      }))
-      val bindProbe = TestProbe()
-      bindProbe.send(IO(Http), Http.Bind(server, interface = "localhost", port = 8008))
-      bindProbe.expectMsg(Http.Bound(new InetSocketAddress("localhost", 8008)))
-      val listener = bindProbe.sender()
-
-      try { body }
-      finally {
-        bindProbe.send(listener, Http.Unbind)
-        bindProbe.expectMsg(Http.Unbound)
-      }
     }
   }
 

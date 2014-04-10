@@ -27,7 +27,7 @@ class InfinityApp(requestProcessorProps: Props)
   def receive = runRoute(routes)
 
   private val routes =
-    pathPrefix("webhdfs" / "v1") {
+    pathPrefix("infinityfs" / "v1") {
       delegateToRequestProcessor
     } ~
     path("") {
@@ -53,8 +53,8 @@ class InfinityApp(requestProcessorProps: Props)
 
   private def parseRequest(ctx: RequestContext) = Request(
     remoteAddress = remoteAddress(ctx.request),
-    responder = ctx.responder,
-    httpRequest = ctx.request
+    httpRequest = ctx.request,
+    responder = ctx.responder
   )
 
   private def remoteAddress(request: HttpRequest) = (for {

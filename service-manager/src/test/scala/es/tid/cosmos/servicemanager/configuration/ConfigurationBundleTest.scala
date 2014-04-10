@@ -14,6 +14,8 @@ package es.tid.cosmos.servicemanager.configuration
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.servicemanager.services.Hdfs
+
 class ConfigurationBundleTest extends FlatSpec with MustMatchers {
 
   "A Bundle" must "return no configurations where it has none" in {
@@ -23,7 +25,7 @@ class ConfigurationBundleTest extends FlatSpec with MustMatchers {
   it must "return only the optional configurations that have a value" in {
     val global = GlobalConfiguration(Map.empty)
     val core = CoreConfiguration(Map.empty)
-    val services = List(ServiceConfiguration("service", Map.empty))
+    val services = List(ServiceConfiguration("service", Map.empty, Hdfs))
     ConfigurationBundle(Some(global), None, services).configurations must equal (global :: services)
     ConfigurationBundle(None, Some(core), services).configurations must equal (core :: services)
     ConfigurationBundle(

@@ -48,4 +48,6 @@ class InMemoryClusterDescription(
   def users_=(users: Set[ClusterUser]) {
     users_ = Some(users)
   }
+
+  override var blockedPorts: Set[Int] = Set.empty
 }

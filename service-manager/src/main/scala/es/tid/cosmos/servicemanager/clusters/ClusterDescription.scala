@@ -68,4 +68,7 @@ trait ClusterDescription {
 
   /** Both master and slave host details. */
   def hosts: Set[HostDetails] = (slaves ++ master).toSet
+
+  /** The ports that have been blocked on this cluster */
+  def blockedPorts: Set[Int]
 }

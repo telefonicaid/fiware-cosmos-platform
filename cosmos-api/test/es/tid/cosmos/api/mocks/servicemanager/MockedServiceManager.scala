@@ -45,6 +45,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
     @volatile private var statePromises: Map[ClusterState, Promise[Unit]] = Map.empty
     @volatile private var pendingSetUserOperations: Seq[(Set[ClusterUser], Promise[Unit])] = Seq()
     @volatile private var observers: Set[Observer] = Set.empty
+    @volatile private var blockedPorts: Set[Int] = Set.empty
 
     def isConsumingMachines: Boolean = state match {
       case Terminated => false
@@ -105,7 +106,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
     def successfulProvision = clusterNodePoolCount >= size
 
     def view = synchronized {
-      ImmutableClusterDescription(id, name, size, state, nameNode, master, slaves, users, services)
+      ImmutableClusterDescription(id, name, size, state, nameNode, master, slaves, users, services, blockedPorts)
     }
 
     def transitionFuture: Future[Unit] = synchronized { statePromises(state).future }

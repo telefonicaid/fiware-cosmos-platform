@@ -74,7 +74,8 @@ class ClusterDescriptionTest extends FlatSpec with MustMatchers {
     master = Some(HostDetails("master", "0.0.0.1")),
     slaves = Seq(HostDetails("slave", "0.0.0.2")),
     users = Some(Set(ClusterUser("jsmith", "a public key"))),
-    services = Set("ServiceA", "ServiceB")
+    services = Set("ServiceA", "ServiceB"),
+    blockedPorts = Set.empty
   )
 
   def withoutMachineInfoForState(state: ClusterState) = ImmutableClusterDescription(
@@ -86,6 +87,7 @@ class ClusterDescriptionTest extends FlatSpec with MustMatchers {
     master = None,
     slaves = Seq.empty,
     users = None,
-    services = Set("ServiceA", "ServiceB")
+    services = Set("ServiceA", "ServiceB"),
+    blockedPorts = Set.empty
   )
 }

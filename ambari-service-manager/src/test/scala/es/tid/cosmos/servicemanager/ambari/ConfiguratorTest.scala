@@ -23,6 +23,7 @@ import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers.contributions
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.rest.Cluster
 import es.tid.cosmos.servicemanager.configuration.{ConfigurationBundle, ServiceConfiguration, CoreConfiguration, GlobalConfiguration}
+import es.tid.cosmos.servicemanager.ambari.services.{TestService, AmbariService}
 
 class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatchers
     with MockitoSugar {
@@ -53,15 +54,17 @@ class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatcher
     verify(cluster).applyConfiguration(
       isEq(GlobalConfiguration(
         Map("someGlobalContent1" -> "somevalue1", "someGlobalContent2" -> "somevalue2"))),
-        tagPattern)
+      tagPattern)
     verify(cluster).applyConfiguration(
       isEq(CoreConfiguration(
         Map("someCoreContent1" -> "somevalue1", "someCoreContent2" -> "somevalue2"))),
       tagPattern)
     verify(cluster).applyConfiguration(
-      isEq(ServiceConfiguration("service-site1", Map("someServiceContent1" -> "somevalue1"))), tagPattern)
+      isEq(ServiceConfiguration("service-site1", Map("someServiceContent1" -> "somevalue1"), TestService)),
+      tagPattern)
     verify(cluster).applyConfiguration(
-      isEq(ServiceConfiguration("service-site2", Map("someServiceContent2" -> "somevalue2"))), tagPattern)
+      isEq(ServiceConfiguration("service-site2", Map("someServiceContent2" -> "somevalue2"), TestService)),
+      tagPattern)
   }
 
   it must "fail when more than one service configurations have the same type" in {

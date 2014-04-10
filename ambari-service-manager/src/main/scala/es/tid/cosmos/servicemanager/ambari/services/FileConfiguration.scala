@@ -21,5 +21,6 @@ trait FileConfiguration { this: AmbariService =>
   def extraProperties(parametrization: service.Parametrization): ConfigProperties = Map.empty
 
   override def configurator(parametrization: service.Parametrization, configPath: String) =
-    new FileConfigurationContributor(configPath, service.name.toLowerCase, extraProperties(parametrization))
+    new FileConfigurationContributor(
+      configPath, service.name.toLowerCase, Some(service), extraProperties(parametrization))
 }

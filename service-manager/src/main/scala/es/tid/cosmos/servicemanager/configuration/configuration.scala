@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.servicemanager.configuration
 
+import es.tid.cosmos.servicemanager.services.Service
+
 /**
  * Abstract representation of a cluster configuration.
  */
@@ -51,7 +53,10 @@ case class CoreConfiguration(properties: Map[String, Any]) extends Configuration
  *
  * @param configType the type for this service configuration
  * @param properties the service configuration properties
+ * @param service the service for which configuration ir provided
  */
 case class ServiceConfiguration(
-    final val configType: String, properties: Map[String, Any]) extends Configuration
+    final val configType: String,
+    properties: Map[String, Any],
+    service: Service) extends Configuration
 

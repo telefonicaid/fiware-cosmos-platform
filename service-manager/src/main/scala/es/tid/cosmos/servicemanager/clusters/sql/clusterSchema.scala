@@ -29,6 +29,7 @@ private[sql] case class ClusterEntity(
 
   lazy val users: OneToMany[ClusterUserEntity] = ClusterSchema.clusterToUsers.left(this)
   lazy val services: OneToMany[ClusterServiceEntity] = ClusterSchema.clusterToServices.left(this)
+  lazy val blockedPorts: OneToMany[ClusterBlockedPortEntity] = ClusterSchema.clusterToBlockedPorts.left(this)
 }
 
 private[sql] case class HostEntity(
@@ -66,7 +67,11 @@ private[sql] object ClusterUserEntity {
 private[sql] case class ClusterServiceEntity(name: String) extends KeyedEntity[Long] {
   override val id: Long = 0
   @Column("cluster_id") val clusterId: String = ""
-  lazy val services: ManyToOne[ClusterEntity] = ClusterSchema.clusterToServices.right(this)
+}
+
+private[sql] case class ClusterBlockedPortEntity(port: Int) extends KeyedEntity[Long] {
+  override val id: Long = 0
+  @Column("cluster_id") val clusterId: String = ""
 }
 
 object HostEntityTypes {
@@ -93,10 +98,13 @@ private[sql] object ClusterSchema extends Schema {
   private[sql] val masters = table[MasterEntity]("cluster_master")
   private[sql] val slaves = table[SlaveEntity]("cluster_slave")
   private[sql] val services = table[ClusterServiceEntity]("cluster_service")
+  private[sql] val blockedPorts = table[ClusterBlockedPortEntity]("cluster_blocked_ports")
   private[sql] val clusterToUsers = oneToManyRelation(clusterState, clusterUsers)
     .via((c, u) => c.id === u.clusterId)
   private[sql] val clusterToServices = oneToManyRelation(clusterState, services)
       .via((c, s) => c.id === s.clusterId)
+  private[sql] val clusterToBlockedPorts = oneToManyRelation(clusterState, blockedPorts)
+    .via((c, s) => c.id === s.clusterId)
 
   override def applyDefaultForeignKeyPolicy(foreignKeyDeclaration: ForeignKeyDeclaration) =
     foreignKeyDeclaration.constrainReference

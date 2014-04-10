@@ -14,12 +14,11 @@ package es.tid.cosmos.infinity.server.fs
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.server.authorization.FilePermissions
-import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions._
+import es.tid.cosmos.infinity.server.permissions.PermissionsMask
 
 class InodeTest extends FlatSpec with MustMatchers {
 
-  val samplePermissions = FilePermissions("root", "root", fromOctal("777"))
+  val samplePermissions = FilePermissions("root", "root", PermissionsMask.fromOctal("777"))
 
   "Child inode" must "require not to be its own parent" in {
     evaluating {

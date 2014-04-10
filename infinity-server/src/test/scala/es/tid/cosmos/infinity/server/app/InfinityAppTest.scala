@@ -19,7 +19,6 @@ import spray.http._
 import spray.http.HttpHeaders.`Remote-Address`
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationComponent
-import es.tid.cosmos.infinity.server.authorization.AuthorizationComponent
 import es.tid.cosmos.infinity.server.processors.{Request, RequestProcessorComponent}
 import es.tid.cosmos.infinity.test.{ActorFlatSpec, MockActor}
 
@@ -35,11 +34,10 @@ class InfinityAppTest extends ActorFlatSpec("InfinityAppTest") {
 
 
   object TestInfinityAppComponent extends InfinityAppComponent with AuthenticationComponent
-    with AuthorizationComponent with RequestProcessorComponent{
+    with RequestProcessorComponent{
     override val authenticationProps = MockActor.props("authentication", probe)
-    override val authorizationProps = MockActor.props("authorization", probe)
-    override def requestProcessorProps(
-      authenticationProps: Props, authorizationProps: Props) = MockActor.props("request", probe)
+    override def requestProcessorProps(authenticationProps: Props) =
+      MockActor.props("request", probe)
   }
 
   "An infinity app" must "spawn a request processor per request" in {

@@ -18,7 +18,7 @@ import org.scalatest.matchers.MustMatchers
 import spray.http.HttpEntity
 
 import es.tid.cosmos.infinity.server.authentication.UserProfile
-import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions
+import es.tid.cosmos.infinity.server.permissions.PermissionsMask
 
 class ResponseObjectTest extends FlatSpec with MustMatchers {
 

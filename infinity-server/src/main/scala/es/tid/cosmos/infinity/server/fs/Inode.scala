@@ -14,7 +14,6 @@ package es.tid.cosmos.infinity.server.fs
 import java.util.UUID
 
 import es.tid.cosmos.infinity.server.authentication.UserProfile
-import es.tid.cosmos.infinity.server.authorization.FilePermissions
 
 sealed trait Inode {
   val id: String

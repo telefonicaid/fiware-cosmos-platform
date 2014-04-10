@@ -26,8 +26,8 @@ import spray.httpx.ResponseTransformation
 
 import es.tid.cosmos.infinity.server.authentication._
 import es.tid.cosmos.infinity.server.authentication.cosmosapi.CosmosApiAuthentication
-import es.tid.cosmos.infinity.server.authorization.UnixFilePermissions
 import es.tid.cosmos.infinity.test.ActorFlatSpec
+import es.tid.cosmos.infinity.server.permissions.PermissionsMask
 
 class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthenticationTest")
   with MustMatchers with ResponseTransformation {
@@ -40,7 +40,7 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
       probe.expectMsg(Authenticated(UserProfile(
         username = "gandalf",
         group = "istari",
-        unixPermissionMask = UnixFilePermissions.fromOctal("777")
+        mask = PermissionsMask.fromOctal("777")
       )))
       shouldTerminateInstance()
     }
@@ -52,7 +52,7 @@ class CosmosApiAuthenticationTest extends ActorFlatSpec("CosmosApiAuthentication
       probe.expectMsg(Authenticated(UserProfile(
         username = "gandalf",
         group = "istari",
-        unixPermissionMask = UnixFilePermissions.fromOctal("777")
+        mask = PermissionsMask.fromOctal("777")
       )))
       shouldTerminateInstance()
     }

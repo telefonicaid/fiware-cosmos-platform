@@ -76,7 +76,7 @@ class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
       expectTermination()
     }
 
-  val sampleUri = "/webhdfs/v1/foo/bar?op=OPEN&api.key=user-key&api.secret=user-secret"
+  val sampleUri = "/webhdfs/v1/foo/bar?op=OPEN"
   val datanodeService = "datanode1"
   val tokenGenerator = TokenGenerator("c0sm0s")
 
@@ -107,7 +107,12 @@ class RequestProcessorTest extends ActorFlatSpec("RequestProcessorTest") {
       group = "cosmos",
       mask = PermissionsMask.fromOctal("777")
     )
-    val request = Request(remoteAddress, requester.ref, Get(sampleUri))
+    val request = Request(remoteAddress, requester.ref, HttpRequest(
+      method = HttpMethods.GET,
+      uri = Uri(sampleUri),
+      headers = List(
+        HttpHeaders.Authorization(BasicHttpCredentials(credentials.apiKey, credentials.apiSecret)))
+    ))
     val processorConfig = ConfigFactory.parseString(s"""
       cosmos.infinity.server.request-timeout = ${requestTimeout.toMillis} ms
     """).withFallback(system.settings.config)

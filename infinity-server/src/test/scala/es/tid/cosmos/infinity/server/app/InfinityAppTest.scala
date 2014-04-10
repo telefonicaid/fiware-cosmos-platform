@@ -16,7 +16,7 @@ import java.net.InetAddress
 import akka.actor._
 import akka.testkit.TestProbe
 import spray.http._
-import spray.http.HttpHeaders.`Remote-Address`
+import spray.http.HttpHeaders.{Authorization, `Remote-Address`}
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationComponent
 import es.tid.cosmos.infinity.server.processors.{Request, RequestProcessorComponent}
@@ -30,7 +30,10 @@ class InfinityAppTest extends ActorFlatSpec("InfinityAppTest") {
   val httpRequest = HttpRequest(
     method = HttpMethods.DELETE,
     uri = Uri("/webhdfs/v1/tmp/foo?op=DELETE&recursive=true")
-  ).withHeaders(List(`Remote-Address`(RemoteAddress(remoteAddress))))
+  ).withHeaders(List(
+    `Remote-Address`(RemoteAddress(remoteAddress)),
+    Authorization(BasicHttpCredentials("key", "secret"))
+  ))
 
 
   object TestInfinityAppComponent extends InfinityAppComponent with AuthenticationComponent

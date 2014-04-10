@@ -26,7 +26,9 @@ class CredentialsTest extends FlatSpec with MustMatchers {
     .apply("/infinityfs/v1/metadata/some/path")
 
   "Credentials" must "be none when missing 'authorization' header" in {
-    Credentials.from(remoteAddress, requestBuilder()) must be ('empty)
+    evaluating {
+      Credentials.from(remoteAddress, requestBuilder())
+    } must produce [MissingAuthorizationHeader.type]
   }
 
   it must "be instantiated from user authentication request" in {
@@ -35,7 +37,7 @@ class CredentialsTest extends FlatSpec with MustMatchers {
       request = requestBuilder()
         .withHeaders(Authorization(BasicHttpCredentials("key", "secret")))
     )
-    credentials must be (Some(UserCredentials("key", "secret")))
+    credentials must be (UserCredentials("key", "secret"))
   }
 
   it must "be instantiated from cluster authentication request" in {
@@ -43,12 +45,13 @@ class CredentialsTest extends FlatSpec with MustMatchers {
       remoteAddress,
       request = requestBuilder().withHeaders(Authorization(OAuth2BearerToken("secret")))
     )
-    credentials must be (Some(ClusterCredentials("10.0.0.1", "secret")))
+    credentials must be (ClusterCredentials("10.0.0.1", "secret"))
   }
 
   it must "be none for unsupported 'authorization' headers" in {
-    val credentials = Credentials.from(remoteAddress, requestBuilder()
-      .withHeaders(Authorization(GenericHttpCredentials("unsupported", "authentication"))))
-    credentials must be ('empty)
+    evaluating {
+      Credentials.from(remoteAddress, requestBuilder()
+        .withHeaders(Authorization(GenericHttpCredentials("unsupported", "authentication"))))
+    } must produce [UnsupportedAuthorizationScheme]
   }
 }

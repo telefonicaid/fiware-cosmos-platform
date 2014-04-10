@@ -16,10 +16,10 @@ import java.net.InetAddress
 import akka.actor.ActorRef
 import spray.http.HttpRequest
 
-import es.tid.cosmos.infinity.server.authentication._
 import es.tid.cosmos.infinity.server.actions.Action
+import es.tid.cosmos.infinity.server.authentication._
 
 case class Request(remoteAddress: InetAddress, responder: ActorRef, httpRequest: HttpRequest) {
-  lazy val action: Action = Action(remoteAddress, httpRequest)
-  lazy val credentials: Credentials = action.credentials
+  val action: Action = Action(httpRequest)
+  val credentials: Credentials = Credentials.from(remoteAddress, httpRequest)
 }

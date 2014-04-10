@@ -17,7 +17,8 @@ import akka.actor.ActorSystem
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
-import org.apache.hadoop.hdfs.server.namenode.NameNode
+import com.typesafe.config.Config
+import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 import spray.can.Http
 
 import es.tid.cosmos.common.ConfigComponent
@@ -26,9 +27,8 @@ import es.tid.cosmos.infinity.server.authentication.cosmosapi.CosmosApiAuthentic
 import es.tid.cosmos.infinity.server.authorization.PersistentAuthorizationComponent
 import es.tid.cosmos.infinity.server.fs.sql.InfinityDataStoreSqlComponent
 import es.tid.cosmos.infinity.server.processors.DefaultRequestProcessorComponent
-import com.typesafe.config.Config
 
-class MetadataServer(nameNode: NameNode, override val config: Config)
+class MetadataServer(namenodeProtocols: NamenodeProtocols, override val config: Config)
   extends InfinityAppComponent
   with CosmosApiAuthenticationComponent
   with PersistentAuthorizationComponent
@@ -41,7 +41,6 @@ class MetadataServer(nameNode: NameNode, override val config: Config)
   val service = system.actorOf(infinityAppProps)
 
   implicit val timeout = Timeout(5.seconds)
-
 
   def start(): Unit = IO(Http) ? Http.Bind(
     listener = service,

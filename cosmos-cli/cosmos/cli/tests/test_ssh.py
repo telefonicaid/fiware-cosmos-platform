@@ -29,7 +29,8 @@ RUNNING = {
     'state': 'running',
     'master': {
         'ipAddress': '192.168.20.18'
-    }
+    },
+    'blockedPorts': [1, 2, 3]
 }
 PROFILE = {
     'handle': 'user1'
@@ -78,7 +79,10 @@ class SshCommandTest(unittest.TestCase):
         call_mock.assert_called_with(['ssh', '192.168.20.18',
                                       '-l', 'user1',
                                       '-o', 'UserKnownHostsFile=/dev/null',
-                                      '-o', 'StrictHostKeyChecking=no'])
+                                      '-o', 'StrictHostKeyChecking=no',
+                                      '-L1:192.168.20.18:1',
+                                      '-L2:192.168.20.18:2',
+                                      '-L3:192.168.20.18:3'])
         self.assertEmptyIterator(response.json.side_effect)
 
     def test_ssh_cluster_with_custom_key(self):
@@ -93,6 +97,9 @@ class SshCommandTest(unittest.TestCase):
                                       '-l', 'user1',
                                       '-o', 'UserKnownHostsFile=/dev/null',
                                       '-o', 'StrictHostKeyChecking=no',
+                                      '-L1:192.168.20.18:1',
+                                      '-L2:192.168.20.18:2',
+                                      '-L3:192.168.20.18:3',
                                       '-i', expected_key_path])
 
     def test_exit_with_error_when_ssh_command_is_not_executable(self):

@@ -117,7 +117,7 @@ class ClusterResource(
       users: Seq[ClusterUser],
       clusterSecret: ClusterSecret): Set[AnyServiceInstance] = {
     val cosmosUsers = CosmosUserService.instance(users)
-    val hdfs = Hdfs.instance(HdfsParameters(if (clusterParameters.shared) "007" else "027"))
+    val hdfs = Hdfs.defaultInstance.get
     val infinityDriver = InfinityDriver.instance(InfinityDriverParameters(clusterSecret.underlying))
     val optionalServices = serviceManager.optionalServices.filter(
       service => clusterParameters.optionalServices.contains(service.name)

@@ -15,6 +15,10 @@ application.baseurl="http://localhost:9000"
 # If you deploy your application to several instances be sure to use the same key!
 application.secret=
 
+# Integration with Infinity
+# ~~~~~
+infinity.secret=
+
 # The application languages
 # ~~~~~
 application.langs="en"

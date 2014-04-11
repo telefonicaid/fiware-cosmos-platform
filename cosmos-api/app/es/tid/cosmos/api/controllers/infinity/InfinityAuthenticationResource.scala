@@ -13,6 +13,7 @@ package es.tid.cosmos.api.controllers.infinity
 
 import scalaz._
 
+import com.typesafe.config.Config
 import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller, Results}
@@ -26,9 +27,11 @@ import es.tid.cosmos.servicemanager.ServiceManager
   description = "Authenticate users credentials for Infinity")
 class InfinityAuthenticationResource(
     store: ProfileDataStore with ClusterDataStore,
-    serviceManager: ServiceManager) extends Controller {
+    serviceManager: ServiceManager,
+    config: Config) extends Controller {
 
   private val authenticator = new InfinityAuthenticator(store, serviceManager)
+  private val requestAuthentication = new InfinityRequestAuthentication(config)
 
   import Scalaz._
   import InfinityAuthenticationResource._
@@ -50,7 +53,7 @@ class InfinityAuthenticationResource(
       @ApiParam(name="Cluster secret")
       clusterSecret: Option[String]) = Action { implicit request =>
     for {
-
+      _ <- requestAuthentication.requireAuthorized(request)
       identity <- authenticateFromParameters(apiKey, apiSecret, clusterSecret)
     } yield Ok(Json.toJson(identity))
   }
@@ -82,7 +85,7 @@ class InfinityAuthenticationResource(
   private def notFoundResponse(message: Message) = NotFound(Json.toJson(message))
 }
 
-object InfinityAuthenticationResource extends Results {
-  private val InvalidParametersResponse = BadRequest(Json.toJson(Message("Invalid parameters. " +
+private object InfinityAuthenticationResource extends Results {
+  val InvalidParametersResponse = BadRequest(Json.toJson(Message("Invalid parameters. " +
     "Fill in either apiKey/apiSecret or clusterSecret but not both")))
 }

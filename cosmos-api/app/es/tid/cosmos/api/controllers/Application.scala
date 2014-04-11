@@ -72,7 +72,7 @@ abstract class Application {
       new TaskResource(auth, taskDao),
 
       // Infinity API
-      new InfinityAuthenticationResource(store, serviceManager),
+      new InfinityAuthenticationResource(store, serviceManager, conf),
 
       // Admin API
       new UserResource(multiAuthProvider, serviceManager, store, status)

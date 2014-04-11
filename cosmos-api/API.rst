@@ -452,6 +452,13 @@ The Infinity service rely on the Cosmos API to authenticate and map groups of
 users.  For that purpose some resources with prefix ``/infinityfs/v1`` exist and
 are described in this section.
 
+Authentication
+--------------
+
+Infinity services will use basic authentication (``Authorization`` header of
+RFC 2617) in which the username will be always ``infinity`` and the password
+is a shared secret present in both services configuration.
+
 
 GET ``/infinity/v1/auth``
 -------------------------

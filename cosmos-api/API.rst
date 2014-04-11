@@ -486,3 +486,19 @@ host but, when present, the identity is restricted to the whitelist it represent
 If the credentials are invalid, e.g. associated with no user, a NOT FOUND status is returned with
 a message body in JSON with further details.  In case of malformed inputs a BAD REQUEST status and a
 message will be returned.
+
+
+GET ``/infinity/v1/groups``
+---------------------------
+
+*Since v1*
+
+Retrieve the groups of a given Cosmos profile identified by handle.  The handle
+is passed as the query parameter ``handle`` and, when user exists, a JSON with the groups
+is returned.  For example, when querying ``/infinity/v1/groups?handle=<handle>`` you can get::
+
+    {
+        "groups": [ <group1>, <group2>, ... ]
+    }
+
+If the handle doesn't exist a 404 status code and a JSON message are returned.

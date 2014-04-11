@@ -56,6 +56,8 @@ GET     /doc/admin/v1/user                  controllers.ApiHelpController.getRes
 # Infinity API
 GET     /infinity/v1/auth                   @es.tid.cosmos.api.controllers.infinity.InfinityAuthenticationResource.authenticate(apiKey: Option[String], apiSecret: Option[String], clusterSecret: Option[String])
 GET     /doc/infinity/v1/auth               controllers.ApiHelpController.getResource(path = "/doc/infinity/v1/auth")
+GET     /infinity/v1/groups                 @es.tid.cosmos.api.controllers.infinity.GroupMapperResource.map(handle: Option[String])
+GET     /doc/infinity/v1/groups             controllers.ApiHelpController.getResource(path = "/doc/infinity/v1/groups")
 
 # API docs
 GET     /doc.html                           @es.tid.cosmos.api.controllers.pages.Pages.swaggerUI

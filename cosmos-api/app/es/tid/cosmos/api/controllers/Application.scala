@@ -19,7 +19,7 @@ import es.tid.cosmos.api.controllers.admin._
 import es.tid.cosmos.api.controllers.admin.stats.StatsResource
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
-import es.tid.cosmos.api.controllers.infinity.InfinityAuthenticationResource
+import es.tid.cosmos.api.controllers.infinity.{GroupMapperResource, InfinityAuthenticationResource}
 import es.tid.cosmos.api.controllers.info.InfoResource
 import es.tid.cosmos.api.controllers.pages.{AdminPage, Pages}
 import es.tid.cosmos.api.controllers.profile.ProfileResource
@@ -73,6 +73,7 @@ abstract class Application {
 
       // Infinity API
       new InfinityAuthenticationResource(store, serviceManager, conf),
+      new GroupMapperResource(store, conf),
 
       // Admin API
       new UserResource(multiAuthProvider, serviceManager, store, status)

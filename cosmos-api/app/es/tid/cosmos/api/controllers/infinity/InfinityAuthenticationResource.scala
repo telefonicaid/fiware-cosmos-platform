@@ -37,13 +37,15 @@ class InfinityAuthenticationResource(
   import InfinityAuthenticationResource._
 
   @ApiOperation(value = "Authenticate users credentials for Infinity", httpMethod = "GET",
-    responseClass = "es.tid.cosmos.api.controllers.storage.InfinityIdentity", notes ="""
+    responseClass = "es.tid.cosmos.api.controllers.infinity.InfinityIdentity", notes ="""
       Lookup an identity from either an API pair (key and secret) or a cluster secret. Be careful
       to fill in the query string parameters for exactly one of the two options.""")
   @ApiErrors(Array(
     new ApiError(code = 400, reason = "If the identity can't be found"),
     new ApiError(code = 400,
-      reason = "When other than just the pair API key/secret of cluster secret is present")
+      reason = "When other than just the pair API key/secret of cluster secret is present"),
+    new ApiError(code = 401, reason = "Request lacks a basic authorization header"),
+    new ApiError(code = 401, reason = "Invalid authentication credentials")
   ))
   def authenticate(
       @ApiParam(name="API key")

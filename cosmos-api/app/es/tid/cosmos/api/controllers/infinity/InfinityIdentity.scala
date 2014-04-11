@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.storage
+package es.tid.cosmos.api.controllers.infinity
 
 import play.api.libs.json.{Json, Writes}
 

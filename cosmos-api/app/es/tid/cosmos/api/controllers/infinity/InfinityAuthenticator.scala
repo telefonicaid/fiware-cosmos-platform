@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.storage
+package es.tid.cosmos.api.controllers.infinity
 
 import scalaz._
 
@@ -17,9 +17,9 @@ import es.tid.cosmos.api.controllers.common.Message
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.dao.{ClusterDataStore, ProfileDataStore}
 import es.tid.cosmos.servicemanager.ServiceManager
-import es.tid.cosmos.servicemanager.clusters.{Running, ClusterDescription, ClusterId}
+import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ClusterId, Running}
 
-class InfinityAuthenticator(
+private[infinity] class InfinityAuthenticator(
     store: ProfileDataStore with ClusterDataStore,
     serviceManager: ServiceManager) {
 
@@ -76,7 +76,7 @@ class InfinityAuthenticator(
   )
 }
 
-object InfinityAuthenticator {
-  private val IndividualMask = AccessMask("777")
-  private val SharedMask = AccessMask("077")
+private object InfinityAuthenticator {
+  val IndividualMask = AccessMask("777")
+  val SharedMask = AccessMask("077")
 }

@@ -54,6 +54,7 @@ cosmos::params::ambari_reduce_heap_memory: 400
 cosmos::params::ambari_yarn_total_memory: 600
 cosmos::params::ambari_yarn_container_min_memory: 10
 cosmos::params::ambari_yarn_virtual_physical_memory_ratio: 2.1
+cosmos::params::infinity_secret: 'inf1nity_secret'
 cosmos::params::infinity_proxy_secure_phrase: 'c0sm0s'
 cosmos::params::infinity_proxy_ssl_cert_source: "cosmos/environments/%{environment}/certs/infinity-proxy_cer.pem.erb"
 cosmos::params::infinity_proxy_ssl_key_source: "cosmos/environments/%{environment}/certs/infinity-proxy_key.pem.erb"

@@ -84,6 +84,7 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $ambari_map_heap_memory,
   $ambari_reduce_heap_memory,
   $ambari_mr_app_master_memory,
+  $infinity_secret,
   $infinity_proxy_secure_phrase,
   $infinity_proxy_ssl_cert_source,
   $infinity_proxy_ssl_key_source

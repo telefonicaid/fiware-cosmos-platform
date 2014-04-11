@@ -9,20 +9,20 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.storage
+package es.tid.cosmos.api.controllers.infinity
 
 import scalaz._
 
 import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
-import play.api.mvc.{Results, Controller, Action}
+import play.api.mvc.{Action, Controller, Results}
 
 import es.tid.cosmos.api.controllers.common._
+import es.tid.cosmos.api.profile.{ApiCredentials, ClusterSecret}
 import es.tid.cosmos.api.profile.dao.{ClusterDataStore, ProfileDataStore}
 import es.tid.cosmos.servicemanager.ServiceManager
-import es.tid.cosmos.api.profile.{ApiCredentials, ClusterSecret}
 
-@Api(value = "/cosmos/v1/storage/auth", listingPath = "/doc/cosmos/v1/storage/auth",
+@Api(value = "/infinity/v1/auth", listingPath = "/doc/infinity/v1/auth",
   description = "Authenticate users credentials for Infinity")
 class InfinityAuthenticationResource(
     store: ProfileDataStore with ClusterDataStore,
@@ -50,6 +50,7 @@ class InfinityAuthenticationResource(
       @ApiParam(name="Cluster secret")
       clusterSecret: Option[String]) = Action { implicit request =>
     for {
+
       identity <- authenticateFromParameters(apiKey, apiSecret, clusterSecret)
     } yield Ok(Json.toJson(identity))
   }

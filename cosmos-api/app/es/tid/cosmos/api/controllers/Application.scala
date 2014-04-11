@@ -19,11 +19,12 @@ import es.tid.cosmos.api.controllers.admin._
 import es.tid.cosmos.api.controllers.admin.stats.StatsResource
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
+import es.tid.cosmos.api.controllers.infinity.InfinityAuthenticationResource
 import es.tid.cosmos.api.controllers.info.InfoResource
 import es.tid.cosmos.api.controllers.pages.{AdminPage, Pages}
 import es.tid.cosmos.api.controllers.profile.ProfileResource
 import es.tid.cosmos.api.controllers.services.ServicesResource
-import es.tid.cosmos.api.controllers.storage.{InfinityAuthenticationResource, StorageResource}
+import es.tid.cosmos.api.controllers.storage.StorageResource
 import es.tid.cosmos.api.controllers.task.TaskResource
 import es.tid.cosmos.api.profile.dao.CosmosDataStoreComponent
 import es.tid.cosmos.api.task.TaskDaoComponent
@@ -70,7 +71,7 @@ abstract class Application {
       new MaintenanceResource(auth, status),
       new TaskResource(auth, taskDao),
 
-      // Infinity authentication
+      // Infinity API
       new InfinityAuthenticationResource(store, serviceManager),
 
       // Admin API

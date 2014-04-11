@@ -26,8 +26,6 @@ GET     /doc/cosmos/v1/profile              controllers.ApiHelpController.getRes
 
 GET     /cosmos/v1/storage                  @es.tid.cosmos.api.controllers.storage.StorageResource.details
 GET     /doc/cosmos/v1/storage              controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/storage")
-GET     /cosmos/v1/storage/auth             @es.tid.cosmos.api.controllers.storage.InfinityAuthenticationResource.authenticate(apiKey: Option[String], apiSecret: Option[String], clusterSecret: Option[String])
-GET     /doc/cosmos/v1/storage/auth         controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/storage/auth")
 
 GET     /cosmos/v1/task/:id                 @es.tid.cosmos.api.controllers.task.TaskResource.getDetails(id)
 GET     /doc/cosmos/v1/task                 controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/task")
@@ -54,6 +52,10 @@ GET     /doc/cosmos/v1/status/machines      controllers.ApiHelpController.getRes
 POST    /admin/v1/user                      @es.tid.cosmos.api.controllers.admin.UserResource.register
 DELETE  /admin/v1/user/:realm/:id           @es.tid.cosmos.api.controllers.admin.UserResource.unregister(realm, id)
 GET     /doc/admin/v1/user                  controllers.ApiHelpController.getResource(path = "/doc/admin/v1/user")
+
+# Infinity API
+GET     /infinity/v1/auth                   @es.tid.cosmos.api.controllers.infinity.InfinityAuthenticationResource.authenticate(apiKey: Option[String], apiSecret: Option[String], clusterSecret: Option[String])
+GET     /doc/infinity/v1/auth               controllers.ApiHelpController.getResource(path = "/doc/infinity/v1/auth")
 
 # API docs
 GET     /doc.html                           @es.tid.cosmos.api.controllers.pages.Pages.swaggerUI

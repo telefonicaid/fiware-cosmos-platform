@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.storage
+package es.tid.cosmos.api.controllers.infinity
 
 import scala.concurrent.Future
 
@@ -22,9 +22,9 @@ import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager.ClusterProperties
-import es.tid.cosmos.api.profile.{ClusterSecret, ApiCredentials}
+import es.tid.cosmos.api.profile.{ApiCredentials, ClusterSecret}
 import es.tid.cosmos.servicemanager.ClusterName
-import es.tid.cosmos.servicemanager.clusters.{Running, ClusterId}
+import es.tid.cosmos.servicemanager.clusters.{ClusterId, Running}
 
 class InfinityAuthenticationResourceIT extends FlatSpec with MustMatchers {
 
@@ -39,7 +39,7 @@ class InfinityAuthenticationResourceIT extends FlatSpec with MustMatchers {
         apiSecret.map("apiSecret=" + _),
         clusterSecret.map("clusterSecret=" + _)
       ).flatten.mkString("?", "&", "")
-      route(FakeRequest(GET, "/cosmos/v1/storage/auth" + queryString)).get
+      route(FakeRequest(GET, "/infinity/v1/auth" + queryString)).get
     }
 
     def request(creds: ApiCredentials): Future[SimpleResult] =

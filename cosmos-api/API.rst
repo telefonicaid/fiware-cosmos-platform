@@ -249,34 +249,6 @@ it consists on WebHdfs url and username::
     }
 
 
-GET ``/cosmos/v1/storage/auth``
--------------------------------
-
-*Since v1*
-
-Allows identity authentication for the Infinity filesystem. It provides the user identity given
-either API credentials or a cluster secret provided as query parameters (respectively ``apiKey``,
-``apiSecret`` and ``clusterSecret`` parameters).  For example,
-``/cosmos/v1/storage?clusterSecret=<secret>`` can be used to authorize from a cluster secret.
-
-In case of success, a JSON document with the following structure is returned with OK status::
-
-    {
-       "user": <string>,
-       "group": <string>,
-       "accessMask": <string>,
-       "origins": ["10.2.0.1", ... ]
-    }
-
-Where ``accessMask`` is a string with a unix-style access mask such as "777" or "077" and
-``origins`` is optional.  A missing ``origins`` means that the identity can be used from any origin
-host but, when present, the identity is restricted to the whitelist it represents.
-
-If the credentials are invalid, e.g. associated with no user, a NOT FOUND status is returned with
-a message body in JSON with further details.  In case of malformed inputs a BAD REQUEST status and a
-message will be returned.
-
-
 GET ``/cosmos/v1/maintenance``
 ------------------------------
 
@@ -470,3 +442,40 @@ Otherwise, one of the following errors will be returned:
 * Forbidden 403
 * Not found 404, the user does not exist.
 * Internal server error 500, account unregistration failed.
+
+
+-----------------------------
+Resources of the Infinity API
+-----------------------------
+
+The Infinity service rely on the Cosmos API to authenticate and map groups of
+users.  For that purpose some resources with prefix ``/infinityfs/v1`` exist and
+are described in this section.
+
+
+GET ``/infinity/v1/auth``
+-------------------------
+
+*Since v1*
+
+Allows identity authentication for the Infinity filesystem. It provides the user identity given
+either API credentials or a cluster secret provided as query parameters (respectively ``apiKey``,
+``apiSecret`` and ``clusterSecret`` parameters).  For example,
+``/cosmos/v1/storage?clusterSecret=<secret>`` can be used to authorize from a cluster secret.
+
+In case of success, a JSON document with the following structure is returned with OK status::
+
+    {
+       "user": <string>,
+       "group": <string>,
+       "accessMask": <string>,
+       "origins": ["10.2.0.1", ... ]
+    }
+
+Where ``accessMask`` is a string with a unix-style access mask such as "777" or "077" and
+``origins`` is optional.  A missing ``origins`` means that the identity can be used from any origin
+host but, when present, the identity is restricted to the whitelist it represents.
+
+If the credentials are invalid, e.g. associated with no user, a NOT FOUND status is returned with
+a message body in JSON with further details.  In case of malformed inputs a BAD REQUEST status and a
+message will be returned.

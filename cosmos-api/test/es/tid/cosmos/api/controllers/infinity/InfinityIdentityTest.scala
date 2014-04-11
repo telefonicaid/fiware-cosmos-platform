@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.storage
+package es.tid.cosmos.api.controllers.infinity
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers

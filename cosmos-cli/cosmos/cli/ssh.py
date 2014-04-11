@@ -34,9 +34,15 @@ def ssh_cluster(cluster_id, config):
     cluster = wait_for_cluster_master(cluster_id, config)
     try:
         address = cluster['master']['ipAddress']
-        blocked_ports = cluster['blockedPorts']
     except KeyError:
         raise ExitWithError(-1, 'Unknown master node for %s' % cluster_id)
+
+    try:
+        blocked_ports = cluster['blockedPorts']
+    except KeyError:
+        log.warning("Blocked ports information not available. Not " +
+                    "forwarding any ports.")
+        blocked_ports = []
     command_line = [config.ssh_command, address,
                     '-l', get_user_handle(config),
                     '-o', 'UserKnownHostsFile=/dev/null',
@@ -46,8 +52,9 @@ def ssh_cluster(cluster_id, config):
     if config.ssh_key is not None and config.ssh_key:
         command_line.extend(['-i', path.expanduser(config.ssh_key)])
     log.info('SSH command: ' + ' '.join(command_line))
-    print ("The following ports are accessible through " +
-           "'localhost:<port>': %s") % (blocked_ports)
+    if blocked_ports:
+        print ("The following ports are accessible through " +
+               "'localhost:<port>': %s") % (blocked_ports)
     try:
         return subprocess.call(command_line)
     except OSError:

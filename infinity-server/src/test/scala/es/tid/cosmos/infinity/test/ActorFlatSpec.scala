@@ -13,7 +13,7 @@ package es.tid.cosmos.infinity.test
 
 import akka.testkit.TestKit
 import akka.actor.ActorSystem
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
+import org.scalatest.{FlatSpecLike, BeforeAndAfterAll}
 import org.scalatest.matchers.MustMatchers
 
 /** Base class for testing actors.
@@ -21,7 +21,7 @@ import org.scalatest.matchers.MustMatchers
   * It guarantees that the actor system is properly shutdown after testing.
   */
 abstract class ActorFlatSpec(name: String)
-  extends TestKit(ActorSystem(name)) with FlatSpec with MustMatchers with BeforeAndAfterAll {
+  extends TestKit(ActorSystem(name)) with FlatSpecLike with MustMatchers with BeforeAndAfterAll {
 
   override def afterAll() = TestKit.shutdownActorSystem(system)
 }

@@ -40,6 +40,7 @@ object Build extends sbt.Build {
   }
 
   object Dependencies {
+    lazy val anorm = "play" %% "anorm" % "2.1.5"
     lazy val akka = Seq(
       "com.typesafe.akka" %% "akka-actor" % Versions.akka,
       "com.typesafe.akka" %% "akka-slf4j" % Versions.akka,
@@ -47,25 +48,25 @@ object Build extends sbt.Build {
     )
     lazy val commonsCodec = "commons-codec" % "commons-codec" % "1.9"
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
+    lazy val finatra =  "com.twitter" %% "finatra" % "1.5.2"
+    lazy val h2database = "com.h2database" % "h2" % "1.3.175"
     lazy val hadoopCommon = "org.apache.hadoop" % "hadoop-common" % Versions.hdp2Hadoop
     lazy val hadoopHdfs = "org.apache.hadoop" % "hadoop-hdfs" % Versions.hdp2Hadoop
     lazy val liftJson = "net.liftweb" %% "lift-json" % "2.6-M2"
     lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.13"
     lazy val mockito = "org.mockito" % "mockito-all" % "1.9.5"
+    lazy val scalalikejdbc = "com.github.seratch" %% "scalikejdbc" % "[0.5,)"
     lazy val scalaLogging = "com.typesafe" %% "scalalogging-slf4j" % "1.0.1"
-    lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.4"
+    lazy val scalaMigrations = "com.imageworks.scala-migrations" %% "scala-migrations" % "1.1.1"
     lazy val scalatest = "org.scalatest" %% "scalatest" % "1.9.1"
+    lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.4"
     lazy val spray = Seq(
       "io.spray" % "spray-can" % Versions.spray,
       "io.spray" % "spray-routing" % Versions.spray,
       "io.spray" % "spray-testkit" % Versions.spray % "test"
     )
     lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
-    lazy val typesafeConfig = "com.typesafe" % "config" % "1.0.0"
-    lazy val anorm = "play" %% "anorm" % "2.1.5"
-    lazy val scalalikejdbc = "com.github.seratch" %% "scalikejdbc" % "[0.5,)"
-    lazy val h2database = "com.h2database" % "h2" % "1.3.175"
-    lazy val scalaMigrations = "com.imageworks.scala-migrations" %% "scala-migrations" % "1.1.1"
+    lazy val typesafeConfig = "com.typesafe" % "config" % "1.2.0"
   }
 
   object ExternalSources {
@@ -91,7 +92,7 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(JavaVersions.java6: _*)
-    dependsOn(common_test % "compile->compile;test->test")
+    dependsOn(common_test % "test->compile;test->test")
   )
 
   lazy val common_test = (Project(id = "common-test", base = file("common-test"))
@@ -179,6 +180,9 @@ object Build extends sbt.Build {
     settings(assemblySettings: _*)
     settings(RpmSettings.infinityServerSettings: _*)
     settings(JavaVersions.java6: _*)
+    settings(excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+      cp filter {_.data.getName.contains("cglib-nodep-2.2.jar")}
+    })
     dependsOn(common)
   )
 

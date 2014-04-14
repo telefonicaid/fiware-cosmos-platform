@@ -16,14 +16,14 @@ import org.apache.hadoop.conf.{Configurable, Configuration}
 import org.apache.hadoop.hdfs.server.namenode.NameNode
 import org.apache.hadoop.util.ServicePlugin
 
-import es.tid.cosmos.infinity.server.MetadataServer
+import es.tid.cosmos.infinity.server.InfinityMetadataServer
 
 /** Namenode plugin to serve Infinity metadada. */
 class MetadataPlugin extends ServicePlugin with Configurable {
 
   private val log = LogFactory.getLog(classOf[MetadataPlugin])
   private var hadoopConfOpt: Option[Configuration] = None
-  private var serverOpt: Option[MetadataServer] = None
+  private var serverOpt: Option[InfinityMetadataServer] = None
 
   override def setConf(conf: Configuration): Unit = {
     hadoopConfOpt = Some(conf)
@@ -35,7 +35,7 @@ class MetadataPlugin extends ServicePlugin with Configurable {
   override def start(service: Any): Unit = service match {
     case nameNode: NameNode =>
       log.info("Starting Infinity metadata server as a namenode plugin")
-      val server = new MetadataServer(nameNode.getRpcServer, PluginConfig.load(getConf))
+      val server = new InfinityMetadataServer(nameNode.getRpcServer, PluginConfig.load(getConf))
       server.start()
       serverOpt = Some(server)
     case other =>

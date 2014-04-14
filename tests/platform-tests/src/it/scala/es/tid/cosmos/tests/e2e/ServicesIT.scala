@@ -23,7 +23,7 @@ class ServicesIT extends E2ETestBase {
 
     scenario(s"The user can request a cluster with $services") {
       cluster = Cluster(2, user, services)
-      cluster must be ('listed)
+      cluster.isListed() must be (true)
       cluster.state().get must (be ("provisioning") or be ("running"))
       cluster.ensureState("running")
     }

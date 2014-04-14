@@ -21,7 +21,8 @@ import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.controllers.common.{ActionValidation, BasicAuth}
+import es.tid.cosmos.api.controllers.common.ActionValidation
+import es.tid.cosmos.common.BasicAuth
 
 class InfinityRequestAuthenticationTest extends FlatSpec with MustMatchers with Inside {
 

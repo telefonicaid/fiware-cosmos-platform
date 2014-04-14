@@ -16,16 +16,15 @@ import scala.concurrent.Future
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.{HavePropertyMatchResult, HavePropertyMatcher, MustMatchers}
 import play.api.http.Writeable
-import play.api.libs.json.{Reads, JsValue, JsObject, Json}
+import play.api.libs.json.{JsObject, JsValue, Json, Reads}
 import play.api.mvc.SimpleResult
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.mocks.{MockAuthConstants, WithTestApplication}
 import es.tid.cosmos.api.controllers.MaintenanceModeBehaviors
-import es.tid.cosmos.api.controllers.common.BasicAuth
+import es.tid.cosmos.api.mocks.{MockAuthConstants, WithTestApplication}
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.Registration
+import es.tid.cosmos.common.BasicAuth
 
 class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBehaviors {
 

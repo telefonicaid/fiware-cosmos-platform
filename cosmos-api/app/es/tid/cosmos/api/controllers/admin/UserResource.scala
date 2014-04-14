@@ -21,13 +21,14 @@ import scalaz._
 import com.wordnik.swagger.annotations._
 import play.Logger
 import play.api.libs.json.Json
-import play.api.mvc.{Controller, Action, Headers}
+import play.api.mvc.{Action, Controller, Headers}
 
 import es.tid.cosmos.api.auth.multiauth.MultiAuthProvider
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.{Registration, UserId}
 import es.tid.cosmos.api.profile.dao._
-import es.tid.cosmos.api.wizards.{UserUnregistrationWizard, UserRegistrationWizard}
+import es.tid.cosmos.api.wizards.{UserRegistrationWizard, UserUnregistrationWizard}
+import es.tid.cosmos.common.BasicAuth
 import es.tid.cosmos.servicemanager.ServiceManager
 
 /** Resource for user account administration */

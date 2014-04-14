@@ -14,10 +14,11 @@ package es.tid.cosmos.api.controllers.infinity
 import scalaz.Scalaz
 
 import com.typesafe.config.{Config, ConfigException}
-import play.api.mvc.{Results, RequestHeader}
+import play.api.libs.json.Json
+import play.api.mvc.{RequestHeader, Results}
 
 import es.tid.cosmos.api.controllers.common._
-import play.api.libs.json.Json
+import es.tid.cosmos.common.BasicAuth
 
 class InfinityRequestAuthentication(config: Config) extends Results {
 

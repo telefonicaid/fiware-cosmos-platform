@@ -17,8 +17,8 @@ import play.api.libs.json.Json
 import play.api.test._
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.controllers.common.BasicAuth
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
+import es.tid.cosmos.common.BasicAuth
 
 class GroupMapperResourceIT extends FlatSpec with MustMatchers {
 

@@ -20,10 +20,10 @@ import play.api.mvc.SimpleResult
 import play.api.test._
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.controllers.common.BasicAuth
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager.ClusterProperties
 import es.tid.cosmos.api.profile.{ApiCredentials, ClusterSecret}
+import es.tid.cosmos.common.BasicAuth
 import es.tid.cosmos.servicemanager.ClusterName
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, Running}
 

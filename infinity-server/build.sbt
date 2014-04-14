@@ -2,9 +2,10 @@ name := "infinity-server"
 
 description := "Infinity Server"
 
-libraryDependencies ++= Dependencies.akka ++ Dependencies.spray ++ Seq(
+libraryDependencies ++= Dependencies.akka ++ Dependencies.spray ++ Dependencies.unfiltered ++ Seq(
   Dependencies.anorm,
   Dependencies.commonsCodec,
+  Dependencies.dispatch,
   Dependencies.finatra,
   Dependencies.h2database % "test",
   Dependencies.hadoopCommon % "provided",

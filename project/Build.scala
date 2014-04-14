@@ -67,6 +67,16 @@ object Build extends sbt.Build {
     )
     lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
     lazy val typesafeConfig = "com.typesafe" % "config" % "1.2.0"
+    lazy val unfiltered = Seq(
+      "net.databinder" %% "unfiltered-filter" % "0.6.8" % "test, it",
+      "net.databinder" %% "unfiltered-jetty" % "0.6.8" % "test, it",
+      "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "test, it" artifacts (
+        Artifact("javax.servlet", "jar", "jar")),
+      "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "test, it" artifacts (
+        Artifact("javax.servlet", "jar", "jar")),
+      "org.eclipse.jetty" % "jetty-webapp" % "7.0.0.v20091005" % "it" artifacts (
+        Artifact("jetty-webapp", "jar", "jar"))
+    )
   }
 
   object ExternalSources {

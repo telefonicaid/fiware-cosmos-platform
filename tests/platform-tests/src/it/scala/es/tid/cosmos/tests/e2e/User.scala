@@ -14,7 +14,6 @@ package es.tid.cosmos.tests.e2e
 import java.io.Closeable
 import java.nio.charset.Charset
 import java.nio.file.{Files, StandardOpenOption}
-import java.nio.file.attribute.PosixFilePermissions
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.io.Source
@@ -61,8 +60,7 @@ class User(implicit info: Informer, testConfig: Config) extends Closeable
   def profileResource =
     (cosmos / "cosmos" / "v1" / "profile").as_!(apiKey, apiSecret)
   val cosmosrcPath = {
-    val permissions = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------"))
-    val tempFile = Files.createTempFile(handle, "cosmosrc", permissions)
+    val tempFile = Files.createTempFile(handle, "cosmosrc")
     val contents = Seq(s"""api_key: $apiKey
       |api_secret: $apiSecret
       |api_url: ${cosmos.url}/cosmos/v1/

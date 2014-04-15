@@ -14,7 +14,6 @@ import sbt.Keys._
 import play.{Keys => PlayKeys}
 import com.typesafe.sbt.packager.Keys._
 import sbtassembly.Plugin._
-import AssemblyKeys._
 
 object Build extends sbt.Build {
 
@@ -187,12 +186,8 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(buildSettings: _*)
-    settings(assemblySettings: _*)
     settings(RpmSettings.infinityServerSettings: _*)
     settings(JavaVersions.java6: _*)
-    settings(excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
-      cp filter {_.data.getName.contains("cglib-nodep-2.2.jar")}
-    })
     dependsOn(common)
   )
 

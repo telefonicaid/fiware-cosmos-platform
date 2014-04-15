@@ -1,6 +1,16 @@
+import AssemblyKeys._
+
 name := "infinity-server"
 
 description := "Infinity Server"
+
+assemblySettings
+
+excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+  cp filter { path => path.data.getName.contains("cglib-nodep-2.2.jar") }
+}
+
+jarName in assembly <<= (name, version) map { (name, version) => name + "-" + version + ".jar" }
 
 libraryDependencies ++= Dependencies.akka ++ Dependencies.spray ++ Dependencies.unfiltered ++ Seq(
   Dependencies.anorm,
@@ -11,7 +21,7 @@ libraryDependencies ++= Dependencies.akka ++ Dependencies.spray ++ Dependencies.
   Dependencies.hadoopCommon % "provided",
   Dependencies.hadoopHdfs % "provided",
   Dependencies.liftJson,
-  Dependencies.logbackClassic,
+  Dependencies.logbackClassic % "provided",
   Dependencies.scalalikejdbc,
   Dependencies.scalaMigrations,
   Dependencies.scalaz,

@@ -128,7 +128,7 @@ class AmbariServiceManagerTest
     }
 
   it must "be able to create and terminate a single machine cluster" in new WithMachines(1) {
-    val clusterId = instance.createCluster(
+    val (clusterId, completion_>) = instance.createCluster(
       ClusterName("clusterName"), 1, serviceDescriptions, Seq(), UnfilteredPassThrough)
     clusterId must not be null
     val state = waitForClusterCompletion(clusterId, instance)
@@ -142,7 +142,7 @@ class AmbariServiceManagerTest
 
   it must "be able to track the users of a cluster upon creation" in new WithMachines(1) {
     val users = Seq(ClusterUser(username = "jsmith", publicKey = "that public key"))
-    val clusterId = instance.createCluster(
+    val (clusterId, completion_>) = instance.createCluster(
       ClusterName("clusterName"), 1, serviceDescriptions, users, UnfilteredPassThrough)
     eventually {
       instance.listUsers(clusterId) must be (Some(users))
@@ -152,7 +152,7 @@ class AmbariServiceManagerTest
   }
 
   it must "be able to create and terminate a multi-machine cluster" in new WithMachines(5) {
-    val clusterId = instance.createCluster(
+    val (clusterId, completion_>) = instance.createCluster(
       ClusterName("clusterName"), machines.size, serviceDescriptions, Seq(), UnfilteredPassThrough)
     clusterId must not be null
     val state = waitForClusterCompletion(clusterId, instance)
@@ -166,7 +166,7 @@ class AmbariServiceManagerTest
 
   it must "be able to create and terminate a multi-machine cluster with non-slave master node" in
     new WithMachines(50) {
-      val clusterId = instance.createCluster(
+      val (clusterId, completion_>) = instance.createCluster(
         ClusterName("clusterName"), machines.size, serviceDescriptions, Seq(), UnfilteredPassThrough)
       clusterId must not be null
       val state = waitForClusterCompletion(clusterId, instance)
@@ -228,7 +228,7 @@ class AmbariServiceManagerTest
     }
 
   it must "add users on a cluster" in new WithMachines(3) {
-    val clusterId = instance.createCluster(
+    val (clusterId, completion_>) = instance.createCluster(
       ClusterName("clusterName"),
       clusterSize = 3,
       serviceDescriptions,
@@ -245,7 +245,7 @@ class AmbariServiceManagerTest
   }
 
   it must "fail adding users on a cluster that is not in Running state" in new WithMachines(3) {
-    val clusterId = instance.createCluster(
+    val (clusterId, completion_>) = instance.createCluster(
       ClusterName("clusterName"), 3, serviceDescriptions, Seq(), UnfilteredPassThrough)
     waitForClusterCompletion(clusterId, instance)
     terminateAndVerify(clusterId, instance)
@@ -255,7 +255,7 @@ class AmbariServiceManagerTest
 
   it must "fail terminating a cluster that is not in a valid termination state" in
     new WithMachines(3) {
-      val clusterId = instance.createCluster(
+      val (clusterId, completion_>) = instance.createCluster(
         ClusterName("clusterName"), 3, serviceDescriptions, Seq(), UnfilteredPassThrough)
       waitForClusterCompletion(clusterId, instance)
       terminateAndVerify(clusterId, instance)
@@ -265,7 +265,7 @@ class AmbariServiceManagerTest
 
   it must "pass through the preconditions to the infrastructure provider" in new WithMachines(3) {
     val willFailCondition: ClusterExecutableValidation = (_) => () => "Failed!".failureNel
-    val clusterId = instance.createCluster(
+    val (clusterId, completion_>) = instance.createCluster(
       ClusterName("clusterName"), 3, serviceDescriptions, Seq(), willFailCondition)
     waitForClusterCompletion(clusterId, instance)
     verify(infrastructureProvider).createMachines(
@@ -273,7 +273,7 @@ class AmbariServiceManagerTest
   }
 
   it must "create cluster including service bundles" in new WithMachines(3) {
-    val clusterId = instance.createCluster(
+    val (clusterId, completion_>) = instance.createCluster(
       ClusterName("clusterName"),
       3,
       Set(Hive.instance, InfinityDriver.instance(InfinityDriverParameters("secret"))),

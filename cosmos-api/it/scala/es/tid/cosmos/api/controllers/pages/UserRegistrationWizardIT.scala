@@ -29,6 +29,7 @@ import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
+import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.ClusterUser
@@ -44,7 +45,8 @@ class UserRegistrationWizardIT
 
   trait WithUserRegistrationWizard extends MockCosmosDataStoreComponent {
     val sm = spy(new MockedServiceManager())
-    val instance = new UserRegistrationWizard(store, sm)
+    val reporter = mock[ClusterReporter]
+    val instance = new UserRegistrationWizard(store, sm, reporter)
     sm.defineCluster(MockedServiceManager.PersistentHdfsProps)
   }
 

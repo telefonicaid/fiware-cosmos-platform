@@ -19,6 +19,7 @@ package es.tid.cosmos.api.controllers.common
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.Mode
+import play.api.Mode.Mode
 import play.api.libs.json.Json
 import play.api.test.{FakeApplication, WithApplication}
 
@@ -35,21 +36,24 @@ class ErrorMessageIT extends FlatSpec with MustMatchers {
     Json.toJson(message) must be (Json.obj("error" -> "Something failed"))
   }
 
-  it must "show exception details when not in production mode" in new WithApplication {
-    val json = Json.toJson(messageWithException)
-    (json \ "error").as[String] must be ("Something failed: Missing foo")
-    (json \ "exception").as[String] must be ("java.lang.RuntimeException")
-    (json \ "stackTrace").asOpt[List[String]] must be ('defined)
-  }
+  it must "show exception details when not in production mode" in
+    new WithApplication(new FakeApp(Mode.Test)) {
+      val json = Json.toJson(messageWithException)
+      (json \ "error").as[String] must be ("Something failed: Missing foo")
+      (json \ "exception").as[String] must be ("java.lang.RuntimeException")
+      (json \ "stackTrace").asOpt[List[String]] must be ('defined)
+    }
 
-  class FakeProdApplication extends FakeApplication {
-    override val mode = Mode.Prod
-  }
+  class FakeApp(override val mode: Mode) extends FakeApplication(
+    // the mailer is not required for this IT test
+    // remove mailer plugin to allow testing without needing the mailer configuration
+    withoutPlugins = Seq("com.typesafe.plugin.CommonsMailerPlugin")
+  )
 
   it must "hide exception details when in production mode" in
-    new WithApplication(new FakeProdApplication()) {
+    new WithApplication(new FakeApp(Mode.Prod)) {
       val json = Json.toJson(messageWithException)
-      (json \ "exception").asOpt[String] must not be ('defined)
-      (json \ "stackTrace").asOpt[List[String]] must not be ('defined)
+      (json \ "exception").asOpt[String] must not be 'defined
+      (json \ "stackTrace").asOpt[List[String]] must not be 'defined
     }
 }

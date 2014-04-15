@@ -37,6 +37,8 @@ import es.tid.cosmos.api.usage.MachineUsageComponent
 import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
+import es.tid.cosmos.api.report.ClusterReporter
+import es.tid.cosmos.api.email.EmailerComponent
 
 /** Web application template to be mixed-in with its dependencies. */
 abstract class Application {
@@ -48,9 +50,11 @@ abstract class Application {
     with TaskDaoComponent
     with MaintenanceStatusComponent
     with RequestAuthenticationComponent
+    with EmailerComponent
     with ConfigComponent =>
 
   lazy val conf = this.config
+  lazy val reporter = new ClusterReporter(conf.getString("email.reportToAddress"), emailer)
 
   lazy val controllers: Map[Class[Controller], Controller] = {
     val status = this.maintenanceStatus
@@ -59,7 +63,14 @@ abstract class Application {
     val auth = apiRequestAuthentication
     controllerMap(
       // Pages
-      new Pages(multiAuthProvider, serviceManager, taskDao, store, status, conf.getConfig("pages")),
+      new Pages(
+        multiAuthProvider,
+        serviceManager,
+        reporter,
+        taskDao,
+        store,
+        status,
+        conf.getConfig("pages")),
       new AdminPage(store, status),
       new CliConfigResource(store),
 
@@ -71,7 +82,7 @@ abstract class Application {
       new StatsResource(auth, store, serviceManager, ial),
       new InfoResource(auth, store, serviceManager, machineUsage),
       new ProfileResource(auth, store),
-      new ClusterResource(auth, serviceManager, machineUsage, taskDao, store, status),
+      new ClusterResource(auth, serviceManager, machineUsage, taskDao, store, status, reporter),
       new StorageResource(auth, serviceManager, status),
       new MaintenanceResource(auth, status),
       new TaskResource(auth, taskDao),
@@ -81,7 +92,7 @@ abstract class Application {
       new GroupMapperResource(store, conf),
 
       // Admin API
-      new UserResource(multiAuthProvider, serviceManager, store, status)
+      new UserResource(multiAuthProvider, serviceManager, store, status, reporter)
     )
   }
 

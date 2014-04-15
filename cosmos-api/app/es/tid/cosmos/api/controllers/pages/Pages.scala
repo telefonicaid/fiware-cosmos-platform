@@ -36,6 +36,7 @@ import es.tid.cosmos.api.controllers.common.auth.PagesAuthController
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.profile.{Registration, UserId}
 import es.tid.cosmos.api.profile.dao.ProfileDataStore
+import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.api.task.TaskDao
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.common.Wrapped
@@ -46,6 +47,7 @@ import views.AuthAlternative
 class Pages(
     multiAuthProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
+    reporter: ClusterReporter,
     override val taskDao: TaskDao,
     override val store: ProfileDataStore,
     override val maintenanceStatus: MaintenanceStatus,
@@ -55,7 +57,7 @@ class Pages(
 
   import Scalaz._
 
-  private val registrationWizard = new UserRegistrationWizard(store, serviceManager)
+  private val registrationWizard = new UserRegistrationWizard(store, serviceManager, reporter)
 
   def index = Action { implicit request =>
     withAuthentication(request)(

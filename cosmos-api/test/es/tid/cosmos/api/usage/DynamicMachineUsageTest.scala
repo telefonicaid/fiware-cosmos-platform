@@ -88,7 +88,7 @@ class DynamicMachineUsageTest
         import scalaz.Scalaz._
 
         val failedPreconditions = (clusterId: ClusterId) => () => "Failure example".failureNel
-        val clusterId = serviceManager.createCluster(
+        val (clusterId, _) = serviceManager.createCluster(
           ClusterName("failedCluster"), 2, Set.empty, Seq.empty, failedPreconditions)
         store.withTransaction { implicit c =>
           store.cluster.register(clusterId, myUserProfile.id, ClusterSecret.random())
@@ -113,9 +113,9 @@ class DynamicMachineUsageTest
   }
 
   private trait WithUserClusters extends WithMachineUsage {
-    val clusterId1 = serviceManager.createCluster(ClusterName("myCluster1"), 1, Set.empty, Seq.empty)
-    val clusterId2 = serviceManager.createCluster(ClusterName("myCluster2"), 2, Set.empty, Seq.empty)
-    val terminated = serviceManager.createCluster(
+    val (clusterId1, _) = serviceManager.createCluster(ClusterName("myCluster1"), 1, Set.empty, Seq.empty)
+    val (clusterId2, _) = serviceManager.createCluster(ClusterName("myCluster2"), 2, Set.empty, Seq.empty)
+    val (terminated, _) = serviceManager.createCluster(
       ClusterName("terminatedCluster"), 10, Set.empty, Seq.empty)
 
     serviceManager.withCluster(clusterId1)(_.completeProvisioning())
@@ -133,11 +133,11 @@ class DynamicMachineUsageTest
     val profileA2 = registerUser("userA2")(store)
     val profileB1 = registerUser("userB1")(store)
     val profileB2 = registerUser("userB2")(store)
-    val clusterA1 = serviceManager.createCluster(ClusterName("clusterA1"), 1, Set.empty, Seq.empty)
-    val clusterA2 = serviceManager.createCluster(ClusterName("clusterA2"), 2, Set.empty, Seq.empty)
-    val clusterB1 = serviceManager.createCluster(ClusterName("clusterB1"), 1, Set.empty, Seq.empty)
-    val clusterB2 = serviceManager.createCluster(ClusterName("clusterB2"), 2, Set.empty, Seq.empty)
-    val terminated = serviceManager.createCluster(
+    val (clusterA1, _) = serviceManager.createCluster(ClusterName("clusterA1"), 1, Set.empty, Seq.empty)
+    val (clusterA2, _) = serviceManager.createCluster(ClusterName("clusterA2"), 2, Set.empty, Seq.empty)
+    val (clusterB1, _) = serviceManager.createCluster(ClusterName("clusterB1"), 1, Set.empty, Seq.empty)
+    val (clusterB2, _) = serviceManager.createCluster(ClusterName("clusterB2"), 2, Set.empty, Seq.empty)
+    val (terminated, _) = serviceManager.createCluster(
       ClusterName("terminatedCluster"), 10, Set.empty, Seq.empty)
     val groupA = GuaranteedGroup("A", Quota(3))
     val groupB = GuaranteedGroup("B", Quota(5))

@@ -28,6 +28,7 @@ import play.api.mvc.Results
 import es.tid.cosmos.api.controllers.common.ErrorMessage
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.dao.ProfileDataStore
+import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.servicemanager.ServiceManager
 
 /** Sequence of actions to register a new user in Cosmos.
@@ -36,7 +37,8 @@ import es.tid.cosmos.servicemanager.ServiceManager
   * @param store           Data store
   * @param serviceManager  For registering the user credentials
   */
-class UserRegistrationWizard(store: ProfileDataStore, serviceManager: ServiceManager)
+class UserRegistrationWizard(
+    store: ProfileDataStore, serviceManager: ServiceManager, reporter: ClusterReporter)
   extends Results {
 
   import Scalaz._
@@ -69,6 +71,11 @@ class UserRegistrationWizard(store: ProfileDataStore, serviceManager: ServiceMan
             case Failure(NonFatal(ex)) => logRegistrationError(userId, ex)
             case Success(_) => logRegistrationSuccess(userId, profile)
           }
+          reporter.reportOnFailure(
+            serviceManager.persistentHdfsId,
+            serviceManager.describeClusterUponCompletion(serviceManager.persistentHdfsId, registration_>),
+            registrationErrorMessage(userId)
+          )
           (profile, registration_>).success
       }
     }

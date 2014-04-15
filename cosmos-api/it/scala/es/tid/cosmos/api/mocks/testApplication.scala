@@ -36,7 +36,8 @@ abstract class TestApplication extends Application
   with InMemoryMaintenanceStatusComponent
   with ChainedAuthenticationComponent
   with DynamicMachineUsageComponent
-  with InMemoryTaskDaoComponent {
+  with InMemoryTaskDaoComponent
+  with MockEmailerComponent {
 
   self: CosmosDataStoreComponent =>
 

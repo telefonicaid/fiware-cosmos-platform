@@ -6,6 +6,7 @@ compile in IntegrationTest <<= compile in IntegrationTest dependsOn (compile in 
 
 libraryDependencies ++= Dependencies.unfiltered ++ Seq(
   Dependencies.scalaz,
+  "com.typesafe" %% "play-plugins-mailer" % "2.2.0",
   // TODO: Taken from SNAPSHOT to work with Play 2.2.0. Replace with released version once available
   "com.wordnik" %% "swagger-play2" % "1.2.6-Cosmos",
   "net.databinder.dispatch" %% "dispatch-core" % "0.10.0",

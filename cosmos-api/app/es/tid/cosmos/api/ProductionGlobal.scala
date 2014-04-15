@@ -20,6 +20,7 @@ import es.tid.cosmos.api.auth.multiauth.ConfigBasedMultiAuthProviderComponent
 import es.tid.cosmos.api.auth.request.ChainedAuthenticationComponent
 import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.controllers.admin.InMemoryMaintenanceStatusComponent
+import es.tid.cosmos.api.email.PlayEmailerComponent
 import es.tid.cosmos.api.profile.dao.sql.PlayDbDataStoreComponent
 import es.tid.cosmos.api.task.inmemory.InMemoryTaskDaoComponent
 import es.tid.cosmos.api.usage.DynamicMachineUsageComponent
@@ -35,4 +36,6 @@ object ProductionGlobal extends AbstractGlobal(new Application
   with DynamicMachineUsageComponent
   with InMemoryMaintenanceStatusComponent
   with ChainedAuthenticationComponent
-  with InMemoryTaskDaoComponent)
+  with InMemoryTaskDaoComponent
+  with PlayEmailerComponent
+)

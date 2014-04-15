@@ -16,6 +16,7 @@
 
 package es.tid.cosmos
 
+import scala.concurrent.Future
 import scalaz.ValidationNel
 import scalaz.syntax.validation._
 
@@ -32,4 +33,6 @@ package object common {
 
   /** ''Null'' object that does a pass-through without any validation */
   val PassThrough: ExecutableValidation = () => ().successNel[String]
+
+  type NowFuture[N, F] = (N, Future[F])
 }

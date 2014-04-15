@@ -18,8 +18,9 @@ import play.api.libs.json.Json
 import play.api.mvc.{RequestHeader, Results}
 
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.common.BasicAuth
+import es.tid.cosmos.common.BearerToken
 
+/** Validates that Infinity requests are properly authorized. */
 class InfinityRequestAuthentication(config: Config) extends Results {
 
   import Scalaz._
@@ -32,7 +33,7 @@ class InfinityRequestAuthentication(config: Config) extends Results {
 
   private def requireInfinityCredentials(authHeader: String): ActionValidation[Unit] =
     authHeader match {
-      case BasicAuth(InfinityUser, `infinitySecret`) => ().success
+      case BearerToken(`infinitySecret`) => ().success
       case _ => invalidCredentialsResponse(authHeader).failure
     }
 
@@ -49,8 +50,7 @@ class InfinityRequestAuthentication(config: Config) extends Results {
 
 private object InfinityRequestAuthentication extends Results {
 
-  val InfinityUser = "infinity"
-
   val MissingAuthorizationResponse =
     Unauthorized(Json.toJson(Message("Missing authorization header")))
+      .withHeaders("WWW-Authenticate" -> """Bearer realm="Infinity"""")
 }

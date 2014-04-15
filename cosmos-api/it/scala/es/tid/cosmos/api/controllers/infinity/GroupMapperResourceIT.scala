@@ -18,7 +18,7 @@ import play.api.test._
 import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
-import es.tid.cosmos.common.BasicAuth
+import es.tid.cosmos.common.BearerToken
 
 class GroupMapperResourceIT extends FlatSpec with MustMatchers {
 
@@ -47,7 +47,7 @@ class GroupMapperResourceIT extends FlatSpec with MustMatchers {
   }
 
   trait Fixture extends WithSampleSessions {
-    val validAuth = "Authorization" -> BasicAuth("infinity", "infinitypass")
+    val validAuth = "Authorization" -> BearerToken("infinitypass")
 
     def doRequest(
         handle: Option[String],

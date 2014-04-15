@@ -23,7 +23,7 @@ import dispatch.Defaults._
 import org.apache.commons.logging.LogFactory
 import org.apache.hadoop.security.GroupMappingServiceProvider
 
-import es.tid.cosmos.common.Wrapped
+import es.tid.cosmos.common.{BearerToken, Wrapped}
 
 /** Client of the Cosmos API able to retrieve the groups of a given user identified by handle.
   *
@@ -84,8 +84,10 @@ private[groups] class CosmosApiGroupMapping(
       Seq.empty
   }
 
+  private val headers = Map("Authorization" -> BearerToken(infinitySecret))
+
   private def requestGroups(handle: String) =
-    Http(resource() <<? Map("handle" -> handle) as_! ("infinity", infinitySecret) OK as.String)
+    Http(resource() <<? Map("handle" -> handle) <:< headers OK as.String)
 
   private def resource(): RequestBuilder = url(apiBase) / "infinity" / "v1" / "groups"
 }

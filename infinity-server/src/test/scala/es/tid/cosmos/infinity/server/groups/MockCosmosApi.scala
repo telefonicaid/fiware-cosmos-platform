@@ -19,6 +19,8 @@ import unfiltered.jetty.Http
 import unfiltered.request._
 import unfiltered.response._
 
+import es.tid.cosmos.common.BearerToken
+
 class MockCosmosApi(port: Int) extends Assertions {
 
   private var infinitySecret: String = "default"
@@ -61,15 +63,18 @@ class MockCosmosApi(port: Int) extends Assertions {
     object Handle extends Params.Extract("handle", Params.first)
 
     Http.local(port).filter(Planify {
-      case req @ BasicAuth(user, pass) & GET(Path("/infinity/v1/groups") & Params(Handle(handle))) =>
-        if ((user, pass) != ("infinity", infinitySecret)) Forbidden
-        else if (redirectTo.isDefined) Redirect(redirectTo.get)
-        else {
-          Thread.sleep(processingDelay.toMillis)
-          groupMapping.get(handle) match {
-            case None => BadRequest ~> ResponseString("Handle not found")
-            case Some(response) => Ok ~> ResponseString(response)
-          }
+      case req @ Authorization(auth) & GET(Path("/infinity/v1/groups") & Params(Handle(handle))) =>
+        auth match {
+          case BearerToken(token) if token == infinitySecret =>
+            if (redirectTo.isDefined) Redirect(redirectTo.get)
+            else {
+              Thread.sleep(processingDelay.toMillis)
+              groupMapping.get(handle) match {
+                case None => BadRequest ~> ResponseString("Handle not found")
+                case Some(response) => Ok ~> ResponseString(response)
+              }
+            }
+          case _ => Forbidden
         }
 
       case req => fail(s"Unexpected request $req")

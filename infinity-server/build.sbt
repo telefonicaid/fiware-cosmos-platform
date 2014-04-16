@@ -21,7 +21,6 @@ libraryDependencies ++= Dependencies.unfiltered ++ Seq(
   Dependencies.hadoopCommon % "provided",
   Dependencies.hadoopHdfs % "provided",
   Dependencies.liftJson,
-  Dependencies.logbackClassic % "provided",
   Dependencies.scalalikejdbc,
   Dependencies.scalaMigrations,
   Dependencies.scalaz,

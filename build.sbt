@@ -30,3 +30,6 @@ publishTo := {
 credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
 
 cleanKeepFiles := (target.value * "centos-6-cosmos.HDP.*").get
+
+// orbit workaround https://jira.codehaus.org/browse/JETTY-1493
+classpathTypes ~= (_ + "orbit")

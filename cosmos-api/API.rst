@@ -455,9 +455,9 @@ are described in this section.
 Authentication
 --------------
 
-Infinity services will use basic authentication (``Authorization`` header of
-RFC 2617) in which the username will be always ``infinity`` and the password
-is a shared secret present in both services configuration.
+Infinity services will use token bearer authentication with a secret token shared
+between Cosmos API and the Infinity service (bearer authentication scheme of
+RFC 6750).
 
 
 GET ``/infinity/v1/auth``

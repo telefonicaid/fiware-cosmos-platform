@@ -21,7 +21,8 @@ import play.api.mvc._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.controllers.common.{ActionValidation, BasicAuth}
+import es.tid.cosmos.api.controllers.common.ActionValidation
+import es.tid.cosmos.common.BearerToken
 
 class InfinityRequestAuthenticationTest extends FlatSpec with MustMatchers with Inside {
 
@@ -44,15 +45,14 @@ class InfinityRequestAuthenticationTest extends FlatSpec with MustMatchers with 
 
   it must "reject request with wrong credentials" in {
     val request = FakeRequest(GET, "/some/path")
-      .withHeaders("Authorization" -> BasicAuth("wrong", "credentials"))
+      .withHeaders("Authorization" -> BearerToken("wrong_credentials"))
     val res = failureResponse(authentication.requireAuthorized(request))
     status(res) must be (UNAUTHORIZED)
     contentAsString(res) must include ("Invalid credentials")
   }
 
   it must "accept request with Infinity credentials" in {
-    val request = FakeRequest(GET, "/some/path")
-      .withHeaders("Authorization" -> BasicAuth("infinity", secret))
+    val request = FakeRequest(GET, "/some/path").withHeaders("Authorization" -> BearerToken(secret))
     authentication.requireAuthorized(request) must be ('success)
   }
 

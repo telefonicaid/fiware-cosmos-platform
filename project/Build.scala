@@ -14,7 +14,6 @@ import sbt.Keys._
 import play.{Keys => PlayKeys}
 import com.typesafe.sbt.packager.Keys._
 import sbtassembly.Plugin._
-import AssemblyKeys._
 
 object Build extends sbt.Build {
 
@@ -67,6 +66,16 @@ object Build extends sbt.Build {
     )
     lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
     lazy val typesafeConfig = "com.typesafe" % "config" % "1.2.0"
+    lazy val unfiltered = Seq(
+      "net.databinder" %% "unfiltered-filter" % "0.6.8" % "test, it",
+      "net.databinder" %% "unfiltered-jetty" % "0.6.8" % "test, it",
+      "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "test, it" artifacts (
+        Artifact("javax.servlet", "jar", "jar")),
+      "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "test, it" artifacts (
+        Artifact("javax.servlet", "jar", "jar")),
+      "org.eclipse.jetty" % "jetty-webapp" % "7.0.0.v20091005" % "it" artifacts (
+        Artifact("jetty-webapp", "jar", "jar"))
+    )
   }
 
   object ExternalSources {
@@ -177,12 +186,8 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(buildSettings: _*)
-    settings(assemblySettings: _*)
     settings(RpmSettings.infinityServerSettings: _*)
     settings(JavaVersions.java6: _*)
-    settings(excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
-      cp filter {_.data.getName.contains("cglib-nodep-2.2.jar")}
-    })
     dependsOn(common)
   )
 

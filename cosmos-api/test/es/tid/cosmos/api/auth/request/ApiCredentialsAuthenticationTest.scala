@@ -18,10 +18,9 @@ import org.scalatest.matchers.MustMatchers
 import play.api.test.FakeRequest
 
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.controllers.common.BasicAuth
 import es.tid.cosmos.api.profile.UserState.Enabled
-import es.tid.cosmos.api.profile.Registration
 import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
+import es.tid.cosmos.common.BasicAuth
 
 class ApiCredentialsAuthenticationTest extends FlatSpec with MustMatchers {
 

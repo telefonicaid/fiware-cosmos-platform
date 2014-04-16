@@ -38,7 +38,8 @@ object RpmSettings {
     rpmOs in Rpm:= "linux",
     rpmRequirements := Seq("java"),
     rpmAutoreq := "no",
-    rpmAutoprov := "no"
+    rpmAutoprov := "no",
+    rpmBrpJavaRepackJars := true
   )
 
   lazy val CosmosCli = config("cosmosCli")

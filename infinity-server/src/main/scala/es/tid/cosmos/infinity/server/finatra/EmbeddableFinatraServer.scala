@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  * Copyright (C) 2012 Twitter Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,15 +16,6 @@
  *
  * ============================================================================
  * NOTICE: This code is heavly based on Finatra source for FinatraServer class.
- *
- * Telefónica Digital - Product Development and Innovation
- *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
- *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
  */
 package es.tid.cosmos.infinity.server.finatra
 

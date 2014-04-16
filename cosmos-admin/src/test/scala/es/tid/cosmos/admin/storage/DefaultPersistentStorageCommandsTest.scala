@@ -14,14 +14,17 @@ package es.tid.cosmos.admin.storage
 import java.net.URI
 import scala.concurrent.Future
 
+import com.typesafe.config.ConfigFactory
 import org.mockito.BDDMockito.given
-import org.mockito.Mockito.{verify, never}
+import org.mockito.Matchers.any
+import org.mockito.Mockito.{never, verify}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.InfinityServer.InfinityServerParameters
 
 class DefaultPersistentStorageCommandsTest extends FlatSpec with MustMatchers with MockitoSugar {
 
@@ -29,23 +32,45 @@ class DefaultPersistentStorageCommandsTest extends FlatSpec with MustMatchers wi
     val sm = mock[ServiceManager]
     val hdfsId = ClusterId("booya")
     given(sm.persistentHdfsId).willReturn(hdfsId)
-    val commands = new DefaultPersistentStorageCommands(sm)
+    val parameters = InfinityServerParameters(
+      cosmosApiUrl = "http://base-url",
+      infinitySecret = "secret"
+    )
+    val config = ConfigFactory.parseString(
+      s"""
+         |application.baseurl="${parameters.cosmosApiUrl}"
+         |infinity.secret="${parameters.infinitySecret}"
+       """.stripMargin)
+    val commands = new DefaultPersistentStorageCommands(sm, config)
 
-    def verifyDeploymentAttempt(): Unit = verify(sm).deployPersistentHdfsCluster()
-    def verifyNoDeploymentAttempt(): Unit = verify(sm, never()).deployPersistentHdfsCluster()
+    def verifyDeploymentAttempt(): Unit = {
+      verify(sm).deployPersistentHdfsCluster(parameters)
+    }
 
-    def verifyTerminationAttempt(): Unit = verify(sm).terminatePersistentHdfsCluster()
-    def verifyNoTerminationAttempt(): Unit = verify(sm, never()).terminatePersistentHdfsCluster()
+    def verifyNoDeploymentAttempt(): Unit = {
+      verify(sm, never()).deployPersistentHdfsCluster(any[InfinityServerParameters])
+    }
+
+    def verifyTerminationAttempt(): Unit = {
+      verify(sm).terminatePersistentHdfsCluster()
+    }
+
+    def verifyNoTerminationAttempt(): Unit = {
+      verify(sm, never()).terminatePersistentHdfsCluster()
+    }
   }
 
   trait WithMissingStorage extends WithServiceManager {
     given(sm.describePersistentHdfsCluster()).willReturn(None)
 
-    def givenDeploymentWillSucceed(): Unit = given(sm.deployPersistentHdfsCluster())
-      .willReturn(Future.successful())
+    def givenDeploymentWillSucceed(): Unit = {
+      given(sm.deployPersistentHdfsCluster(parameters)).willReturn(Future.successful())
+    }
 
-    def givenDeploymentWillFail(): Unit = given(sm.deployPersistentHdfsCluster())
-      .willReturn(Future.failed(new Error("Something bad happened")))
+    def givenDeploymentWillFail(): Unit = {
+      given(sm.deployPersistentHdfsCluster(any[InfinityServerParameters]))
+        .willReturn(Future.failed(new Error("Something bad happened")))
+    }
   }
 
   trait WithStorage extends WithServiceManager {

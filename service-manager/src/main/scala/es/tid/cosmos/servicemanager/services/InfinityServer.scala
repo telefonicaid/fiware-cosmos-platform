@@ -11,14 +11,9 @@
 
 package es.tid.cosmos.servicemanager.services
 
-import scala.concurrent.duration.FiniteDuration
-
 object InfinityServer extends Service {
 
-  case class InfinityServerParameters(
-      cosmosApiUrl: String,
-      infinitySecret: String,
-      requestTimeout: FiniteDuration)
+  case class InfinityServerParameters(cosmosApiUrl: String, infinitySecret: String)
 
   override type Parametrization = InfinityServerParameters
   override val name: String = "INFINITY_SERVER"

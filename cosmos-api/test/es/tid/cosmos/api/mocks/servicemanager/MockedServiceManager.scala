@@ -18,8 +18,8 @@ import scala.util.Random
 
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.clusters.ImmutableClusterDescription
-import es.tid.cosmos.servicemanager.services.{Service, Pig, Hive}
+import es.tid.cosmos.servicemanager.services.{Hive, Pig, Service}
+import es.tid.cosmos.servicemanager.services.InfinityServer.InfinityServerParameters
 
 /** In-memory, simulated service manager. */
 class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
@@ -89,11 +89,11 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
       promise.future
     }
 
-    def when(predicate: FakeCluster => Boolean)(action: FakeCluster => Unit) { synchronized {
+    def when(predicate: FakeCluster => Boolean)(action: FakeCluster => Unit): Unit = { synchronized {
       observers += Observer(predicate, action)
     }}
 
-    def immediateTransition(from: ClusterState, to: ClusterState) {
+    def immediateTransition(from: ClusterState, to: ClusterState): Unit = {
       when(_.state == from) {
         _.setState(to)
       }
@@ -129,7 +129,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
       failTransition_>
     }
 
-    private def notifyObservers() {
+    private def notifyObservers(): Unit = {
       for (Observer(pred, act) <- observers if pred(this)) {
         act(this)
       }
@@ -183,7 +183,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
 
   override val persistentHdfsId: ClusterId = PersistentHdfsProps.id
 
-  override def deployPersistentHdfsCluster(): Future[Unit] =
+  override def deployPersistentHdfsCluster(parameters: InfinityServerParameters): Future[Unit] =
     defineCluster(PersistentHdfsProps).transitionFuture
 
   override def listUsers(clusterId: ClusterId): Option[Seq[ClusterUser]] = for {
@@ -203,7 +203,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
 
   override def clusterNodePoolCount: Int = maxPoolSize
 
-  def withCluster(clusterId: ClusterId)(action: FakeCluster => Unit) {
+  def withCluster(clusterId: ClusterId)(action: FakeCluster => Unit): Unit = {
     action(clusters(clusterId))
   }
 

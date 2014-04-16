@@ -14,12 +14,15 @@ package es.tid.cosmos.admin.storage
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits._
 
+import com.typesafe.config.Config
+
 import es.tid.cosmos.admin.command.CommandResult
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.InfinityServer.InfinityServerParameters
 
-private[storage] class DefaultPersistentStorageCommands(serviceManager: ServiceManager)
-  extends PersistentStorageCommands {
+private[storage] class DefaultPersistentStorageCommands(
+    serviceManager: ServiceManager, config: Config) extends PersistentStorageCommands {
 
   private val ClusterTimeout = 15.minutes
 
@@ -30,7 +33,11 @@ private[storage] class DefaultPersistentStorageCommands(serviceManager: ServiceM
       CommandResult.error(s"Infinity in $state state. Not changing anything...")
     case None =>
       println("Persistent Storage not found. Deploying...")
-      val deployment = serviceManager.deployPersistentHdfsCluster()
+      val parameters = InfinityServerParameters(
+        cosmosApiUrl = config.getString("application.baseurl"),
+        infinitySecret = config.getString("infinity.secret")
+      )
+      val deployment = serviceManager.deployPersistentHdfsCluster(parameters)
         .map(_ => CommandResult.success("Infinity successfully deployed"))
       CommandResult.await(deployment, ClusterTimeout)
   }

@@ -22,7 +22,6 @@ class cosmos::setup {
   # JSON does not allow multiline strings.
   $infinity_proxy_ssl_cert      = regsubst($ssl_cert_content, '\n', '\\n', 'G')
   $infinity_proxy_ssl_key       = regsubst($ssl_key_content, '\n', '\\n', 'G')
-  $infinity_proxy_secure_phrase = $cosmos::params::infinity_proxy_secure_phrase
 
   package { ['libvirt-client', 'libvirt-java'] :
     ensure => 'present'

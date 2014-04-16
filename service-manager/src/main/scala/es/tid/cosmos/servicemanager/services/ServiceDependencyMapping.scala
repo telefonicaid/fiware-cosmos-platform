@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.services
 
-import es.tid.cosmos.servicemanager.services.dependencies.DependencyMapping
+import es.tid.cosmos.servicemanager.services.dependencies.{DependencyMapping, DependencyType}
 
 class ServiceDependencyMapping(catalogue: Set[Service])
   extends DependencyMapping[Service](ServiceDependencyMapping.dependencyMap(catalogue)) {
@@ -27,7 +27,7 @@ class ServiceDependencyMapping(catalogue: Set[Service])
 
 object ServiceDependencyMapping {
 
-  def dependencyMap(catalogue: Set[Service]): Map[Service, Set[Service]] = (for {
+  def dependencyMap(catalogue: Set[Service]): Map[Service, Map[Service, DependencyType]] = (for {
     service <- catalogue
-  } yield service -> service.dependencies).toMap
+  } yield service -> service.dependencies.mapping).toMap
 }

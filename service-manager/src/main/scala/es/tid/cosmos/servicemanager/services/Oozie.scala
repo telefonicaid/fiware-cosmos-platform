@@ -11,8 +11,10 @@
 
 package es.tid.cosmos.servicemanager.services
 
+import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
+
 /** Representation of the Oozie service. */
 object Oozie extends Service with NoParametrization {
   override val name: String = "OOZIE"
-  override val dependencies: Set[Service] = Set(Hdfs, MapReduce2)
+  override val dependencies = ServiceDependencies.required(Hdfs, MapReduce2)
 }

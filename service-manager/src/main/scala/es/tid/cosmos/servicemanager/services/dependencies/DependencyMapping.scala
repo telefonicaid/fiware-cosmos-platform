@@ -14,21 +14,22 @@ package es.tid.cosmos.servicemanager.services.dependencies
 import scala.annotation.tailrec
 
 /** Simple transitive dependency mapping.  */
-private[services] class DependencyMapping[T](dependencyMapping: Map[T, Set[T]]) {
+private[services] class DependencyMapping[T](dependencyMapping: Map[T, Map[T, DependencyType]]) {
 
-  def this(dependencyMapping: (T, Set[T])*) = this(dependencyMapping.toMap)
-
-  private val dependencies = dependencyMapping.withDefaultValue(Set.empty)
+  private val dependencies = dependencyMapping.withDefaultValue(Map.empty)
 
   /** Resolves services dependencies transitively. */
   @tailrec
   final def resolve(entities: Set[T]): Set[T] = {
-    val withDirectDependencies = entities union directDependencies(entities)
+    val withDirectDependencies = entities union directRequiredDependencies(entities)
     if (withDirectDependencies == entities) entities
     else resolve(withDirectDependencies)
   }
 
-  private def directDependencies(entities: Set[T]) = entities.flatMap(dependencies)
+  private def directRequiredDependencies(entities: Set[T]): Set[T] =
+    entities.flatMap(dependencies).collect {
+      case (dependency, Required) => dependency
+    }
 
   /** Arranges services in a valid execution order or throws an exception if it is not possible.
     *
@@ -37,8 +38,16 @@ private[services] class DependencyMapping[T](dependencyMapping: Map[T, Set[T]]) 
     * @throws CyclicDependencyException  If there is such cycle
     */
   def executionOrder(entities: Set[T]): Seq[T] = {
-    val entitiesWithDeps = entities.map(e => (e, dependencies(e))).toMap
-    topologicalSort(entitiesWithDeps)
+
+    def executionDependencies(entity: T): Set[T] = dependencies(entity).collect {
+      case (requiredDep, Required) => requiredDep
+      case (optionalDep, Optional) if entities.contains(optionalDep) => optionalDep
+    }.toSet
+
+    val entitiesWithDependencies = entities.map { entity =>
+      entity -> executionDependencies(entity)
+    }.toMap
+    topologicalSort(entitiesWithDependencies)
   }
 
   /** Sort topologically a dependency graph.
@@ -63,4 +72,13 @@ private[services] class DependencyMapping[T](dependencyMapping: Map[T, Set[T]]) 
       }
       topologicalSort(nextEntities, sorted ++ executableEntities)
     }
+}
+
+private[services] object DependencyMapping {
+
+  def requiredDependencies[T](dependencyMapping: (T, Set[T])*) = new DependencyMapping[T](
+    dependencyMapping.map {
+      case (entity, requiredDeps) => (entity, requiredDeps.zip(Stream.continually(Required)).toMap)
+    }.toMap
+  )
 }

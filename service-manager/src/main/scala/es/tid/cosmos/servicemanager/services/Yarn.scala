@@ -11,8 +11,10 @@
 
 package es.tid.cosmos.servicemanager.services
 
+import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
+
 /** Representation of the YARN service. */
 object Yarn extends Service with NoParametrization {
   override val name: String = "YARN"
-  override val dependencies: Set[Service] = Set(InfinityDriver)
+  override val dependencies = ServiceDependencies.required(InfinityDriver)
 }

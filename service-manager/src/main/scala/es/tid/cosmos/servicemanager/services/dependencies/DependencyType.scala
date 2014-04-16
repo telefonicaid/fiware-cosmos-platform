@@ -9,11 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.services
+package es.tid.cosmos.servicemanager.services.dependencies
 
-import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
+sealed trait DependencyType
 
-object Pig extends Service with NoParametrization {
-  override val name = "PIG"
-  override val dependencies = ServiceDependencies.required(Hdfs, MapReduce2)
-}
+/** Required dependencies are always needed and should be present before the dependant. */
+case object Required extends DependencyType
+
+/** Optional dependencies might be absent but when present should go before the dependant. */
+case object Optional extends DependencyType

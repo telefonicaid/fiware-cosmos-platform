@@ -11,7 +11,15 @@
 
 package es.tid.cosmos.servicemanager.services
 
-object InfinityServer extends Service with NoParametrization {
+import scala.concurrent.duration.FiniteDuration
+
+object InfinityServer extends Service {
+
+  case class InfinityServerParameters(
+      cosmosApiUrl: String,
+      infinitySecret: String,
+      requestTimeout: FiniteDuration)
+
+  override type Parametrization = InfinityServerParameters
   override val name: String = "INFINITY_SERVER"
-  override val dependencies: Set[Service] = Set(Hdfs)
 }

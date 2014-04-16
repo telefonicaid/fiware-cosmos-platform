@@ -11,8 +11,10 @@
 
 package es.tid.cosmos.servicemanager.services
 
+import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
+
 /** Representation of the WebHCat service */
 object WebHCat extends Service with NoParametrization {
   override val name: String = "WEBHCAT"
-  override val dependencies: Set[Service] = Set(Hdfs, MapReduce2)
+  override val dependencies = ServiceDependencies.required(Hdfs, MapReduce2)
 }

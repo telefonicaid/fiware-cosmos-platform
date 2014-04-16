@@ -11,11 +11,12 @@
 
 package es.tid.cosmos.infinity.server.authentication.cosmosapi
 
+import java.nio.charset.Charset
 import scala.util.{Failure, Success, Try}
 
+import com.twitter.finagle.http.Response
 import net.liftweb.json._
 import net.liftweb.json.JsonParser.ParseException
-import spray.http.HttpEntity
 
 import es.tid.cosmos.infinity.server.authentication.UserProfile
 import es.tid.cosmos.infinity.server.permissions.PermissionsMask
@@ -40,8 +41,8 @@ object ResponseObject {
 
   private implicit val formats = DefaultFormats
 
-  def extractFrom(entity: HttpEntity): Try[ResponseObject] = {
-    val body = entity.asString
+  def extractFrom(response: Response): Try[ResponseObject] = {
+    val body: String = response.content.toString(Charset.defaultCharset())
     try {
       Success(parse(body).extract[ResponseObject])
     } catch {

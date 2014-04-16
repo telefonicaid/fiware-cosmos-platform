@@ -13,17 +13,14 @@ package es.tid.cosmos.infinity.server.authentication.cosmosapi
 
 import scala.util.Success
 
+import com.twitter.finatra.ResponseBuilder
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
-import spray.http.HttpEntity
-
-import es.tid.cosmos.infinity.server.authentication.UserProfile
-import es.tid.cosmos.infinity.server.permissions.PermissionsMask
 
 class ResponseObjectTest extends FlatSpec with MustMatchers {
 
   "Response object" must "be extracted from HTTP response" in {
-    ResponseObject.extractFrom(HttpEntity(
+    ResponseObject.extractFrom(ResponseBuilder(200,
       """{
         | "user": "gandalf",
         | "group": "istari",
@@ -40,7 +37,7 @@ class ResponseObjectTest extends FlatSpec with MustMatchers {
   }
 
   it must "be extracted from HTTP response with missing optional fields" in {
-    ResponseObject.extractFrom(HttpEntity(
+    ResponseObject.extractFrom(ResponseBuilder(200,
       """{
         | "user": "gandalf",
         | "group": "istari",
@@ -57,7 +54,7 @@ class ResponseObjectTest extends FlatSpec with MustMatchers {
 
   it must "fail to be extracted from HTTP response with missing required fields" in {
     evaluating {
-      ResponseObject.extractFrom(HttpEntity(
+      ResponseObject.extractFrom(ResponseBuilder(200,
         """{
           | "user": "gandalf",
           | "origins": "anyHost"
@@ -69,7 +66,7 @@ class ResponseObjectTest extends FlatSpec with MustMatchers {
 
   it must "fail to be extracted from HTTP response with invalid access mask value" in {
     evaluating {
-      ResponseObject.extractFrom(HttpEntity(
+      ResponseObject.extractFrom(ResponseBuilder(200,
         """{
           | "user": "gandalf",
           | "group": "istari",
@@ -82,7 +79,7 @@ class ResponseObjectTest extends FlatSpec with MustMatchers {
 
   it must "fail to be extracted from HTTP response with invalid format" in {
     evaluating {
-      ResponseObject.extractFrom(HttpEntity(
+      ResponseObject.extractFrom(ResponseBuilder(200,
         "Hello World! This is a stupid response that does not mean anything!"
       )).get
     } must produce [IllegalArgumentException]

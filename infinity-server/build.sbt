@@ -12,7 +12,7 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
 
 jarName in assembly <<= (name, version) map { (name, version) => name + "-" + version + ".jar" }
 
-libraryDependencies ++= Dependencies.akka ++ Dependencies.spray ++ Dependencies.unfiltered ++ Seq(
+libraryDependencies ++= Dependencies.unfiltered ++ Seq(
   Dependencies.anorm,
   Dependencies.commonsCodec,
   Dependencies.dispatch,

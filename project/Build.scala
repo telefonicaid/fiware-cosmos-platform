@@ -167,7 +167,7 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
-    settings(RpmSettings.infinitySettings: _*)
+    settings(RpmSettings.infinityDriverSettings: _*)
     settings(JavaVersions.java6: _*)
   )
 

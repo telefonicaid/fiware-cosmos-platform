@@ -43,6 +43,8 @@ object RpmSettings {
 
   lazy val CosmosCli = config("cosmosCli")
 
+  val CosmosApiPath = "/opt/pdi-cosmos/cosmos-api/"
+
   val cosmosApiSettings: Seq[Setting[_]] = commonRpmSettings ++ Seq(
     name in Rpm := "cosmos-api",
     packageSummary := "Cosmos API",
@@ -52,7 +54,7 @@ object RpmSettings {
     },
     linuxPackageMappings in Rpm <<= (mappings in Universal) map { (f: Seq[(File,String)]) =>
       f map { case (file: File, name: String) =>
-        (packageMapping(file -> s"/opt/pdi-cosmos/cosmos-api/$name")
+        (packageMapping(file -> s"$CosmosApiPath/$name")
           withUser "root" withGroup "root" withPerms "0755")
       }
     },
@@ -67,13 +69,15 @@ object RpmSettings {
       packageMapping(egg -> s"/opt/repos/eggs/${egg.name}")
     },
     linuxPackageSymlinks := {
-      Seq(LinuxSymlink("/usr/bin/cosmos-api", "/opt/pdi-cosmos/cosmos-api/bin/cosmos-api"))
+      Seq(LinuxSymlink("/usr/bin/cosmos-api", s"$CosmosApiPath/bin/cosmos-api"))
     },
     rpmPost := Some("""chmod +x /etc/init.d/cosmos-api
                       |chkconfig --add /etc/init.d/cosmos-api
                       |chkconfig cosmos-api on
                     """.stripMargin)
   )
+
+  val CosmosAdminPath = "/opt/pdi-cosmos/cosmos-admin"
 
   val cosmosAdminSettings: Seq[Setting[_]] =
     SbtNativePackager.packageArchetype.java_application ++ commonRpmSettings ++
@@ -85,20 +89,20 @@ object RpmSettings {
         for {
           (file, name) <- files if name.endsWith(".jar")
         } yield {
-          (packageMapping(file -> s"/opt/pdi-cosmos/cosmos-admin/lib/${file.name}")
+          (packageMapping(file -> s"$CosmosAdminPath/lib/${file.name}")
             withUser "root" withGroup "root" withPerms "0755")
         }
       },
       linuxPackageMappings in Rpm <++= baseDirectory map { base =>
         Seq(
-          packageMapping ( base / "scripts/cosmos-admin" -> "/opt/pdi-cosmos/cosmos-admin/cosmos-admin")
+          packageMapping (base / "scripts/cosmos-admin" -> s"$CosmosAdminPath/cosmos-admin")
             withUser "root" withGroup "root" withPerms "0755",
-          packageMapping ( IO.temporaryDirectory / "." -> "/opt/pdi-cosmos/cosmos-admin/logs")
+          packageMapping (IO.temporaryDirectory / "." -> s"$CosmosAdminPath/logs")
             withUser "root" withGroup "root" withPerms "0755"
         )
       },
       linuxPackageSymlinks := {
-        Seq(LinuxSymlink("/usr/bin/cosmos-admin", "/opt/pdi-cosmos/cosmos-admin/cosmos-admin"))
+        Seq(LinuxSymlink("/usr/bin/cosmos-admin", s"$CosmosAdminPath/cosmos-admin"))
       }
     )
 
@@ -106,43 +110,27 @@ object RpmSettings {
   val JarLinks = for (service <- Seq("hdfs", "mapreduce", "yarn"))
     yield s"/usr/lib/hadoop-$service/lib/infinity-driver.jar"
 
-  val infinitySettings: Seq[Setting[_]] = assemblySettings ++ packagerSettings ++ commonRpmSettings ++ Seq(
-    name in Rpm := "infinity-driver",
-    packageSummary := "Infinity HFS driver",
-    packageDescription in Rpm := "Library that enables the infinity:// scheme.",
-    linuxPackageMappings in Rpm := Seq(
-      packageMapping(assembly.value -> JarPath) withUser "root" withGroup "root" withPerms "0755"
-    ),
-    linuxPackageSymlinks in Rpm := JarLinks.map(destination => LinuxSymlink(destination, JarPath))
-  )
+  val infinityDriverSettings: Seq[Setting[_]] =
+    assemblySettings ++ packagerSettings ++ commonRpmSettings ++ Seq(
+      name in Rpm := "infinity-driver",
+      packageSummary := "Infinity HFS driver",
+      packageDescription in Rpm := "Library that enables the infinity:// scheme.",
+      linuxPackageMappings in Rpm := Seq(
+        packageMapping(assembly.value -> JarPath) withUser "root" withGroup "root" withPerms "0755"
+      ),
+      linuxPackageSymlinks in Rpm := JarLinks.map(destination => LinuxSymlink(destination, JarPath))
+    )
 
-  val InfinityServerPath = "/opt/pdi-cosmos/infinity-server"
+  val InfinityServerPath = "/usr/lib/hadoop/lib"
 
-  val infinityServerSettings: Seq[Setting[_]] = assemblySettings ++ packagerSettings ++ commonRpmSettings ++ Seq(
-    name in Rpm := "infinity-server",
-    packageSummary := "Infinity Server",
-    packageDescription in Rpm := "Server for infinity:// scheme.",
-    linuxPackageMappings in Rpm := Seq(
-      packageMapping(assembly.value -> s"$InfinityServerPath/infinity-server.jar")
-        withUser "root" withGroup "root" withPerms "0755",
-      packageMapping(baseDirectory.value / "scripts/infinity-server.sh" -> s"$InfinityServerPath/infinity-server.sh")
-        withUser "root" withGroup "root" withPerms "0755",
-      packageMapping(baseDirectory.value / "conf/infinity-server.conf" -> s"$InfinityServerPath/infinity-server.conf")
-        withUser "root" withGroup "root" withPerms "0644",
-      packageMapping(baseDirectory.value / "conf/logback.xml" -> s"$InfinityServerPath/logback.xml")
-        withUser "root" withGroup "root" withPerms "0644",
-      packageMapping(IO.temporaryDirectory / "." -> s"$InfinityServerPath/logs")
-        withUser "root" withGroup "root" withPerms "0755"
-    ),
-    linuxPackageSymlinks := Seq(
-      LinuxSymlink("/etc/init.d/infinity-server", s"$InfinityServerPath/infinity-server.sh"),
-      LinuxSymlink("/etc/infinity-server.conf", s"$InfinityServerPath/infinity-server.conf"),
-      LinuxSymlink("/var/log/infinity-server", s"$InfinityServerPath/logs")
-    ),
-    rpmPost := Some("""chkconfig --add /etc/init.d/infinity-server
-                      |chkconfig infinity-server on
-                    """.stripMargin)
-  )
-
-
+  val infinityServerSettings: Seq[Setting[_]] =
+    assemblySettings ++ packagerSettings ++ commonRpmSettings ++ Seq(
+      name in Rpm := "infinity-server",
+      packageSummary := "Infinity Server",
+      packageDescription in Rpm := "Server for infinity:// scheme.",
+      linuxPackageMappings in Rpm := Seq(
+        packageMapping(assembly.value -> s"$InfinityServerPath/infinity-server.jar")
+          withUser "root" withGroup "root" withPerms "0755"
+      )
+    )
 }

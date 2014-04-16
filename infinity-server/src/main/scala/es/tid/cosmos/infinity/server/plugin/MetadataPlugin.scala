@@ -18,7 +18,7 @@ import org.apache.hadoop.util.ServicePlugin
 
 import es.tid.cosmos.infinity.server.InfinityMetadataServer
 
-/** Namenode plugin to serve Infinity metadada. */
+/** Namenode plugin to serve Infinity metadata. */
 class MetadataPlugin extends ServicePlugin with Configurable {
 
   private val log = LogFactory.getLog(classOf[MetadataPlugin])

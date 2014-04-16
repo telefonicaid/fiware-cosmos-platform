@@ -23,7 +23,7 @@ class InfinityMetadataServer(namenodeProtocols: NamenodeProtocols, override val 
   with InfinityDataStoreSqlComponent {
 
   val serverConfig = FinatraServerCfg(
-    http = Some(config.getString("cosmos.infinity.server.http"))
+    http = Some(s"0.0.0.0:${config.getString("metadata.port")}")
   )
 
   val server = new EmbeddableFinatraServer(serverConfig)
@@ -33,5 +33,4 @@ class InfinityMetadataServer(namenodeProtocols: NamenodeProtocols, override val 
   def start(): Unit = server.start()
 
   def shutdown(): Unit = server.stop()
-
 }

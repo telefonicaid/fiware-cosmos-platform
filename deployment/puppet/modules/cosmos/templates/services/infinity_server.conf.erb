@@ -20,14 +20,18 @@ include "cluster-properties"
     }
 }
 
-"infinity_server" {
-    "configType"="infinity-server"
+"hdfs" {
+    "config-type"="hdfs-site",
     "properties" {
-      "blocked_ports_master" = "8020,9000,50070",
-      "blocked_ports_slave" = "50010,50020,50075",
-      "server_port_master" = "51070",
-      "server_port_slave" = "51075",
-      "hdfs_datanode_port" = "50075",
+        "dfs.namenode.plugins" = "es.tid.cosmos.infinity.server.plugin.MetadataPlugin",
+        "dfs.infinity.metadata.port" = "51070"
+    }
+}
+
+"infinity_server" {
+    "configType"="infinity-server",
+    "properties" {
+      "blocked_ports" = "8020,9000,50070,50010,50020,50075",
       "ssl_certificate_content" = "<%= @infinity_proxy_ssl_cert %>",
       "ssl_certificate_key_content" = "<%= @infinity_proxy_ssl_key %>"
     }

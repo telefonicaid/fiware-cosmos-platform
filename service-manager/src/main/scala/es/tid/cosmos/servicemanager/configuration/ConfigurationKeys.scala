@@ -22,6 +22,10 @@ object ConfigurationKeys extends Enumeration {
 
        InfinityMasterNode,
 
+       CosmosApiUrl,
+       CosmosApiRequestTimeout,
+       InfinitySecret,
+
        MapTaskMemory,
        MapHeapMemory,
        MaxMapTasks,

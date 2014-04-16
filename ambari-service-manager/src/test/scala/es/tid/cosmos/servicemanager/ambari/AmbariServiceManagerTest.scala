@@ -39,7 +39,6 @@ import es.tid.cosmos.servicemanager.ambari.rest.AmbariTestBase
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.services._
 import es.tid.cosmos.servicemanager.services.InfinityDriver.InfinityDriverParameters
-import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
 
 class AmbariServiceManagerTest
   extends AmbariTestBase with MockitoSugar with FutureMatchers with Eventually {
@@ -277,7 +276,7 @@ class AmbariServiceManagerTest
     )
     waitForClusterCompletion(clusterId, instance)
     val description = instance.describeCluster(clusterId)
-    val expectedServices = new ServiceDependencyMapping(ServiceDependencies.ServiceCatalogue)
+    val expectedServices = new ServiceDependencyMapping(ServiceCatalogue)
       .resolve(AmbariServiceManager.BasicHadoopServices + Hive + CosmosUserService)
     description.get.services must be (expectedServices.map(_.name))
   }

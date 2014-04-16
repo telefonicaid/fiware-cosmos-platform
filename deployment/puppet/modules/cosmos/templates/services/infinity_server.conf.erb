@@ -11,6 +11,15 @@
 
 include "cluster-properties"
 
+"core" {
+    "properties" {
+        "hadoop.security.group.mapping" = "es.tid.cosmos.infinity.server.groups.CosmosApiGroupMappingProvider",
+        "hadoop.security.group.mapping.infinity.apiBase" = ${CosmosApiUrl},
+        "hadoop.security.group.mapping.infinity.timeout" = ${CosmosApiRequestTimeout},
+        "hadoop.security.group.mapping.infinity.secret" = ${InfinitySecret}
+    }
+}
+
 "infinity_server" {
     "configType"="infinity-server"
     "properties" {
@@ -18,7 +27,6 @@ include "cluster-properties"
       "blocked_ports_slave" = "50010,50020,50075",
       "server_port_master" = "51070",
       "server_port_slave" = "51075",
-      "proxy_secure_phrase_template" = "<%= @infinity_proxy_secure_phrase %>$2$3$args",
       "hdfs_datanode_port" = "50075",
       "ssl_certificate_content" = "<%= @infinity_proxy_ssl_cert %>",
       "ssl_certificate_key_content" = "<%= @infinity_proxy_ssl_key %>"

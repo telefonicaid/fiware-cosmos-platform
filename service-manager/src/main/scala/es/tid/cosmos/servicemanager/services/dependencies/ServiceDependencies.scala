@@ -14,31 +14,43 @@ package es.tid.cosmos.servicemanager.services.dependencies
 import es.tid.cosmos.servicemanager.services._
 import es.tid.cosmos.servicemanager._
 
-/** Object expressing inter-service dependencies. */
+/** Inter-service dependencies. */
+case class ServiceDependencies(mapping: Map[Service, DependencyType]) {
+
+  def required(requiredServices: Service*): ServiceDependencies =
+    withDependencies(requiredServices, Required)
+
+  def optional(optionalServices: Service*): ServiceDependencies =
+    withDependencies(optionalServices, Optional)
+
+  private def withDependencies(services: Seq[Service], dependencyType: DependencyType) = {
+    requireNotAlreadyMapped(requireNotRepeated(services))
+    copy(mapping ++ services.zip(Stream.continually(dependencyType)))
+  }
+
+  private def requireNotRepeated(services: Seq[Service]): Set[Service] = {
+    val uniqueServices = services.toSet
+    require(uniqueServices.size == services.size,
+      s"Repeated services in: ${services.mkString(", ")}")
+    uniqueServices
+  }
+
+  private def requireNotAlreadyMapped(services: Set[Service]): Unit = {
+    val alreadyMapped = mapping.keySet intersect services
+    require(alreadyMapped.isEmpty,
+      s"Adding services already depended upon: ${alreadyMapped.mkString(", ")}")
+  }
+}
+
 object ServiceDependencies {
 
-  /** All services registered.
-    *
-    * Nice-to-have: This could be retrieved by refection once services are organized in only
-    * one ambari-independent package.
-    */
-  val ServiceCatalogue: Set[Service] = Set(
-    CosmosUserService,
-    HCatalog,
-    Hdfs,
-    Hive,
-    InfinityDriver,
-    InfinityServer,
-    MapReduce2,
-    Oozie,
-    Pig,
-    Sqoop,
-    WebHCat,
-    Yarn,
-    Zookeeper
-  )
+  val none = ServiceDependencies(Map.empty)
 
-  private val Dependencies = new ServiceDependencyMapping(ServiceCatalogue)
+  def required(requiredServices: Service*): ServiceDependencies = none.required(requiredServices: _*)
+
+  def optional(optionalServices: Service*): ServiceDependencies = none.optional(optionalServices: _*)
+
+  private lazy val Dependencies = new ServiceDependencyMapping(ServiceCatalogue)
 
   def executionPlan(serviceInstances: Set[AnyServiceInstance]): Seq[AnyServiceInstance] = {
 

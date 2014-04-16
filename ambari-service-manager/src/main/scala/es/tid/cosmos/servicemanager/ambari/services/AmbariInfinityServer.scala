@@ -11,12 +11,19 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.services.{Service, InfinityServer}
+import es.tid.cosmos.servicemanager.ambari.configuration._
+import es.tid.cosmos.servicemanager.configuration.ConfigurationKeys._
+import es.tid.cosmos.servicemanager.services.InfinityServer
+import es.tid.cosmos.servicemanager.services.InfinityServer.InfinityServerParameters
 
 object AmbariInfinityServer extends AmbariService with FileConfiguration {
-  override val service: Service = InfinityServer
-  override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription.masterComponent("INFINITY_MASTER_SERVER"),
-    ComponentDescription.slaveComponent("INFINITY_SLAVE_PROXY")
+  override val service = InfinityServer
+  override val components: Seq[ComponentDescription] =
+    Seq(ComponentDescription.allNodesComponent("INFINITY_SERVER").makeClient)
+
+  override def extraProperties(parameters: InfinityServerParameters): ConfigProperties = Map(
+    CosmosApiUrl -> parameters.cosmosApiUrl,
+    CosmosApiRequestTimeout -> parameters.requestTimeout.toMillis.toString,
+    InfinitySecret -> parameters.infinitySecret
   )
 }

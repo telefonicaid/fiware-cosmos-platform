@@ -20,7 +20,7 @@ import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDaoComponent}
 import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceFactory
-import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
+import es.tid.cosmos.servicemanager.services.ServiceCatalogue
 
 trait AmbariServiceManagerComponent extends ServiceManagerComponent {
   this: InfrastructureProviderComponent with ConfigComponent with ClusterDaoComponent =>
@@ -65,7 +65,7 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
       new AmbariClusterDao(
         serviceManagerClusterDao,
         ambariServer,
-        ServiceDependencies.ServiceCatalogue.map(AmbariServiceFactory.lookup),
+        ServiceCatalogue.map(AmbariServiceFactory.lookup),
         config.getInt("ambari.servicemanager.initialization.graceperiod.minutes").minutes
       )
     )

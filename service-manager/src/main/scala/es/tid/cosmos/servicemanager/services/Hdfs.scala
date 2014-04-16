@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.servicemanager.services
 
+import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
+
 /** Representation of the HDFS service. */
 object Hdfs extends Service {
 
@@ -23,5 +25,6 @@ object Hdfs extends Service {
   override val name: String = "HDFS"
   override type Parametrization = HdfsParameters
   override val defaultParametrization: Option[HdfsParameters] = Some(HdfsParameters("022"))
-  override val dependencies: Set[Service] = Set(Zookeeper, InfinityDriver)
+  override val dependencies =
+    ServiceDependencies.required(Zookeeper, InfinityDriver).optional(InfinityServer)
 }

@@ -11,8 +11,10 @@
 
 package es.tid.cosmos.servicemanager.services
 
+import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
+
 /** Representation of Hive service */
 object Hive extends Service with NoParametrization {
   override val name: String = "HIVE"
-  override val dependencies: Set[Service] = Set(Hdfs, MapReduce2, HCatalog, WebHCat)
+  override val dependencies = ServiceDependencies.required(Hdfs, MapReduce2, HCatalog, WebHCat)
 }

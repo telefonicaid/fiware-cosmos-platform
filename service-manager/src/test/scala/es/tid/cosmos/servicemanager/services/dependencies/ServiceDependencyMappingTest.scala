@@ -18,7 +18,7 @@ import es.tid.cosmos.servicemanager.services._
 
 class ServiceDependencyMappingTest extends FlatSpec with MustMatchers {
 
-  val testMapping = new ServiceDependencyMapping(ServiceDependencies.ServiceCatalogue)
+  val testMapping = new ServiceDependencyMapping(ServiceCatalogue)
 
   "Hdfs" must "depend on Zookeeper" in {
     dependencies(Hdfs) must contain (Zookeeper: Service)

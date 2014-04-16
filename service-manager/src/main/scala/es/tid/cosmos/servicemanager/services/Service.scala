@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager.services
 
 import es.tid.cosmos.servicemanager.ServiceInstance
+import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
 
 /** Representation of a service definition.
   *
@@ -32,7 +33,7 @@ trait Service {
   def defaultParametrization: Option[Parametrization] = None
 
   /** Direct service dependencies */
-  val dependencies: Set[Service] = Set.empty
+  val dependencies: ServiceDependencies = ServiceDependencies.none
 
   def instance(parametrization: Parametrization): ServiceInstance[this.type] =
     ServiceInstance[this.type](this, parametrization)

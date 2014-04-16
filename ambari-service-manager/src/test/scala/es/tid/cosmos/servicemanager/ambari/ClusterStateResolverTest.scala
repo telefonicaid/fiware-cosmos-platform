@@ -24,8 +24,7 @@ import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.rest.{ServiceClient, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services._
-import es.tid.cosmos.servicemanager.services.{NoParametrization, Service}
-import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
+import es.tid.cosmos.servicemanager.services.{NoParametrization, Service, ServiceCatalogue}
 
 class ClusterStateResolverTest extends FlatSpec with MustMatchers
   with MockitoSugar with FutureMatchers with OneInstancePerTest {
@@ -47,7 +46,7 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
   }
 
   "The ClusterStateResolver" must "resolve the unknown state on clusters which have failed services" in {
-    given(cluster.serviceNames).willReturn(ServiceDependencies.ServiceCatalogue.toSeq.map(_.name))
+    given(cluster.serviceNames).willReturn(ServiceCatalogue.toSeq.map(_.name))
     given(cluster.getService(any())).willReturn(Future.successful(hdfs))
     given(hdfs.state).willReturn("ERROR")
     given(hdfs.name).willReturn("HDFS")

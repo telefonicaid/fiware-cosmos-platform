@@ -11,10 +11,8 @@
 
 package es.tid.cosmos.infinity.server.config
 
-import scala.collection.JavaConversions._
 import scala.util.control.NonFatal
 
-import akka.actor.ActorSystem
 import com.typesafe.config.{Config, ConfigException}
 
 case class ServiceConfig(
@@ -31,9 +29,6 @@ object ServiceConfig {
   def infinityPortProperty(serviceName: String) =
     s"infinity.server.services.$serviceName.infinity.port"
 
-  def apply(name: String)(implicit system: ActorSystem): Option[ServiceConfig] =
-    apply(name, system.settings.config)
-
   def apply(name: String, config: Config): Option[ServiceConfig] = try {
     Some(ServiceConfig(
       name = name,
@@ -44,8 +39,6 @@ object ServiceConfig {
     case e: ConfigException.Missing => None
     case NonFatal(e) => throw new IllegalStateException(s"cannot service config for '$name'", e)
   }
-
-  def active(implicit system: ActorSystem): ServiceConfig = active(system.settings.config)
 
   def active(config: Config): ServiceConfig = try {
     val activeServiceProperty = "infinity.server.services.active"

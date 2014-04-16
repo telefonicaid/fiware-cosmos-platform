@@ -15,7 +15,7 @@ include "cluster-properties"
     "properties" {
         "hadoop.security.group.mapping" = "es.tid.cosmos.infinity.server.groups.CosmosApiGroupMappingProvider",
         "hadoop.security.group.mapping.infinity.apiBase" = ${CosmosApiUrl},
-        "hadoop.security.group.mapping.infinity.timeout" = ${CosmosApiRequestTimeout},
+        "hadoop.security.group.mapping.infinity.timeout" = 5000,
         "hadoop.security.group.mapping.infinity.secret" = ${InfinitySecret}
     }
 }

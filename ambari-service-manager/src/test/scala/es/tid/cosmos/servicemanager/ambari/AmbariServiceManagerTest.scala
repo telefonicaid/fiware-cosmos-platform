@@ -39,6 +39,7 @@ import es.tid.cosmos.servicemanager.ambari.rest.AmbariTestBase
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.services._
 import es.tid.cosmos.servicemanager.services.InfinityDriver.InfinityDriverParameters
+import es.tid.cosmos.servicemanager.services.InfinityServer.InfinityServerParameters
 
 class AmbariServiceManagerTest
   extends AmbariTestBase with MockitoSugar with FutureMatchers with Eventually {
@@ -74,7 +75,7 @@ class AmbariServiceManagerTest
       }
     }
 
-    def terminateAndVerify(id: ClusterId, sm: ServiceManager) {
+    def terminateAndVerify(id: ClusterId, sm: ServiceManager): Unit = {
       sm.terminateCluster(id) must runUnder(testTimeout)
       val Some(terminatingDescription) = sm.describeCluster(id)
       terminatingDescription.state must (be (Terminated) or be (Terminating))
@@ -99,7 +100,7 @@ class AmbariServiceManagerTest
     def verifyCluster(
         machines: Seq[MachineState],
         clusterId: ClusterId,
-        includeMasterAsSlave: Boolean = true) {
+        includeMasterAsSlave: Boolean = true): Unit = {
       verify(infrastructureProvider).createMachines(
         any(), the(MachineProfile.G1Compute), the(machines.size), any())
       verify(infrastructureProvider).releaseMachines(machines)
@@ -192,7 +193,7 @@ class AmbariServiceManagerTest
       setMachineExpectations(machines, MachineProfile.HdfsSlave)
       setMachineExpectations(masterMachine, MachineProfile.HdfsMaster)
 
-      def verifyCalls() {
+      def verifyCalls(): Unit = {
         verify(infrastructureProvider)
           .availableMachineCount(MachineProfile.HdfsSlave)
         verify(infrastructureProvider)
@@ -209,7 +210,7 @@ class AmbariServiceManagerTest
               any())
       }
 
-      get(instance.deployPersistentHdfsCluster())
+      get(instance.deployPersistentHdfsCluster(InfinityServerParameters("http://api", "secret")))
       verifyCalls()
     }
 
@@ -298,11 +299,12 @@ class AmbariServiceManagerTest
     given(infrastructureProvider.createMachines(any(), the(MachineProfile.HdfsSlave), any(), any()))
       .willReturn(Future.successful(Seq(dataNode)))
     instance.describePersistentHdfsCluster() must be (None)
-    val hdfsDeployment = instance.deployPersistentHdfsCluster()
+    val parameters = InfinityServerParameters("http://api-base/", "infinitySecret")
+    val hdfsDeployment = instance.deployPersistentHdfsCluster(parameters)
     hdfsDeployment must eventuallySucceed
     val description = instance.describePersistentHdfsCluster().get
-    val expectedServices = AmbariServiceManager.PersistentHdfsServices.map(_.service).toSet
-    description.services must be (expectedServices.map(_.name))
+    val expectedServices = AmbariServiceManager.persistentHdfsServices(parameters)
+    description.services must be (expectedServices.map(_.service.name).toSet)
   }
 
   it must "fail creation if a basic service that needs configuration is not configured" in new WithMachines(3) {

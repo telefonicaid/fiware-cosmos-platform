@@ -23,7 +23,6 @@ object AmbariInfinityServer extends AmbariService with FileConfiguration {
 
   override def extraProperties(parameters: InfinityServerParameters): ConfigProperties = Map(
     CosmosApiUrl -> parameters.cosmosApiUrl,
-    CosmosApiRequestTimeout -> parameters.requestTimeout.toMillis.toString,
     InfinitySecret -> parameters.infinitySecret
   )
 }

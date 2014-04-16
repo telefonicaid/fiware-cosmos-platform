@@ -27,6 +27,7 @@ import es.tid.cosmos.servicemanager.util.TcpServer
 import es.tid.cosmos.servicemanager.util.TcpServer._
 import es.tid.cosmos.servicemanager.services._
 import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
+import es.tid.cosmos.servicemanager.services.InfinityServer.InfinityServerParameters
 
 /** Manager of the Ambari service configuration workflow.
   * It allows creating clusters with specified services using Ambari.
@@ -176,13 +177,14 @@ class AmbariServiceManager(
       newUsers: Seq[ClusterUser]): Seq[ClusterUser] =
     (newUsers.toSet diff currentUsers.toSet.flatten).toSeq
 
-  override def deployPersistentHdfsCluster(): Future[Unit] = for {
+  override def deployPersistentHdfsCluster(parameters: InfinityServerParameters): Future[Unit] = for {
     machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)
+    services = persistentHdfsServices(parameters)
     clusterDescription = clusterDao.registerCluster(
       id = persistentHdfsId,
       name = ClusterName(persistentHdfsId.id),
       size = machineCount + 1,
-      services = PersistentHdfsServices.map(_.service).toSet
+      services = services.map(_.service).toSet
     )
     _ <- clusterDescription.withFailsafe(for {
       master <- infrastructureProvider.createMachines(
@@ -190,7 +192,7 @@ class AmbariServiceManager(
       slaves <- infrastructureProvider.createMachines(
         PassThrough, MachineProfile.HdfsSlave, numberOfMachines = machineCount, waitForSsh)
       _ = setMachineInfo(clusterDescription, master, slaves)
-      _ <- createCluster(clusterDescription, PersistentHdfsServices)
+      _ <- createCluster(clusterDescription, services)
     } yield ())
   } yield ()
 
@@ -201,10 +203,15 @@ class AmbariServiceManager(
 private[ambari] object AmbariServiceManager {
   val BasicHadoopServices: Set[Service] =
     Set(MapReduce2, InfinityDriver, Hdfs)
+
   val OptionalServices: Set[Service] = Set(Hive, Oozie, Pig, Sqoop)
-  val PersistentHdfsServices: Seq[AnyServiceInstance] = Seq(Zookeeper.defaultInstance,
-    InfinityServer.defaultInstance, Hdfs.defaultInstance,
-    CosmosUserService.defaultInstance).flatten
+
+  def persistentHdfsServices(infinityParameters: InfinityServerParameters): Seq[AnyServiceInstance] =
+    InfinityServer.instance(infinityParameters) +: Seq(
+      Zookeeper.defaultInstance,
+      Hdfs.defaultInstance,
+      CosmosUserService.defaultInstance
+    ).flatten
 
   private def setMachineInfo(
       description: MutableClusterDescription,

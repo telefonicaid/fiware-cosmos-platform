@@ -16,6 +16,7 @@ import scala.concurrent.Future
 
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.services.Service
+import es.tid.cosmos.servicemanager.services.InfinityServer.InfinityServerParameters
 
 /**
  * Cluster manager that allows cluster creation, termination as well as
@@ -23,25 +24,23 @@ import es.tid.cosmos.servicemanager.services.Service
  */
 trait ServiceManager {
 
-  /**
-   * Get the IDs of the existing clusters managed by this manager.
-   * @return the IDs of the existing clusters
-   */
+  /** Get the IDs of the existing clusters managed by this manager.
+    * @return the IDs of the existing clusters
+    */
   def clusterIds: Seq[ClusterId]
 
   /** A sequence of all services this service manager supports. */
   val optionalServices: Set[Service]
 
-  /**
-   * Create a cluster of a given size with a specified set of services.
-   *
-   * @param name          the cluster's name
-   * @param clusterSize   the number of nodes the cluster should comprise of
-   * @param services      the concrete service instances to be installed to the cluster
-   * @param users         the list of users the cluster should have
-   * @param preConditions the pre-conditions to be validated before attempting to create a cluster
-   * @return              the ID of the newly created cluster
-   */
+  /** Create a cluster of a given size with a specified set of services.
+    *
+    * @param name          the cluster's name
+    * @param clusterSize   the number of nodes the cluster should comprise of
+    * @param services      the concrete service instances to be installed to the cluster
+    * @param users         the list of users the cluster should have
+    * @param preConditions the pre-conditions to be validated before attempting to create a cluster
+    * @return              the ID of the newly created cluster
+    */
   def createCluster(
     name: ClusterName,
     clusterSize: Int,
@@ -49,30 +48,24 @@ trait ServiceManager {
     users: Seq[ClusterUser],
     preConditions: ClusterExecutableValidation = UnfilteredPassThrough): ClusterId
 
-  /**
-   * Obtain information of an existing cluster's state.
-   *
-   * @param id the ID of the cluster
-   * @return the description of the cluster and it state iff found
-   */
+  /** Obtain information of an existing cluster's state.
+    *
+    * @param id the ID of the cluster
+    * @return the description of the cluster and it state iff found
+    */
   def describeCluster(id: ClusterId): Option[ImmutableClusterDescription]
 
-  /**
-   * Terminate an existing cluster.
-   *
-   * @param id the ID of the cluster to terminate
-   */
+  /** Terminate an existing cluster.
+    *
+    * @param id the ID of the cluster to terminate
+    */
   def terminateCluster(id: ClusterId): Future[Unit]
 
-  /**
-   * The cluster id of the persistent HDFS cluster
-   */
+  /** The cluster id of the persistent HDFS cluster */
   def persistentHdfsId: ClusterId
 
-  /**
-   * Deploys the persistent HDFS cluster.
-   */
-  def deployPersistentHdfsCluster(): Future[Unit]
+  /* Deploys the persistent HDFS cluster. */
+  def deployPersistentHdfsCluster(parameters: InfinityServerParameters): Future[Unit]
 
   /** A convenience function to obtain information of the persistent HDFS cluster's state. */
   final def describePersistentHdfsCluster(): Option[ImmutableClusterDescription] =
@@ -144,10 +137,9 @@ trait ServiceManager {
     Future.sequence(clustersWithUsers.map(c => disableUser(c.id, username))).map(_ => ())
   }
 
-  /**
-   * Get the total number of cluster nodes managed by the service manager.
-   *
-   * @return the total number of nodes regardless of their state and usage
-   */
+  /** Get the total number of cluster nodes managed by the service manager.
+    *
+    * @return the total number of nodes regardless of their state and usage
+    */
   def clusterNodePoolCount: Int
 }

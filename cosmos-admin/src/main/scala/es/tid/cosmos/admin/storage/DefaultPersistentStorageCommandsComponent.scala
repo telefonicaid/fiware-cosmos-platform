@@ -11,11 +11,12 @@
 
 package es.tid.cosmos.admin.storage
 
+import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
 
 trait DefaultPersistentStorageCommandsComponent extends PersistentStorageCommandsComponent {
-  this: ServiceManagerComponent =>
+  this: ServiceManagerComponent with ConfigComponent =>
 
   override lazy val persistentStorageCommands: PersistentStorageCommands =
-    new DefaultPersistentStorageCommands(serviceManager)
+    new DefaultPersistentStorageCommands(serviceManager, config)
 }

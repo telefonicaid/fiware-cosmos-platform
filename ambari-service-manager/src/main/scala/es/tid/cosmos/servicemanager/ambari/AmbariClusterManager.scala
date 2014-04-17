@@ -55,7 +55,8 @@ private[ambari] class AmbariClusterManager(
       serviceClients <- Future.traverse(services) { srv =>
         createService(srv, cluster, masterHost, slaveHosts)
       }
-      deployedServices <- installInOrder(serviceClients)
+      _ <- cluster.installAllServices()
+      deployedServices <- startInOrder(serviceClients)
     } yield configuration
   }
 
@@ -133,20 +134,15 @@ private[ambari] class AmbariClusterManager(
     } yield cluster
   }
 
-  private def installInOrder(services: Seq[ServiceClient]): Future[Seq[ServiceClient]] = {
-    def doInstall(
-        installedServices_> : Future[Seq[ServiceClient]],
+  private def startInOrder(services: Seq[ServiceClient]): Future[Seq[ServiceClient]] = {
+    def doStart(
+        startedServices_> : Future[Seq[ServiceClient]],
         service : ServiceClient): Future[Seq[ServiceClient]] = for {
-      installedServices <- installedServices_>
-      service <- installAndStart(service)
-    } yield service +: installedServices
-    services.foldLeft(Future.successful(Seq[ServiceClient]()))(doInstall)
+      startedServices <- startedServices_>
+      service <- service.start()
+    } yield service +: startedServices
+    services.foldLeft(Future.successful(Seq[ServiceClient]()))(doStart)
   }
-
-  private def installAndStart(service : ServiceClient): Future[ServiceClient] = for {
-    installedService <- service.install()
-    startedService <- installedService.start()
-  } yield startedService
 
   private def ensureHostsRegistered(hostnames: Set[String]): Future[Unit] =
     ambariServer.registeredHostnames.flatMap(registeredHostnames =>

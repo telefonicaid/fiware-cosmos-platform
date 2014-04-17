@@ -53,7 +53,7 @@ class HomeDir(object):
                     else self.get_default_config_filename())
         abs_path = self.abs_path(filename)
         log.info("Loading config from %s", abs_path)
-        if self._is_public_file(abs_path):
+        if os.name != 'nt' and self._is_public_file(abs_path):
             sys.stderr.write("""WARNING: Configuration file can be accessed by other users.
 Please make it private ('chmod 0600 %s' in unix systems)
 

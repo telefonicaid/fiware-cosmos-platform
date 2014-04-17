@@ -22,5 +22,5 @@ object InfinityDriver extends Service {
   case class InfinityDriverParameters(clusterSecret: String)
 
   override type Parametrization = InfinityDriverParameters
-  override val name = "INFINITY_DRIVER"
+  override val name = "INFINITYFS_DRIVER"
 }

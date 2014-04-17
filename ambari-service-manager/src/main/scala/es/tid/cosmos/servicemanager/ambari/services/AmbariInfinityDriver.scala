@@ -23,7 +23,7 @@ import es.tid.cosmos.servicemanager.services.InfinityDriver.InfinityDriverParame
 object AmbariInfinityDriver extends AmbariService with FileConfiguration {
   override val service = InfinityDriver
   override val components =
-    Seq(ComponentDescription.allNodesComponent("INFINITY_DRIVER").makeClient)
+    Seq(ComponentDescription.allNodesComponent("INFINITY_HFS_DRIVER").makeClient)
 
   override def extraProperties(parameters: InfinityDriverParameters) =
     Map(ClusterSecret -> parameters.clusterSecret)

@@ -16,13 +16,6 @@
 
 package es.tid.cosmos.infinity.server.authentication
 
-import java.net.InetAddress
-
-/** The credentials used by a Infinity client to authenticate a request. */
-sealed trait Credentials
-
-/** The credentials used by users to authenticate their Infinity FS requests. */
-case class UserCredentials(apiKey: String, apiSecret: String) extends Credentials
-
-/** The credentials used by clusters to authenticate their Infinity FS requests. */
-case class ClusterCredentials(origin: InetAddress, clusterSecret: String) extends Credentials
+trait AuthenticationComponent {
+  def authentication: Authentication
+}

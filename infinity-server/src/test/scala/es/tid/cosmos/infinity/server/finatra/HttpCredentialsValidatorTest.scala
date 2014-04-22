@@ -74,11 +74,12 @@ class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers with Insid
       .url("http://example.com/")
       .addHeader("Authorization", "Bearer cluster-secret")
       .buildGet())
-    HttpCredentialsValidator(from, req) must be (Success(ClusterCredentials(from, "cluster-secret")))
+    HttpCredentialsValidator(from, req) must
+      be (Success(ClusterCredentials(from, "cluster-secret")))
   }
 
   def failWithCode(expectedCode: String) = new Matcher[Validation[RequestError, Credentials]] {
-    
+
     override def apply(left: Validation[RequestError, Credentials]): MatchResult = left match {
       case Failure(InvalidHttpCredentials(actualCode, _)) => MatchResult(
         matches = actualCode == expectedCode,

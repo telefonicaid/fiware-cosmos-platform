@@ -16,15 +16,23 @@
 
 package es.tid.cosmos.infinity.server.authentication.cosmosapi
 
-import scalaz.Validation
+import es.tid.cosmos.infinity.server.permissions.PermissionsMask
+import es.tid.cosmos.infinity.server.authentication.UserProfile
 
-import com.typesafe.config.Config
+private[cosmosapi] case class UserProfileJson(
+    user: String,
+    group: String,
+    accessMask: String,
+    origins: Option[List[String]]) {
 
-import es.tid.cosmos.infinity.server.authentication._
-import es.tid.cosmos.infinity.server.finatra.RequestError
+  require(PermissionsMask.isValidOctal(accessMask),
+    s"invalid access mask expression '$accessMask': octal value was expected")
 
-@deprecated("Use CosmosApiAuthentication instead")
-class CosmosApiAuthenticationService(config: Config) extends AuthenticationService {
-
-  override def authenticate(credentials: Credentials): Validation[RequestError, UserProfile] = ???
+  def toUserProfile(superGroup: String) = UserProfile(
+    username = user,
+    group = group,
+    mask = PermissionsMask.fromOctal(accessMask),
+    accessFrom = origins.map(_.toSet),
+    superuser = group == superGroup
+  )
 }

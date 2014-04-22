@@ -16,77 +16,86 @@
 
 package es.tid.cosmos.infinity.server.authentication.cosmosapi
 
-import scala.util.Success
-
-import com.twitter.finatra.ResponseBuilder
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-class ResponseObjectTest extends FlatSpec with MustMatchers {
+import es.tid.cosmos.infinity.server.authentication.UserProfile
+import es.tid.cosmos.infinity.server.permissions.PermissionsMask
 
-  "Response object" must "be extracted from HTTP response" in {
-    ResponseObject.extractFrom(ResponseBuilder(200,
+class UserProfileParserTest extends FlatSpec with MustMatchers {
+
+  val parser = new UserProfileParser(superGroup = "hdfs")
+
+  "User profile" must "be parsed from JSON" in {
+    parser.parse(
       """{
         | "user": "gandalf",
         | "group": "istari",
         | "accessMask": "752",
-        | "origins": "anyHost"
+        | "origins": ["orion01", "orion02"]
         |}
       """.stripMargin
-    )) must be (Success(ResponseObject(
-      user = "gandalf",
+    ) must be (UserProfile(
+      username = "gandalf",
       group = "istari",
-      accessMask = "752",
-      origins = None
-    )))
+      mask = PermissionsMask.fromOctal("752"),
+      accessFrom = Some(Set("orion01", "orion02"))
+    ))
   }
 
-  it must "be extracted from HTTP response with missing optional fields" in {
-    ResponseObject.extractFrom(ResponseBuilder(200,
+  it must "be parsed as root if the group is the superuser group" in {
+    parser.parse(
+      """{
+        | "user": "gandalf",
+        | "group": "hdfs",
+        | "accessMask": "752",
+        |}
+      """.stripMargin
+    ) must be ('superuser)
+  }
+
+  it must "be parsed when optional fields are missing" in {
+    parser.parse(
       """{
         | "user": "gandalf",
         | "group": "istari",
         | "accessMask": "752"
         |}
       """.stripMargin
-    )) must be (Success(ResponseObject(
-      user = "gandalf",
+    ) must be (UserProfile(
+      username = "gandalf",
       group = "istari",
-      accessMask = "752",
-      origins = None
-    )))
+      mask = PermissionsMask.fromOctal("752")
+    ))
   }
 
-  it must "fail to be extracted from HTTP response with missing required fields" in {
+  it must "fail to be parsed when required fields are missing" in {
     evaluating {
-      ResponseObject.extractFrom(ResponseBuilder(200,
+      parser.parse(
         """{
           | "user": "gandalf",
-          | "origins": "anyHost"
           |}
         """.stripMargin
-      )).get
+      )
     } must produce [IllegalArgumentException]
   }
 
-  it must "fail to be extracted from HTTP response with invalid access mask value" in {
+  it must "fail to be parsed with invalid access mask value" in {
     evaluating {
-      ResponseObject.extractFrom(ResponseBuilder(200,
+      parser.parse(
         """{
           | "user": "gandalf",
           | "group": "istari",
           | "accessMask": "This is a invalid access mask value"
           |}
         """.stripMargin
-      )).get
+      )
     } must produce [IllegalArgumentException]
   }
 
-  it must "fail to be extracted from HTTP response with invalid format" in {
+  it must "fail to be parsed from invalid JSON" in {
     evaluating {
-      ResponseObject.extractFrom(ResponseBuilder(200,
-        "Hello World! This is a stupid response that does not mean anything!"
-      )).get
+      parser.parse("This is a stupid message that does not mean anything!")
     } must produce [IllegalArgumentException]
   }
 }

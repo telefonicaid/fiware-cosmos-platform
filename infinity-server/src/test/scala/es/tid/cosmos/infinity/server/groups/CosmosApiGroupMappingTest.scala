@@ -17,9 +17,11 @@
 package es.tid.cosmos.infinity.server.groups
 
 import java.util
+
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 
+import es.tid.cosmos.infinity.server.MockCosmosApi
 import org.apache.hadoop.security.GroupMappingServiceProvider
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -51,7 +53,7 @@ class CosmosApiGroupMappingTest extends FlatSpec with MustMatchers {
 
   it must "return an empty list when response is malformed" in new Fixture {
     cosmosApi.givenInfinitySecret(sharedSecret)
-    cosmosApi.givenResponseWillBeMalformed("handle")
+    cosmosApi.givenMalformedGroupMapping("handle")
     cosmosApi.withServer {
       mapping.groupsFor("handle") must be ('empty)
     }

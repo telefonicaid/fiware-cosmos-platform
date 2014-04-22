@@ -96,7 +96,7 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(JavaVersions.java6: _*)
-    dependsOn(common_test % "test->compile;test->test")
+    dependsOn(common_test % "test")
   )
 
   lazy val common_test = (Project(id = "common-test", base = file("common-test"))
@@ -111,7 +111,7 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(JavaVersions.java7: _*)
-    dependsOn(common, common_test % "compile->compile;test->test")
+    dependsOn(common, common_test % "test, it")
   )
 
   lazy val serviceManager = (Project(id = "service-manager", base = file("service-manager"))
@@ -119,7 +119,7 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(JavaVersions.java7: _*)
-    dependsOn(common, ial, common_test % "compile->compile;test->test")
+    dependsOn(common, ial, common_test % "test, it")
   )
 
   lazy val ambariServiceManager =
@@ -128,8 +128,7 @@ object Build extends sbt.Build {
       configs IntegrationTest
       settings(Defaults.itSettings: _*)
       settings(JavaVersions.java7: _*)
-      dependsOn(serviceManager % "compile->compile;test->test", common, ial,
-        common_test % "compile->compile;test->test")
+      dependsOn(serviceManager % "compile->compile;test->test", common, ial, common_test % "test, it")
     )
 
   lazy val cosmosApi = (play.Project("cosmos-api", projectVersion, path = file("cosmos-api"),
@@ -139,7 +138,7 @@ object Build extends sbt.Build {
     settings(Defaults.itSettings: _*)
     settings(RpmSettings.cosmosApiSettings: _*)
     settings(JavaVersions.java7: _*)
-    dependsOn(ambariServiceManager, serviceManager, common, ial, common_test % "test->compile")
+    dependsOn(ambariServiceManager, serviceManager, common, ial, common_test % "test, it")
   )
 
   lazy val cosmosAdmin = (Project(id = "cosmos-admin", base = file("cosmos-admin"))
@@ -163,7 +162,7 @@ object Build extends sbt.Build {
     settings(parallelExecution in ThisBuild := false)
     settings(JavaVersions.java7: _*)
     dependsOn(
-      common_test % "compile->compile;test->test",
+      common_test % "test, it",
       serviceManager % "compile->compile;test->test",
       cosmosApi % "compile->compile;test->test")
   )
@@ -183,7 +182,7 @@ object Build extends sbt.Build {
     settings(buildSettings: _*)
     settings(RpmSettings.infinityServerSettings: _*)
     settings(JavaVersions.java6: _*)
-    dependsOn(common, common_test % "test->compile;test->test")
+    dependsOn(common, common_test % "test")
   )
 
   def rootPackageSettings: Seq[Setting[_]] = Seq(
@@ -222,13 +221,13 @@ object Build extends sbt.Build {
 
       s.log.info("Copying puppet to project dist directory...")
       val puppetBase = baseDirectory.value / "deployment/puppet/"
-      val modules = (puppetBase / "modules" ***) +++
-        (puppetBase / "modules_third_party" ***)
-      IO.copy(for {
+      val modules = (puppetBase / "modules" ***) +++ (puppetBase / "modules_third_party" ***)
+      val relativeModulePaths = for {
         (file, name) <- modules pair relativeTo(puppetBase)
-      } yield (file, puppetDir / name), true)
+      } yield (file, puppetDir / name)
+      IO.copy(relativeModulePaths, overwrite = true)
 
-      val distFile = target.value / s"cosmos-platform-${projectVersion}.zip"
+      val distFile = target.value / s"cosmos-platform-$projectVersion.zip"
       val distDir = target.value / "dist"
 
       s.log.info("Generating cosmos-platform zip package...")
@@ -236,11 +235,10 @@ object Build extends sbt.Build {
       IO.delete(distFile)
       IO.zip(distFiles, distFile)
 
-      s.log.success(s"Cosmos platform distribution ready in ${distFile}")
+      s.log.success(s"Cosmos platform distribution ready in $distFile")
       distFile
     }
   )
 
   lazy val projectArtifact = addArtifact(Artifact("cosmos-platform", "zip", "zip"), distProject)
-
 }

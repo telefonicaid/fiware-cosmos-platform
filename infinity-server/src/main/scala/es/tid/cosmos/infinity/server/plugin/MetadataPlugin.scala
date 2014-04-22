@@ -22,6 +22,7 @@ import org.apache.hadoop.hdfs.server.namenode.NameNode
 import org.apache.hadoop.util.ServicePlugin
 
 import es.tid.cosmos.infinity.server.InfinityMetadataServer
+import es.tid.cosmos.infinity.server.authentication.cosmosapi.CosmosApiAuthenticationService
 
 /** Namenode plugin to serve Infinity metadata. */
 class MetadataPlugin extends ServicePlugin with Configurable {
@@ -40,7 +41,11 @@ class MetadataPlugin extends ServicePlugin with Configurable {
   override def start(service: Any): Unit = service match {
     case nameNode: NameNode =>
       log.info("Starting Infinity metadata server as a namenode plugin")
-      val server = new InfinityMetadataServer(nameNode.getRpcServer, PluginConfig.load(getConf))
+      val pluginConfig = PluginConfig.load(getConf)
+      val server = new InfinityMetadataServer(
+        namenodeProtocols = nameNode.getRpcServer,
+        config = pluginConfig,
+        authService = new CosmosApiAuthenticationService(pluginConfig))
       server.start()
       serverOpt = Some(server)
     case other =>

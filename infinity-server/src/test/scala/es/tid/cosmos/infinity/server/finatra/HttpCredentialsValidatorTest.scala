@@ -17,16 +17,15 @@
 package es.tid.cosmos.infinity.server.finatra
 
 import java.net.InetAddress
-import scalaz.{Failure, Success}
+import scalaz.{Failure, Success, Validation}
 
 import com.twitter.finagle.http.{Request, RequestBuilder}
-import org.scalatest.FlatSpec
-import org.scalatest.matchers.MustMatchers
+import org.scalatest.{FlatSpec, Inside}
+import org.scalatest.matchers.{MatchResult, Matcher, MustMatchers}
 
-import es.tid.cosmos.infinity.server.authentication.{ClusterCredentials, UserCredentials}
-import es.tid.cosmos.infinity.server.finatra.HttpCredentialsValidator._
+import es.tid.cosmos.infinity.server.authentication._
 
-class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers {
+class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers with Inside {
 
   val from = InetAddress.getLocalHost
 
@@ -34,7 +33,7 @@ class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers {
     val req = Request(RequestBuilder()
       .url("http://example.com/")
       .buildGet())
-    HttpCredentialsValidator(from, req) must be (Failure(MissingAuthorizationHeader))
+    HttpCredentialsValidator(from, req) must failWithCode(MissingAuthorizationHeader.code)
   }
 
   it must "fail to extract credentials on unsupported Authorization header" in {
@@ -43,7 +42,7 @@ class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers {
       .url("http://example.com/")
       .addHeader("Authorization", auth)
       .buildGet())
-    HttpCredentialsValidator(from, req) must be (Failure(UnsupportedAuthorizationHeader(auth)))
+    HttpCredentialsValidator(from, req) must failWithCode(UnsupportedAuthorizationHeader.code)
   }
 
   it must "extract user credentials" in {
@@ -59,7 +58,7 @@ class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers {
       .url("http://example.com/")
       .addHeader("Authorization", "Basic YXBpLWtleUBhcGktc2VjcmV0") // "api-key@api-secret"
       .buildGet())
-    HttpCredentialsValidator(from, req) must be (Failure(MalformedKeySecretPair("api-key@api-secret")))
+    HttpCredentialsValidator(from, req) must failWithCode(MalformedKeySecretPair.code)
   }
 
   it must "fail to extract user credentials from invalid hash" in {
@@ -67,7 +66,7 @@ class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers {
       .url("http://example.com/")
       .addHeader("Authorization", "Basic @@@@@@@@@")
       .buildGet())
-    HttpCredentialsValidator(from, req) must be (Failure(InvalidBasicHash("@@@@@@@@@")))
+    HttpCredentialsValidator(from, req) must failWithCode(InvalidBasicHash.code)
   }
 
   it must "extract cluster credentials" in {
@@ -76,5 +75,19 @@ class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers {
       .addHeader("Authorization", "Bearer cluster-secret")
       .buildGet())
     HttpCredentialsValidator(from, req) must be (Success(ClusterCredentials(from, "cluster-secret")))
+  }
+
+  def failWithCode(expectedCode: String) = new Matcher[Validation[RequestError, Credentials]] {
+    
+    override def apply(left: Validation[RequestError, Credentials]): MatchResult = left match {
+      case Failure(InvalidHttpCredentials(actualCode, _)) => MatchResult(
+        matches = actualCode == expectedCode,
+        failureMessage = s"error code $actualCode is not $expectedCode",
+        negatedFailureMessage = s"error code $actualCode was found")
+      case _ => MatchResult(
+        matches = false,
+        failureMessage = "result didn't failed due to invalid HTTP credentials",
+        negatedFailureMessage = "result failed due to invalid HTTP credentials")
+    }
   }
 }

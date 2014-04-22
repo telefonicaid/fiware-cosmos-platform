@@ -20,18 +20,19 @@ import scalaz.{Failure, Success}
 
 import com.twitter.finagle.http.Request
 import org.jboss.netty.handler.codec.http.HttpMethod
-import org.scalatest.FlatSpec
+import org.scalatest.{FlatSpec, Inside}
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.infinity.server.actions.GetMetadata
-import es.tid.cosmos.infinity.server.finatra.HttpActionValidator.InvalidResourcePath
 import es.tid.cosmos.infinity.server.util.Path
 
-class HttpActionValidatorTest extends FlatSpec with MustMatchers {
+class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside {
 
   "Valid HTTP Action" must "fail to extract from an unknown path" in {
     val req = Request(HttpMethod.GET, "/this/is/an/invalid/path")
-    HttpActionValidator(req) must be (Failure(InvalidResourcePath("/this/is/an/invalid/path")))
+    inside(HttpActionValidator(req)) {
+      case Failure(InvalidAction(code, _)) => code must be (InvalidResourcePath.code)
+    }
   }
 
   it must "extract a GetPathMetadataAction" in {

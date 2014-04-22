@@ -28,14 +28,9 @@ object HttpActionValidator {
 
   import scalaz.Scalaz._
 
-  abstract class InvalidAction(msg: String) extends Exception(msg)
-
-  case class InvalidResourcePath(path: String) extends InvalidAction(
-    s"invalid resource path $path")
-
   val MetadataUriPrefix = "/infinityfs/v1/metadata(.*)".r
 
-  def apply(request: Request): Validation[InvalidAction, Action] = request.getUri() match {
+  def apply(request: Request): Validation[RequestError, Action] = request.getUri() match {
     case MetadataUriPrefix(path) => metadataAction(path, request)
     case uri => InvalidResourcePath(uri).failure
   }

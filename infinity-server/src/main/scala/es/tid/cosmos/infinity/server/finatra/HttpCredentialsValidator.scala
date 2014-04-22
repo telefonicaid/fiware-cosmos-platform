@@ -28,31 +28,17 @@ object HttpCredentialsValidator {
 
   import scalaz.Scalaz._
 
-  abstract class InvalidHttpCredentials(msg: String) extends Exception(msg)
-
-  case object MissingAuthorizationHeader extends InvalidHttpCredentials(
-    "no Authorization header was found in request")
-
-  case class UnsupportedAuthorizationHeader(headerValue: String) extends InvalidHttpCredentials(
-    s"unsupported authorization header in '$headerValue'")
-
-  case class MalformedKeySecretPair(pair: String) extends InvalidHttpCredentials(
-    s"invalid API key-secret pair in $pair")
-
-  case class InvalidBasicHash(hash: String) extends InvalidHttpCredentials(
-    s"basic hash $hash is not a valid base64 encoded string")
-
   private val base64 = new Base64()
   private val basicLinePattern = "Basic (.*)".r
   private val basicPairPattern = "(.*):(.*)".r
   private val bearerLinePattern = "Bearer (.*)".r
 
   def apply(
-      from: InetAddress, request: Request): Validation[InvalidHttpCredentials, Credentials] = {
+      from: InetAddress, request: Request): Validation[RequestError, Credentials] = {
     request.headers().get("Authorization") match {
       case basicLinePattern(hash) => userCredentials(hash)
       case bearerLinePattern(secret) => clusterCredentials(from, secret)
-      case null => MissingAuthorizationHeader.failure
+      case null => MissingAuthorizationHeader().failure
       case headerValue => UnsupportedAuthorizationHeader(headerValue).failure
     }
   }

@@ -20,10 +20,14 @@ import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
 import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.infinity.server.actions.MetadataActions
+import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.finatra.{EmbeddableFinatraServer, FinatraServerCfg}
 import es.tid.cosmos.infinity.server.fs.sql.InfinityDataStoreSqlComponent
 
-class InfinityMetadataServer(namenodeProtocols: NamenodeProtocols, override val config: Config)
+class InfinityMetadataServer(
+    namenodeProtocols: NamenodeProtocols,
+    override val config: Config,
+    authService: AuthenticationService)
   extends ConfigComponent
   with InfinityDataStoreSqlComponent {
 
@@ -33,7 +37,7 @@ class InfinityMetadataServer(namenodeProtocols: NamenodeProtocols, override val 
 
   val server = new EmbeddableFinatraServer(serverConfig)
 
-  server.register(new MetadataActions)
+  server.register(new MetadataActions(authService))
 
   def start(): Unit = server.start()
 

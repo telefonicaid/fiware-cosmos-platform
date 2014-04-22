@@ -16,15 +16,22 @@
 
 package es.tid.cosmos.infinity.server.authentication.cosmosapi
 
-import scalaz.Validation
+import net.liftweb.json
+import net.liftweb.json._
+import net.liftweb.json.JsonParser.ParseException
 
-import com.typesafe.config.Config
+import es.tid.cosmos.infinity.server.authentication.UserProfile
 
-import es.tid.cosmos.infinity.server.authentication._
-import es.tid.cosmos.infinity.server.finatra.RequestError
+private[cosmosapi] class UserProfileParser(superGroup: String) {
 
-@deprecated("Use CosmosApiAuthentication instead")
-class CosmosApiAuthenticationService(config: Config) extends AuthenticationService {
+  private implicit val formats = DefaultFormats
 
-  override def authenticate(credentials: Credentials): Validation[RequestError, UserProfile] = ???
+  def parse(input: String): UserProfile = try {
+    json.parse(input).extract[UserProfileJson].toUserProfile(superGroup)
+  } catch {
+    case e: MappingException =>
+      throw new IllegalArgumentException(s"cannot map response body to expected object: $input", e)
+    case e: ParseException =>
+      throw new IllegalArgumentException(s"cannot parse response body to a JSON object: $input", e)
+  }
 }

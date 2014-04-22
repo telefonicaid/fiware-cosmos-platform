@@ -16,13 +16,14 @@
 
 package es.tid.cosmos.infinity.server.authentication
 
-import java.net.InetAddress
+import scala.concurrent.Future
 
-/** The credentials used by a Infinity client to authenticate a request. */
-sealed trait Credentials
+trait Authentication {
 
-/** The credentials used by users to authenticate their Infinity FS requests. */
-case class UserCredentials(apiKey: String, apiSecret: String) extends Credentials
-
-/** The credentials used by clusters to authenticate their Infinity FS requests. */
-case class ClusterCredentials(origin: InetAddress, clusterSecret: String) extends Credentials
+  /** Perform an authentication request.
+    *
+    * @param credentials  Credentials to authenticate with
+    * @return  The user profile when successful, an AuthenticationException when not.
+    */
+  def authenticate(credentials: Credentials): Future[UserProfile]
+}

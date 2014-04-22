@@ -16,6 +16,10 @@
 
 package es.tid.cosmos.infinity.server.authentication
 
+import java.net.{UnknownHostException, InetAddress}
+
+import org.apache.commons.logging.LogFactory
+
 import es.tid.cosmos.infinity.server.permissions.PermissionsMask
 
 /** The profile of a user in Infinity.
@@ -24,13 +28,35 @@ import es.tid.cosmos.infinity.server.permissions.PermissionsMask
   * @param group The group of the user
   * @param mask The mask applied to the UNIX permissions for the user.
   * @param accessFrom The set of hostnames where this profile is allowed to access from.
-  *                   An empty set means any host.
+  *                   None means that can be accessed from any host but Some(Set.empty)
+  *                   means that can be use from no host..
   * @param superuser Superuser can modify filesystem without any restrictions
   */
 case class UserProfile(
   username: String,
   group: String,
   mask: PermissionsMask = PermissionsMask.fromOctal("777"),
-  accessFrom: Set[String] = Set.empty,
+  accessFrom: Option[Set[String]] = None,
   superuser: Boolean = false
-)
+) {
+
+  def accessibleFrom(origin: InetAddress): Boolean =
+    accessFrom.isEmpty || whitelistAddresses().contains(origin)
+
+  /** Resolve addresses of the whitelist. */
+  private def whitelistAddresses(): Set[InetAddress] =
+    accessFrom.getOrElse(Set.empty).flatMap(resolveOrigin)
+
+  private def resolveOrigin(origin: String): Set[InetAddress] = try {
+    InetAddress.getAllByName(origin).toSet
+  } catch {
+    case ex: UnknownHostException =>
+      UserProfile.Log.warn(
+        s"Cannot resolve '$origin' as part of the whitelist of user profile $this", ex)
+      Set.empty
+  }
+}
+
+object UserProfile {
+  private val Log = LogFactory.getLog(classOf[UserProfile])
+}

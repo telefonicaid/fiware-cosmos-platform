@@ -42,7 +42,7 @@ object HttpCredentialsValidator {
       case headerValue => UnsupportedAuthorizationHeader(headerValue).failure
     }
   }
-  
+
   private def userCredentials(hash: String): Validation[InvalidHttpCredentials, UserCredentials] = {
     for {
       pair <- decodeBase64(hash)

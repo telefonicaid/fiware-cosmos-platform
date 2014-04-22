@@ -183,7 +183,7 @@ object Build extends sbt.Build {
     settings(buildSettings: _*)
     settings(RpmSettings.infinityServerSettings: _*)
     settings(JavaVersions.java6: _*)
-    dependsOn(common)
+    dependsOn(common, common_test % "test->compile;test->test")
   )
 
   def rootPackageSettings: Seq[Setting[_]] = Seq(

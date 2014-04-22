@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.authentication
+package es.tid.cosmos.infinity.server.authentication.cosmosapi
 
-import java.net.InetAddress
+import es.tid.cosmos.infinity.server.authentication.{Authentication, AuthenticationComponent}
+import es.tid.cosmos.common.ConfigComponent
 
-/** The credentials used by a Infinity client to authenticate a request. */
-sealed trait Credentials
+trait CosmosApiAuthenticationComponent extends AuthenticationComponent { this: ConfigComponent =>
 
-/** The credentials used by users to authenticate their Infinity FS requests. */
-case class UserCredentials(apiKey: String, apiSecret: String) extends Credentials
-
-/** The credentials used by clusters to authenticate their Infinity FS requests. */
-case class ClusterCredentials(origin: InetAddress, clusterSecret: String) extends Credentials
+  override lazy val authentication: Authentication = CosmosApiAuthentication.fromConfig(config)
+}

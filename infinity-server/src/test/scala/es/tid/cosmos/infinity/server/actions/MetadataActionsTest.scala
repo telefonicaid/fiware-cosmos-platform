@@ -19,17 +19,56 @@ import com.twitter.finatra.FinatraServer
 import com.twitter.finatra.test.SpecHelper
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.mock.MockitoSugar
 
-class MetadataActionsTest extends FlatSpec with ShouldMatchers with SpecHelper {
+import es.tid.cosmos.infinity.server.authentication.AuthenticationService
+import es.tid.cosmos.infinity.server.finatra._
 
-    val app = new MetadataActions
-    override val server = new FinatraServer
-    server.register(app)
+class MetadataActionsTest extends FlatSpec with ShouldMatchers with MockitoSugar {
 
-    "Get file metadata" should "respond 200" in {
-      get("/infinityfs/v1/metadata/some/file.txt")
-      response.body should equal ("metadata of /some/file.txt")
-      response.code should equal (200)
-    }
-
+  "Get file metadata" should "return appropriate error on missing authorization header" in new Fixture {
+    get("/infinityfs/v1/metadata/some/file.txt")
+    response.code should be (401)
+    response.body should include (MissingAuthorizationHeader.code)
   }
+
+  it should "return appropriate error on unsupported authorization header" in new Fixture {
+    get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
+      "Authorization" -> "Digest dXNlcjpwYXNzd29yZA==" // user:password
+    ))
+    response.code should be (401)
+    response.body should include (UnsupportedAuthorizationHeader.code)
+  }
+
+  it should "return appropriate error on malformed key-secret pair" in new Fixture {
+    get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
+      "Authorization" -> "Basic dXNlckBwYXNzd29yZA==" // user@password
+    ))
+    response.code should be (401)
+    response.body should include (MalformedKeySecretPair.code)
+  }
+
+  it should "return appropriate error on invalid basic hash" in new Fixture {
+    get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
+      "Authorization" -> "Basic ,,,,,,,"
+    ))
+    response.code should be (401)
+    response.body should include (InvalidBasicHash.code)
+  }
+
+
+  it should "respond 200" in new Fixture {
+    get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
+      "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
+    ))
+    response.body should equal ("metadata of /some/file.txt")
+    response.code should equal (200)
+  }
+
+  trait Fixture extends SpecHelper {
+    override val server = new FinatraServer
+    val authService = mock[AuthenticationService]
+    val app = new MetadataActions(authService)
+    server.register(app)
+  }
+}

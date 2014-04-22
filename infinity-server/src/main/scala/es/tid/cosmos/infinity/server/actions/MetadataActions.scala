@@ -15,25 +15,25 @@
  */
 package es.tid.cosmos.infinity.server.actions
 
-import com.twitter.finatra.{Request, Controller}
+import com.twitter.finatra.{Controller, Request}
 
-class MetadataActions extends Controller {
+import es.tid.cosmos.infinity.server.authentication.AuthenticationService
+import es.tid.cosmos.infinity.server.finatra.{HttpActionValidator, HttpCredentialsValidator}
 
-  import MetadataActions._
+class MetadataActions(authentication: AuthenticationService) extends Controller {
 
-  val contentPath = Prefix + "/*"
+  private val contentPath = "/infinityfs/v1/metadata/*"
 
   get(contentPath) { request =>
     val path = getPath(request)
-    render.plain(s"metadata of $path").toFuture
+    val response = for {
+      credentials <- HttpCredentialsValidator(request.remoteAddress, request)
+      action <- HttpActionValidator(request)
+    } yield render.plain(s"metadata of $path")
+    response.fold(error => error.render, success => success).toFuture
   }
 
-}
-
-object MetadataActions {
-  val Prefix = "/infinityfs/v1/metadata"
-
-  // `splat` is an undocumented Finatra tag for wilcards routes extractions
-  // see https://github.com/twitter/finatra/blob/master/src/main/scala/com/twitter/finatra/PathParser.scala
-  def getPath(request: Request): String = "/" + request.routeParams.getOrElse("splat", "")
+  // `splat` is an undocumented Finatra tag. For wilcards routes extractions see
+  // https://github.com/twitter/finatra/blob/master/src/main/scala/com/twitter/finatra/PathParser.scala
+  private def getPath(request: Request): String = "/" + request.routeParams.getOrElse("splat", "")
 }

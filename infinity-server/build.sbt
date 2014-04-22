@@ -26,5 +26,3 @@ libraryDependencies ++= Dependencies.unfiltered ++ Seq(
   Dependencies.scalaz,
   Dependencies.typesafeConfig
 )
-
-seq(Revolver.settings: _*)

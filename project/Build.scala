@@ -47,7 +47,8 @@ object Build extends sbt.Build {
     lazy val anorm = "play" %% "anorm" % "2.1.5"
     lazy val commonsCodec = "commons-codec" % "commons-codec" % "1.9"
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
-    lazy val finatra =  "com.twitter" %% "finatra" % "1.5.2"
+    lazy val finatra = "com.twitter" %% "finatra" % "1.5.2" exclude(
+      "org.scalatest", "scalatest_2.10")
     lazy val h2database = "com.h2database" % "h2" % "1.3.175"
     lazy val hadoopCommon = "org.apache.hadoop" % "hadoop-common" % Versions.hdp2Hadoop
     lazy val hadoopHdfs = "org.apache.hadoop" % "hadoop-hdfs" % Versions.hdp2Hadoop

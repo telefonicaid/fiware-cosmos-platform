@@ -46,6 +46,7 @@ object Build extends sbt.Build {
   object Dependencies {
     lazy val anorm = "play" %% "anorm" % "2.1.5"
     lazy val commonsCodec = "commons-codec" % "commons-codec" % "1.9"
+    lazy val commonsLogging = "commons-logging" % "commons-logging" % "1.1.1"
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
     lazy val finatra = "com.twitter" %% "finatra" % "1.5.2" exclude(
       "org.scalatest", "scalatest_2.10")
@@ -168,22 +169,30 @@ object Build extends sbt.Build {
       cosmosApi % "compile->compile;test->test")
   )
 
-  lazy val infinityDriver = (Project(id = "infinity-driver", base = file("infinity-driver"))
+  lazy val infinityCommon = (Project(id = "infinity-common", base = file("infinity/common"))
+    settings(ScctPlugin.instrumentSettings: _*)
+    configs IntegrationTest
+    settings(Defaults.itSettings: _*)
+    settings(JavaVersions.java6: _*)
+  )
+
+  lazy val infinityDriver = (Project(id = "infinity-driver", base = file("infinity/driver"))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(RpmSettings.infinityDriverSettings: _*)
     settings(JavaVersions.java6: _*)
+    dependsOn infinityCommon
   )
 
-  lazy val infinityServer = (Project(id = "infinity-server", base = file("infinity-server"))
+  lazy val infinityServer = (Project(id = "infinity-server", base = file("infinity/server"))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(buildSettings: _*)
     settings(RpmSettings.infinityServerSettings: _*)
     settings(JavaVersions.java6: _*)
-    dependsOn(common, common_test % "test")
+    dependsOn(infinityCommon, common, common_test % "test")
   )
 
   def rootPackageSettings: Seq[Setting[_]] = Seq(

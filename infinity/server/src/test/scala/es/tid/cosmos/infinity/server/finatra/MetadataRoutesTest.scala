@@ -13,23 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package es.tid.cosmos.infinity.server.actions
+package es.tid.cosmos.infinity.server.finatra
+
+import scala.concurrent.Future
 
 import com.twitter.finatra.FinatraServer
 import com.twitter.finatra.test.SpecHelper
+import org.mockito.Matchers._
+import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.infinity.server.authentication.AuthenticationService
-import es.tid.cosmos.infinity.server.finatra._
+import es.tid.cosmos.infinity.common.UserProfile
+import es.tid.cosmos.infinity.server.authentication._
 
-class MetadataActionsTest extends FlatSpec with ShouldMatchers with MockitoSugar {
+class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar {
 
   "Get file metadata" should "return appropriate error on missing authorization header" in new Fixture {
     get("/infinityfs/v1/metadata/some/file.txt")
     response.code should be (401)
-    response.body should include (MissingAuthorizationHeader.code)
+    response.body should include (ErrorCode.MissingAuthorizationHeader.code)
   }
 
   it should "return appropriate error on unsupported authorization header" in new Fixture {
@@ -37,7 +41,7 @@ class MetadataActionsTest extends FlatSpec with ShouldMatchers with MockitoSugar
       "Authorization" -> "Digest dXNlcjpwYXNzd29yZA==" // user:password
     ))
     response.code should be (401)
-    response.body should include (UnsupportedAuthorizationHeader.code)
+    response.body should include (ErrorCode.UnsupportedAuthorizationHeader.code)
   }
 
   it should "return appropriate error on malformed key-secret pair" in new Fixture {
@@ -45,7 +49,7 @@ class MetadataActionsTest extends FlatSpec with ShouldMatchers with MockitoSugar
       "Authorization" -> "Basic dXNlckBwYXNzd29yZA==" // user@password
     ))
     response.code should be (401)
-    response.body should include (MalformedKeySecretPair.code)
+    response.body should include (ErrorCode.MalformedKeySecretPair.code)
   }
 
   it should "return appropriate error on invalid basic hash" in new Fixture {
@@ -53,22 +57,47 @@ class MetadataActionsTest extends FlatSpec with ShouldMatchers with MockitoSugar
       "Authorization" -> "Basic ,,,,,,,"
     ))
     response.code should be (401)
-    response.body should include (InvalidBasicHash.code)
+    response.body should include (ErrorCode.InvalidBasicHash.code)
   }
 
+  it should "return 401 on unauthenticated credentials" in new Fixture {
+    givenFailedAuthentication {
+      get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
+        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
+      ))
+      response.code should equal(401)
+    }
+  }
 
   it should "respond 200" in new Fixture {
-    get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
-      "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
-    ))
-    response.body should equal ("metadata of /some/file.txt")
-    response.code should equal (200)
+    givenSuccessAuthentication {
+      get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
+        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
+      ))
+      response.body should equal("metadata of /some/file.txt")
+      response.code should equal(200)
+    }
   }
 
   trait Fixture extends SpecHelper {
-    override val server = new FinatraServer
     val authService = mock[AuthenticationService]
-    val app = new MetadataActions(authService)
+    override val server = new FinatraServer
+    val app = new MetadataRoutes(authService)
     server.register(app)
+
+    def givenSuccessAuthentication(action: => Unit) {
+      when(authService.authenticate(anyObject())).thenReturn(Future.successful(UserProfile(
+        username = "gandalf",
+        group = "istari"
+      )))
+      action
+    }
+
+    def givenFailedAuthentication(action: => Unit) {
+      when(authService.authenticate(anyObject()))
+        .thenReturn(Future.failed(new AuthenticationException("failed")))
+      action
+    }
   }
+
 }

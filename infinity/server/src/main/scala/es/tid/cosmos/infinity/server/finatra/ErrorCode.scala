@@ -16,44 +16,24 @@
 
 package es.tid.cosmos.infinity.server.finatra
 
-sealed trait ErrorCode {
+import es.tid.cosmos.infinity.server.authentication.AuthenticationException
 
-  val code: String
-}
+class ErrorCode[T <: Throwable](val code: String)
 
-case object MissingAuthorizationHeader extends ErrorCode {
+object ErrorCode {
 
-  override val code = "101"
+  implicit val MissingAuthorizationHeader =
+    new ErrorCode[RequestParsingException.MissingAuthorizationHeader]("101")
+  implicit val UnsupportedAuthorizationHeader =
+    new ErrorCode[RequestParsingException.UnsupportedAuthorizationHeader]("102")
+  implicit val MalformedKeySecretPair =
+    new ErrorCode[RequestParsingException.MalformedKeySecretPair]("103")
+  implicit val InvalidBasicHash =
+    new ErrorCode[RequestParsingException.InvalidBasicHash]("104")
+  implicit val InvalidResourcePath =
+    new ErrorCode[RequestParsingException.InvalidResourcePath]("105")
+  implicit val AuthenticationException =
+    new ErrorCode[AuthenticationException]("106")
 
-  def apply() = InvalidHttpCredentials(code, "no Authorization header was found in request")
-}
-
-case object UnsupportedAuthorizationHeader extends ErrorCode {
-
-  override val code = "102"
-
-  def apply(headerValue: String) = InvalidHttpCredentials(
-    code, s"unsupported authorization header in '$headerValue'")
-}
-
-case object MalformedKeySecretPair extends ErrorCode {
-
-  override val code = "103"
-
-  def apply(pair: String) = InvalidHttpCredentials(code, s"invalid API key-secret pair in $pair")
-}
-
-case object InvalidBasicHash extends ErrorCode {
-
-  override val code = "104"
-
-  def apply(hash: String) = InvalidHttpCredentials(
-    code, s"basic hash $hash is not a valid base64 encoded string")
-}
-
-case object InvalidResourcePath extends ErrorCode {
-
-  override val code = "201"
-
-  def apply(path: String) = InvalidAction(code, s"invalid resource path $path")
+  def apply[E <: Throwable : ErrorCode](e: E): ErrorCode[E] = implicitly[ErrorCode[E]]
 }

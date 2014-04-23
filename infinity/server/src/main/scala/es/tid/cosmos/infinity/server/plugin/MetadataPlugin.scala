@@ -21,15 +21,17 @@ import org.apache.hadoop.conf.{Configurable, Configuration}
 import org.apache.hadoop.hdfs.server.namenode.NameNode
 import org.apache.hadoop.util.ServicePlugin
 
-import es.tid.cosmos.infinity.server.InfinityMetadataServer
-import es.tid.cosmos.infinity.server.authentication.cosmosapi.CosmosApiAuthenticationService
+import es.tid.cosmos.infinity.server.authentication.AuthenticationComponent
+import es.tid.cosmos.infinity.server.finatra.MetadataServer
 
 /** Namenode plugin to serve Infinity metadata. */
 class MetadataPlugin extends ServicePlugin with Configurable {
+  
+  this: AuthenticationComponent =>
 
   private val log = LogFactory.getLog(classOf[MetadataPlugin])
   private var hadoopConfOpt: Option[Configuration] = None
-  private var serverOpt: Option[InfinityMetadataServer] = None
+  private var serverOpt: Option[MetadataServer] = None
 
   override def setConf(conf: Configuration): Unit = {
     hadoopConfOpt = Some(conf)
@@ -42,10 +44,10 @@ class MetadataPlugin extends ServicePlugin with Configurable {
     case nameNode: NameNode =>
       log.info("Starting Infinity metadata server as a namenode plugin")
       val pluginConfig = PluginConfig.load(getConf)
-      val server = new InfinityMetadataServer(
+      val server = new MetadataServer(
         namenodeProtocols = nameNode.getRpcServer,
         config = pluginConfig,
-        authService = new CosmosApiAuthenticationService(pluginConfig))
+        authService = authentication)
       server.start()
       serverOpt = Some(server)
     case other =>

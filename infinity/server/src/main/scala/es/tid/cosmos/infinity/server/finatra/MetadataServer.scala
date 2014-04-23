@@ -13,23 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package es.tid.cosmos.infinity.server
+package es.tid.cosmos.infinity.server.finatra
 
 import com.typesafe.config.Config
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
 import es.tid.cosmos.common.ConfigComponent
-import es.tid.cosmos.infinity.server.actions.MetadataActions
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
-import es.tid.cosmos.infinity.server.finatra.{EmbeddableFinatraServer, FinatraServerCfg}
 import es.tid.cosmos.infinity.server.fs.sql.InfinityDataStoreSqlComponent
 
-class InfinityMetadataServer(
+class MetadataServer(
     namenodeProtocols: NamenodeProtocols,
     override val config: Config,
-    authService: AuthenticationService)
-  extends ConfigComponent
-  with InfinityDataStoreSqlComponent {
+    authService: AuthenticationService) extends ConfigComponent with InfinityDataStoreSqlComponent {
 
   val serverConfig = FinatraServerCfg(
     http = Some(s"0.0.0.0:${config.getString("metadata.port")}")
@@ -37,7 +33,7 @@ class InfinityMetadataServer(
 
   val server = new EmbeddableFinatraServer(serverConfig)
 
-  server.register(new MetadataActions(authService))
+  server.register(new MetadataRoutes(authService))
 
   def start(): Unit = server.start()
 

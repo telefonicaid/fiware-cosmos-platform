@@ -34,16 +34,20 @@ object HttpCredentialsValidator {
   private val bearerLinePattern = "Bearer (.*)".r
 
   def apply(
-      from: InetAddress, request: Request): Validation[RequestError, Credentials] = {
+      from: InetAddress, request: Request): Validation[RequestParsingException, Credentials] = {
     request.headers().get("Authorization") match {
-      case basicLinePattern(hash) => userCredentials(hash)
-      case bearerLinePattern(secret) => clusterCredentials(from, secret)
-      case null => MissingAuthorizationHeader().failure
-      case headerValue => UnsupportedAuthorizationHeader(headerValue).failure
+      case basicLinePattern(hash) =>
+        userCredentials(hash)
+      case bearerLinePattern(secret) =>
+        clusterCredentials(from, secret)
+      case null =>
+        RequestParsingException.MissingAuthorizationHeader().failure
+      case headerValue =>
+        RequestParsingException.UnsupportedAuthorizationHeader(headerValue).failure
     }
   }
 
-  private def userCredentials(hash: String): Validation[InvalidHttpCredentials, UserCredentials] = {
+  private def userCredentials(hash: String) = {
     for {
       pair <- decodeBase64(hash)
       splitted <- splitPair(pair)
@@ -51,21 +55,21 @@ object HttpCredentialsValidator {
     } yield UserCredentials(key, secret)
   }
 
-  private def decodeBase64(hash: String): Validation[InvalidHttpCredentials, String] = {
+  private def decodeBase64(hash: String) = {
     val decoded = StringUtils.newStringUtf8(base64.decode(hash))
-    if (decoded.isEmpty) InvalidBasicHash(hash).failure
+    if (decoded.isEmpty) RequestParsingException.InvalidBasicHash(hash).failure
     else decoded.success
   }
 
-  private def splitPair(pair: String): Validation[InvalidHttpCredentials, (String, String)] =
+  private def splitPair(pair: String) =
     pair match {
       case basicPairPattern(key, secret) => (key, secret).success
-      case _ => MalformedKeySecretPair(pair).failure
+      case _ => RequestParsingException.MalformedKeySecretPair(pair).failure
     }
 
   private def clusterCredentials(
       from: InetAddress,
-      secret: String): Validation[InvalidHttpCredentials, ClusterCredentials] = {
+      secret: String): Validation[RequestParsingException, ClusterCredentials] = {
     ClusterCredentials(from, secret).success
   }
 }

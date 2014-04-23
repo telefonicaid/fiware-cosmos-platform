@@ -17,5 +17,5 @@
 package es.tid.cosmos.infinity.server.authentication
 
 trait AuthenticationComponent {
-  def authentication: Authentication
+  def authentication: AuthenticationService
 }

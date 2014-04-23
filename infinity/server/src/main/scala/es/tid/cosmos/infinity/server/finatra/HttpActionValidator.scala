@@ -30,11 +30,11 @@ object HttpActionValidator {
 
   val MetadataUriPrefix = "/infinityfs/v1/metadata(.*)".r
 
-  def apply(request: Request): Validation[RequestError, Action] = request.getUri() match {
+  def apply(request: Request): Validation[RequestParsingException, Action] = request.getUri() match {
     case MetadataUriPrefix(path) => metadataAction(path, request)
-    case uri => InvalidResourcePath(uri).failure
+    case uri => RequestParsingException.InvalidResourcePath(uri).failure
   }
 
-  private def metadataAction(path: String, request: Request): Validation[InvalidAction, Action] =
+  private def metadataAction(path: String, request: Request) =
     GetMetadata(Path.absolute(path)).success
 }

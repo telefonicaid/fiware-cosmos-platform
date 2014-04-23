@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions
+package es.tid.cosmos.infinity.common.messages
 
-import es.tid.cosmos.infinity.common.{Path, UserProfile}
+import org.scalatest.FlatSpec
+import org.scalatest.matchers.MustMatchers
 
-case class GetMetadata(on: Path) extends Action {
+class PathTypeTest extends FlatSpec with MustMatchers {
 
-  override def apply(user: UserProfile): Action.Result = ???
+  "Path type" must "be parsed from string" in {
+    PathType.valueOf("file") must be (File)
+    PathType.valueOf("directory") must be (Directory)
+  }
+
+  it must "be not parsed from unknown strings" in {
+    evaluating(PathType.valueOf("unknown")) must produce [IllegalArgumentException]
+  }
 }

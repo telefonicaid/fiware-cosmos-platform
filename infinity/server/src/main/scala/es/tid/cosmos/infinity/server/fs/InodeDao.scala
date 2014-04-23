@@ -16,7 +16,7 @@
 
 package es.tid.cosmos.infinity.server.fs
 
-import es.tid.cosmos.infinity.server.util.Path
+import es.tid.cosmos.infinity.common.Path
 
 trait InodeDao[Conn] {
 

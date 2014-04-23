@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions
+package es.tid.cosmos.infinity.common.messages.json
 
-import es.tid.cosmos.infinity.common.{Path, UserProfile}
-
-case class GetMetadata(on: Path) extends Action {
-
-  override def apply(user: UserProfile): Action.Result = ???
-}
+case class ParseException(message: String, cause: Throwable = null)
+  extends IllegalArgumentException(message, cause)

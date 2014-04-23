@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions
+package es.tid.cosmos.infinity.common.messages.json
 
-import es.tid.cosmos.infinity.common.{Path, UserProfile}
+import java.text.SimpleDateFormat
 
-case class GetMetadata(on: Path) extends Action {
-
-  override def apply(user: UserProfile): Action.Result = ???
-}
+object Rfc822DateFormat extends SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")

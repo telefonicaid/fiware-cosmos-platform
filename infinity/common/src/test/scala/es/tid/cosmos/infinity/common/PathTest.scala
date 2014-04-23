@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.util
+package es.tid.cosmos.infinity.common
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers

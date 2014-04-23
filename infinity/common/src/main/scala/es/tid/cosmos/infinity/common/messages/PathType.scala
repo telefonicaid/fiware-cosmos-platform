@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions
+package es.tid.cosmos.infinity.common.messages
 
-import es.tid.cosmos.infinity.common.{Path, UserProfile}
+sealed trait PathType
+case object File extends PathType
+case object Directory extends PathType
 
-case class GetMetadata(on: Path) extends Action {
-
-  override def apply(user: UserProfile): Action.Result = ???
+object PathType {
+  def valueOf(string: String): PathType = string.toLowerCase match {
+    case "file" => File
+    case "directory" => Directory
+    case _ => throw new IllegalArgumentException(s"Not a valid path type: '$string'")
+  }
 }

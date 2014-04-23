@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions
+package es.tid.cosmos.infinity.common.messages.json
 
-import es.tid.cosmos.infinity.common.{Path, UserProfile}
+import java.util.{Calendar, TimeZone}
 
-case class GetMetadata(on: Path) extends Action {
+import org.scalatest.FlatSpec
+import org.scalatest.matchers.MustMatchers
 
-  override def apply(user: UserProfile): Action.Result = ???
+class Rfc822DateFormatTest extends FlatSpec with MustMatchers {
+
+  "Date format" must "parse RFC 822 dates" in {
+    val date = Rfc822DateFormat.parse("2014-04-08T12:31:45+0100")
+    val calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+01:00"))
+    calendar.setTime(date)
+    calendar.get(Calendar.YEAR) must be (2014)
+    calendar.get(Calendar.MONTH) must be (3)
+    calendar.get(Calendar.DAY_OF_MONTH) must be (8)
+    calendar.get(Calendar.HOUR_OF_DAY) must be (12)
+  }
 }

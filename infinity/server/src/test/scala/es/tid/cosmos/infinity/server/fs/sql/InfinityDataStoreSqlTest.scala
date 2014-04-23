@@ -23,11 +23,10 @@ import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 import scalikejdbc.ConnectionPool
 
-import es.tid.cosmos.infinity.common.UserProfile
+import es.tid.cosmos.infinity.common.{Path, RootPath, SubPath, UserProfile}
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask.fromOctal
 import es.tid.cosmos.infinity.server.db.sql.migrations.Migrate_1_InitialVersion
 import es.tid.cosmos.infinity.server.fs._
-import es.tid.cosmos.infinity.server.util.{Path, RootPath, SubPath}
 
 class InfinityDataStoreSqlTest extends FlatSpec with MustMatchers with BeforeAndAfter {
 

@@ -23,8 +23,8 @@ import org.jboss.netty.handler.codec.http.HttpMethod
 import org.scalatest.{FlatSpec, Inside}
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.infinity.common.Path
 import es.tid.cosmos.infinity.server.actions.GetMetadata
-import es.tid.cosmos.infinity.server.util.Path
 
 class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside {
 

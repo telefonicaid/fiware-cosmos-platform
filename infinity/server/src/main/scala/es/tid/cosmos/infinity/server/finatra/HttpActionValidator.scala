@@ -21,7 +21,7 @@ import scalaz.Validation
 import com.twitter.finagle.http.Request
 
 import es.tid.cosmos.infinity.server.actions.{Action, GetMetadata}
-import es.tid.cosmos.infinity.server.util.Path
+import es.tid.cosmos.infinity.common.Path
 
 /** An extractor object aimed to convert a Finagle HTTP request into a Infinity Server action. */
 object HttpActionValidator {

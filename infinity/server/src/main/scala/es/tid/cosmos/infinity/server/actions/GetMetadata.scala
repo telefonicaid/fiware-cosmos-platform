@@ -16,8 +16,7 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import es.tid.cosmos.infinity.common.UserProfile
-import es.tid.cosmos.infinity.server.util.Path
+import es.tid.cosmos.infinity.common.{Path, UserProfile}
 
 case class GetMetadata(on: Path) extends Action {
 

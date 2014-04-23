@@ -16,9 +16,8 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import es.tid.cosmos.infinity.common.UserProfile
+import es.tid.cosmos.infinity.common.{Path, UserProfile}
 import es.tid.cosmos.infinity.server.fs.PathMetadata
-import es.tid.cosmos.infinity.server.util.Path
 
 /** An action performed on a Infinity path. */
 trait Action {

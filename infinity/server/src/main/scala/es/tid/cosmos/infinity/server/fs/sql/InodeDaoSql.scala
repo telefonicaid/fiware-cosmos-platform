@@ -20,10 +20,9 @@ import java.sql.Connection
 
 import anorm._
 
+import es.tid.cosmos.infinity.common.{SubPath, Path, RootPath}
+import es.tid.cosmos.infinity.common.permissions.PermissionsMask.fromOctal
 import es.tid.cosmos.infinity.server.fs._
-import es.tid.cosmos.infinity.common.permissions.PermissionsMask
-import PermissionsMask._
-import es.tid.cosmos.infinity.server.util.{Path, RootPath, SubPath}
 
 class InodeDaoSql extends InodeDao[Connection] {
 

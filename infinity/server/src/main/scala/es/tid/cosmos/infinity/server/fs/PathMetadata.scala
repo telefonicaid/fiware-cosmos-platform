@@ -17,7 +17,8 @@
 package es.tid.cosmos.infinity.server.fs
 
 import java.net.URL
-import es.tid.cosmos.infinity.server.util.Path
+
+import es.tid.cosmos.infinity.common.Path
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 trait PathMetadata

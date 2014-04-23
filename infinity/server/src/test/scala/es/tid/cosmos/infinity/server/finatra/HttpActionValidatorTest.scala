@@ -31,7 +31,8 @@ class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside {
   "Valid HTTP Action" must "fail to extract from an unknown path" in {
     val req = Request(HttpMethod.GET, "/this/is/an/invalid/path")
     inside(HttpActionValidator(req)) {
-      case Failure(InvalidAction(code, _)) => code must be (InvalidResourcePath.code)
+      case Failure(RequestParsingException.InvalidResourcePath(path, _)) =>
+        path must be ("/this/is/an/invalid/path")
     }
   }
 

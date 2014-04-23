@@ -16,17 +16,72 @@
 
 package es.tid.cosmos.infinity.server.authentication.cosmosapi
 
-import scalaz.Validation
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.control.NonFatal
 
+import com.ning.http.client.RequestBuilder
 import com.typesafe.config.Config
+import dispatch.{Future => _, _}
 
-import es.tid.cosmos.infinity.server.authentication._
-import es.tid.cosmos.infinity.server.finatra.RequestError
+import es.tid.cosmos.common.{BearerToken, Wrapped}
 import es.tid.cosmos.infinity.common.UserProfile
-import es.tid.cosmos.infinity.common.credentials.Credentials
+import es.tid.cosmos.infinity.common.credentials.{ClusterCredentials, UserCredentials, Credentials}
+import es.tid.cosmos.infinity.server.authentication._
 
-@deprecated("Use CosmosApiAuthentication instead")
-class CosmosApiAuthenticationService(config: Config) extends AuthenticationService {
+private[cosmosapi] class CosmosApiAuthenticationService(
+    apiBase: String, infinitySecret: String, superGroup: String) extends AuthenticationService {
 
-  override def authenticate(credentials: Credentials): Validation[RequestError, UserProfile] = ???
+  private def profileParser = new UserProfileParser(superGroup)
+
+  override def authenticate(credentials: Credentials): Future[UserProfile] = for {
+    response <- requestUserAuthentication(credentials)
+    profile = parseResponse(response)
+  } yield {
+    requireValidOrigin(credentials, profile)
+    profile
+  }
+
+  private def parseResponse(response: String): UserProfile =  try {
+    profileParser.parse(response)
+  } catch {
+    case NonFatal(ex) => throw AuthenticationException.invalidProfile(response, ex)
+  }
+
+  private def requestUserAuthentication(credentials: Credentials) =
+    Http(resource() <<? queryParameters(credentials) <:< Map(authHeader) OK as.String).recoverWith {
+      case Wrapped(ex @ StatusCode(403)) =>
+        Future.failed(AuthenticationException.authenticationRejected(ex))
+      case NonFatal(ex) =>
+        Future.failed(AuthenticationException.cannotAccessService(ex))
+    }
+
+  private val authHeader = "Authorization" -> BearerToken(infinitySecret)
+
+  private def queryParameters(credentials: Credentials) = credentials match {
+    case UserCredentials(key, secret) => Map("apiKey" -> key, "apiSecret" -> secret)
+    case ClusterCredentials(_, secret) => Map("clusterSecret" -> secret)
+  }
+
+  private def resource(): RequestBuilder = url(apiBase) / "infinity" / "v1" / "auth"
+
+  private def requireValidOrigin(credentials: Credentials, profile: UserProfile): Unit =
+    credentials match {
+      case ClusterCredentials(origin, _) =>
+        if (!profile.accessibleFrom(origin)) {
+          throw AuthenticationException.invalidOrigin(origin, profile)
+        }
+      case UserCredentials(_, _) =>
+        // Always allowed
+    }
+}
+
+private[cosmosapi] object CosmosApiAuthenticationService {
+
+  /** Creates a CosmosApiAuthentication taking its parameters from the passed configuration */
+  def fromConfig(config: Config): CosmosApiAuthenticationService = new CosmosApiAuthenticationService(
+    apiBase = config.getString("apiBase"),
+    infinitySecret = config.getString("secret"),
+    superGroup = config.getString("supergroup")
+  )
 }

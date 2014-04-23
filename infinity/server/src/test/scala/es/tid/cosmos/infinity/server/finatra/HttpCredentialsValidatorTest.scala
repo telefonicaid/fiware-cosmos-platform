@@ -29,11 +29,11 @@ class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers with Insid
 
   val from = InetAddress.getLocalHost
 
-  "Valid HTTP credentials" must "fail to extract credentials on missing Authorization header" in {
+  "HTTP credentials validator" must "fail to extract credentials on missing Authorization header" in {
     val req = Request(RequestBuilder()
       .url("http://example.com/")
       .buildGet())
-    HttpCredentialsValidator(from, req) must failWithCode(MissingAuthorizationHeader.code)
+    HttpCredentialsValidator(from, req) must failWith[RequestParsingException.MissingAuthorizationHeader]
   }
 
   it must "fail to extract credentials on unsupported Authorization header" in {
@@ -42,7 +42,7 @@ class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers with Insid
       .url("http://example.com/")
       .addHeader("Authorization", auth)
       .buildGet())
-    HttpCredentialsValidator(from, req) must failWithCode(UnsupportedAuthorizationHeader.code)
+    HttpCredentialsValidator(from, req) must failWith[RequestParsingException.UnsupportedAuthorizationHeader]
   }
 
   it must "extract user credentials" in {
@@ -58,7 +58,7 @@ class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers with Insid
       .url("http://example.com/")
       .addHeader("Authorization", "Basic YXBpLWtleUBhcGktc2VjcmV0") // "api-key@api-secret"
       .buildGet())
-    HttpCredentialsValidator(from, req) must failWithCode(MalformedKeySecretPair.code)
+    HttpCredentialsValidator(from, req) must failWith[RequestParsingException.MalformedKeySecretPair]
   }
 
   it must "fail to extract user credentials from invalid hash" in {
@@ -66,7 +66,7 @@ class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers with Insid
       .url("http://example.com/")
       .addHeader("Authorization", "Basic @@@@@@@@@")
       .buildGet())
-    HttpCredentialsValidator(from, req) must failWithCode(InvalidBasicHash.code)
+    HttpCredentialsValidator(from, req) must failWith[RequestParsingException.InvalidBasicHash]
   }
 
   it must "extract cluster credentials" in {
@@ -78,17 +78,20 @@ class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers with Insid
       be (Success(ClusterCredentials(from, "cluster-secret")))
   }
 
-  def failWithCode(expectedCode: String) = new Matcher[Validation[RequestError, Credentials]] {
+  def failWith[T : Manifest] = new Matcher[Validation[RequestParsingException, Credentials]] {
 
-    override def apply(left: Validation[RequestError, Credentials]): MatchResult = left match {
-      case Failure(InvalidHttpCredentials(actualCode, _)) => MatchResult(
-        matches = actualCode == expectedCode,
-        failureMessage = s"error code $actualCode is not $expectedCode",
-        negatedFailureMessage = s"error code $actualCode was found")
-      case _ => MatchResult(
-        matches = false,
-        failureMessage = "result didn't failed due to invalid HTTP credentials",
-        negatedFailureMessage = "result failed due to invalid HTTP credentials")
+    override def apply(left: Validation[RequestParsingException, Credentials]): MatchResult = {
+      val expectedError = implicitly[Manifest[T]].runtimeClass
+      left.fold(
+        error => MatchResult(
+          matches = error.getClass == expectedError,
+          failureMessage = s"failed with error ${error.getClass} rather than $expectedError",
+          negatedFailureMessage = s"failed with error $expectedError}"),
+        success => MatchResult(
+          matches = false,
+          failureMessage = s"result is not error $expectedError",
+          negatedFailureMessage = s"result is $expectedError")
+      )
     }
   }
 }

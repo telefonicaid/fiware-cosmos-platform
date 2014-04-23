@@ -17,9 +17,10 @@
 package es.tid.cosmos.infinity.server.authentication.cosmosapi
 
 import es.tid.cosmos.common.ConfigComponent
-import es.tid.cosmos.infinity.server.authentication.{Authentication, AuthenticationComponent}
+import es.tid.cosmos.infinity.server.authentication.{AuthenticationComponent, AuthenticationService}
 
 trait CosmosApiAuthenticationComponent extends AuthenticationComponent { this: ConfigComponent =>
 
-  override lazy val authentication: Authentication = CosmosApiAuthentication.fromConfig(config)
+  override lazy val authentication: AuthenticationService =
+    CosmosApiAuthenticationService.fromConfig(config)
 }

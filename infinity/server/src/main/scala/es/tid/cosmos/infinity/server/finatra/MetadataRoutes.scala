@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package es.tid.cosmos.infinity.server.actions
+package es.tid.cosmos.infinity.server.finatra
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.twitter.finatra.{Controller, Request}
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
-import es.tid.cosmos.infinity.server.finatra.{HttpActionValidator, HttpCredentialsValidator}
+import es.tid.cosmos.infinity.server.util.TwitterConversions._
 
-class MetadataActions(authentication: AuthenticationService) extends Controller {
+class MetadataRoutes(authService: AuthenticationService) extends Controller {
 
   private val contentPath = "/infinityfs/v1/metadata/*"
 
@@ -29,11 +31,17 @@ class MetadataActions(authentication: AuthenticationService) extends Controller 
     val response = for {
       credentials <- HttpCredentialsValidator(request.remoteAddress, request)
       action <- HttpActionValidator(request)
+    } yield for {
+      profile <- authService.authenticate(credentials)
     } yield render.plain(s"metadata of $path")
-    response.fold(error => error.render, success => success).toFuture
+    response.fold(error => ExceptionRenderer(error).toFuture, success => success.toTwitter)
   }
 
-  // `splat` is an undocumented Finatra tag. For wildcard route extractions see
+  error { request => request.error match {
+    case Some(e) => ExceptionRenderer(e).toFuture
+  }}
+
+  // `splat` is an undocumented Finatra tag. For wilcards routes extractions see
   // https://github.com/twitter/finatra/blob/master/src/main/scala/com/twitter/finatra/PathParser.scala
   private def getPath(request: Request): String = "/" + request.routeParams.getOrElse("splat", "")
 }

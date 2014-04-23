@@ -27,7 +27,7 @@ import es.tid.cosmos.infinity.common.credentials.{ClusterCredentials, UserCreden
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 import es.tid.cosmos.infinity.server.MockCosmosApi
 
-class CosmosApiAuthenticationTest extends FlatSpec with MustMatchers with FutureMatchers {
+class CosmosApiAuthenticationServiceTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   "Cosmos API authorization" must "retrieve a profile given user credentials" in new Fixture {
     val profile = UserProfile(
@@ -88,7 +88,7 @@ class CosmosApiAuthenticationTest extends FlatSpec with MustMatchers with Future
     val sharedSecret = "shared_secret"
     val userCredentials = UserCredentials("key", "secret")
     val cosmosApi = new MockCosmosApi(port)
-    val client = new CosmosApiAuthentication(
+    val client = new CosmosApiAuthenticationService(
       apiBase = s"http://localhost:$port",
       infinitySecret = sharedSecret,
       superGroup = "hdfs"

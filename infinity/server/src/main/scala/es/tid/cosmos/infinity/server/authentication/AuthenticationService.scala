@@ -16,13 +16,17 @@
 
 package es.tid.cosmos.infinity.server.authentication
 
-import scalaz.Validation
+import scala.concurrent.Future
 
 import es.tid.cosmos.infinity.common.UserProfile
 import es.tid.cosmos.infinity.common.credentials.Credentials
-import es.tid.cosmos.infinity.server.finatra.RequestError
 
 trait AuthenticationService {
 
-  def authenticate(credentials: Credentials): Validation[RequestError, UserProfile]
+  /** Perform an authentication request.
+    *
+    * @param credentials  Credentials to authenticate with
+    * @return  The user profile when successful, an AuthenticationException when not.
+    */
+  def authenticate(credentials: Credentials): Future[UserProfile]
 }

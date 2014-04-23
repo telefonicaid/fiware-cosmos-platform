@@ -14,19 +14,26 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.authentication
+package es.tid.cosmos.infinity.server.util
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import es.tid.cosmos.infinity.common.UserProfile
-import es.tid.cosmos.infinity.common.credentials.Credentials
+import com.twitter.util.{Future => TwitterFuture, Promise => TwitterPromise}
+import scala.util.{Failure, Success}
 
-trait Authentication {
+/** This object defines implicit classes to bling Scala types to Twitter equivalents. */
+object TwitterConversions {
 
-  /** Perform an authentication request.
-    *
-    * @param credentials  Credentials to authenticate with
-    * @return  The user profile when successful, an AuthenticationException when not.
-    */
-  def authenticate(credentials: Credentials): Future[UserProfile]
+  implicit class BlingFuture[T](f: Future[T]) {
+
+    def toTwitter: TwitterFuture[T] = {
+      val p = TwitterPromise[T]()
+      f.onComplete {
+        case Success(result) => p.setValue(result)
+        case Failure(error) => p.setException(error)
+      }
+      p
+    }
+  }
 }

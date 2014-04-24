@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.comos.infinity.client
+package es.tid.cosmos.infinity.client
 
 import java.io.{InputStreamReader, OutputStreamWriter}
 import scala.concurrent.Future
@@ -119,7 +119,7 @@ trait InfinityClient {
     * @return            Success or failure as a future. Apart from the common exceptions, fail with
     *                    NotFoundException when the path to delete doesn't exist
     */
-  def delete(path: Path, isRecursive: Boolean): Future[Unit]
+  def delete(path: SubPath, isRecursive: Boolean): Future[Unit]
 
   /** Retrieve file contents.
     *
@@ -129,7 +129,7 @@ trait InfinityClient {
     * @return        A stream with the contents on success or fail with the common exceptions or
     *                NotFoundException when the path to read doesn't exist
     */
-  def read(path: Path, offset: Option[Long], length: Option[Long]): Future[InputStreamReader]
+  def read(path: SubPath, offset: Option[Long], length: Option[Long]): Future[InputStreamReader]
 
   /** Append data to a file.
     *
@@ -138,7 +138,7 @@ trait InfinityClient {
     *              when the path to write doesn't exist. Note that the returned stream can fail
     *              wrapping in IOException any common exception
     */
-  def append(path: Path): Future[OutputStreamWriter]
+  def append(path: SubPath): Future[OutputStreamWriter]
 
   /** Overwrite a file.
     *
@@ -147,5 +147,5 @@ trait InfinityClient {
     *              when the path to write doesn't exist. Note that the returned stream can fail
     *              wrapping in IOException any common exception
     */
-  def overwrite(path: Path): Future[OutputStreamWriter]
+  def overwrite(path: SubPath): Future[OutputStreamWriter]
 }

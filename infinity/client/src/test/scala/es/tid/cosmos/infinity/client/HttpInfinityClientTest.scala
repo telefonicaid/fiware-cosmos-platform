@@ -9,18 +9,18 @@
  * All rights reserved.
  */
 
-package es.tid.comos.infinity.client
+package es.tid.cosmos.infinity.client
 
-import java.io.{InputStreamReader, BufferedReader}
+import java.io.{BufferedReader, InputStreamReader}
 import java.util.Date
-import scala.concurrent.{Future, Await}
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.{SubPath, Path, RootPath}
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 class HttpInfinityClientTest extends FlatSpec
@@ -52,9 +52,9 @@ class HttpInfinityClientTest extends FlatSpec
   }
 
   "Creating a file or directory" must behave like {
-    canHandleCommonErrors(_.createFile(somePath / "aFile", permissions))
-    canHandleAlreadyExistsError(_.createFile(somePath / "aFile", permissions))
-    canHandleNotFoundError(_.createFile(somePath / "aFile", permissions))
+    canHandleCommonErrors(_.createFile(aFile, permissions))
+    canHandleAlreadyExistsError(_.createFile(aFile, permissions))
+    canHandleNotFoundError(_.createFile(aFile, permissions))
 
     it must "create a new file" in new Fixture {
       val directoryMetadata = dataFactory.dirMetadata(somePath, permissions)
@@ -69,9 +69,9 @@ class HttpInfinityClientTest extends FlatSpec
   }
 
   "Creating a directory" must behave like {
-    canHandleCommonErrors(_.createDirectory(somePath / "aDir", permissions))
-    canHandleAlreadyExistsError(_.createDirectory(somePath / "aDir", permissions))
-    canHandleNotFoundError(_.createDirectory(somePath / "aDir", permissions))
+    canHandleCommonErrors(_.createDirectory(aDir, permissions))
+    canHandleAlreadyExistsError(_.createDirectory(aDir, permissions))
+    canHandleNotFoundError(_.createDirectory(aDir, permissions))
 
     it must "create a new directory" in new Fixture {
       val parentDirectory = dataFactory.dirMetadata(somePath, permissions)
@@ -86,17 +86,17 @@ class HttpInfinityClientTest extends FlatSpec
   }
 
   "Moving a file or directory" must behave like {
-    canHandleCommonErrors(_.move(somePath / "aFile", somePath / "aDir"))
-    canHandleAlreadyExistsError(_.move(somePath / "aFile", somePath / "aDir"))
-    canHandleNotFoundError(_.move(somePath / "aFile", somePath / "aDir"))
+    canHandleCommonErrors(_.move(aFile, aDir))
+    canHandleAlreadyExistsError(_.move(aFile, aDir))
+    canHandleNotFoundError(_.move(aFile, aDir))
 
     it must "move an existing file to an existing directory" in new Fixture {
       val origin = dataFactory.dirMetadata(somePath, permissions)
       val destination = dataFactory.dirMetadata(Path.absolute("/some/otherpath"), permissions)
-      val file = dataFactory.fileMetadata(somePath / "aFile", permissions)
+      val file = dataFactory.fileMetadata(aFile, permissions)
       infinity.givenExistingPaths(origin, destination, file)
       infinity.withServer {
-        client.move(somePath / "aFile", destination.path) must eventuallySucceed
+        client.move(aFile, destination.path) must eventuallySucceed
         client.pathMetadata(destination.path / "aFile") must eventually (be (
           Some(dataFactory.fileMetadata(destination.path / "aFile", permissions))))
       }
@@ -105,10 +105,10 @@ class HttpInfinityClientTest extends FlatSpec
     it must "move an existing directory to another existing directory" in new Fixture {
       val origin = dataFactory.dirMetadata(somePath, permissions)
       val destination = dataFactory.dirMetadata(Path.absolute("/some/otherpath"), permissions)
-      val directory = dataFactory.dirMetadata(somePath / "aDir", permissions)
+      val directory = dataFactory.dirMetadata(aDir, permissions)
       infinity.givenExistingPaths(origin, destination, directory)
       infinity.withServer {
-        client.move(somePath / "aDir", destination.path) must eventuallySucceed
+        client.move(aDir, destination.path) must eventuallySucceed
         client.pathMetadata(destination.path / "aDir") must eventually (be (
           Some(dataFactory.dirMetadata(destination.path / "aDir", permissions))))
       }
@@ -121,7 +121,7 @@ class HttpInfinityClientTest extends FlatSpec
 
     it must "succeed for an existing file" in new Fixture {
       val parent = dataFactory.dirMetadata(somePath, permissions)
-      val file = dataFactory.fileMetadata(somePath / "aFile", permissions)
+      val file = dataFactory.fileMetadata(aFile, permissions)
       infinity.givenExistingPaths(parent, file)
       infinity.withServer {
         client.changeOwner(file.path, "newOwner") must eventuallySucceed
@@ -136,7 +136,7 @@ class HttpInfinityClientTest extends FlatSpec
 
     it must "succeed for an existing file" in new Fixture {
       val parent = dataFactory.dirMetadata(somePath, permissions)
-      val file = dataFactory.fileMetadata(somePath / "aFile", permissions)
+      val file = dataFactory.fileMetadata(aFile, permissions)
       infinity.givenExistingPaths(parent, file)
       infinity.withServer {
         client.changeGroup(file.path, "newGroup") must eventuallySucceed
@@ -152,7 +152,7 @@ class HttpInfinityClientTest extends FlatSpec
 
     it must "succeed for an existing file" in new Fixture {
       val parent = dataFactory.dirMetadata(somePath, permissions)
-      val file = dataFactory.fileMetadata(somePath / "aFile", permissions)
+      val file = dataFactory.fileMetadata(aFile, permissions)
       infinity.givenExistingPaths(parent, file)
       infinity.withServer {
         client.changePermissions(file.path, newPermissions) must eventuallySucceed
@@ -168,20 +168,20 @@ class HttpInfinityClientTest extends FlatSpec
 
     it must "succeed for an existing file" in new Fixture {
       val parent = dataFactory.dirMetadata(somePath, permissions)
-      val file = dataFactory.fileMetadata(somePath / "aFile", permissions)
+      val file = dataFactory.fileMetadata(aFile, permissions)
       infinity.givenExistingPaths(parent, file)
       infinity.withServer {
-        client.delete(file.path) must eventuallySucceed
+        client.delete(aFile) must eventuallySucceed
         client.pathMetadata(file.path) must eventually (be ('empty))
       }
     }
 
     it must "succeed for an existing directory" in new Fixture {
       val parent = dataFactory.dirMetadata(somePath, permissions)
-      val directory = dataFactory.dirMetadata(somePath / "aDir", permissions)
+      val directory = dataFactory.dirMetadata(aDir, permissions)
       infinity.givenExistingPaths(parent, directory)
       infinity.withServer {
-        client.delete(directory.path) must eventuallySucceed
+        client.delete(directory.path.asInstanceOf[SubPath]) must eventuallySucceed
         client.pathMetadata(directory.path) must eventually (be ('empty))
       }
     }
@@ -194,11 +194,11 @@ class HttpInfinityClientTest extends FlatSpec
 
     it must "succeed for an existing file with content" in new Fixture {
       val parent = dataFactory.dirMetadata(somePath, permissions)
-      val file = dataFactory.fileMetadata(somePath / "aFile", permissions)
+      val file = dataFactory.fileMetadata(aFile, permissions)
       infinity.givenExistingPaths(parent, file)
       infinity.givenExistingContent(file, "aContent")
       infinity.withServer {
-        contentOf(client.read(file.path, offset = None, length = None)) must be ("aContent")
+        contentOf(client.read(aFile, offset = None, length = None)) must be ("aContent")
       }
     }
 
@@ -207,7 +207,7 @@ class HttpInfinityClientTest extends FlatSpec
       infinity.givenExistingPaths(directory)
       infinity.withServer {
         client.read(
-          directory.path,
+          path = somePath,
           offset = None,
           length = None
         ) must eventuallyFailWith[IllegalArgumentException]
@@ -221,15 +221,15 @@ class HttpInfinityClientTest extends FlatSpec
 
     it must "succeed for an existing file" in new Fixture {
       val parent = dataFactory.dirMetadata(somePath, permissions)
-      val file = dataFactory.fileMetadata(somePath / "aFile", permissions)
+      val file = dataFactory.fileMetadata(aFile, permissions)
       infinity.givenExistingPaths(parent, file)
       infinity.givenExistingContent(file, "aContent")
       infinity.withServer {
-        val writer = Await.result(client.append(file.path), timeOut)
+        val writer = Await.result(client.append(aFile), timeOut)
         writer.write(" appended")
-        contentOf(client.read(file.path, None, None)) must be ("aContent")
+        contentOf(client.read(aFile, None, None)) must be ("aContent")
         writer.close()
-        contentOf(client.read(file.path, None, None)) must be ("aContent appended")
+        contentOf(client.read(aFile, None, None)) must be ("aContent appended")
       }
     }
   }
@@ -240,20 +240,22 @@ class HttpInfinityClientTest extends FlatSpec
 
     it must "succeed for an existing file" in new Fixture {
       val parent = dataFactory.dirMetadata(somePath, permissions)
-      val file = dataFactory.fileMetadata(somePath / "aFile", permissions)
+      val file = dataFactory.fileMetadata(aFile, permissions)
       infinity.givenExistingPaths(parent, file)
       infinity.givenExistingContent(file, "aContent")
       infinity.withServer {
-        val writer = Await.result(client.overwrite(file.path), timeOut)
+        val writer = Await.result(client.overwrite(aFile), timeOut)
         writer.write("newContent")
-        contentOf(client.read(file.path, None, None)) must be ("aContent")
+        contentOf(client.read(aFile, None, None)) must be ("aContent")
         writer.close()
-        contentOf(client.read(file.path, None, None)) must be ("newContent")
+        contentOf(client.read(aFile, None, None)) must be ("newContent")
       }
     }
   }
 
-  val somePath = Path.absolute("/some/path")
+  val somePath = RootPath / "some" / "path"
+  val aFile = somePath / "aFile"
+  val aDir = somePath / "aDir"
   val aDate = new Date(1398420798000L)
   val permissions = PermissionsMask.fromOctal("644")
 

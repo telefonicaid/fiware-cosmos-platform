@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.comos.infinity.client
+package es.tid.cosmos.infinity.client
 
 import java.util.Date
 import scala.concurrent.Future

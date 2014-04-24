@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.platform.infinity
+package es.tid.cosmos.infinity
 
 import java.net.URI
 

@@ -9,12 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.comos.infinity.client
+package es.tid.cosmos.infinity.client
 
 import java.net.URL
 import java.util.Date
-
 import javax.servlet.http.HttpServletResponse
+
 import org.scalatest.Assertions
 import unfiltered.filter.{Plan, Planify}
 import unfiltered.jetty.Http
@@ -64,12 +64,11 @@ class MockInfinityServer(metadataPort: Int, defaultDate: Date) extends Assertion
     case req @ PUT(UPath(ContentPath(path))) =>
       updateContent(Path.absolute(path), _ => Body.string(req))
 
-    case DELETE(UPath(MetadataPath(path))) => {
+    case DELETE(UPath(MetadataPath(path))) =>
       val absolutePath = Path.absolute(path)
       pathsMetadata -= absolutePath
       pathsContents -= absolutePath
       NoContent
-    }
 
     case unexpected =>
       println(s"Unexpected request to ${unexpected.uri}")

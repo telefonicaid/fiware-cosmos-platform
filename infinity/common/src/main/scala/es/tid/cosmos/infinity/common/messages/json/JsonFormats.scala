@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages
+package es.tid.cosmos.infinity.common.messages.json
 
-sealed trait PathType
+import net.liftweb.json.{Serializer, DefaultFormats}
 
-case object File extends PathType {
-  override val toString = "file"
-}
+/** Configuration to make the Lift JSON API understand non-primitive types used
+  * on our domain classes.
+  *
+  * It should be made available as an implicit value.
+  */
+private[json] object JsonFormats extends DefaultFormats {
 
-case object Directory extends PathType {
-  override val toString = "directory"
-}
+  override def dateFormatter = Rfc822DateFormat
 
-object PathType {
-  def valueOf(string: String): PathType = string.toLowerCase match {
-    case "file" => File
-    case "directory" => Directory
-    case _ => throw new IllegalArgumentException(s"Not a valid path type: '$string'")
-  }
+  override val customSerializers: List[Serializer[_]] = List(
+    new PathSerializer,
+    new PathTypeSerializer,
+    new PermissionsMaskSerializer,
+    new UrlSerializer
+  )
 }

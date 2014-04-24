@@ -16,9 +16,11 @@
 
 package es.tid.cosmos.infinity.server.actions
 
+import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
+
 import es.tid.cosmos.infinity.common.{Path, UserProfile}
 
-case class GetMetadata(on: Path) extends Action {
+case class GetMetadata(nameNode: NamenodeProtocols, on: Path) extends Action {
 
   override def apply(user: UserProfile): Action.Result = ???
 }

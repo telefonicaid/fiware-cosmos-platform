@@ -19,12 +19,13 @@ package es.tid.cosmos.infinity.server.finatra
 import scalaz.Validation
 
 import com.twitter.finagle.http.Request
+import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
-import es.tid.cosmos.infinity.server.actions.{Action, GetMetadata}
 import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.server.actions.{Action, GetMetadata}
 
 /** An extractor object aimed to convert a Finagle HTTP request into a Infinity Server action. */
-object HttpActionValidator {
+class HttpActionValidator(nameNode: NamenodeProtocols) {
 
   import scalaz.Scalaz._
 
@@ -36,5 +37,5 @@ object HttpActionValidator {
   }
 
   private def metadataAction(path: String, request: Request) =
-    GetMetadata(Path.absolute(path)).success
+    GetMetadata(nameNode, Path.absolute(path)).success
 }

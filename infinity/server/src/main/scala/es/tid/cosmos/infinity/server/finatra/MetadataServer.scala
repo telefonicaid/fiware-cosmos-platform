@@ -33,7 +33,7 @@ class MetadataServer(
 
   val server = new EmbeddableFinatraServer(serverConfig)
 
-  server.register(new MetadataRoutes(authService))
+  server.register(new MetadataRoutes(authService, namenodeProtocols))
 
   def start(): Unit = server.start()
 

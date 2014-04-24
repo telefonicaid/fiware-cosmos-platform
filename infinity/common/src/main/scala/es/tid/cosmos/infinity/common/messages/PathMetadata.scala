@@ -51,7 +51,7 @@ case class FileMetadata(
     blockSize: Int,
     override val size: Long) extends PathMetadata {
 
-  override val `type` = File
+  override val `type` = PathType.File
 
   def this(
       path: String, metadata: String, content: String, owner: String, group: String,
@@ -76,7 +76,7 @@ case class DirectoryMetadata(
     override val accessTime: Date,
     override val permissions: PermissionsMask) extends PathMetadata {
 
-  override val `type` = Directory
+  override val `type` = PathType.Directory
   override val size = 0L
 
   def this(path: String, metadata: String, content: Seq[DirectoryEntry],

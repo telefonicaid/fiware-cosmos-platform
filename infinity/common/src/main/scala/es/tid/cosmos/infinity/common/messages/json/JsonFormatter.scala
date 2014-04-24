@@ -16,6 +16,8 @@
 
 package es.tid.cosmos.infinity.common.messages.json
 
+import es.tid.cosmos.infinity.common.messages.json.formats.JsonFormats
+
 /** Base trait for JSON formatters. */
 trait JsonFormatter[Value] {
 

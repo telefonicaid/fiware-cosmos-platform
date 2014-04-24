@@ -14,8 +14,23 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json
+package es.tid.cosmos.infinity.common.messages.json.formats
 
-import java.text.SimpleDateFormat
+import net.liftweb.json.{Serializer, DefaultFormats}
 
-object Rfc822DateFormat extends SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+/** Configuration to make the Lift JSON API understand non-primitive types used
+  * on our domain classes.
+  *
+  * It should be made available as an implicit value.
+  */
+private[json] object JsonFormats extends DefaultFormats {
+
+  override def dateFormatter = Rfc822DateFormat
+
+  override val customSerializers: List[Serializer[_]] = List(
+    new PathSerializer,
+    new PathTypeSerializer,
+    new PermissionsMaskSerializer,
+    new UrlSerializer
+  )
+}

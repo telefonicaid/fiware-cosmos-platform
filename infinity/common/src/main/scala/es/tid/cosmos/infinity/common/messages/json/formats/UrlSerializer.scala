@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json
+package es.tid.cosmos.infinity.common.messages.json.formats
+
+import java.net.URL
+import scala.util.Try
 
 import net.liftweb.json._
+import net.liftweb.json.JsonAST.JString
 
-import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+private[formats] class UrlSerializer extends Serializer[URL] {
 
-private[json] class PermissionsMaskSerializer extends Serializer[PermissionsMask] {
-
-  private val maskClass = classOf[PermissionsMask]
+  private val urlClass = classOf[URL]
 
   override def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
-    case mask: PermissionsMask => JString(mask.toString)
+    case url: URL => JString(url.toString)
   }
 
-  override def deserialize(
-      implicit format: Formats): PartialFunction[(TypeInfo, JValue), PermissionsMask] = {
-    case (TypeInfo(`maskClass`, _), JString(rawMask @ PermissionsMask.OctalPattern(_, _, _))) =>
-      PermissionsMask.fromOctal(rawMask)
+  override def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), URL] = {
+    case (TypeInfo(`urlClass`, _), JString(rawUrl)) if isUrl(rawUrl) => new URL(rawUrl)
   }
+
+  private def isUrl(rawUrl: String): Boolean = Try(new URL(rawUrl)).isSuccess
 }

@@ -18,15 +18,16 @@ package es.tid.cosmos.infinity.server.finatra
 import scala.concurrent.Future
 
 import com.twitter.finatra.FinatraServer
-import com.twitter.finatra.test.SpecHelper
+import com.twitter.finatra.test.{MockResponse, SpecHelper}
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.matchers.{MatchResult, Matcher, ShouldMatchers}
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.common.UserProfile
 import es.tid.cosmos.infinity.server.authentication._
+import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
 class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar {
 
@@ -80,9 +81,10 @@ class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar 
   }
 
   trait Fixture extends SpecHelper {
+    val nameNode = mock[NamenodeProtocols]
     val authService = mock[AuthenticationService]
     override val server = new FinatraServer
-    val app = new MetadataRoutes(authService)
+    val app = new MetadataRoutes(authService, nameNode)
     server.register(app)
 
     def givenSuccessAuthentication(action: => Unit) {

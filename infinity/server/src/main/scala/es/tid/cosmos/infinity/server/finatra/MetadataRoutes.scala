@@ -18,19 +18,23 @@ package es.tid.cosmos.infinity.server.finatra
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.twitter.finatra.{Controller, Request}
+import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.util.TwitterConversions._
 
-class MetadataRoutes(authService: AuthenticationService) extends Controller {
+class MetadataRoutes(
+    authService: AuthenticationService,
+    nameNode: NamenodeProtocols) extends Controller {
 
   private val contentPath = "/infinityfs/v1/metadata/*"
+  private val actionValidator = new HttpActionValidator(nameNode)
 
   get(contentPath) { request =>
     val path = getPath(request)
     val response = for {
       credentials <- HttpCredentialsValidator(request.remoteAddress, request)
-      action <- HttpActionValidator(request)
+      action <- actionValidator(request)
     } yield for {
       profile <- authService.authenticate(credentials)
     } yield render.plain(s"metadata of $path")

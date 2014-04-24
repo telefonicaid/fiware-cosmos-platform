@@ -22,15 +22,20 @@ import com.twitter.finagle.http.Request
 import org.jboss.netty.handler.codec.http.HttpMethod
 import org.scalatest.{FlatSpec, Inside}
 import org.scalatest.matchers.MustMatchers
+import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.common.Path
 import es.tid.cosmos.infinity.server.actions.GetMetadata
+import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
-class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside {
+class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside with MockitoSugar {
+
+  private val nameNode = mock[NamenodeProtocols]
+  val instance = new HttpActionValidator(nameNode)
 
   "Valid HTTP Action" must "fail to extract from an unknown path" in {
     val req = Request(HttpMethod.GET, "/this/is/an/invalid/path")
-    inside(HttpActionValidator(req)) {
+    inside(instance(req)) {
       case Failure(RequestParsingException.InvalidResourcePath(path, _)) =>
         path must be ("/this/is/an/invalid/path")
     }
@@ -38,6 +43,6 @@ class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside {
 
   it must "extract a GetPathMetadataAction" in {
     val req = Request(HttpMethod.GET, "/infinityfs/v1/metadata/path/to/file")
-    HttpActionValidator(req) must be (Success(GetMetadata(Path.absolute("/path/to/file"))))
+    instance(req) must be (Success(GetMetadata(nameNode, Path.absolute("/path/to/file"))))
   }
 }

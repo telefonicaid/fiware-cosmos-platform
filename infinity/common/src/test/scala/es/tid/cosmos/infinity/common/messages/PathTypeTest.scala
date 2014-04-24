@@ -22,8 +22,8 @@ import org.scalatest.matchers.MustMatchers
 class PathTypeTest extends FlatSpec with MustMatchers {
 
   "Path type" must "be parsed from string" in {
-    PathType.valueOf("file") must be (File)
-    PathType.valueOf("directory") must be (Directory)
+    PathType.valueOf("file") must be (PathType.File)
+    PathType.valueOf("directory") must be (PathType.Directory)
   }
 
   it must "be not parsed from unknown strings" in {

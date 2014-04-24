@@ -110,7 +110,7 @@ class MetadataParserTest extends FlatSpec with MustMatchers {
       content = Seq(
         DirectoryEntry(
           path = Path.absolute("/usr/gandalf/spells.txt"),
-          `type` = File,
+          `type` = PathType.File,
           metadata = new URL("http://example.com/infinityfs/v1/metadata/usr/gandalf/spells.txt"),
           owner = "gandalf",
           group = "istari",
@@ -121,7 +121,7 @@ class MetadataParserTest extends FlatSpec with MustMatchers {
         ),
         DirectoryEntry(
           path = Path.absolute("/usr/gandalf/enemies"),
-          `type` = Directory,
+          `type` = PathType.Directory,
           metadata = new URL("http://example.com/infinityfs/v1/metadata/usr/gandalf/enemies"),
           owner = "gandalf",
           group = "istari",

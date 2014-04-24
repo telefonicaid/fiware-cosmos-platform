@@ -19,12 +19,12 @@ package es.tid.cosmos.infinity.common.messages.json
 import net.liftweb.json.{Formats, JValue, Serializer, TypeInfo}
 import net.liftweb.json.JsonAST.JString
 
-import es.tid.cosmos.infinity.common.messages.{Directory, File, PathType}
+import es.tid.cosmos.infinity.common.messages.PathType
 
 private[json] class PathTypeSerializer extends Serializer[PathType] {
 
   private val typeClass = classOf[PathType]
-  private val validTypes = Set(File, Directory).map(_.toString)
+  private val validTypes = Set(PathType.File, PathType.Directory).map(_.toString)
 
   override def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
     case pathType: PathType => JString(pathType.toString)

@@ -49,7 +49,8 @@ class JsonFormatsTest extends FlatSpec with MustMatchers {
   )
   it must behave like notDeserializingTo[PermissionsMask](JString("7777"), JInt(600))
 
-  it must behave like havingMappingsFor[PathType](File -> JString("file"), Directory -> JString("directory"))
+  it must behave like havingMappingsFor[PathType](
+    PathType.File -> JString("file"), PathType.Directory -> JString("directory"))
   it must behave like notDeserializingTo[PathType](JString("other"), JInt(12))
 
   def havingMappingsFor[Value](samples: (Value, JValue)*)(implicit mf: Manifest[Value]): Unit = {

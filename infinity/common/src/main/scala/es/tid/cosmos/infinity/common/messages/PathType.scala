@@ -18,15 +18,16 @@ package es.tid.cosmos.infinity.common.messages
 
 sealed trait PathType
 
-case object File extends PathType {
-  override val toString = "file"
-}
-
-case object Directory extends PathType {
-  override val toString = "directory"
-}
-
 object PathType {
+
+  case object File extends PathType {
+    override val toString = "file"
+  }
+
+  case object Directory extends PathType {
+    override val toString = "directory"
+  }
+
   def valueOf(string: String): PathType = string.toLowerCase match {
     case "file" => File
     case "directory" => Directory

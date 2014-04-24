@@ -18,9 +18,9 @@ package es.tid.cosmos.infinity.common.messages.json
 
 import net.liftweb.json.JsonAST.JValue
 
-import es.tid.cosmos.infinity.common.messages.ActionMessage
+import es.tid.cosmos.infinity.common.messages.Action
 
-class ActionMessageParser extends JsonParser[ActionMessage] {
+class ActionMessageParser extends JsonParser[Action] {
 
   /** Parses an ActionMessage from JSON.
     *
@@ -28,7 +28,7 @@ class ActionMessageParser extends JsonParser[ActionMessage] {
     * @return       A parsed value
     * @throws ParseException  If input cannot be parsed
     */
-  override def parse(input: String): ActionMessage = {
+  override def parse(input: String): Action = {
     val json = parseJson(input)
     extract(json)(manifestFor(actionName(json)))
   }
@@ -37,5 +37,5 @@ class ActionMessageParser extends JsonParser[ActionMessage] {
     .getOrElse(throw ParseException(s"Missing 'action' field in $json"))
 
   private def manifestFor(name: String) =
-    ActionMessage.manifestFor(name).getOrElse(throw ParseException(s"Unsupported action '$name'"))
+    Action.manifestFor(name).getOrElse(throw ParseException(s"Unsupported action '$name'"))
 }

@@ -20,10 +20,10 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.infinity.common.Path
-import es.tid.cosmos.infinity.common.messages._
+import es.tid.cosmos.infinity.common.messages.Action._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
-class ActionMessageParserTest extends FlatSpec with MustMatchers {
+class ActionParserTest extends FlatSpec with MustMatchers {
 
   val parser = new ActionMessageParser()
 

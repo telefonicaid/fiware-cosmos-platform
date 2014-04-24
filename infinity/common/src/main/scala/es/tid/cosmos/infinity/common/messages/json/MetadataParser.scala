@@ -22,9 +22,7 @@ import es.tid.cosmos.infinity.common.messages._
 
 class MetadataParser {
 
-  private implicit val formats = new DefaultFormats {
-    override def dateFormatter = Rfc822DateFormat
-  }
+  private implicit val formats = JsonFormats
 
   /** Parses a file or directory metadata from JSON.
     *

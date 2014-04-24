@@ -16,17 +16,16 @@
 
 package es.tid.cosmos.infinity.common.messages.json
 
-import es.tid.cosmos.infinity.common.messages.json.formats.JsonFormats
+import net.liftweb.json._
 
-/** Base trait for JSON formatters. */
-trait JsonFormatter[Value] {
+import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
 
-  /** Formats values as JSON.
+class ErrorDescriptorFormatter extends JsonFormatter[ErrorDescriptor] {
+
+  /** Formats error descriptions as JSON.
     *
-    * @param value  Value to be formatted
+    * @param error  Value to be formatted
     * @return       JSON representation of the value
     */
-  def format(value: Value): String
-
-  protected implicit val formats = JsonFormats
+  override def format(error: ErrorDescriptor): String = pretty(render(Extraction.decompose(error)))
 }

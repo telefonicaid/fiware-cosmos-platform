@@ -16,21 +16,15 @@
 
 package es.tid.cosmos.infinity.common.messages.json
 
-import net.liftweb.json._
+import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
 
-import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+class ErrorDescriptorParser extends JsonParser[ErrorDescriptor] {
 
-private[json] class PermissionsMaskSerializer extends Serializer[PermissionsMask] {
-
-  private val maskClass = classOf[PermissionsMask]
-
-  override def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
-    case mask: PermissionsMask => JString(mask.toString)
-  }
-
-  override def deserialize(
-      implicit format: Formats): PartialFunction[(TypeInfo, JValue), PermissionsMask] = {
-    case (TypeInfo(`maskClass`, _), JString(rawMask @ PermissionsMask.OctalPattern(_, _, _))) =>
-      PermissionsMask.fromOctal(rawMask)
-  }
+  /** Parses an error descriptor from JSON.
+    *
+    * @param input  Raw JSON
+    * @return       A parsed value
+    * @throws ParseException  If input cannot be parsed
+    */
+  override def parse(input: String): ErrorDescriptor = extract[ErrorDescriptor](parseJson(input))
 }

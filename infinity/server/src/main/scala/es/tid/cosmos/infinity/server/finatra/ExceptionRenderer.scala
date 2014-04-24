@@ -18,9 +18,13 @@ package es.tid.cosmos.infinity.server.finatra
 
 import com.twitter.finatra.ResponseBuilder
 
+import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
+import es.tid.cosmos.infinity.common.messages.json.ErrorDescriptorFormatter
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
 
 object ExceptionRenderer {
+
+  private val errorFormatter = new ErrorDescriptorFormatter()
 
   def apply(exception: Throwable): ResponseBuilder = exception match {
     case e: RequestParsingException.MissingAuthorizationHeader =>
@@ -42,14 +46,11 @@ object ExceptionRenderer {
   private def render[E <: Throwable](status: Int, errorCode: ErrorCode[E], exception: Throwable) =
     new ResponseBuilder()
       .status(status)
-      .json(errorDescriptor(errorCode, exception.getMessage))
+      .json(errorFormatter.format(ErrorDescriptor(errorCode.code, exception.getMessage)))
 
   private def renderWithAuth[E <: Throwable](
     status: Int, errorCode: ErrorCode[E], exception: Throwable) =
     render(status, errorCode, exception)
       .header("WWW-Authenticate", """Basic realm="Infinity"""")
       .header("WWW-Authenticate", """Bearer realm="Infinity"""")
-
-  private def errorDescriptor[E <: Throwable](errorCode: ErrorCode[E], cause: String) =
-    s"""{ "errorCode" : "${errorCode.code}", "cause" : "$cause" }"""
 }

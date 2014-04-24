@@ -14,19 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json
+package es.tid.cosmos.infinity.common.messages
 
-import es.tid.cosmos.infinity.common.messages.json.formats.JsonFormats
-
-/** Base trait for JSON formatters. */
-trait JsonFormatter[Value] {
-
-  /** Formats values as JSON.
-    *
-    * @param value  Value to be formatted
-    * @return       JSON representation of the value
-    */
-  def format(value: Value): String
-
-  protected implicit val formats = JsonFormats
-}
+/** Describes an error condition on the Infinity REST protocol. */
+case class ErrorDescriptor(code: String, cause: String)

@@ -18,6 +18,8 @@ package es.tid.cosmos.infinity.common.messages.json
 
 import net.liftweb.json._
 
+import es.tid.cosmos.infinity.common.messages.json.formats.JsonFormats
+
 /** Base trait for JSON parsers. */
 trait JsonParser[Value] {
 

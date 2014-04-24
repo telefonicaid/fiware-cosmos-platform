@@ -16,23 +16,15 @@
 
 package es.tid.cosmos.infinity.common.messages.json
 
-import es.tid.cosmos.infinity.common.messages._
+/** Base trait for JSON formatters. */
+trait JsonFormatter[Value] {
 
-class MetadataParser extends JsonParser[PathMetadata] {
-
-  /** Parses a file or directory metadata from JSON.
+  /** Formats values as JSON.
     *
-    * @param input  Raw JSON
-    * @return       A PathMetadata
-    * @throws ParseException  If input cannot be parsed
+    * @param value  Value to be formatted
+    * @return       JSON representation of the value
     */
-  def parse(input: String): PathMetadata = {
-    val json = parseJson(input)
-    (json \ "type").extractOpt[String] match {
-      case None => throw ParseException(s"Missing 'type' field in $input")
-      case Some("file") => extract[FileMetadata](json)
-      case Some("directory") => extract[DirectoryMetadata](json)
-      case Some(unsupported) => throw ParseException(s"Unsupported metadata type '$unsupported'")
-    }
-  }
+  def format(value: Value): String
+
+  protected implicit val formats = JsonFormats
 }

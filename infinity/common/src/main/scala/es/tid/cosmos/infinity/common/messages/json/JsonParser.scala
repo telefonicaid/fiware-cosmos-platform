@@ -16,23 +16,28 @@
 
 package es.tid.cosmos.infinity.common.messages.json
 
-import es.tid.cosmos.infinity.common.messages._
+import net.liftweb.json._
 
-class MetadataParser extends JsonParser[PathMetadata] {
+/** Base trait for JSON parsers. */
+trait JsonParser[Value] {
 
-  /** Parses a file or directory metadata from JSON.
+  /** Parses a value from JSON.
     *
     * @param input  Raw JSON
-    * @return       A PathMetadata
+    * @return       A parsed value
     * @throws ParseException  If input cannot be parsed
     */
-  def parse(input: String): PathMetadata = {
-    val json = parseJson(input)
-    (json \ "type").extractOpt[String] match {
-      case None => throw ParseException(s"Missing 'type' field in $input")
-      case Some("file") => extract[FileMetadata](json)
-      case Some("directory") => extract[DirectoryMetadata](json)
-      case Some(unsupported) => throw ParseException(s"Unsupported metadata type '$unsupported'")
-    }
+  def parse(input: String): Value
+
+  protected implicit val formats = JsonFormats
+
+  protected def parseJson(input: String) =
+    JsonParser.parseOpt(input).getOrElse(throw ParseException(s"Malformed JSON: $input"))
+
+  protected def extract[T](json: JValue)(implicit mf: scala.reflect.Manifest[T]): T = try {
+    json.extract[T]
+  } catch {
+    case ex: MappingException =>
+      throw ParseException(s"Cannot map JSON to ${mf.runtimeClass.getSimpleName}", ex)
   }
 }

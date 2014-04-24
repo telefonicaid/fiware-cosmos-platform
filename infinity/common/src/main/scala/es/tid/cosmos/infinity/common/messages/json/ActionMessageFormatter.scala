@@ -19,22 +19,18 @@ package es.tid.cosmos.infinity.common.messages.json
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 
-import es.tid.cosmos.infinity.common.messages.{DirectoryMetadata, FileMetadata, PathMetadata}
+import es.tid.cosmos.infinity.common.messages.Action
 
-class MetadataFormatter extends JsonFormatter[PathMetadata] {
+class ActionMessageFormatter extends JsonFormatter[Action] {
 
-  private val directorySize: JObject = "size" -> 0
+  /** Formats action messages as JSON.
+    *
+    * @param actionMessage  Action message to be formatted
+    * @return               JSON representation of the action
+    */
+  override def format(actionMessage: Action): String =
+    pretty(render(Extraction.decompose(actionMessage).merge(actionField(actionMessage))))
 
-  /** Formats metadata information as JSON. */
-  def format(metadata: PathMetadata): String =
-    pretty(render(Extraction.decompose(metadata).merge(extraFields(metadata))))
-
-  /** Extra fields that are not automatically pulled out by the Lift JSON API */
-  private def extraFields(metadata: PathMetadata): JObject = {
-    val typeField: JObject = "type" -> metadata.`type`.toString
-    metadata match {
-      case _: FileMetadata => typeField
-      case _: DirectoryMetadata => typeField.merge(directorySize)
-    }
-  }
+  private def actionField(actionMessage: Action): JObject =
+    "action" -> actionMessage.action
 }

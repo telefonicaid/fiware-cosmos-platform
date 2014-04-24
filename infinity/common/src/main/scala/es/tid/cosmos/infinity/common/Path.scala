@@ -41,8 +41,7 @@ object RootPath extends Path {
 /** A subpath that have a parent and an element name. */
 case class SubPath(parentPath: Path, name: String) extends Path {
 
-  require(!name.contains(Path.Separator),
-    s"invalid path element $name (it cannot contain ${Path.Separator} symbol)")
+  Path.requireValidPathElement(name)
 
   override val parent = Some(parentPath)
 
@@ -56,6 +55,10 @@ object Path {
 
   /** The default separator used in string-to-path conversions. */
   val Separator: Char = '/'
+
+  def requireValidPathElement(name: String): Unit =
+    require(!name.contains(Separator),
+      s"invalid path element $name (it cannot contain ${Path.Separator} symbol)")
 
   /** Create a new path from given parent and name. */
   def apply(parent: Path, name: String): Path = new SubPath(parent, name)

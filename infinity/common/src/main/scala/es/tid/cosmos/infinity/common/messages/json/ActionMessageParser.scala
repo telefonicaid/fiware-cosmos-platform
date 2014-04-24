@@ -16,23 +16,26 @@
 
 package es.tid.cosmos.infinity.common.messages.json
 
-import es.tid.cosmos.infinity.common.messages._
+import net.liftweb.json.JsonAST.JValue
 
-class MetadataParser extends JsonParser[PathMetadata] {
+import es.tid.cosmos.infinity.common.messages.Action
 
-  /** Parses a file or directory metadata from JSON.
+class ActionMessageParser extends JsonParser[Action] {
+
+  /** Parses an ActionMessage from JSON.
     *
     * @param input  Raw JSON
-    * @return       A PathMetadata
+    * @return       A parsed value
     * @throws ParseException  If input cannot be parsed
     */
-  def parse(input: String): PathMetadata = {
+  override def parse(input: String): Action = {
     val json = parseJson(input)
-    (json \ "type").extractOpt[String] match {
-      case None => throw ParseException(s"Missing 'type' field in $input")
-      case Some("file") => extract[FileMetadata](json)
-      case Some("directory") => extract[DirectoryMetadata](json)
-      case Some(unsupported) => throw ParseException(s"Unsupported metadata type '$unsupported'")
-    }
+    extract(json)(manifestFor(actionName(json)))
   }
+
+  private def actionName(json: JValue) = (json \ "action").extractOpt[String]
+    .getOrElse(throw ParseException(s"Missing 'action' field in $json"))
+
+  private def manifestFor(name: String) =
+    Action.manifestFor(name).getOrElse(throw ParseException(s"Unsupported action '$name'"))
 }

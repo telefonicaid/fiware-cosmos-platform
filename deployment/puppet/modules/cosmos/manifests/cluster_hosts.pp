@@ -9,12 +9,14 @@
 # All rights reserved.
 #
 
-class cosmos::cluster_hosts {
-  file { '/etc/hosts' :
-    ensure  => 'present',
-    content => template("${module_name}/hosts.erb"),
-    group   => '0',
-    mode    => '0644',
-    owner   => '0',
+class cosmos::cluster_hosts inherits cosmos::params {
+  if $overwrite_hosts_file {
+    file { '/etc/hosts' :
+      ensure  => 'present',
+      content => template("${module_name}/hosts.erb"),
+      group   => '0',
+      mode    => '0644',
+      owner   => '0',
+    }
   }
 }

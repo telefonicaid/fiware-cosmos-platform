@@ -17,6 +17,7 @@ class ambari::repos inherits ambari::params {
     descr    => '[Cosmos] Ambari Repository 1.x',
     enabled  => 1,
     gpgcheck => 0,
+    proxy    => $cosmos::params::proxy
   }
 
   yumrepo { 'HDP-UTILS-1.1.0.15':
@@ -26,5 +27,6 @@ class ambari::repos inherits ambari::params {
     gpgcheck => 1,
     gpgkey   => $ambari::params::hdp_utils_gpg_url,
     priority => 1,
+    proxy    => $cosmos::params::proxy
   }
 }

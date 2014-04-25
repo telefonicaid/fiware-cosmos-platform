@@ -49,6 +49,10 @@ class libvirt (
     $svc_ensure         = 'running',
 ) {
 
+    include cosmos::params
+
+    $proxy = $cosmos::params::proxy
+
     file { 'cosmos-libvirt.repo' :
         ensure  => present,
         owner   => 'root',

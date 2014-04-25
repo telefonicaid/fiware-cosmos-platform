@@ -17,10 +17,13 @@
 #
 class yum::centos::base ($repo_server = $yum::params::yum_centos) {
 
+  include cosmos::params
+
   yumrepo { 'Centos-Base':
     descr      => "Centos Base ${::operatingsystemrelease}",
     enabled    => '1',
     gpgcheck   => '0',
     baseurl    => $repo_server,
+    proxy      => $cosmos::params::proxy
   }
 }

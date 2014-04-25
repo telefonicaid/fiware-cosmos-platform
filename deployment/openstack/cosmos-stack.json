@@ -1,0 +1,468 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description": "Cosmos Stack (1 master, 2 storage, 2 compute)",
+    "Parameters": {
+        "KeyName": {
+            "Description": "Name of and existing KeyPair to enable SSH access to the instance",
+            "Type": "String"
+        },
+        "MasterImageId": {
+            "Description": "Name of the base OS image",
+            "Type": "String",
+            "Default": "centos64-min"
+        },
+        "MasterFlavor": {
+          "Description": "Master instance flavor",
+          "Type": "String",
+          "Default": "TID-01CPU-01GB-20GB"
+        },
+        "SlaveImageId": {
+            "Description": "Name of the slave OS image",
+            "Type": "String",
+            "Default": "centos64-min-ovz"
+        },
+        "SlaveFlavor": {
+          "Description": "Slave instance flavor",
+          "Type": "String",
+          "Default": "TID-01CPU-01GB-20GB"
+        },
+        "NameServer1": {
+          "Description": "Nameserver to use in hosts",
+          "Type": "String",
+          "Default": "10.95.64.6"
+        },
+        "NameServer2": {
+          "Description": "Nameserver to use in hosts",
+          "Type": "String",
+          "Default": "10.95.77.6"
+        },
+        "PublicNetwork": {
+          "Description": "ID or name of the public network",
+          "Type": "String",
+          "Default": "8a533992-6914-4847-9ce4-7645bb2f0262"
+        },
+        "ManagementNetwork": {
+          "Description": "ID or name of the management network",
+          "Type": "String",
+          "Default": "8e740863-8441-46bc-b89c-153bfb0edae3"
+        },
+        "ManagementCIDR": {
+          "Description": "Management CIRD subnet",
+          "Type": "String",
+          "Default": "10.95.0.0/16"
+        }
+    },
+    "Resources": {
+
+      "CosmosNetwork": {
+        "Type": "OS::Neutron::Net",
+        "Properties": {
+          "name": "CosmosNetwork"
+        }
+      },
+
+      "CosmosSubnet": {
+        "Type": "OS::Neutron::Subnet",
+        "Properties": {
+          "allocation_pools": [{"start": "10.0.0.10", "end": "10.0.0.100"}],
+          "cidr": "10.0.0.0/24",
+          "dns_nameservers": [{"Ref": "NameServer1"}, {"Ref": "NameServer2"}],
+          "enable_dhcp": true,
+          "gateway_ip": "10.0.0.1",
+          "ip_version": 4,
+          "name": "CosmosSubnet",
+          "network_id": {"Ref": "CosmosNetwork"},
+          "value_specs": {
+            "host_routes": [
+              {"nexthop": "10.0.0.2", "destination": {"Ref": "ManagementCIDR"} }
+            ]
+          }
+        }
+      },
+
+      "CosmosPublicRouter": {
+        "Type": "OS::Neutron::Router",
+        "Properties": {
+          "name": "CosmosPublicRouter",
+          "value_specs": {
+            "external_gateway_info": {"network_id": {"Ref": "PublicNetwork"}}
+          }
+        }
+      },
+
+      "CosmosPublicRouterInterface": {
+        "Type": "OS::Neutron::RouterInterface",
+        "Properties": {
+          "router_id": {"Ref": "CosmosPublicRouter"},
+          "subnet_id": {"Ref": "CosmosSubnet"}
+        }
+      },
+
+      "CosmosManagementRouter": {
+        "Type": "OS::Neutron::Router",
+        "Properties": {
+          "name": "CosmosManagementRouter",
+          "value_specs": {
+            "external_gateway_info": {"network_id": {"Ref": "ManagementNetwork"}}
+          }
+        }
+      },
+
+      "CosmosManagementRouterPort": {
+        "Type": "OS::Neutron::Port",
+        "Properties": {
+          "fixed_ips": [{"subnet_id": {"Ref": "CosmosSubnet"}, "ip_address": "10.0.0.2"}],
+          "name": "CosmosManagementRouterPort",
+          "network_id": {"Ref": "CosmosNetwork"}
+        }
+      },
+
+      "MasterPublicIP": {
+        "Type": "OS::Neutron::FloatingIP",
+        "Properties": {
+          "floating_network_id": {"Ref": "ManagementNetwork"}
+        }
+      },
+
+      "MasterManagementIP": {
+        "Type": "OS::Neutron::FloatingIP",
+        "Properties": {
+          "floating_network_id": {"Ref": "ManagementNetwork"}
+        }
+      },
+
+      "Store1PublicIP": {
+        "Type": "OS::Neutron::FloatingIP",
+        "Properties": {
+          "floating_network_id": {"Ref": "ManagementNetwork"}
+        }
+      },
+
+      "Store2PublicIP": {
+        "Type": "OS::Neutron::FloatingIP",
+        "Properties": {
+          "floating_network_id": {"Ref": "ManagementNetwork"}
+        }
+      },
+
+      "Compute1PublicIP": {
+        "Type": "OS::Neutron::FloatingIP",
+        "Properties": {
+          "floating_network_id": {"Ref": "ManagementNetwork"}
+        }
+      },
+
+      "Compute2PublicIP": {
+        "Type": "OS::Neutron::FloatingIP",
+        "Properties": {
+          "floating_network_id": {"Ref": "ManagementNetwork"}
+        }
+      },
+
+      "MasterPort": {
+        "Type": "OS::Neutron::Port",
+        "Properties": {
+          "fixed_ips": [{"subnet_id": {"Ref": "CosmosSubnet"}, "ip_address": "10.0.0.101"}],
+          "name": "MasterPort",
+          "network_id": {"Ref": "CosmosNetwork"},
+          "security_groups": [
+            {"Ref": "SshSecurityGroup"},
+            {"Ref": "FrontendSecurityGroup"},
+            {"Ref": "InternalSecurityGroup"}
+          ]
+        }
+      },
+
+      "Store1Port": {
+        "Type": "OS::Neutron::Port",
+        "Properties": {
+          "fixed_ips": [
+            {"subnet_id": {"Ref": "CosmosSubnet"}, "ip_address": "10.0.0.202"},
+            {"subnet_id": {"Ref": "CosmosSubnet"}, "ip_address": "10.0.0.102"}
+          ],
+          "name": "Store1Port",
+          "network_id": {"Ref": "CosmosNetwork"},
+          "security_groups": [
+            {"Ref": "SshSecurityGroup"},
+            {"Ref": "PublicNodeSecurityGroup"},
+            {"Ref": "InternalSecurityGroup"}
+          ]
+        }
+      },
+
+      "Store2Port": {
+        "Type": "OS::Neutron::Port",
+        "Properties": {
+          "fixed_ips": [
+            {"subnet_id": {"Ref": "CosmosSubnet"}, "ip_address": "10.0.0.203"},
+            {"subnet_id": {"Ref": "CosmosSubnet"}, "ip_address": "10.0.0.103"}
+          ],
+          "name": "Store2Port",
+          "network_id": {"Ref": "CosmosNetwork"},
+          "security_groups": [
+            {"Ref": "SshSecurityGroup"},
+            {"Ref": "PublicNodeSecurityGroup"},
+            {"Ref": "InternalSecurityGroup"}
+          ]
+        }
+      },
+
+      "Compute1Port": {
+        "Type": "OS::Neutron::Port",
+        "Properties": {
+          "fixed_ips": [
+            {"subnet_id": {"Ref": "CosmosSubnet"}, "ip_address": "10.0.0.204"},
+            {"subnet_id": {"Ref": "CosmosSubnet"}, "ip_address": "10.0.0.104"}
+          ],
+          "name": "Compute1Port",
+          "network_id": {"Ref": "CosmosNetwork"},
+          "security_groups": [
+            {"Ref": "SshSecurityGroup"},
+            {"Ref": "PublicNodeSecurityGroup"},
+            {"Ref": "InternalSecurityGroup"}
+          ]
+        }
+      },
+
+      "Compute2Port": {
+        "Type": "OS::Neutron::Port",
+        "Properties": {
+          "fixed_ips": [
+            {"subnet_id": {"Ref": "CosmosSubnet"}, "ip_address": "10.0.0.205"},
+            {"subnet_id": {"Ref": "CosmosSubnet"}, "ip_address": "10.0.0.105"}
+          ],
+          "name": "Compute2Port",
+          "network_id": {"Ref": "CosmosNetwork"},
+          "security_groups": [
+            {"Ref": "SshSecurityGroup"},
+            {"Ref": "PublicNodeSecurityGroup"},
+            {"Ref": "InternalSecurityGroup"}
+          ]
+        }
+      },
+
+      "SshSecurityGroup": {
+        "Type": "AWS::EC2::SecurityGroup",
+        "Properties": {
+          "GroupDescription": "Enable SSH access via port 22",
+          "SecurityGroupIngress": [
+            {
+              "IpProtocol": "tcp",
+              "FromPort": "22",
+              "ToPort": "22",
+              "CidrIp": "0.0.0.0/0"
+            }
+          ]
+        }
+      },
+
+      "FrontendSecurityGroup": {
+        "Type": "AWS::EC2::SecurityGroup",
+        "Properties": {
+          "GroupDescription": "Frontend ports (HTTP and HTTPS)",
+          "SecurityGroupIngress": [
+            {
+              "IpProtocol": "tcp",
+              "FromPort": "80",
+              "ToPort": "80",
+              "CidrIp": "0.0.0.0/0"
+            },
+            {
+              "IpProtocol": "tcp",
+              "FromPort": "443",
+              "ToPort": "443",
+              "CidrIp": "0.0.0.0/0"
+            }
+          ]
+        }
+      },
+
+      "InternalSecurityGroup": {
+        "Type": "AWS::EC2::SecurityGroup",
+        "Properties": {
+          "GroupDescription": "Open to all within internal network",
+          "SecurityGroupIngress": [
+            {
+              "IpProtocol": "tcp",
+              "FromPort": "1",
+              "ToPort": "65535",
+              "CidrIp": "10.0.0.0/24"
+            }
+          ]
+        }
+      },
+
+      "PublicNodeSecurityGroup": {
+        "Type": "AWS::EC2::SecurityGroup",
+        "Properties": {
+          "GroupDescription": "Service ports",
+          "SecurityGroupIngress": [
+            {
+              "IpProtocol": "tcp",
+              "FromPort": "1",
+              "ToPort": "65535",
+              "CidrIp": "0.0.0.0/0"
+            }
+          ]
+        }
+      },
+
+      "Master": {
+        "Type": "OS::Nova::Server",
+        "Properties": {
+          "flavor": {"Ref": "MasterFlavor"},
+          "image": {"Ref": "MasterImageId"},
+          "key_name": {"Ref": "KeyName"},
+          "networks": [{"port": {"Ref": "MasterPort"}}]
+        }
+      },
+
+      "Store1": {
+        "Type": "OS::Nova::Server",
+        "Properties": {
+          "flavor": {"Ref": "SlaveFlavor"},
+          "image": {"Ref": "SlaveImageId"},
+          "key_name": {"Ref": "KeyName"},
+          "networks": [{"port": {"Ref": "Store1Port"}}],
+          "user_data": { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -x", "\n",
+            "if [[ -b /dev/vda3 ]]; then", "\n",
+            "  echo 'Device already exists. Exiting...'", "\n",
+            "  exit 0", "\n",
+            "else", "\n",
+            "  echo 'Extending root partition...'", "\n",
+            "  (echo n; echo p; echo 3; echo ; echo ; echo t; echo 3; echo 8e; echo w) | fdisk -cu /dev/vda", "\n",
+            "  partx -a /dev/vda", "\n",
+            "  partx -a /dev/vda", "\n",
+            "  vgextend VolGroup00 /dev/vda3", "\n",
+            "  lvextend -l +100%FREE /dev/VolGroup00/LogVol00", "\n",
+            "  resize2fs /dev/mapper/VolGroup00-LogVol00", "\n",
+            "  echo 'Root partition extended.'", "\n",
+            "fi", "\n"
+          ]]}}
+        }
+      },
+
+      "Store2": {
+        "Type": "OS::Nova::Server",
+        "Properties": {
+          "flavor": {"Ref": "SlaveFlavor"},
+          "image": {"Ref": "SlaveImageId"},
+          "key_name": {"Ref": "KeyName"},
+          "networks": [{"port": {"Ref": "Store2Port"}}],
+          "user_data": { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -x", "\n",
+            "if [[ -b /dev/vda3 ]]; then", "\n",
+            "  echo 'Device already exists. Exiting...'", "\n",
+            "  exit 0", "\n",
+            "else", "\n",
+            "  echo 'Extending root partition...'", "\n",
+            "  (echo n; echo p; echo 3; echo ; echo ; echo t; echo 3; echo 8e; echo w) | fdisk -cu /dev/vda", "\n",
+            "  partx -a /dev/vda", "\n",
+            "  partx -a /dev/vda", "\n",
+            "  vgextend VolGroup00 /dev/vda3", "\n",
+            "  lvextend -l +100%FREE /dev/VolGroup00/LogVol00", "\n",
+            "  resize2fs /dev/mapper/VolGroup00-LogVol00", "\n",
+            "  echo 'Root partition extended.'", "\n",
+            "fi", "\n"
+          ]]}}
+
+        }
+      },
+
+      "Compute1": {
+        "Type": "OS::Nova::Server",
+        "Properties": {
+          "flavor": {"Ref": "SlaveFlavor"},
+          "image": {"Ref": "SlaveImageId"},
+          "key_name": {"Ref": "KeyName"},
+          "networks": [{"port": {"Ref": "Compute1Port"}}],
+          "user_data": { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -x", "\n",
+            "if [[ -b /dev/vda3 ]]; then", "\n",
+            "  echo 'Device already exists. Exiting...'", "\n",
+            "  exit 0", "\n",
+            "else", "\n",
+            "  echo 'Extending root partition...'", "\n",
+            "  (echo n; echo p; echo 3; echo ; echo ; echo t; echo 3; echo 8e; echo w) | fdisk -cu /dev/vda", "\n",
+            "  partx -a /dev/vda", "\n",
+            "  partx -a /dev/vda", "\n",
+            "  vgextend VolGroup00 /dev/vda3", "\n",
+            "  lvextend -l +100%FREE /dev/VolGroup00/LogVol00", "\n",
+            "  resize2fs /dev/mapper/VolGroup00-LogVol00", "\n",
+            "  echo 'Root partition extended.'", "\n",
+            "fi", "\n"
+          ]]}}
+        }
+      },
+
+      "Compute2": {
+        "Type": "OS::Nova::Server",
+        "Properties": {
+          "flavor": {"Ref": "SlaveFlavor"},
+          "image": {"Ref": "SlaveImageId"},
+          "key_name": {"Ref": "KeyName"},
+          "networks": [{"port": {"Ref": "Compute2Port"}}],
+          "user_data": { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -x", "\n",
+            "if [[ -b /dev/vda3 ]]; then", "\n",
+            "  echo 'Device already exists. Exiting...'", "\n",
+            "  exit 0", "\n",
+            "else", "\n",
+            "  echo 'Extending root partition...'", "\n",
+            "  (echo n; echo p; echo 3; echo ; echo ; echo t; echo 3; echo 8e; echo w) | fdisk -cu /dev/vda", "\n",
+            "  partx -a /dev/vda", "\n",
+            "  partx -a /dev/vda", "\n",
+            "  vgextend VolGroup00 /dev/vda3", "\n",
+            "  lvextend -l +100%FREE /dev/VolGroup00/LogVol00", "\n",
+            "  resize2fs /dev/mapper/VolGroup00-LogVol00", "\n",
+            "  echo 'Root partition extended.'", "\n",
+            "fi", "\n"
+          ]]}}
+        }
+      }
+
+    },
+
+    "Outputs": {
+
+      "CosmosAPIEndpoint": {
+        "Description": "Web and REST API",
+        "Value": {
+          "Fn::Join": [
+            "",
+            [
+              "https://",
+              { "Fn::GetAtt" : [ "MasterPublicIP", "floating_ip_address" ] },
+              "/"
+            ]
+          ]
+        }
+      },
+
+      "CosmosManagementIP": {
+        "Value": { "Fn::GetAtt" : [ "MasterManagementIP", "floating_ip_address" ] }
+      },
+
+      "CosmosPublicIP": {
+        "Value": { "Fn::GetAtt" : [ "MasterPublicIP", "floating_ip_address" ] }
+      },
+
+      "Store1PublicIP": {
+        "Value": { "Fn::GetAtt" : [ "Store1PublicIP", "floating_ip_address" ] }
+      },
+
+      "Store2PublicIP": {
+        "Value": { "Fn::GetAtt" : [ "Store2PublicIP", "floating_ip_address" ] }
+      },
+
+      "Compute1PublicIP": {
+        "Value": { "Fn::GetAtt" : [ "Compute1PublicIP", "floating_ip_address" ] }
+      },
+
+      "Compute2PublicIP": {
+        "Value": { "Fn::GetAtt" : [ "Compute2PublicIP", "floating_ip_address" ] }
+      }
+
+    }
+}

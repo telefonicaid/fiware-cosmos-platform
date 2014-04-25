@@ -14,14 +14,26 @@
 # limitations under the License.
 #
 
-class cosmos::cluster_hosts inherits cosmos::params {
-  if $overwrite_hosts_file {
-    file { '/etc/hosts' :
-      ensure  => 'present',
-      content => template("${module_name}/hosts.erb"),
-      group   => '0',
-      mode    => '0644',
-      owner   => '0',
-    }
+class hostname($hostname, $ip) {
+
+  file { "/etc/hostname":
+    ensure => present,
+    owner => root,
+    group => root,
+    mode => 644,
+    content => "$hostname\n",
   }
+
+  exec { "set-hostname":
+    command => "/bin/hostname -F /etc/hostname",
+    unless => "/usr/bin/test `hostname` = `/bin/cat /etc/hostname`",
+  }
+
+  host { $hostname:
+    ip => $ip,
+  }
+
+  File["/etc/hostname"]
+    -> Exec["set-hostname"]
+
 }

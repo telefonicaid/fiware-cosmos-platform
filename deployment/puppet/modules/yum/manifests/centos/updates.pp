@@ -22,10 +22,13 @@
 #
 class yum::centos::updates ($repo_server = $yum::params::yum_centos_updates) {
 
+  include cosmos::params
+
   yumrepo { 'Centos-Updates':
     descr      => 'Centos Updates',
     enabled    => '1',
     gpgcheck   => '0',
     baseurl    => $repo_server,
+    proxy      => $cosmos::params::proxy
   }
 }

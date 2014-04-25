@@ -2,6 +2,10 @@ DEVICE=eth0
 BOOTPROTO=none
 ONBOOT=yes
 IPADDR=<%= @ip_address %>
+<% unless @netmask.empty? %>
 NETMASK=<%= @netmask %>
+<% end %>
+<% unless @gateway.empty? %>
 GATEWAY=<%= @gateway %>
+<% end %>
 USERCTL=no

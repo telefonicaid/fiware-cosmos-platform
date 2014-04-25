@@ -16,10 +16,13 @@
 
 class yum::thirdparty::epel($repo_server = $yum::params::yum_epel) {
 
+  include cosmos::params
+
   yumrepo { 'epel':
     descr    => "Extra Packages for Enterprise Linux ${::operatingsystemmajrelease}",
     enabled  => '1',
     gpgcheck => '0',
     baseurl  => $repo_server,
+    proxy    => $cosmos::params::proxy
   }
 }

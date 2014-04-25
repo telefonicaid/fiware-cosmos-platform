@@ -176,13 +176,21 @@ object Build extends sbt.Build {
     settings(JavaVersions.java6: _*)
   )
 
+  lazy val infinityClient = (Project(id = "infinity-client", base = file("infinity/client"))
+    settings(ScctPlugin.instrumentSettings: _*)
+    configs IntegrationTest
+    settings(Defaults.itSettings: _*)
+    settings(JavaVersions.java6: _*)
+    dependsOn infinityCommon
+  )
+
   lazy val infinityDriver = (Project(id = "infinity-driver", base = file("infinity/driver"))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(RpmSettings.infinityDriverSettings: _*)
     settings(JavaVersions.java6: _*)
-    dependsOn infinityCommon
+    dependsOn infinityClient
   )
 
   lazy val infinityServer = (Project(id = "infinity-server", base = file("infinity/server"))

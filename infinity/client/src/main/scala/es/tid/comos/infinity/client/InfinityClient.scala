@@ -14,7 +14,7 @@ package es.tid.comos.infinity.client
 import java.io.{InputStreamReader, OutputStreamWriter}
 import scala.concurrent.Future
 
-import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.{SubPath, Path}
 import es.tid.cosmos.infinity.common.messages.PathMetadata
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
@@ -27,7 +27,6 @@ import es.tid.cosmos.infinity.common.permissions.PermissionsMask
   * All API methods can fail with the following exceptions:
   *
   *  * ConnectionException        when it is not possible to contact the infinity server
-  *  * TimeoutException           when server takes too much time to respond
   *  * UnauthorizedException      when credentials being used are rejected
   *  * ProtocolMismatchException  when client and server don't understand each other
   *  * ForbiddenException         when user access rights are not enough to perform the action
@@ -56,7 +55,7 @@ trait InfinityClient {
     *                       * NotFoundException       when the parent path doesn't exist
     */
   def createFile(
-      path: Path,
+      path: SubPath,
       permissions: PermissionsMask,
       replication: Option[Int] = None,
       blockSize: Option[Int] = None): Future[Unit]
@@ -71,7 +70,7 @@ trait InfinityClient {
     *                       * AlreadyExistsException  when the path already exists
     *                       * NotFoundException       when the parent path doesn't exist
     */
-  def createDirectory(path: Path, permissions: PermissionsMask): Future[Unit]
+  def createDirectory(path: SubPath, permissions: PermissionsMask): Future[Unit]
 
   /** Move a file or directory.
     *

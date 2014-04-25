@@ -11,9 +11,11 @@
 
 package es.tid.comos.infinity.client
 
+import java.net.URL
 import scala.concurrent.duration.Duration
-import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
+
 import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
 
 /** Base class for exceptions related Infinity API use */
 sealed abstract class InfinityException(
@@ -25,16 +27,14 @@ sealed abstract class InfinityException(
   def this(error: ErrorDescriptor) = this(error.code, Some(error.cause))
 }
 
-case class ConnectionException(endpoint: String, cause: Throwable = null)
+case class ConnectionException(endpoint: URL, cause: Throwable = null)
   extends InfinityException(s"Cannot connect to Infinity at $endpoint", cause)
 
-case class TimeoutException(interval: Duration)
-  extends InfinityException(s"Infinity took more than $interval to respond")
-
 /** Client and server don't understand each other. */
-case class ProtocolMismatchException(description: String, cause: Throwable = null)
+case class ProtocolMismatchException(
+    description: String, code: Option[String] = None, cause: Throwable = null)
   extends InfinityException(
-    s"Protocol mismatch: $description. Check that versions of client and server match", cause)
+    s"Protocol mismatch: $description. Check that versions of client and server match", code, cause)
 
 /** Credentials being used have been rejected */
 case class UnauthorizedException(error: ErrorDescriptor) extends InfinityException(error)

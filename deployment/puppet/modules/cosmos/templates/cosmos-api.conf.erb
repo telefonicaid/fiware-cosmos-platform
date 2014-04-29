@@ -77,8 +77,14 @@ auth.horizon {
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cli.url="https://<%=@master_hostname%><%=@domain%>:8000/eggs/<%= @cosmos_cli_filename %>"
 
+# Play Emailer plugin
+# ~~~~~
+smtp.host="<%= @smtp_host %>"
+
 # Reporting and emails
 # ~~~~~~~~~~~~~~~~~~~~
+email.environment="<%= scope['::environment'] %>"
+email.fromHost="<%=@master_hostname%>"
 email.fromAddress="<%= @email_sender %>"
 email.reportToAddress="<%= @email_report_receiver %>"
 

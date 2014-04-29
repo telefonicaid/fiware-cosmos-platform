@@ -54,7 +54,12 @@ abstract class Application {
     with ConfigComponent =>
 
   lazy val conf = this.config
-  lazy val reporter = new ClusterReporter(conf.getString("email.reportToAddress"), emailer)
+  lazy val reporter = new ClusterReporter(
+    conf.getString("email.environment"),
+    conf.getString("email.fromHost"),
+    conf.getString("email.reportToAddress"),
+    emailer
+  )
 
   lazy val controllers: Map[Class[Controller], Controller] = {
     val status = this.maintenanceStatus

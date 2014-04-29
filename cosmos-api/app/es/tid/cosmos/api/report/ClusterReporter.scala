@@ -26,7 +26,11 @@ import es.tid.cosmos.servicemanager.clusters.{ClusterId, Failed, ImmutableCluste
   * @param reportToAddress the email address to send the failure reports
   * @param emailer         the emailer to use for sending report emails
   */
-class ClusterReporter(reportToAddress: String, emailer: Emailer) {
+class ClusterReporter(
+    cosmosEnvironment: String, masterHost: String, reportToAddress: String, emailer: Emailer) {
+
+  private val titlePrefix: String = s"[Cosmos][$cosmosEnvironment]"
+  private val masterHostPrefix: String = s"Cosmos Master: $masterHost"
 
   /** Generate a report based on the cluster's future state.
     * This can be used to hook reporting to asynchronous cluster operations that return futures.
@@ -54,8 +58,10 @@ class ClusterReporter(reportToAddress: String, emailer: Emailer) {
     }
 
     def clusterFailed(description: ImmutableClusterDescription, error: String) {
-      val subject = s"[Cosmos] Cluster [${description.name}] failed"
-      val message = s"""Cluster Details:
+      val subject = s"$titlePrefix Cluster [${description.name}] failed"
+      val message = s"""$masterHostPrefix
+        |
+        |Cluster Details:
         |Name: ${description.name}
         |Id: ${description.id}
         |Size: ${description.size}
@@ -71,12 +77,17 @@ class ClusterReporter(reportToAddress: String, emailer: Emailer) {
     }
 
     def unexpectedError(error: Throwable) = {
-      val subject = "[Cosmos] Unexpected cluster operation failure"
-      val message = s"""Cluster operation failed to provide a cluster description.
+      val subject = s"$titlePrefix Unexpected cluster operation failure"
+      val message = s"""$masterHostPrefix
+                        |
+                        |Cluster operation failed to provide a cluster description.
                         |Check if it uses withFailSafe() to wrap the errors.
                         |
                         |Cause:
                         |${error.getMessage}
+                        |
+                        |Trace:
+                        |${error.getStackTrace.toList.mkString("\n")}
                         |
                         |Context:
                         |$context""".stripMargin
@@ -85,8 +96,10 @@ class ClusterReporter(reportToAddress: String, emailer: Emailer) {
     }
 
     def clusterNotFound(id: ClusterId) {
-      val subject = "[Cosmos] Cluster not found"
-      val message = s"""Cluster with id [$id] was not found.
+      val subject = s"$titlePrefix Cluster not found"
+      val message = s"""$masterHostPrefix
+                        |
+                        |Cluster with id [$id] was not found.
                         |
                         |Context:
                         |$context""".stripMargin

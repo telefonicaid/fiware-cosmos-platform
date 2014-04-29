@@ -37,9 +37,11 @@ class ClusterReporterTest extends FlatSpec with MustMatchers with FutureMatchers
       "The context of the operation") must eventuallySucceed
     emailer.emailsSent must be (List(Email(
       to = "report@acme.com",
-      subject = "[Cosmos] Cluster [failedCluster] failed",
+      subject = "[Cosmos][test environment] Cluster [failedCluster] failed",
       message =
-        """Cluster Details:
+        """Cosmos Master: master.acme.com
+          |
+          |Cluster Details:
           |Name: failedCluster
           |Id: anID
           |Size: 3
@@ -57,19 +59,20 @@ class ClusterReporterTest extends FlatSpec with MustMatchers with FutureMatchers
     val description_> = Future.failed(new IllegalArgumentException("A cause"))
     reporter.reportOnFailure(
       clusterId, description_>, "a context") must eventuallyFailWith[IllegalArgumentException]
-    emailer.emailsSent must be (List(Email(
-      to = "report@acme.com",
-      subject = "[Cosmos] Unexpected cluster operation failure",
-      message =
-        """Cluster operation failed to provide a cluster description.
-          |Check if it uses withFailSafe() to wrap the errors.
-          |
-          |Cause:
-          |A cause
-          |
-          |Context:
-          |a context""".stripMargin
-    )))
+    emailer.emailsSent must have length 1
+    val email = emailer.emailsSent.head
+    email.to must be ("report@acme.com")
+    email.subject must be ("[Cosmos][test environment] Unexpected cluster operation failure")
+    email.message must (
+      include ("Cosmos Master: master.acme.com") and
+      include ("Cluster operation failed to provide a cluster description.") and
+      include ("Check if it uses withFailSafe() to wrap the errors.") and
+      include ("Cause:") and
+      include ("A cause") and
+      include ("Trace:") and
+      include ("Context:") and
+      include ("a context")
+    )
   }
 
   it must "report an error when a cluster is not found" in new WithReporter {
@@ -77,9 +80,11 @@ class ClusterReporterTest extends FlatSpec with MustMatchers with FutureMatchers
     reporter.reportOnFailure(clusterId, description_>, "a context") must eventuallySucceed
     emailer.emailsSent must be (List(Email(
       to = "report@acme.com",
-      subject = "[Cosmos] Cluster not found",
+      subject = "[Cosmos][test environment] Cluster not found",
       message =
-        """Cluster with id [anID] was not found.
+        """Cosmos Master: master.acme.com
+          |
+          |Cluster with id [anID] was not found.
           |
           |Context:
           |a context""".stripMargin
@@ -96,7 +101,12 @@ class ClusterReporterTest extends FlatSpec with MustMatchers with FutureMatchers
 
   trait WithReporter {
     val emailer = new MockEmailer
-    val reporter = new ClusterReporter(reportToAddress = "report@acme.com", emailer)
+    val reporter = new ClusterReporter(
+      cosmosEnvironment = "test environment",
+      masterHost = "master.acme.com",
+      reportToAddress = "report@acme.com",
+      emailer
+    )
     val clusterId = ClusterId("anID")
     val description = ImmutableClusterDescription(
       id = clusterId,

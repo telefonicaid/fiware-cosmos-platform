@@ -63,8 +63,10 @@ trait ServiceManager {
 
   /**
    * Get a cluster's info when a given future completes.
-   * This is useful to acquire the cluster's state once right after the completion of
-   * an operation on it such as creating it or adding users.
+   * This is useful to acquire the cluster's state right after the completion of
+   * an operation on it such as creating a cluster or adding users.
+   * The manager will always attempt to get the cluster's description if available even when
+   * the future fails. It will only propagate the future failure if no description is available.
    *
    * @param id the cluster id
    * @param toComplete_> the action to wait for completion before getting the info
@@ -72,8 +74,11 @@ trait ServiceManager {
    * @return the cluster state info right after the action completes
    */
   def describeClusterUponCompletion[A](
-    id: ClusterId, toComplete_> : Future[A]): Future[Option[ImmutableClusterDescription]] =
-    toComplete_> map (_ => describeCluster(id))
+    id: ClusterId, toComplete_> : Future[A]): Future[Option[ImmutableClusterDescription]] = {
+    toComplete_>
+      .recover { case _ if describeCluster(id).nonEmpty => Future.successful() }
+      .map (_ => describeCluster(id))
+  }
 
   /**
    * Terminate an existing cluster.

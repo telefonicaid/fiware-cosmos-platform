@@ -21,10 +21,10 @@ import dispatch.{Future => _, _}
 
 import es.tid.cosmos.common.Wrapped
 import es.tid.cosmos.infinity.common.{Path, RootPath, SubPath}
-import es.tid.cosmos.infinity.common.messages.{Action, ErrorDescriptor, PathMetadata}
+import es.tid.cosmos.infinity.common.messages._
+import es.tid.cosmos.infinity.common.messages.Action._
 import es.tid.cosmos.infinity.common.messages.json._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
-import es.tid.cosmos.infinity.common.messages.Action.{CreateDirectory, CreateFile}
 
 class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
 
@@ -48,6 +48,53 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
 
   override def createDirectory(path: SubPath, permissions: PermissionsMask): Future[Unit] =
     createPath(path, CreateDirectory(path.name, permissions))
+
+  override def move(originPath: SubPath, targetPath: Path): Future[Unit] = {
+    val body = actionFormatter.format(Move(originPath.name, originPath.parentPath))
+    httpRequest(metadataResource(targetPath) << body) { response =>
+      response.getStatusCode match {
+        case 404 => throw NotFoundException(originPath)
+        case 409 => throw AlreadyExistsException(targetPath / originPath.name)
+        case 201 => ()
+      }
+    }
+  }
+
+  override def changeOwner(path: Path, owner: String): Future[Unit] =
+    actionWithNoContentResponse(path, ChangeOwner(owner))
+
+  override def changeGroup(path: Path, group: String): Future[Unit] =
+    actionWithNoContentResponse(path, ChangeGroup(group))
+
+  override def changePermissions(path: Path, mask: PermissionsMask): Future[Unit] =
+    actionWithNoContentResponse(path, ChangePermissions(mask))
+
+  override def delete(path: Path, isRecursive: Boolean = false): Future[Unit] = {
+    val params = Map("recursive" -> isRecursive.toString)
+    requestWithNoContentResponse(path, (metadataResource(path) <<? params).DELETE)
+  }
+
+  override def read(
+      path: Path, offset: Option[Long], length: Option[Long]): Future[InputStreamReader] =
+    // read metadata first, get content url and then read content
+    pathMetadata(path) flatMap { maybeMetadata =>
+      val metadata = maybeMetadata.getOrElse(throw NotFoundException(path))
+      val params = List(
+        offset.map("offset" -> _.toString),
+        length.map("length" -> _.toString)
+      ).flatten.toMap
+
+      httpRequest(contentResource(metadata) <<? params) { response =>
+        response.getStatusCode match {
+          case 404 => throw NotFoundException(path)
+          case 200 => new InputStreamReader(response.getResponseBodyAsStream)
+        }
+      }
+    }
+
+  override def overwrite(path: Path): Future[OutputStreamWriter] = ???
+
+  override def append(path: Path): Future[OutputStreamWriter] = ???
 
   private def createPath(path: SubPath, action: Action): Future[Unit] = {
     val body = actionFormatter.format(action)
@@ -95,74 +142,21 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
   private def metadataRequestBuilder(): RequestBuilder =
     url(metadataEndpoint.toString) / "infinityfs" / "v1" / "metadata"
 
-  /** Move a file or directory.
-    *
-    * The movement should not create a loop (i.e. moving a directory to a subdirectory).
-    *
-    * @param originPath  Path to move
-    * @param targetPath  Destination path that should exist as a directory
-    * @return            A successful future if the path is moved. Otherwise the common exceptions
-    *                    or AlreadyExistsException when the target path already exists
-    */
-  override def move(originPath: Path, targetPath: Path): Future[Unit] = ???
+  private def contentResource(metadata: PathMetadata): RequestBuilder = metadata match {
+    case f: FileMetadata => url(f.content.toString)
+    case d: DirectoryMetadata => throw new IllegalArgumentException("Directory cannot have content")
+  }
 
-  /** Change path group.
-    *
-    * @param path   Path to modify
-    * @param group  New group
-    * @return       Success or failure as a future
-    */
-  override def changeGroup(path: Path, group: String): Future[Unit] = ???
+  private def actionWithNoContentResponse(path: Path, action: Action): Future[Unit] = {
+    val body = actionFormatter.format(action)
+    requestWithNoContentResponse(path, metadataResource(path) << body)
+  }
 
-  /** Change path owner.
-    *
-    * @param path   Path to modify
-    * @param owner  New owner
-    * @return       Success or failure as a future
-    */
-  override def changeOwner(path: Path, owner: String): Future[Unit] = ???
-
-  /** Change path permissions mask.
-    *
-    * @param path  Path to modify
-    * @param mask  New mask
-    * @return      Success or failure as a future
-    */
-  override def changeOwner(path: Path, mask: PermissionsMask): Future[Unit] = ???
-
-  /** Overwrite a file.
-    *
-    * @param path  Path of the file to be overwritten
-    * @return      A stream to write to, fail with the common exceptions or with NotFoundException
-    *              when the path to write doesn't exist. Note that the returned stream can fail
-    *              wrapping in IOException any common exception
-    */
-  override def overwrite(path: Path): Future[OutputStreamWriter] = ???
-
-  /** Append data to a file.
-    *
-    * @param path  Path of the file to append to
-    * @return      A stream to write to, fail with the common exceptions or with NotFoundException
-    *              when the path to write doesn't exist. Note that the returned stream can fail
-    *              wrapping in IOException any common exception
-    */
-  override def append(path: Path): Future[OutputStreamWriter] = ???
-
-  /** Delete a file or directory.
-    *
-    * @param path  Path to delete
-    * @return      Success or failure as a future. Apart from the common exceptions, fail with
-    *              NotFoundException when the path to delete doesn't exist
-    */
-  override def delete(path: Path): Future[Unit] = ???
-
-  /** Retrieve file contents.
-    *
-    * @param path    Path of the file to read
-    * @param offset  Optionally, where to start reading
-    * @param length  Optionally, how much to retrieve
-    * @return        A stream with the contents on success or fail with the common exceptions or
-    *                NotFoundException when the path to read doesn't exist
-    */
-  override def read(path: Path, offset: Option[Long], length: Option[Long]): Future[InputStreamReader] = ???
+  private def requestWithNoContentResponse(path: Path, request: RequestBuilder): Future[Unit] =
+    httpRequest(request) { response =>
+      response.getStatusCode match {
+        case 404 => throw NotFoundException(path)
+        case 204 => ()
+      }
+    }
 }

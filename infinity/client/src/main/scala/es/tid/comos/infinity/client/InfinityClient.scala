@@ -81,7 +81,7 @@ trait InfinityClient {
     * @return            A successful future if the path is moved. Otherwise the common exceptions
     *                    or AlreadyExistsException when the target path already exists
     */
-  def move(originPath: Path, targetPath: Path): Future[Unit]
+  def move(originPath: SubPath, targetPath: Path): Future[Unit]
 
   /** Change path owner.
     *
@@ -105,15 +105,16 @@ trait InfinityClient {
     * @param mask  New mask
     * @return      Success or failure as a future
     */
-  def changeOwner(path: Path, mask: PermissionsMask): Future[Unit]
+  def changePermissions(path: Path, mask: PermissionsMask): Future[Unit]
 
   /** Delete a file or directory.
     *
-    * @param path  Path to delete
-    * @return      Success or failure as a future. Apart from the common exceptions, fail with
-    *              NotFoundException when the path to delete doesn't exist
+    * @param path        Path to delete
+    * @param isRecursive perform a recursive deletion iff the path is a directory
+    * @return            Success or failure as a future. Apart from the common exceptions, fail with
+    *                    NotFoundException when the path to delete doesn't exist
     */
-  def delete(path: Path): Future[Unit]
+  def delete(path: Path, isRecursive: Boolean): Future[Unit]
 
   /** Retrieve file contents.
     *

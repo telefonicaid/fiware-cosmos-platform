@@ -21,7 +21,9 @@ import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 /** Action that can be performed on a path. */
 sealed trait Action {
-  val action: String = Action.nameFor(getClass).get
+  val action: String = Action.nameFor(getClass).getOrElse(throw new NoSuchElementException(
+    s"Oops! Looks like the Action [${getClass.getSimpleName}] " +
+      "is not included in the Names manifest map."))
 }
 
 object Action {

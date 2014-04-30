@@ -32,6 +32,7 @@ import es.tid.cosmos.api.auth.multiauth.MultiAuthProvider
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.{Registration, UserId}
 import es.tid.cosmos.api.profile.dao._
+import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.api.wizards.{UserRegistrationWizard, UserUnregistrationWizard}
 import es.tid.cosmos.common.BasicAuth
 import es.tid.cosmos.servicemanager.ServiceManager
@@ -43,14 +44,15 @@ class UserResource(
     multiUserProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
     store: ProfileDataStore with ClusterDataStore,
-    override val maintenanceStatus: MaintenanceStatus
+    override val maintenanceStatus: MaintenanceStatus,
+    reporter: ClusterReporter
   ) extends Controller with JsonController with MaintenanceAwareController {
 
   import Scalaz._
 
   private type Conn = store.Conn
-  private val registrationWizard = new UserRegistrationWizard(store, serviceManager)
-  private val unregistrationWizard = new UserUnregistrationWizard(store, serviceManager)
+  private val registrationWizard = new UserRegistrationWizard(store, serviceManager, reporter)
+  private val unregistrationWizard = new UserUnregistrationWizard(store, serviceManager, reporter)
 
   /** Register a new user account. */
   @ApiOperation(value = "Create a new user account", httpMethod = "POST",

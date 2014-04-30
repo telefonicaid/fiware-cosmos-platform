@@ -19,6 +19,7 @@ package es.tid.cosmos.servicemanager
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+import es.tid.cosmos.common.NowFuture
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.services.Service
 import es.tid.cosmos.servicemanager.services.InfinityServer.InfinityServerParameters
@@ -51,7 +52,7 @@ trait ServiceManager {
     clusterSize: Int,
     services: Set[AnyServiceInstance],
     users: Seq[ClusterUser],
-    preConditions: ClusterExecutableValidation = UnfilteredPassThrough): ClusterId
+    preConditions: ClusterExecutableValidation = UnfilteredPassThrough): NowFuture[ClusterId, Unit]
 
   /** Obtain information of an existing cluster's state.
     *
@@ -60,10 +61,30 @@ trait ServiceManager {
     */
   def describeCluster(id: ClusterId): Option[ImmutableClusterDescription]
 
-  /** Terminate an existing cluster.
-    *
-    * @param id the ID of the cluster to terminate
-    */
+  /**
+   * Get a cluster's info when a given future completes.
+   * This is useful to acquire the cluster's state right after the completion of
+   * an operation on it such as creating a cluster or adding users.
+   * The manager will always attempt to get the cluster's description if available even when
+   * the future fails. It will only propagate the future failure if no description is available.
+   *
+   * @param id the cluster id
+   * @param toComplete_> the action to wait for completion before getting the info
+   * @tparam A the type of action to wait
+   * @return the cluster state info right after the action completes
+   */
+  def describeClusterUponCompletion[A](
+    id: ClusterId, toComplete_> : Future[A]): Future[Option[ImmutableClusterDescription]] = {
+    toComplete_>
+      .recover { case _ if describeCluster(id).nonEmpty => Future.successful() }
+      .map (_ => describeCluster(id))
+  }
+
+  /**
+   * Terminate an existing cluster.
+   *
+   * @param id the ID of the cluster to terminate
+   */
   def terminateCluster(id: ClusterId): Future[Unit]
 
   /** The cluster id of the persistent HDFS cluster */

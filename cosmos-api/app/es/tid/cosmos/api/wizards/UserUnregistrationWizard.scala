@@ -26,12 +26,14 @@ import play.Logger
 import es.tid.cosmos.api.controllers.common.Message
 import es.tid.cosmos.api.profile.{Cluster, UserState}
 import es.tid.cosmos.api.profile.dao._
+import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.{Terminating, Terminated, ClusterId}
 
 class UserUnregistrationWizard(
     store: ProfileDataStore with ClusterDataStore,
-    serviceManager: ServiceManager) {
+    serviceManager: ServiceManager,
+    reporter: ClusterReporter) {
 
   private val hdfsWizard = new UpdatePersistentHdfsUsersWizard(store, serviceManager)
 
@@ -73,15 +75,24 @@ class UserUnregistrationWizard(
   private def startUnregistration(cosmosId: Long): Future[Unit] = {
     val clustersTermination_> = terminateClusters(cosmosId)
     val persistentHdfsCleanup_> = hdfsWizard.updatePersistentHdfsUsers()
-    val userDisabledFromAllClusters_> = store.withTransaction { implicit c =>
-      serviceManager.disableUserFromAll(store.profile.lookupByProfileId(cosmosId).get.handle)
+    val handle = store.withConnection{ implicit c =>
+      store.profile.lookupByProfileId(cosmosId).get.handle
     }
-    for {
+    val userDisabledFromAllClusters_> = store.withTransaction { implicit c =>
+      serviceManager.disableUserFromAll(handle)
+    }
+    val completion_> = for {
       _ <- clustersTermination_>
       _ <- persistentHdfsCleanup_>
       _ <- markUserDeleted(cosmosId)
       _ <- userDisabledFromAllClusters_>
     } yield ()
+    reporter.reportOnFailure(
+      serviceManager.persistentHdfsId,
+      serviceManager.describeClusterUponCompletion(serviceManager.persistentHdfsId, completion_>),
+      s"Unregistering user with handle [$handle]"
+    )
+    completion_>
   }
 
   private def terminateClusters(cosmosId: Long) = Future.sequence(for {

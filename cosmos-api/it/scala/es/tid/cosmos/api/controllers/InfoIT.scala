@@ -70,7 +70,7 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
 
   it must "provide info about clusters owned or accessible by SSH" in
     new WithSampleSessions {
-      val cluster1 = mockedServiceManager.createCluster(
+      val (cluster1, _) = mockedServiceManager.createCluster(
         name = ClusterName("ownCluster"),
         size = 2,
         serviceInstances = Set.empty,
@@ -145,7 +145,7 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
       store.group.register(guaranteedGroup)
     }
     val fooGroupUser = new RegisteredUserSession("user", "Mr. user", guaranteedGroup)
-    val cluster = mockedServiceManager.createCluster(
+    val (cluster, _) = mockedServiceManager.createCluster(
       name = ClusterName("ownCluster"),
       size = 2,
       serviceInstances = Set.empty,

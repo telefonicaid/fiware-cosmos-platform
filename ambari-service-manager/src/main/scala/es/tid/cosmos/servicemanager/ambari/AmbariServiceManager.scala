@@ -22,7 +22,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.typesafe.scalalogging.slf4j.Logging
 
-import es.tid.cosmos.common.PassThrough
+import es.tid.cosmos.common.{NowFuture, PassThrough}
 import es.tid.cosmos.platform.ial.{MachineProfile, InfrastructureProvider, MachineState}
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.AmbariServiceManager._
@@ -71,7 +71,7 @@ class AmbariServiceManager(
       clusterSize: Int,
       serviceInstances: Set[AnyServiceInstance],
       users: Seq[ClusterUser],
-      preConditions: ClusterExecutableValidation): ClusterId = {
+      preConditions: ClusterExecutableValidation): NowFuture[ClusterId, Unit] = {
     val servicesWithDependencies = ServiceDependencies.executionPlan(
       missingBasicServices(serviceInstances) ++ serviceInstances + CosmosUserService.instance(users)
     )
@@ -80,7 +80,7 @@ class AmbariServiceManager(
       size = clusterSize,
       services = servicesWithDependencies.map(_.service).toSet
     )
-    clusterDescription.withFailsafe {
+    val creation_> = clusterDescription.withFailsafe {
       for {
         machines <- infrastructureProvider.createMachines(
           preConditions(clusterDescription.id), MachineProfile.G1Compute, clusterSize, waitForSsh)
@@ -90,7 +90,7 @@ class AmbariServiceManager(
         _ = clusterDao.setUsers(clusterDescription.id, users.toSet)
       } yield ()
     }
-    clusterDescription.id
+    (clusterDescription.id, creation_>)
   }
 
   private def missingBasicServices(serviceInstances: Set[AnyServiceInstance]) =
@@ -157,23 +157,26 @@ class AmbariServiceManager(
   override def listUsers(clusterId: ClusterId): Option[Seq[ClusterUser]] =
     clusterDao.getUsers(clusterId).map(_.toSeq)
 
-  override def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] = {
-    val clusterDescription = describeCluster(clusterId)
-    require(
-      clusterDescription.isDefined,
-      s"Cluster with id [$clusterId] is not managed by this ServiceManager")
-    require(
-      clusterDescription.get.state == Running,
-      s"Cluster[$clusterId] not Running")
-    val delta = clusterUsersDelta(listUsers(clusterId), users)
-    for {
-      _ <- clusterManager.changeServiceConfiguration(
-        clusterDescription.get,
-        dynamicProperties,
-        CosmosUserService.instance(delta)
-      )
-    } yield {
-      clusterDao.setUsers(clusterId, users.toSet)
+  override def setUsers(
+      clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] = {
+    val mutableCluster = clusterDao.getDescription(clusterId).getOrElse(
+      throw new IllegalArgumentException(
+        s"Cluster with id [$clusterId] is not managed by this ServiceManager")
+    )
+    mutableCluster.withFailsafe {
+      val cluster = mutableCluster.view
+      val clusterState = cluster.state
+      require(clusterState == Running, s"Cluster[$clusterId] not Running")
+      val delta = clusterUsersDelta(listUsers(clusterId), users)
+      for {
+        _ <- clusterManager.changeServiceConfiguration(
+          cluster,
+          dynamicProperties,
+          CosmosUserService.instance(delta)
+        )
+      } yield {
+        clusterDao.setUsers(clusterId, users.toSet)
+      }
     }
   }
 
@@ -191,7 +194,7 @@ class AmbariServiceManager(
       size = machineCount + 1,
       services = services.map(_.service).toSet
     )
-    _ <- clusterDescription.withFailsafe(for {
+    description <- clusterDescription.withFailsafe(for {
       master <- infrastructureProvider.createMachines(
         PassThrough, MachineProfile.HdfsMaster, numberOfMachines = 1, waitForSsh).map(_.head)
       slaves <- infrastructureProvider.createMachines(
@@ -199,7 +202,7 @@ class AmbariServiceManager(
       _ = setMachineInfo(clusterDescription, master, slaves)
       _ <- createCluster(clusterDescription, services)
     } yield ())
-  } yield ()
+  } yield description
 
   override def clusterNodePoolCount: Int =
     infrastructureProvider.machinePoolCount(_ == MachineProfile.G1Compute)

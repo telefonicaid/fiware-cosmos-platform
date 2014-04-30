@@ -28,6 +28,7 @@ import play.api.mvc.Results
 import es.tid.cosmos.api.controllers.common.ErrorMessage
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.dao.ProfileDataStore
+import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.servicemanager.ServiceManager
 
 /** Sequence of actions to register a new user in Cosmos.
@@ -36,8 +37,10 @@ import es.tid.cosmos.servicemanager.ServiceManager
   * @param store           Data store
   * @param serviceManager  For registering the user credentials
   */
-class UserRegistrationWizard(store: ProfileDataStore, serviceManager: ServiceManager)
-  extends Results {
+class UserRegistrationWizard(
+    store: ProfileDataStore,
+    serviceManager: ServiceManager,
+    reporter: ClusterReporter) extends Results {
 
   import Scalaz._
 
@@ -54,24 +57,31 @@ class UserRegistrationWizard(store: ProfileDataStore, serviceManager: ServiceMan
     */
   def registerUser(
         userId: UserId, registration: Registration
-      ): Validation[ErrorMessage, (CosmosProfile, Future[Unit])] =
-    store.withTransaction { implicit c =>
+      ): Validation[ErrorMessage, (CosmosProfile, Future[Unit])] = {
+    val storeRegistration = store.withTransaction { implicit c =>
       Logger.info(s"Starting $userId (${registration.handle}) registration")
-      Try (store.profile.register(userId, registration, UserState.Creating)) match {
-        case Failure(ex) =>
-          logRegistrationError(userId, ex)
-          ErrorMessage(registrationErrorMessage(userId)).failure
-        case Success(profile) =>
-          val registration_> = for {
-            _ <- hdfsWizard.updatePersistentHdfsUsers()
-          } yield markUserEnabled(userId)
-          registration_>.onComplete {
-            case Failure(NonFatal(ex)) => logRegistrationError(userId, ex)
-            case Success(_) => logRegistrationSuccess(userId, profile)
-          }
-          (profile, registration_>).success
-      }
+      Try(store.profile.register(userId, registration, UserState.Creating))
     }
+    storeRegistration match {
+      case Failure(ex) =>
+        logRegistrationError(userId, ex)
+        ErrorMessage(registrationErrorMessage(userId)).failure
+      case Success(profile) =>
+        val registration_> = for {
+          _ <- hdfsWizard.updatePersistentHdfsUsers()
+        } yield markUserEnabled(userId)
+        registration_>.onComplete {
+          case Failure(NonFatal(ex)) => logRegistrationError(userId, ex)
+          case Success(_) => logRegistrationSuccess(userId, profile)
+        }
+        reporter.reportOnFailure(
+          serviceManager.persistentHdfsId,
+          serviceManager.describeClusterUponCompletion(serviceManager.persistentHdfsId, registration_>),
+          registrationErrorMessage(userId)
+        )
+        (profile, registration_>).success
+    }
+  }
 
   private def markUserEnabled(userId: UserId): Unit = store.withTransaction { implicit c =>
     store.profile.lookupByUserId(userId).map { profile =>

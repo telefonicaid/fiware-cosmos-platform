@@ -25,19 +25,21 @@ import org.mockito.Matchers.{eq => the, any}
 import org.mockito.Mockito.{doReturn, spy}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.{Matcher, MustMatchers}
+import org.scalatest.mock.MockitoSugar
 import org.scalatest.concurrent.Eventually
 
+import es.tid.cosmos.api.controllers.common.Message
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers.{registerUser, userIdFor}
 import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
-import es.tid.cosmos.api.controllers.common.Message
+import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser, UnfilteredPassThrough}
 import es.tid.cosmos.servicemanager.clusters.{Running, ClusterId, Terminated}
 
 class UserUnregistrationWizardTest
-  extends FlatSpec with MustMatchers with FutureMatchers with Eventually {
+  extends FlatSpec with MustMatchers with FutureMatchers with Eventually with MockitoSugar {
 
   val timeout = 1.second
   val failure = new RuntimeException("Forced failure")
@@ -45,7 +47,8 @@ class UserUnregistrationWizardTest
 
   trait WithWizard extends MockCosmosDataStoreComponent {
     val sm = spy(new MockedServiceManager())
-    val wizard = new UserUnregistrationWizard(store, sm)
+    val reporter = mock[ClusterReporter]
+    val wizard = new UserUnregistrationWizard(store, sm, reporter)
 
     sm.defineCluster(MockedServiceManager.PersistentHdfsProps)
   }
@@ -69,7 +72,7 @@ class UserUnregistrationWizardTest
   }
 
   trait WithUserWithCluster extends WithExistingUser {
-    val clusterId = sm.createCluster(
+    val (clusterId, _) = sm.createCluster(
       name = ClusterName("cluster1"),
       size = 6,
       serviceInstances = Set.empty,
@@ -86,7 +89,7 @@ class UserUnregistrationWizardTest
   }
 
   trait WithUserOfNotOwnedClusters extends WithExistingUser {
-    val clusterId = sm.createCluster(
+    val (clusterId, _) = sm.createCluster(
       name = ClusterName("cluster1"),
       size = 2,
       serviceInstances = Set.empty,

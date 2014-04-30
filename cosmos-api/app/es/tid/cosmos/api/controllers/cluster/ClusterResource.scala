@@ -32,12 +32,12 @@ import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
 import es.tid.cosmos.api.profile.{ClusterSecret, Capability, CosmosProfile, QuotaContextFactory}
 import es.tid.cosmos.api.profile.dao.{ClusterDataStore, ProfileDataStore}
 import es.tid.cosmos.api.quota.{Group, NoGroup}
+import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.api.task.TaskDao
 import es.tid.cosmos.api.usage.MachineUsage
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
 import es.tid.cosmos.servicemanager.services.{InfinityDriver, CosmosUserService, Hdfs}
-import es.tid.cosmos.servicemanager.services.Hdfs.HdfsParameters
 import es.tid.cosmos.servicemanager.services.InfinityDriver.InfinityDriverParameters
 
 /** Resource that represents a single cluster. */
@@ -49,7 +49,8 @@ class ClusterResource(
     machineUsage: MachineUsage,
     override val taskDao: TaskDao,
     store: ProfileDataStore with ClusterDataStore,
-    override val maintenanceStatus: MaintenanceStatus) extends Controller with ApiAuthController
+    override val maintenanceStatus: MaintenanceStatus,
+    val reporter: ClusterReporter) extends Controller with ApiAuthController
   with JsonController with MaintenanceAwareController with TaskController {
 
   import ClusterResource._
@@ -101,14 +102,20 @@ class ClusterResource(
 
     val users = usersForCluster(clusterParameters, profile)
     val clusterSecret = ClusterSecret.random()
-    val clusterId = serviceManager.createCluster(
+    val (clusterId, creation_>) = serviceManager.createCluster(
       name = clusterParameters.name,
       clusterSize = clusterParameters.size,
       services = servicesToInstall(clusterParameters, users, clusterSecret),
       users = users,
       preConditions = executableWithinQuota(profile, clusterParameters.size)
     )
-    Logger.info(s"Provisioning new cluster $clusterId")
+    val context = s"Provisioning new cluster $clusterId"
+    Logger.info(context)
+    reporter.reportOnFailure(
+      clusterId,
+      serviceManager.describeClusterUponCompletion(clusterId, creation_>),
+      context
+    )
     val cluster = store.withTransaction { implicit c =>
       store.cluster.register(clusterId, profile.id, clusterSecret, clusterParameters.shared)
     }

@@ -43,7 +43,7 @@ class StatsResourceIT
   }
 
   it must "list running clusters" in new WithSampleSessions {
-    val activeClusterId = services.serviceManager.createCluster(
+    val (activeClusterId, _) = services.serviceManager.createCluster(
       name = ClusterName("active"),
       clusterSize = 2,
       services = Set.empty,

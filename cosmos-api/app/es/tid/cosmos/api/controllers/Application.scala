@@ -20,6 +20,7 @@ import play.api.mvc.Controller
 
 import es.tid.cosmos.api.auth.multiauth.MultiAuthProviderComponent
 import es.tid.cosmos.api.auth.request.RequestAuthenticationComponent
+import es.tid.cosmos.api.email.EmailerComponent
 import es.tid.cosmos.api.controllers.admin._
 import es.tid.cosmos.api.controllers.admin.stats.StatsResource
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
@@ -32,6 +33,7 @@ import es.tid.cosmos.api.controllers.services.ServicesResource
 import es.tid.cosmos.api.controllers.storage.StorageResource
 import es.tid.cosmos.api.controllers.task.TaskResource
 import es.tid.cosmos.api.profile.dao.CosmosDataStoreComponent
+import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.api.task.TaskDaoComponent
 import es.tid.cosmos.api.usage.MachineUsageComponent
 import es.tid.cosmos.common.ConfigComponent
@@ -48,9 +50,16 @@ abstract class Application {
     with TaskDaoComponent
     with MaintenanceStatusComponent
     with RequestAuthenticationComponent
+    with EmailerComponent
     with ConfigComponent =>
 
   lazy val conf = this.config
+  lazy val reporter = new ClusterReporter(
+    conf.getString("email.environment"),
+    conf.getString("email.fromHost"),
+    conf.getString("email.reportToAddress"),
+    emailer
+  )
 
   lazy val controllers: Map[Class[Controller], Controller] = {
     val status = this.maintenanceStatus
@@ -59,7 +68,14 @@ abstract class Application {
     val auth = apiRequestAuthentication
     controllerMap(
       // Pages
-      new Pages(multiAuthProvider, serviceManager, taskDao, store, status, conf.getConfig("pages")),
+      new Pages(
+        multiAuthProvider,
+        serviceManager,
+        reporter,
+        taskDao,
+        store,
+        status,
+        conf.getConfig("pages")),
       new AdminPage(store, status),
       new CliConfigResource(store),
 
@@ -71,7 +87,7 @@ abstract class Application {
       new StatsResource(auth, store, serviceManager, ial),
       new InfoResource(auth, store, serviceManager, machineUsage),
       new ProfileResource(auth, store),
-      new ClusterResource(auth, serviceManager, machineUsage, taskDao, store, status),
+      new ClusterResource(auth, serviceManager, machineUsage, taskDao, store, status, reporter),
       new StorageResource(auth, serviceManager, status),
       new MaintenanceResource(auth, status),
       new TaskResource(auth, taskDao),
@@ -81,7 +97,7 @@ abstract class Application {
       new GroupMapperResource(store, conf),
 
       // Admin API
-      new UserResource(multiAuthProvider, serviceManager, store, status)
+      new UserResource(multiAuthProvider, serviceManager, store, status, reporter)
     )
   }
 

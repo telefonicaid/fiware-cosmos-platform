@@ -21,9 +21,11 @@ import scala.concurrent._
 import scala.language.{postfixOps, reflectiveCalls}
 import scala.util.Random
 
+import es.tid.cosmos.common.NowFuture
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.services.{Hive, Pig, Service}
+import es.tid.cosmos.servicemanager.clusters.ImmutableClusterDescription
+import es.tid.cosmos.servicemanager.services.{Service, Pig, Hive}
 import es.tid.cosmos.servicemanager.services.InfinityServer.InfinityServerParameters
 
 /** In-memory, simulated service manager. */
@@ -162,7 +164,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
       size: Int,
       serviceInstances: Set[AnyServiceInstance],
       users: Seq[ClusterUser],
-      preConditions: ClusterExecutableValidation): ClusterId = synchronized {
+      preConditions: ClusterExecutableValidation): NowFuture[ClusterId, Unit] = synchronized {
     val id = ClusterId.random()
     val properties = ClusterProperties(id, name, size, users.toSet)
 
@@ -171,7 +173,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
      succ = (_) => properties
     )
     defineCluster(propertiesAfterPreconditions)
-    id
+    (id, Future.successful())
   }
 
   override def describeCluster(id: ClusterId): Option[ImmutableClusterDescription] = synchronized {

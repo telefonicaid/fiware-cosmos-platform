@@ -36,10 +36,10 @@ class ServiceManagerTest extends FlatSpec with MustMatchers with FutureMatchers 
   }
 
   it must "provide a cluster description when future succeeds even if description is unavailable" in {
-      val sm = new TestServiceManager(None)
-      val description_> = sm.describeClusterUponCompletion(clusterId, Future.successful())
-      description_> must eventually (be (None))
-    }
+    val sm = new TestServiceManager(None)
+    val description_> = sm.describeClusterUponCompletion(clusterId, Future.successful())
+    description_> must eventually (be (None))
+  }
 
   it must "provide a cluster description when future fails and description exists" in {
     val sm = new TestServiceManager(Some(description))

@@ -30,7 +30,7 @@ import es.tid.cosmos.servicemanager.clusters._
 class ClusterReporterTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   "A cluster reporter" must "report cluster failures by email" in new WithReporter {
-    val description_> = Future.successful(Some(description))
+    val description_> = Future.successful(Some(failedClusterDescription))
     reporter.reportOnFailure(
       clusterId,
       description_>,
@@ -92,7 +92,7 @@ class ClusterReporterTest extends FlatSpec with MustMatchers with FutureMatchers
   }
 
   it must "do nothing when cluster not in failed state" in new WithReporter {
-    val description_> = Future.successful(Some(description.copy(state = Running)))
+    val description_> = Future.successful(Some(failedClusterDescription.copy(state = Running)))
     reporter.reportOnFailure(clusterId, description_>, "a context") must eventuallySucceed
     emailer.emailsSent must be ('empty)
   }
@@ -108,7 +108,7 @@ class ClusterReporterTest extends FlatSpec with MustMatchers with FutureMatchers
       emailer
     )
     val clusterId = ClusterId("anID")
-    val description = ImmutableClusterDescription(
+    val failedClusterDescription = ImmutableClusterDescription(
       id = clusterId,
       name = ClusterName("failedCluster"),
       state = Failed("This is an error"),

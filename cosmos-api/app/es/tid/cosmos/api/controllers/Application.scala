@@ -20,6 +20,7 @@ import play.api.mvc.Controller
 
 import es.tid.cosmos.api.auth.multiauth.MultiAuthProviderComponent
 import es.tid.cosmos.api.auth.request.RequestAuthenticationComponent
+import es.tid.cosmos.api.email.EmailerComponent
 import es.tid.cosmos.api.controllers.admin._
 import es.tid.cosmos.api.controllers.admin.stats.StatsResource
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
@@ -32,13 +33,12 @@ import es.tid.cosmos.api.controllers.services.ServicesResource
 import es.tid.cosmos.api.controllers.storage.StorageResource
 import es.tid.cosmos.api.controllers.task.TaskResource
 import es.tid.cosmos.api.profile.dao.CosmosDataStoreComponent
+import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.api.task.TaskDaoComponent
 import es.tid.cosmos.api.usage.MachineUsageComponent
 import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
-import es.tid.cosmos.api.report.ClusterReporter
-import es.tid.cosmos.api.email.EmailerComponent
 
 /** Web application template to be mixed-in with its dependencies. */
 abstract class Application {

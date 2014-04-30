@@ -38,8 +38,9 @@ import es.tid.cosmos.servicemanager.ServiceManager
   * @param serviceManager  For registering the user credentials
   */
 class UserRegistrationWizard(
-    store: ProfileDataStore, serviceManager: ServiceManager, reporter: ClusterReporter)
-  extends Results {
+    store: ProfileDataStore,
+    serviceManager: ServiceManager,
+    reporter: ClusterReporter) extends Results {
 
   import Scalaz._
 

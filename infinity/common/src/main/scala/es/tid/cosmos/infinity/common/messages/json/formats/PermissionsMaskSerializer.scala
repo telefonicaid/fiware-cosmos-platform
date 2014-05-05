@@ -30,7 +30,7 @@ private[formats] class PermissionsMaskSerializer extends Serializer[PermissionsM
 
   override def deserialize(
       implicit format: Formats): PartialFunction[(TypeInfo, JValue), PermissionsMask] = {
-    case (TypeInfo(`maskClass`, _), JString(rawMask @ PermissionsMask.OctalPattern(_, _, _))) =>
+    case (TypeInfo(`maskClass`, _), JString(rawMask @ PermissionsMask.OctalPattern(_, _, _, _))) =>
       PermissionsMask.fromOctal(rawMask)
   }
 }

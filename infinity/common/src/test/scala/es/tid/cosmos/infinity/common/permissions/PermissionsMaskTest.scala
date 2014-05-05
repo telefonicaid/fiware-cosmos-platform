@@ -29,6 +29,10 @@ class PermissionsMaskTest extends FlatSpec with MustMatchers {
     ))
   }
 
+  it must "be convertible from valid octal representation with sticky bit" in {
+    PermissionsMask.fromOctal("1752") must be ('sticky)
+  }
+
   it must "be convertible from a valid short representation" in {
     PermissionsMask.fromShort(0x1ea) must be (PermissionsMask(
       owner = PermissionClass(read = true, write = true, execute = true),
@@ -39,6 +43,8 @@ class PermissionsMaskTest extends FlatSpec with MustMatchers {
 
   it must "print itself as octal value" in {
     PermissionsMask.fromOctal("752").toString must be ("752")
+    PermissionsMask.fromOctal("0752").toString must be ("752")
+    PermissionsMask.fromOctal("1752").toString must be ("1752")
   }
 
   it must "reject conversion from invalid octal representation" in {

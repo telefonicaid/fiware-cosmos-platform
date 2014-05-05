@@ -16,17 +16,23 @@
 
 package es.tid.cosmos.infinity.server.actions
 
+import scala.concurrent.Future
+
 import es.tid.cosmos.infinity.common.{Path, UserProfile}
-import es.tid.cosmos.infinity.server.fs.PathMetadata
+import es.tid.cosmos.infinity.common.messages.PathMetadata
+import es.tid.cosmos.infinity.server.urls.UrlMapper
 
 /** An action performed on a Infinity path. */
 trait Action {
+
   val on: Path
 
-  def apply(user: UserProfile): Action.Result
+  def apply(context: Action.Context): Future[Action.Result]
 }
 
 object Action {
+
+  case class Context(user: UserProfile, urlMapper: UrlMapper)
 
   /** A marking trait used to represent the result of an action.
     *

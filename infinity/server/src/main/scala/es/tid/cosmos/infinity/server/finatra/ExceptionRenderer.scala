@@ -51,6 +51,5 @@ object ExceptionRenderer {
   private def renderWithAuth[E <: Throwable](
     status: Int, errorCode: ErrorCode[E], exception: Throwable) =
     render(status, errorCode, exception)
-      .header("WWW-Authenticate", """Basic realm="Infinity"""")
-      .header("WWW-Authenticate", """Bearer realm="Infinity"""")
+      .header("WWW-Authenticate", """Basic realm="Infinity", Bearer realm="Infinity"""")
 }

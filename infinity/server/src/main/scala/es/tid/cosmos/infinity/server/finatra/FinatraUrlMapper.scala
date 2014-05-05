@@ -16,13 +16,16 @@
 
 package es.tid.cosmos.infinity.server.finatra
 
-import com.twitter.finatra.ResponseBuilder
+import java.net.URL
 
-import es.tid.cosmos.infinity.server.actions.Action
+import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.server.config.InfinityConfig
+import es.tid.cosmos.infinity.server.urls.UrlMapper
 
-/** An object able to render action results into HTTP responses. */
-object ActionResultHttpRenderer {
+class FinatraUrlMapper(config: InfinityConfig) extends UrlMapper {
 
-  def apply(result: Action.Result): ResponseBuilder = new ResponseBuilder()
-    .status(200)
+  override def metadataUrl(path: Path): URL = new URL(s"${config.metadataBaseUrl}/$path")
+
+  override def contentUrl(path: Path, contentHost: String): Option[URL] =
+    config.contentServerUrl(contentHost)
 }

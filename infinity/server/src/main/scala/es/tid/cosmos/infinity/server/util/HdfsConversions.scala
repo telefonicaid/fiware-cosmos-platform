@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.util
 
-import com.twitter.finatra.ResponseBuilder
+import org.apache.hadoop.fs.permission.FsPermission
 
-import es.tid.cosmos.infinity.server.actions.Action
+import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
-/** An object able to render action results into HTTP responses. */
-object ActionResultHttpRenderer {
+/** This object provides implicits to bling HDFS objects into their equivalent Infinity messages. */
+object HdfsConversions {
 
-  def apply(result: Action.Result): ResponseBuilder = new ResponseBuilder()
-    .status(200)
+  implicit class BlingFsPermission(permission: FsPermission) {
+
+    def toInfinity: PermissionsMask = PermissionsMask.fromShort(permission.toShort)
+  }
 }

@@ -30,15 +30,14 @@ object PermissionClass {
 
   /** Obtain the permission class from its octal representation. */
   def fromOctal(octal: String): PermissionClass = octal match {
-    case OctalPattern(_) =>
-      val bin = octal.toByte
-      PermissionClass(
-        read = (bin & 0x4) == 0x4,
-        write = (bin & 0x2) == 0x2,
-        execute = (bin & 0x1) == 0x1
-      )
-    case _ =>
-      throw new IllegalArgumentException(s"invalid octal UNIX class permissions in $octal")
+    case OctalPattern(_) => fromByte(octal.toByte)
+    case _ => throw new IllegalArgumentException(s"invalid octal UNIX class permissions in $octal")
   }
+
+  def fromByte(n: Byte): PermissionClass = PermissionClass(
+    read = (n & 0x4) == 0x4,
+    write = (n & 0x2) == 0x2,
+    execute = (n & 0x1) == 0x1
+  )
 }
 

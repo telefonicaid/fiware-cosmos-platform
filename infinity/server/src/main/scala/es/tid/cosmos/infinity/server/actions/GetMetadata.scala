@@ -16,11 +16,49 @@
 
 package es.tid.cosmos.infinity.server.actions
 
+import java.net.URL
+import java.util.Date
+import scala.concurrent._
+
+import org.apache.hadoop.hdfs.protocol.HdfsFileStatus
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
-import es.tid.cosmos.infinity.common.{Path, UserProfile}
+import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.messages.FileMetadata
+import es.tid.cosmos.infinity.server.util.HdfsConversions._
 
 case class GetMetadata(nameNode: NamenodeProtocols, on: Path) extends Action {
 
-  override def apply(user: UserProfile): Action.Result = ???
+  import ExecutionContext.Implicits.global
+
+  override def apply(context: Action.Context): Future[Action.Result] = future {
+    val fileStatus = nameNode.getFileInfo(on.toString)
+    Action.PathMetadataResult(fileMetadataOf(context, fileStatus))
+  }
+
+  private def fileMetadataOf(
+      context: Action.Context, fileStatus: HdfsFileStatus) = FileMetadata(
+    path = on,
+    metadata = context.urlMapper.metadataUrl(on),
+    content = pickContentServer(context, fileStatus),
+    owner = fileStatus.getOwner,
+    group = fileStatus.getGroup,
+    modificationTime = new Date(fileStatus.getModificationTime),
+    accessTime = new Date(fileStatus.getAccessTime),
+    permissions = fileStatus.getPermission.toInfinity,
+    replication = fileStatus.getReplication,
+    blockSize = fileStatus.getBlockSize,
+    size = fileStatus.getLen
+  )
+
+  private def pickContentServer(
+      context: Action.Context, fileStatus: HdfsFileStatus): Option[URL] = {
+    val blocks = nameNode.getBlockLocations(on.toString, 0, fileStatus.getLen)
+    if (blocks.locatedBlockCount() != 0) {
+      val locs = blocks.get(0).getLocations
+      if (locs.size != 0) context.urlMapper.contentUrl(on, locs(0).getHostName)
+      else None
+    }
+    else None
+  }
 }

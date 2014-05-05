@@ -26,7 +26,7 @@ import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 class HttpInfinityClientTest extends FlatSpec
     with MustMatchers with FutureMatchers with HttpInfinityClientBehavior {
 
-  "Reading metadata" must behave like new TestData {
+  "Reading metadata" must behave like {
     canHandleCommonErrors(_.pathMetadata(somePath))
 
     it must "succeed for an existing file" in new Fixture {
@@ -51,7 +51,7 @@ class HttpInfinityClientTest extends FlatSpec
     }
   }
 
-  "Creating a file or directory" must behave like new TestData {
+  "Creating a file or directory" must behave like {
     canHandleCommonErrors(_.createFile(somePath / "aFile", permissions))
     canHandleAlreadyExistsError(_.createFile(somePath / "aFile", permissions))
     canHandleNotFoundError(_.createFile(somePath / "aFile", permissions))
@@ -68,7 +68,7 @@ class HttpInfinityClientTest extends FlatSpec
     }
   }
 
-  "Creating a directory" must behave like new TestData {
+  "Creating a directory" must behave like {
     canHandleCommonErrors(_.createDirectory(somePath / "aDir", permissions))
     canHandleAlreadyExistsError(_.createDirectory(somePath / "aDir", permissions))
     canHandleNotFoundError(_.createDirectory(somePath / "aDir", permissions))
@@ -85,7 +85,7 @@ class HttpInfinityClientTest extends FlatSpec
     }
   }
 
-  "Moving a file or directory" must behave like new TestData {
+  "Moving a file or directory" must behave like {
     canHandleCommonErrors(_.move(somePath / "aFile", somePath / "aDir"))
     canHandleAlreadyExistsError(_.move(somePath / "aFile", somePath / "aDir"))
     canHandleNotFoundError(_.move(somePath / "aFile", somePath / "aDir"))
@@ -115,7 +115,7 @@ class HttpInfinityClientTest extends FlatSpec
     }
   }
 
-  "Changing the owner" must behave like new TestData {
+  "Changing the owner" must behave like {
     canHandleCommonErrors(_.changeOwner(somePath, "newOwner"))
     canHandleNotFoundError(_.changeOwner(somePath, "newOwner"))
 
@@ -130,7 +130,7 @@ class HttpInfinityClientTest extends FlatSpec
     }
   }
 
-  "Changing the group" must behave like new TestData {
+  "Changing the group" must behave like {
     canHandleCommonErrors(_.changeGroup(somePath, "newGroup"))
     canHandleNotFoundError(_.changeGroup(somePath, "newGroup"))
 
@@ -145,7 +145,7 @@ class HttpInfinityClientTest extends FlatSpec
     }
   }
 
-  "Changing permissions" must behave like new TestData {
+  "Changing permissions" must behave like {
     val newPermissions = PermissionsMask.fromOctal("700")
     canHandleCommonErrors(_.changePermissions(somePath, newPermissions))
     canHandleNotFoundError(_.changePermissions(somePath, newPermissions))
@@ -162,7 +162,7 @@ class HttpInfinityClientTest extends FlatSpec
     }
   }
 
-  "Deleting" must behave like new TestData {
+  "Deleting" must behave like {
     canHandleCommonErrors(_.delete(somePath, isRecursive = true))
     canHandleNotFoundError(_.delete(somePath, isRecursive = true))
 
@@ -187,7 +187,7 @@ class HttpInfinityClientTest extends FlatSpec
     }
   }
 
-  "Reading content" must behave like new TestData {
+  "Reading content" must behave like {
     canHandleCommonErrors(_.read(somePath, offset = None, length = None))
     // when metadata is not available
     canHandleNotFoundError(_.read(somePath, offset = None, length = None))
@@ -215,13 +215,11 @@ class HttpInfinityClientTest extends FlatSpec
     }
   }
 
-  trait TestData {
-    val somePath = Path.absolute("/some/path")
-    val aDate = new Date(1398420798000L)
-    val permissions = PermissionsMask.fromOctal("644")
-  }
+  val somePath = Path.absolute("/some/path")
+  val aDate = new Date(1398420798000L)
+  val permissions = PermissionsMask.fromOctal("644")
 
-  trait Fixture extends TestData {
+  trait Fixture {
     val infinity = new MockInfinityServer(metadataPort = 8898, defaultDate = aDate)
     val dataFactory = infinity.DataFactory
     val client = new HttpInfinityClient(infinity.metadataEndpoint)

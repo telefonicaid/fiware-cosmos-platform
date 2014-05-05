@@ -18,16 +18,18 @@ package es.tid.cosmos.infinity.server.finatra
 import scala.concurrent.Future
 
 import com.twitter.finatra.FinatraServer
-import com.twitter.finatra.test.{MockResponse, SpecHelper}
+import com.twitter.finatra.test.SpecHelper
+import com.typesafe.config.ConfigFactory
+import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.{MatchResult, Matcher, ShouldMatchers}
+import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.common.UserProfile
 import es.tid.cosmos.infinity.server.authentication._
-import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
+import es.tid.cosmos.infinity.server.config.InfinityConfig
 
 class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar {
 
@@ -70,21 +72,13 @@ class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar 
     }
   }
 
-  it should "respond 200" in new Fixture {
-    givenSuccessAuthentication {
-      get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
-        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
-      ))
-      response.body should equal("metadata of /some/file.txt")
-      response.code should equal(200)
-    }
-  }
-
   trait Fixture extends SpecHelper {
+    val config = new InfinityConfig(ConfigFactory.load())
     val nameNode = mock[NamenodeProtocols]
+    val urlMapper = new FinatraUrlMapper(config)
     val authService = mock[AuthenticationService]
     override val server = new FinatraServer
-    val app = new MetadataRoutes(authService, nameNode)
+    val app = new MetadataRoutes(config, authService, nameNode, urlMapper)
     server.register(app)
 
     def givenSuccessAuthentication(action: => Unit) {

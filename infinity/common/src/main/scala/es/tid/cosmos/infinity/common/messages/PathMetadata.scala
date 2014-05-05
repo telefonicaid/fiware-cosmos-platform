@@ -41,14 +41,14 @@ sealed trait PathMetadata extends AbstractMetadata
 case class FileMetadata(
     override val path: Path,
     override val metadata: URL,
-    content: URL,
+    content: Option[URL],
     override val owner: String,
     override val group: String,
     override val modificationTime: Date,
     override val accessTime: Date,
     override val permissions: PermissionsMask,
     replication: Int,
-    blockSize: Int,
+    blockSize: Long,
     override val size: Long) extends PathMetadata {
 
   override val `type` = PathType.File
@@ -56,9 +56,10 @@ case class FileMetadata(
   def this(
       path: String, metadata: String, content: String, owner: String, group: String,
       modificationTime: Date, accessTime: Date, permissions: String, replication: Int,
-      blockSize: Int, size: Long) =
-    this(Path.absolute(path), new URL(metadata), new URL(content), owner, group, modificationTime,
-      accessTime, PermissionsMask.fromOctal(permissions), replication, blockSize, size)
+      blockSize: Long, size: Long) =
+    this(Path.absolute(path), new URL(metadata), Option(content).map(new URL(_)), owner, group,
+      modificationTime, accessTime, PermissionsMask.fromOctal(permissions), replication, blockSize,
+      size)
 
   require(replication >= 0, s"Replication must be non-negative but was $replication")
   require(blockSize > 0, s"Block size must be positive but was $blockSize")

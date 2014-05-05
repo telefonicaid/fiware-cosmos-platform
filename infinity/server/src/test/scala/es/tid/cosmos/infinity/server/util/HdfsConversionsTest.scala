@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.util
 
-import com.twitter.finatra.ResponseBuilder
+import org.apache.hadoop.fs.permission.FsPermission
+import org.scalatest.{FlatSpec, Inside}
+import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.server.actions.Action
+import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
-/** An object able to render action results into HTTP responses. */
-object ActionResultHttpRenderer {
+class HdfsConversionsTest extends FlatSpec with MustMatchers with Inside {
 
-  def apply(result: Action.Result): ResponseBuilder = new ResponseBuilder()
-    .status(200)
+  import HdfsConversions._
+
+  "HDFS conversions" must "convert FS permission into Infinity" in {
+    new FsPermission("755").toInfinity must be (PermissionsMask.fromOctal("755"))
+  }
 }

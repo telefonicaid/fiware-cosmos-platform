@@ -29,6 +29,14 @@ class PermissionsMaskTest extends FlatSpec with MustMatchers {
     ))
   }
 
+  it must "be convertible from a valid short representation" in {
+    PermissionsMask.fromShort(0x1ea) must be (PermissionsMask(
+      owner = PermissionClass(read = true, write = true, execute = true),
+      group = PermissionClass(read = true, write = false, execute = true),
+      others = PermissionClass(read = false, write = true, execute = false)
+    ))
+  }
+
   it must "print itself as octal value" in {
     PermissionsMask.fromOctal("752").toString must be ("752")
   }

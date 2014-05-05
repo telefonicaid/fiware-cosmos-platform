@@ -20,24 +20,32 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import com.twitter.finatra.{Controller, Request}
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
+import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
+import es.tid.cosmos.infinity.server.config.InfinityConfig
+import es.tid.cosmos.infinity.server.urls.UrlMapper
 import es.tid.cosmos.infinity.server.util.TwitterConversions._
 
 class MetadataRoutes(
+    config: InfinityConfig,
     authService: AuthenticationService,
-    nameNode: NamenodeProtocols) extends Controller {
+    nameNode: NamenodeProtocols,
+    urlMapper: UrlMapper) extends Controller {
 
-  private val contentPath = "/infinityfs/v1/metadata/*"
+  private val basePath = config.metadataBasePath
   private val actionValidator = new HttpActionValidator(nameNode)
 
-  get(contentPath) { request =>
+  get(s"$basePath/*") { request =>
+    val url = s"${request.host.getOrElse("")}/$basePath"
     val path = getPath(request)
     val response = for {
       credentials <- HttpCredentialsValidator(request.remoteAddress, request)
       action <- actionValidator(request)
     } yield for {
       profile <- authService.authenticate(credentials)
-    } yield render.plain(s"metadata of $path")
+      context = Action.Context(profile, urlMapper)
+      result <- action(context)
+    } yield ActionResultHttpRenderer(result)
     response.fold(error => ExceptionRenderer(error).toFuture, success => success.toTwitter)
   }
 

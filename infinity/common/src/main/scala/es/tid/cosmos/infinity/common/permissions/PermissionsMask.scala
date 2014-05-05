@@ -37,6 +37,12 @@ object PermissionsMask {
       throw new IllegalArgumentException(s"invalid octal UNIX permissions in $octal")
   }
 
+  def fromShort(n: Short): PermissionsMask = PermissionsMask(
+    owner = PermissionClass.fromByte((n >> 6).toByte),
+    group = PermissionClass.fromByte((n >> 3).toByte),
+    others = PermissionClass.fromByte(n.toByte)
+  )
+
   /** Check whether given string is a valid octal representation for UNIX permissions. */
   def isValidOctal(expression: String): Boolean = try {
     fromOctal(expression)

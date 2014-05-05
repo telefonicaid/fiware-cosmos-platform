@@ -24,6 +24,13 @@ class InfinityConfig(config: Config) {
 
   import InfinityConfig._
 
+  val metadataProtocol = config.getString("metadata.protocol")
+  val metadataHost = config.getString("metadata.host")
+  val metadataPort = config.getInt("metadata.port")
+  val metadataBasePath = mapOpt(config.getString("metadata.basePath")).getOrElse(DefaultBasePath)
+  val metadataBaseUrl = new URL(
+    s"$metadataProtocol://$metadataHost:$metadataPort/$metadataBasePath")
+
   def contentServerUrl(hostname: String): Option[URL] = {
     val protocol = mapOpt(config.getString(s"contentServer.$hostname.protocol"))
       .getOrElse(DefaultProtocol)

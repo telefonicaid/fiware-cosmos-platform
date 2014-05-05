@@ -53,6 +53,10 @@ class InfinityConfigTest extends FlatSpec with MustMatchers {
     config.contentServerUrl("content01.example.com") must be (None)
   }
 
-  def configFor(settings: (String, String)*): InfinityConfig =
-    new InfinityConfig(ConfigFactory.parseMap(settings.toMap.asJava))
+  def configFor(settings: (String, String)*): InfinityConfig = {
+    val defaultSettings = ConfigFactory.load()
+    val customSettings = ConfigFactory.parseMap(settings.toMap.asJava)
+    val config = customSettings.withFallback(defaultSettings)
+    new InfinityConfig(config)
+  }
 }

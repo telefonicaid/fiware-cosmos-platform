@@ -17,18 +17,23 @@
 package es.tid.cosmos.infinity.common.permissions
 
 /** The UNIX-like permissions of a file. */
-case class PermissionsMask(owner: PermissionClass, group: PermissionClass, others: PermissionClass) {
-  override def toString: String = owner.toString + group.toString + others.toString
+case class PermissionsMask(
+    owner: PermissionClass,
+    group: PermissionClass,
+    others: PermissionClass,
+    isSticky: Boolean = false) {
+  override def toString: String = Seq(if (isSticky) "1" else "", owner, group, others).mkString
 }
 
 object PermissionsMask {
 
-  val OctalPattern = """([0-7])([0-7])([0-7])""".r
+  val OctalPattern = """(0|1)?([0-7])([0-7])([0-7])""".r
 
   /** Obtain the UNIX-like permissions from its octal representation. */
   def fromOctal(octal: String): PermissionsMask = octal match {
-    case OctalPattern(u, g, o) =>
+    case OctalPattern(s, u, g, o) =>
       PermissionsMask(
+        isSticky = s == "1",
         owner = PermissionClass.fromOctal(u),
         group = PermissionClass.fromOctal(g),
         others = PermissionClass.fromOctal(o)
@@ -38,6 +43,7 @@ object PermissionsMask {
   }
 
   def fromShort(n: Short): PermissionsMask = PermissionsMask(
+    isSticky = (n >> 9).toByte == 1,
     owner = PermissionClass.fromByte((n >> 6).toByte),
     group = PermissionClass.fromByte((n >> 3).toByte),
     others = PermissionClass.fromByte(n.toByte)

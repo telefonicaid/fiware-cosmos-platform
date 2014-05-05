@@ -42,7 +42,8 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
     }
 
   override def createFile(
-      path: SubPath, permissions: PermissionsMask,
+      path: SubPath,
+      permissions: PermissionsMask,
       replication: Option[Int],
       blockSize: Option[Int]): Future[Unit] =
     createPath(path, CreateFile(path.name, permissions, replication, blockSize))

@@ -55,9 +55,14 @@ class MockInfinityServer(metadataPort: Int, defaultDate: Date) extends Assertion
         Ok ~> ResponseString(contents)
       }
 
-    case req @ POST(UPath(MetadataPath(path))) => {
+    case req @ POST(UPath(MetadataPath(path))) =>
       handleActionOnPath(Path.absolute(path), actionParser.parse(Body.string(req)))
-    }
+
+    case req @ POST(UPath(ContentPath(path))) =>
+      updateContent(Path.absolute(path), _ + Body.string(req))
+
+    case req @ PUT(UPath(ContentPath(path))) =>
+      updateContent(Path.absolute(path), _ => Body.string(req))
 
     case DELETE(UPath(MetadataPath(path))) => {
       val absolutePath = Path.absolute(path)
@@ -180,6 +185,15 @@ class MockInfinityServer(metadataPort: Int, defaultDate: Date) extends Assertion
       case _ => BadRequest
     }
   }
+
+  private def updateContent(
+      path: Path, oldToNewContent: String => String): ResponseFunction[HttpServletResponse] =
+    if (!pathsContents.contains(path))
+      NotFound
+    else {
+      pathsContents = pathsContents.updated(path, oldToNewContent(pathsContents(path)))
+      NoContent
+    }
 
   private implicit class MetadataOps(metadata: PathMetadata) {
     def moved(to: SubPath): PathMetadata = metadata.transform(

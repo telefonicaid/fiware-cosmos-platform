@@ -215,6 +215,44 @@ class HttpInfinityClientTest extends FlatSpec
     }
   }
 
+  "Appending content" must behave like {
+    canHandleCommonErrors(_.append(somePath))
+    canHandleNotFoundError(_.append(somePath))
+
+    it must "succeed for an existing file" in new Fixture {
+      val parent = dataFactory.dirMetadata(somePath, permissions)
+      val file = dataFactory.fileMetadata(somePath / "aFile", permissions)
+      infinity.givenExistingPaths(parent, file)
+      infinity.givenExistingContent(file, "aContent")
+      infinity.withServer {
+        val writer = Await.result(client.append(file.path), timeOut)
+        writer.write(" appended")
+        contentOf(client.read(file.path, None, None)) must be ("aContent")
+        writer.close()
+        contentOf(client.read(file.path, None, None)) must be ("aContent appended")
+      }
+    }
+  }
+
+  "Overwriting content" must behave like {
+    canHandleCommonErrors(_.append(somePath))
+    canHandleNotFoundError(_.append(somePath))
+
+    it must "succeed for an existing file" in new Fixture {
+      val parent = dataFactory.dirMetadata(somePath, permissions)
+      val file = dataFactory.fileMetadata(somePath / "aFile", permissions)
+      infinity.givenExistingPaths(parent, file)
+      infinity.givenExistingContent(file, "aContent")
+      infinity.withServer {
+        val writer = Await.result(client.overwrite(file.path), timeOut)
+        writer.write("newContent")
+        contentOf(client.read(file.path, None, None)) must be ("aContent")
+        writer.close()
+        contentOf(client.read(file.path, None, None)) must be ("newContent")
+      }
+    }
+  }
+
   val somePath = Path.absolute("/some/path")
   val aDate = new Date(1398420798000L)
   val permissions = PermissionsMask.fromOctal("644")

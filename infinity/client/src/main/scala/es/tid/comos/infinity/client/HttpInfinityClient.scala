@@ -11,9 +11,9 @@
 
 package es.tid.comos.infinity.client
 
-import java.io.{InputStreamReader, OutputStreamWriter}
+import java.io.{PipedOutputStream, PipedInputStream, InputStreamReader, OutputStreamWriter}
 import java.net.{ConnectException, URL}
-import scala.concurrent.Future
+import scala.concurrent.{Future, blocking}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.ning.http.client.{RequestBuilder, Response}
@@ -25,6 +25,7 @@ import es.tid.cosmos.infinity.common.messages._
 import es.tid.cosmos.infinity.common.messages.Action._
 import es.tid.cosmos.infinity.common.messages.json._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import com.ning.http.client.generators.InputStreamBodyGenerator
 
 class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
 
@@ -77,8 +78,7 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
   override def read(
       path: Path, offset: Option[Long], length: Option[Long]): Future[InputStreamReader] =
     // read metadata first, get content url and then read content
-    pathMetadata(path) flatMap { maybeMetadata =>
-      val metadata = maybeMetadata.getOrElse(throw NotFoundException(path))
+    existingMetaData(path) flatMap { metadata =>
       val params = List(
         offset.map("offset" -> _.toString),
         length.map("length" -> _.toString)
@@ -92,9 +92,39 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
       }
     }
 
-  override def overwrite(path: Path): Future[OutputStreamWriter] = ???
+  override def overwrite(path: Path): Future[OutputStreamWriter] =
+    requestWithOutputStream(path, _.PUT)
 
-  override def append(path: Path): Future[OutputStreamWriter] = ???
+  override def append(path: Path): Future[OutputStreamWriter] =
+    requestWithOutputStream(path, _.POST)
+
+  private def requestWithOutputStream(
+      path: Path, requestMethod: RequestBuilder => RequestBuilder): Future[OutputStreamWriter] =
+    existingMetaData(path) map { metadata =>
+      /* Create a stream pipes to allow the caller to write on the output stream
+       * while a separate thread is reading its input stream to form the HTTP request body
+       */
+      val in = new PipedInputStream()
+      val out = new PipedOutputStream(in)
+      val writer = new OutputStreamWriter(out)
+      val request = requestMethod(contentResource(metadata)).setBody(
+        new InputStreamBodyGenerator(in))
+      /* While the request is async, ning blocks to acquire the request's body.
+       * Since the body comes from an async input stream we need to wrap the request in another
+       * async block.
+       */
+      Future { blocking { httpRequest(request) { response =>
+        response.getStatusCode match {
+          case 404 => throw NotFoundException(path)
+          case 204 => ()
+        }
+      }}}
+      writer
+    }
+
+
+  private def existingMetaData(path: Path): Future[PathMetadata] =
+    pathMetadata(path) map (_.getOrElse(throw NotFoundException(path)))
 
   private def createPath(path: SubPath, action: Action): Future[Unit] = {
     val body = actionFormatter.format(action)

@@ -14,22 +14,26 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.util
+package es.tid.cosmos.infinity.common.hadoop
 
+import org.apache.hadoop.fs.{Path => HadoopPath}
 import org.apache.hadoop.fs.permission.FsPermission
 
+import es.tid.cosmos.infinity.common.Path
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
-/** This object provides implicits to bling HDFS objects into their equivalent Infinity messages. */
-object HdfsConversions {
+/** This object provides implicits to bling Hadoop objects into their equivalent Infinity ones. */
+object HadoopConversions {
 
-  implicit class BlingFsPermission(permission: FsPermission) {
-
+  implicit class FsPermissionConversion(permission: FsPermission) {
     def toInfinity: PermissionsMask = PermissionsMask.fromShort(permission.toShort)
   }
 
-  implicit class BlingPermissionsMask(permission: PermissionsMask) {
+  implicit class PermissionsMaskConversion(permission: PermissionsMask) {
+    def toHadoop: FsPermission = new FsPermission(permission.toShort)
+  }
 
-    def toHdfs: FsPermission = new FsPermission(permission.toShort)
+  implicit class HadoopPathConversion(val path: HadoopPath) extends AnyVal {
+    def toInfinity: Path = Path.absolute(path.toUri.getPath)
   }
 }

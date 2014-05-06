@@ -31,6 +31,10 @@ case class ChangeOwner(nameNode: NamenodeProtocols, on: Path, owner: String) ext
     if (!context.user.superuser)
       Future.successful(OperationNotAllowed(context.user.username, on))
     else
-      future { nameNode.setOwner(on.toString, owner, null) }
+      future { nameNode.setOwner(on.toString, owner, ChangeOwner.SameGroup) }
         .flatMap(_ => GetMetadata(nameNode, on).apply(context))
+}
+
+object ChangeOwner {
+  private val SameGroup = null
 }

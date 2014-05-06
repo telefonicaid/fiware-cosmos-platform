@@ -39,11 +39,15 @@ case class ChangeGroup(nameNode: NamenodeProtocols, on: Path, group: String) ext
 
     isAllowed_> flatMap { allowed =>
       if (allowed) {
-        nameNode.setOwner(on.toString, null, group)
+        nameNode.setOwner(on.toString, ChangeGroup.SameOwner, group)
         metadata.action(on)
       }
       else
         success(OperationNotAllowed(context.user.username, on))
     }
   }
+}
+
+object ChangeGroup {
+  private val SameOwner = null
 }

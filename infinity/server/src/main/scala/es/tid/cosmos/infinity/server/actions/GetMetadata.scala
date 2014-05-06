@@ -20,11 +20,12 @@ import java.net.URL
 import java.util.Date
 import scala.concurrent._
 
-import org.apache.hadoop.hdfs.protocol.HdfsFileStatus
+import org.apache.hadoop.hdfs.protocol.{DirectoryListing, HdfsFileStatus}
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
-import es.tid.cosmos.infinity.common.Path
-import es.tid.cosmos.infinity.common.messages.FileMetadata
+import es.tid.cosmos.infinity.common.{SubPath, Path}
+import es.tid.cosmos.infinity.common.messages.{DirectoryEntry, DirectoryMetadata, FileMetadata}
+import es.tid.cosmos.infinity.common.messages.PathType.{File, Directory}
 import es.tid.cosmos.infinity.server.util.HdfsConversions._
 
 case class GetMetadata(nameNode: NamenodeProtocols, on: Path) extends Action {
@@ -33,7 +34,18 @@ case class GetMetadata(nameNode: NamenodeProtocols, on: Path) extends Action {
 
   override def apply(context: Action.Context): Future[Action.Result] = future {
     val fileStatus = nameNode.getFileInfo(on.toString)
-    Action.PathMetadataResult(fileMetadataOf(context, fileStatus))
+    if (fileStatus.isDir) {
+      Action.PathMetadataResult(dirMetadataOf(context, fileStatus, getAllListings(fileStatus)))
+    } else {
+      Action.PathMetadataResult(fileMetadataOf(context, fileStatus))
+    }
+  }
+
+  private def getAllListings(fileStatus: HdfsFileStatus) = {
+    def getListing(start: Array[Byte]) = nameNode.getListing(on.toString, start, false)
+    lazy val directoryListings: Stream[DirectoryListing] = getListing(HdfsFileStatus.EMPTY_NAME) #::
+      directoryListings.takeWhile(_.hasMore).map(prev => getListing(prev.getLastName))
+    directoryListings.flatMap(_.getPartialListing).toList
   }
 
   private def fileMetadataOf(
@@ -50,6 +62,35 @@ case class GetMetadata(nameNode: NamenodeProtocols, on: Path) extends Action {
     blockSize = fileStatus.getBlockSize,
     size = fileStatus.getLen
   )
+
+  private def dirMetadataOf(
+      context: Action.Context,
+      fileStatus: HdfsFileStatus,
+      contents: List[HdfsFileStatus]) = DirectoryMetadata(
+    path = on,
+    metadata = context.urlMapper.metadataUrl(on),
+    owner = fileStatus.getOwner,
+    group = fileStatus.getGroup,
+    modificationTime = new Date(fileStatus.getModificationTime),
+    accessTime = new Date(fileStatus.getAccessTime),
+    permissions = fileStatus.getPermission.toInfinity,
+    content = contents.map(directoryEntryOf(context))
+  )
+
+  private def directoryEntryOf(context: Action.Context)(fileStatus: HdfsFileStatus) = {
+    val path = SubPath(on, fileStatus.getLocalName)
+    DirectoryEntry(
+      path = path,
+      metadata = context.urlMapper.metadataUrl(path),
+      owner = fileStatus.getOwner,
+      group = fileStatus.getGroup,
+      permissions = fileStatus.getPermission.toInfinity,
+      modificationTime = new Date(fileStatus.getModificationTime),
+      accessTime = new Date(fileStatus.getAccessTime),
+      size = fileStatus.getLen,
+      `type` = if (fileStatus.isDir) Directory else File
+    )
+  }
 
   private def pickContentServer(
       context: Action.Context, fileStatus: HdfsFileStatus): Option[URL] = {

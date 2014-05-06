@@ -26,10 +26,10 @@ import org.mockito.Mockito.verify
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.client.InfinityClient
-import es.tid.cosmos.infinity.common.fs.{DirectoryMetadata, Path, RootPath, SubPath}
+import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
-class InfinityClientMock extends MockitoSugar {
+class MockInfinityClient extends MockitoSugar {
 
   val value = mock[InfinityClient]
 
@@ -42,8 +42,7 @@ class InfinityClientMock extends MockitoSugar {
   }
 
   def givenDirectory(path: Path): Unit = {
-    given(value.pathMetadata(path))
-      .willReturn(Future.successful(Some(DirectoryMetadata(
+    givenExistingPath(DirectoryMetadata(
       path = path,
       metadata = defaultMetadataUrl,
       content = Seq.empty,
@@ -52,7 +51,11 @@ class InfinityClientMock extends MockitoSugar {
       modificationTime = defaultTime,
       accessTime = defaultTime,
       permissions = defaultMask
-    ))))
+    ))
+  }
+
+  def givenExistingPath(metadata: PathMetadata): Unit = {
+    given(value.pathMetadata(metadata.path)).willReturn(Future.successful(Some(metadata)))
   }
 
   def givenDirectoryCanBeCreated(path: Path): Unit = {

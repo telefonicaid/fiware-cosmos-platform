@@ -16,7 +16,9 @@
 
 package es.tid.cosmos.infinity
 
+import java.io.FileNotFoundException
 import java.net.{URI, URL}
+import java.util.Date
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -27,7 +29,9 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
+import es.tid.cosmos.infinity.common.fs.{DirectoryMetadata, FileMetadata}
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
+import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSugar {
 
@@ -108,9 +112,51 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     client.verifyDirectoryCreation(path.toInfinity, perms.toInfinity)
   }
 
+  it must "get the file status of an existing file" in new Fixture {
+    val path = new Path("/file")
+    val metadata = FileMetadata(
+      path = path.toInfinity,
+      metadata = new URL("http://metadata/file"),
+      content = None,
+      owner = "user",
+      group = "cosmos",
+      modificationTime = new Date(3600000L),
+      accessTime = new Date(3600000L),
+      permissions = PermissionsMask.fromOctal("640"),
+      replication = 2,
+      blockSize = 1024,
+      size = 0
+    )
+    client.givenExistingPath(metadata)
+    fs.getFileStatus(path) must be (metadata.toHadoop)
+  }
+
+  it must "get the file status of an existing directory" in new Fixture {
+    val path = new Path("/dir")
+    val metadata = DirectoryMetadata(
+      path = path.toInfinity,
+      metadata = new URL("http://metadata/dir"),
+      content = Seq.empty,
+      owner = "user",
+      group = "cosmos",
+      modificationTime = new Date(3600000L),
+      accessTime = new Date(3600000L),
+      permissions = PermissionsMask.fromOctal("640")
+    )
+    client.givenExistingPath(metadata)
+    fs.getFileStatus(path) must be (metadata.toHadoop)
+  }
+
+  it must "throw FileNotFoundException for non existing paths" in new Fixture {
+    val path = new Path("/non/existing")
+    client.givenNonExistingPath(path.toInfinity)
+    evaluating {
+      fs.getFileStatus(path)
+    } must produce [FileNotFoundException]
+  }
 
   abstract class Fixture(uri: URI = URI.create("infinity://localhost:8888/")) {
-    val client = new InfinityClientMock
+    val client = new MockInfinityClient
     object ClientFactory extends InfinityClientFactory{
       override def build(metadataEndpoint: URL) = client.value
     }

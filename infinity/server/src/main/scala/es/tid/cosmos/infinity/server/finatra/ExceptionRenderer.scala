@@ -16,7 +16,10 @@
 
 package es.tid.cosmos.infinity.server.finatra
 
+import java.io.FileNotFoundException
+
 import com.twitter.finatra.ResponseBuilder
+import org.apache.hadoop.security.AccessControlException
 
 import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
 import es.tid.cosmos.infinity.common.messages.json.ErrorDescriptorFormatter
@@ -39,6 +42,10 @@ object ExceptionRenderer {
       render(401, ErrorCode(e), e)
     case e: AuthenticationException =>
       render(401, ErrorCode(e), e)
+    case e: AccessControlException =>
+      render(403, ErrorCode(e), e)
+    case e: FileNotFoundException =>
+      render(404, ErrorCode(e), e)
     case _ => throw new IllegalArgumentException(
       s"no rendering mechanism defined for ${exception.getClass.getCanonicalName}")
   }

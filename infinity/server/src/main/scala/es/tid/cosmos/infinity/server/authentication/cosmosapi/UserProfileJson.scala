@@ -16,8 +16,7 @@
 
 package es.tid.cosmos.infinity.server.authentication.cosmosapi
 
-import es.tid.cosmos.infinity.common.UserProfile
-import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.common.permissions.{UserProfile, PermissionsMask}
 
 private[cosmosapi] case class UserProfileJson(
     user: String,

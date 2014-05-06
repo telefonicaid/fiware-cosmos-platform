@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json
+package es.tid.cosmos.infinity.common.json
 
-import es.tid.cosmos.infinity.common.messages._
+import es.tid.cosmos.infinity.common.fs.{DirectoryMetadata, FileMetadata, PathMetadata}
 
 class MetadataParser extends JsonParser[PathMetadata] {
 

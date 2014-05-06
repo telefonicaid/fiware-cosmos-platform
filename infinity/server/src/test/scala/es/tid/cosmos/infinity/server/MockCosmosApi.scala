@@ -25,8 +25,8 @@ import unfiltered.request._
 import unfiltered.response._
 
 import es.tid.cosmos.common.BearerToken
-import es.tid.cosmos.infinity.common.UserProfile
 import es.tid.cosmos.infinity.common.credentials.{ClusterCredentials, Credentials, UserCredentials}
+import es.tid.cosmos.infinity.common.permissions.UserProfile
 
 class MockCosmosApi(port: Int) extends Assertions {
 

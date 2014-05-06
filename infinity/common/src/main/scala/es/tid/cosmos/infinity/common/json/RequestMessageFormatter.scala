@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json.formats
+package es.tid.cosmos.infinity.common.json
 
-import net.liftweb.json.{Serializer, DefaultFormats}
+import net.liftweb.json._
+import net.liftweb.json.JsonDSL._
 
-/** Configuration to make the Lift JSON API understand non-primitive types used
-  * on our domain classes.
-  *
-  * It should be made available as an implicit value.
-  */
-private[json] object JsonFormats extends DefaultFormats {
+import es.tid.cosmos.infinity.common.messages.Request
 
-  override def dateFormatter = Rfc822DateFormat
+class RequestMessageFormatter extends JsonFormatter[Request] {
 
-  override val customSerializers: List[Serializer[_]] = List(
-    new PathSerializer,
-    new PathTypeSerializer,
-    new PermissionsMaskSerializer,
-    new UrlSerializer
-  )
+  /** Formats action messages as JSON.
+    *
+    * @param actionMessage  Action message to be formatted
+    * @return               JSON representation of the action
+    */
+  override def format(actionMessage: Request): String =
+    pretty(render(Extraction.decompose(actionMessage).merge(actionField(actionMessage))))
+
+  private def actionField(actionMessage: Request): JObject =
+    "action" -> actionMessage.action
 }

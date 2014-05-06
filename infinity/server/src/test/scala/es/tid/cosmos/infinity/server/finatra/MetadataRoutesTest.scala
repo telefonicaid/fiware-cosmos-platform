@@ -27,7 +27,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.infinity.common.UserProfile
+import es.tid.cosmos.infinity.common.permissions.UserProfile
 import es.tid.cosmos.infinity.server.authentication._
 import es.tid.cosmos.infinity.server.config.InfinityConfig
 

@@ -19,13 +19,14 @@ package es.tid.cosmos.infinity.common.messages.json
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.common.Path
-import es.tid.cosmos.infinity.common.messages.Action._
+import es.tid.cosmos.infinity.common.fs.Path
+import es.tid.cosmos.infinity.common.json.{ParseException, RequestMessageParser}
+import es.tid.cosmos.infinity.common.messages.Request._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
-class ActionParserTest extends FlatSpec with MustMatchers {
+class RequestParserTest extends FlatSpec with MustMatchers {
 
-  val parser = new ActionMessageParser()
+  val parser = new RequestMessageParser()
 
   "An action message parser" must "parse a create file action" in {
     parser.parse(

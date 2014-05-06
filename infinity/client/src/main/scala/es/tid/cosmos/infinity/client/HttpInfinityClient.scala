@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.infinity.client
 
-import java.io.{InputStreamReader, OutputStreamWriter, PipedInputStream, PipedOutputStream}
+import java.io._
 import java.net.{ConnectException, URL}
 import scala.concurrent.{Future, blocking}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -21,17 +21,17 @@ import com.ning.http.client.generators.InputStreamBodyGenerator
 import dispatch.{Future => _, _}
 
 import es.tid.cosmos.common.Wrapped
-import es.tid.cosmos.infinity.common.{Path, RootPath, SubPath}
+import es.tid.cosmos.infinity.common.fs._
+import es.tid.cosmos.infinity.common.json._
 import es.tid.cosmos.infinity.common.messages._
-import es.tid.cosmos.infinity.common.messages.Action._
-import es.tid.cosmos.infinity.common.messages.json._
+import es.tid.cosmos.infinity.common.messages.Request._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
 
   private val metadataParser = new MetadataParser()
   private val errorParser = new ErrorDescriptorParser()
-  private val actionFormatter = new ActionMessageFormatter()
+  private val actionFormatter = new RequestMessageFormatter()
 
   override def pathMetadata(path: Path): Future[Option[PathMetadata]] =
     httpRequest(metadataResource(path)) { response =>
@@ -127,7 +127,7 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
   private def existingMetaData(path: Path): Future[PathMetadata] =
     pathMetadata(path) map (_.getOrElse(throw NotFoundException(path)))
 
-  private def createPath(path: SubPath, action: Action): Future[Unit] = {
+  private def createPath(path: SubPath, action: Request): Future[Unit] = {
     val body = actionFormatter.format(action)
     httpRequest(metadataResource(path.parentPath) << body) { response =>
       response.getStatusCode match {
@@ -180,7 +180,7 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
     case d: DirectoryMetadata => throw new IllegalArgumentException("Directory cannot have content")
   }
 
-  private def actionWithNoContentResponse(path: Path, action: Action): Future[Unit] = {
+  private def actionWithNoContentResponse(path: Path, action: Request): Future[Unit] = {
     val body = actionFormatter.format(action)
     requestWithNoContentResponse(path, metadataResource(path) << body)
   }

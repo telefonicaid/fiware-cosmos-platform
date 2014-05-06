@@ -14,19 +14,8 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json
+package es.tid.cosmos.infinity.common.json.formats
 
-import es.tid.cosmos.infinity.common.messages.json.formats.JsonFormats
+import java.text.SimpleDateFormat
 
-/** Base trait for JSON formatters. */
-trait JsonFormatter[Value] {
-
-  /** Formats values as JSON.
-    *
-    * @param value  Value to be formatted
-    * @return       JSON representation of the value
-    */
-  def format(value: Value): String
-
-  protected implicit val formats = JsonFormats
-}
+object Rfc822DateFormat extends SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")

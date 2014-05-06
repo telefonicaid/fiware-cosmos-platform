@@ -18,7 +18,7 @@ package es.tid.cosmos.infinity
 
 import java.net.URL
 import java.util.Date
-import scala.concurrent.{Promise, Future}
+import scala.concurrent.{Future, Promise}
 
 import org.mockito.BDDMockito.given
 import org.mockito.Matchers.{any, eq => the}
@@ -26,8 +26,7 @@ import org.mockito.Mockito.verify
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.client.InfinityClient
-import es.tid.cosmos.infinity.common.{Path, RootPath, SubPath}
-import es.tid.cosmos.infinity.common.messages.DirectoryMetadata
+import es.tid.cosmos.infinity.common.fs.{DirectoryMetadata, Path, RootPath, SubPath}
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 class InfinityClientMock extends MockitoSugar {

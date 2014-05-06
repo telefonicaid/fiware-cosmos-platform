@@ -16,19 +16,19 @@
 
 package es.tid.cosmos.infinity.common.messages
 
-import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 /** Action that can be performed on a path. */
-sealed trait Action {
-  val action: String = Action.nameFor(getClass).getOrElse(throw new NoSuchElementException(
-    s"Oops! Looks like the Action [${getClass.getSimpleName}] " +
+sealed trait Request {
+  val action: String = Request.nameFor(getClass).getOrElse(throw new NoSuchElementException(
+    s"Oops! Looks like the Request [${getClass.getSimpleName}] " +
       "is not included in the Names manifest map."))
 }
 
-object Action {
+object Request {
 
-  lazy val Names: Map[Manifest[_ <: Action], String] = Map(
+  lazy val Names: Map[Manifest[_ <: Request], String] = Map(
     manifest[CreateFile] -> "mkfile",
     manifest[CreateDirectory] -> "mkdir",
     manifest[Move] -> "move",
@@ -37,11 +37,11 @@ object Action {
     manifest[ChangePermissions] -> "chmod"
   )
 
-  def nameFor[T <: Action](implicit clazz: Class[T]): Option[String] = Names.collectFirst {
+  def nameFor[T <: Request](implicit clazz: Class[T]): Option[String] = Names.collectFirst {
     case (mf, name) if mf.runtimeClass == clazz => name
   }
 
-  def manifestFor(name: String): Option[Manifest[_ <: Action]] = Names.collectFirst {
+  def manifestFor(name: String): Option[Manifest[_ <: Request]] = Names.collectFirst {
     case (mf, `name`) => mf
   }
 
@@ -49,25 +49,25 @@ object Action {
       name: String,
       permissions: PermissionsMask,
       replication: Option[Short],
-      blockSize: Option[Long]) extends Action {
+      blockSize: Option[Long]) extends Request {
 
     Path.requireValidPathElement(name)
     replication.foreach(r => require(r > 0, s"Replication should be positive but was $r"))
     blockSize.foreach(bs => require(bs > 0, s"Block size should be positive but was $bs"))
   }
 
-  case class CreateDirectory(name: String, permissions: PermissionsMask) extends Action {
+  case class CreateDirectory(name: String, permissions: PermissionsMask) extends Request {
     Path.requireValidPathElement(name)
   }
 
-  case class Move(name: String, from: Path) extends Action {
+  case class Move(name: String, from: Path) extends Request {
     Path.requireValidPathElement(name)
   }
 
-  case class ChangeOwner(owner: String) extends Action
+  case class ChangeOwner(owner: String) extends Request
 
-  case class ChangeGroup(group: String) extends Action
+  case class ChangeGroup(group: String) extends Request
 
-  case class ChangePermissions(permissions: PermissionsMask) extends Action
+  case class ChangePermissions(permissions: PermissionsMask) extends Request
 }
 

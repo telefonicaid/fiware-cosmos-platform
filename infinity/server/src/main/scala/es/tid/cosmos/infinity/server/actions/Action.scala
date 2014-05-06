@@ -18,8 +18,8 @@ package es.tid.cosmos.infinity.server.actions
 
 import scala.concurrent.Future
 
-import es.tid.cosmos.infinity.common.{Path, UserProfile}
-import es.tid.cosmos.infinity.common.messages.PathMetadata
+import es.tid.cosmos.infinity.common.fs.{Path, PathMetadata}
+import es.tid.cosmos.infinity.common.permissions.UserProfile
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 
 /** An action performed on a Infinity path. */

@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common
+package es.tid.cosmos.infinity.common.permissions
 
 import java.net.{InetAddress, UnknownHostException}
 
 import org.apache.commons.logging.LogFactory
-
-import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 /** The profile of a user in Infinity.
   *

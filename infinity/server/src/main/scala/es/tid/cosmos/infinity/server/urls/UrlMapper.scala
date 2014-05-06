@@ -18,7 +18,7 @@ package es.tid.cosmos.infinity.server.urls
 
 import java.net.URL
 
-import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.fs.Path
 
 /** A mapper object able to provide the URLs corresponding to Infinity resources. */
 trait UrlMapper {

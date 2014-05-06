@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json.formats
+package es.tid.cosmos.infinity.common.json.formats
 
-import net.liftweb.json._
+import net.liftweb.json.{Formats, JValue, Serializer, TypeInfo}
+import net.liftweb.json.JsonAST.JString
+import es.tid.cosmos.infinity.common.fs.Path
 
-import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+private[formats] class PathSerializer extends Serializer[Path] {
 
-private[formats] class PermissionsMaskSerializer extends Serializer[PermissionsMask] {
-
-  private val maskClass = classOf[PermissionsMask]
+  private val pathClass = classOf[Path]
 
   override def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
-    case mask: PermissionsMask => JString(mask.toString)
+    case path: Path => JString(path.toString)
   }
 
-  override def deserialize(
-      implicit format: Formats): PartialFunction[(TypeInfo, JValue), PermissionsMask] = {
-    case (TypeInfo(`maskClass`, _), JString(rawMask @ PermissionsMask.OctalPattern(_, _, _, _))) =>
-      PermissionsMask.fromOctal(rawMask)
+  override def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), Path] = {
+    case (TypeInfo(`pathClass`, _), JString(rawPath)) => Path.absolute(rawPath)
   }
 }

@@ -22,10 +22,10 @@ import com.twitter.finagle.http.Request
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 import org.jboss.netty.handler.codec.http.HttpMethod
 
-import es.tid.cosmos.infinity.common.Path
-import es.tid.cosmos.infinity.common.messages.{Action => ActionMessage}
-import es.tid.cosmos.infinity.common.messages.json.{ActionMessageParser, ParseException}
-import es.tid.cosmos.infinity.server.actions.{Action, CreateFile, Delete, GetMetadata}
+import es.tid.cosmos.infinity.common.fs.Path
+import es.tid.cosmos.infinity.common.json.{ParseException, RequestMessageParser}
+import es.tid.cosmos.infinity.common.messages.{Request => ActionMessage}
+import es.tid.cosmos.infinity.server.actions._
 import es.tid.cosmos.infinity.server.config.InfinityConfig
 
 /** An extractor object aimed to convert a Finagle HTTP request into a Infinity Server action. */
@@ -33,7 +33,7 @@ class HttpActionValidator(config: InfinityConfig, nameNode: NamenodeProtocols) {
 
   import scalaz.Scalaz._
 
-  private val jsonParser = new ActionMessageParser()
+  private val jsonParser = new RequestMessageParser()
   private val metadataUriPrefix = s"""${config.metadataBasePath}(/[^\\?]*)(\\?.*)?""".r
 
   def apply(request: Request): Validation[RequestParsingException, Action] =

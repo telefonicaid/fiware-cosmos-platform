@@ -25,8 +25,8 @@ import com.typesafe.config.Config
 import dispatch.{Future => _, _}
 
 import es.tid.cosmos.common.{BearerToken, Wrapped}
-import es.tid.cosmos.infinity.common.UserProfile
-import es.tid.cosmos.infinity.common.credentials.{ClusterCredentials, UserCredentials, Credentials}
+import es.tid.cosmos.infinity.common.credentials.{ClusterCredentials, Credentials, UserCredentials}
+import es.tid.cosmos.infinity.common.permissions.UserProfile
 import es.tid.cosmos.infinity.server.authentication._
 
 private[cosmosapi] class CosmosApiAuthenticationService(

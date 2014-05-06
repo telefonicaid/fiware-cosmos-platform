@@ -22,9 +22,8 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.infinity.common.UserProfile
 import es.tid.cosmos.infinity.common.credentials.{ClusterCredentials, UserCredentials}
-import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.common.permissions.{PermissionsMask, UserProfile}
 import es.tid.cosmos.infinity.server.MockCosmosApi
 
 class CosmosApiAuthenticationServiceTest extends FlatSpec with MustMatchers with FutureMatchers {

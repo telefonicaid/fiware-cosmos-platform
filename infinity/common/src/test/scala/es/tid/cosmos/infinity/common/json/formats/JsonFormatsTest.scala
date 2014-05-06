@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json.formats
+package es.tid.cosmos.infinity.common.json.formats
 
 import java.net.URL
 
@@ -24,8 +24,7 @@ import net.liftweb.json.JsonAST.{JArray, JInt, JString}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.common.{Path, RootPath}
-import es.tid.cosmos.infinity.common.messages._
+import es.tid.cosmos.infinity.common.fs.{Path, PathType, RootPath}
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 class JsonFormatsTest extends FlatSpec with MustMatchers {

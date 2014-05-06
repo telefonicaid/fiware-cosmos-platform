@@ -23,9 +23,9 @@ import net.liftweb.json.JsonDSL._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.common.Path
-import es.tid.cosmos.infinity.common.messages._
-import es.tid.cosmos.infinity.common.messages.json.formats.Rfc822DateFormat
+import es.tid.cosmos.infinity.common.fs._
+import es.tid.cosmos.infinity.common.json.MetadataFormatter
+import es.tid.cosmos.infinity.common.json.formats.Rfc822DateFormat
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 class MetadataFormatterTest extends FlatSpec with MustMatchers {

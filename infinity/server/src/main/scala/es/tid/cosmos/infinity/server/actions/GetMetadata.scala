@@ -23,10 +23,8 @@ import scala.concurrent._
 import org.apache.hadoop.hdfs.protocol.{DirectoryListing, HdfsFileStatus}
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
-import es.tid.cosmos.infinity.common.{Path, SubPath}
+import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
-import es.tid.cosmos.infinity.common.messages.{DirectoryEntry, DirectoryMetadata, FileMetadata}
-import es.tid.cosmos.infinity.common.messages.PathType.{Directory, File}
 
 case class GetMetadata(nameNode: NamenodeProtocols, on: Path) extends Action {
 
@@ -88,7 +86,7 @@ case class GetMetadata(nameNode: NamenodeProtocols, on: Path) extends Action {
       modificationTime = new Date(fileStatus.getModificationTime),
       accessTime = new Date(fileStatus.getAccessTime),
       size = fileStatus.getLen,
-      `type` = if (fileStatus.isDir) Directory else File
+      `type` = if (fileStatus.isDir) PathType.Directory else PathType.File
     )
   }
 

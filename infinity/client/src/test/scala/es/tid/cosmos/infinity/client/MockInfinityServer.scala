@@ -21,10 +21,10 @@ import unfiltered.jetty.Http
 import unfiltered.request.{Path => UPath, _}
 import unfiltered.response._
 
-import es.tid.cosmos.infinity.common.{Path, SubPath}
+import es.tid.cosmos.infinity.common.fs._
+import es.tid.cosmos.infinity.common.json._
 import es.tid.cosmos.infinity.common.messages._
-import es.tid.cosmos.infinity.common.messages.Action._
-import es.tid.cosmos.infinity.common.messages.json._
+import es.tid.cosmos.infinity.common.messages.Request._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 class MockInfinityServer(metadataPort: Int, defaultDate: Date) extends Assertions {
@@ -37,7 +37,7 @@ class MockInfinityServer(metadataPort: Int, defaultDate: Date) extends Assertion
 
   private val metadataFormatter = new MetadataFormatter()
   private val errorFormatter = new ErrorDescriptorFormatter()
-  private val actionParser = new ActionMessageParser
+  private val actionParser = new RequestMessageParser
 
   private val MetadataPreamble = "/infinityfs/v1/metadata"
   private val MetadataPath = s"""$MetadataPreamble(.*)""".r
@@ -133,7 +133,7 @@ class MockInfinityServer(metadataPort: Int, defaultDate: Date) extends Assertion
     ResponseString(errorFormatter.format(ErrorDescriptor(code, description)))
 
   private def handleActionOnPath(
-    path: Path, action: Action): ResponseFunction[HttpServletResponse] = {
+    path: Path, action: Request): ResponseFunction[HttpServletResponse] = {
 
     def statusFromPathChecks(thePath: SubPath) =
       if (!pathsMetadata.contains(thePath.parentPath))

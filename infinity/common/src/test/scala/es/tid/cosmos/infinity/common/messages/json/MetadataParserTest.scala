@@ -21,9 +21,9 @@ import java.net.URL
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.common.Path
-import es.tid.cosmos.infinity.common.messages._
-import es.tid.cosmos.infinity.common.messages.json.formats.Rfc822DateFormat
+import es.tid.cosmos.infinity.common.fs._
+import es.tid.cosmos.infinity.common.json.{MetadataParser, ParseException}
+import es.tid.cosmos.infinity.common.json.formats.Rfc822DateFormat
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 class MetadataParserTest extends FlatSpec with MustMatchers {

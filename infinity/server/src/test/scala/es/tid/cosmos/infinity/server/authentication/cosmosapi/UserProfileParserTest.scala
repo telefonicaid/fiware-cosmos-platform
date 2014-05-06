@@ -19,8 +19,7 @@ package es.tid.cosmos.infinity.server.authentication.cosmosapi
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.common.UserProfile
-import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.common.permissions.{PermissionsMask, UserProfile}
 
 class UserProfileParserTest extends FlatSpec with MustMatchers {
 

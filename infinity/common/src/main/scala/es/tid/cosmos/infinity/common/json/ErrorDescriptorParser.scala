@@ -14,7 +14,17 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json
+package es.tid.cosmos.infinity.common.json
 
-case class ParseException(message: String, cause: Throwable = null)
-  extends IllegalArgumentException(message, cause)
+import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
+
+class ErrorDescriptorParser extends JsonParser[ErrorDescriptor] {
+
+  /** Parses an error descriptor from JSON.
+    *
+    * @param input  Raw JSON
+    * @return       A parsed value
+    * @throws ParseException  If input cannot be parsed
+    */
+  override def parse(input: String): ErrorDescriptor = extract[ErrorDescriptor](parseJson(input))
+}

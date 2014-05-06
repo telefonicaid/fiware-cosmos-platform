@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json.formats
+package es.tid.cosmos.infinity.common.json
 
-import net.liftweb.json.{Formats, JValue, Serializer, TypeInfo}
-import net.liftweb.json.JsonAST.JString
+import net.liftweb.json._
 
-import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
 
-private[formats] class PathSerializer extends Serializer[Path] {
+class ErrorDescriptorFormatter extends JsonFormatter[ErrorDescriptor] {
 
-  private val pathClass = classOf[Path]
-
-  override def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
-    case path: Path => JString(path.toString)
-  }
-
-  override def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), Path] = {
-    case (TypeInfo(`pathClass`, _), JString(rawPath)) => Path.absolute(rawPath)
-  }
+  /** Formats error descriptions as JSON.
+    *
+    * @param error  Value to be formatted
+    * @return       JSON representation of the value
+    */
+  override def format(error: ErrorDescriptor): String = pretty(render(Extraction.decompose(error)))
 }

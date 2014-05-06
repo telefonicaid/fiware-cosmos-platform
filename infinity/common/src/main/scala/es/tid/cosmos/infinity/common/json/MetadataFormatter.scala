@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json
+package es.tid.cosmos.infinity.common.json
 
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 
-import es.tid.cosmos.infinity.common.messages.{DirectoryMetadata, FileMetadata, PathMetadata}
+import es.tid.cosmos.infinity.common.fs.{DirectoryMetadata, FileMetadata, PathMetadata}
 
 class MetadataFormatter extends JsonFormatter[PathMetadata] {
 

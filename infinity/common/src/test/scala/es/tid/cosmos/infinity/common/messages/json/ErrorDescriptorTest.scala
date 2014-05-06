@@ -21,6 +21,7 @@ import net.liftweb.json.JsonDSL._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.infinity.common.json._
 import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
 
 class ErrorDescriptorTest extends FlatSpec with MustMatchers {

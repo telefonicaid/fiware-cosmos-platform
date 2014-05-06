@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json.formats
+package es.tid.cosmos.infinity.common.json.formats
 
 import net.liftweb.json.{Formats, JValue, Serializer, TypeInfo}
 import net.liftweb.json.JsonAST.JString
-
-import es.tid.cosmos.infinity.common.messages.PathType
+import es.tid.cosmos.infinity.common.fs.PathType
 
 private[formats] class PathTypeSerializer extends Serializer[PathType] {
 

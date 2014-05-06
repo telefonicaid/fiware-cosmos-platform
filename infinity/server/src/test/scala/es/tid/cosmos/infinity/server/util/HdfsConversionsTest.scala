@@ -26,7 +26,11 @@ class HdfsConversionsTest extends FlatSpec with MustMatchers with Inside {
 
   import HdfsConversions._
 
-  "HDFS conversions" must "convert FS permission into Infinity" in {
+  "HDFS conversions" must "convert FS permissions from HDFS into Infinity" in {
     new FsPermission("755").toInfinity must be (PermissionsMask.fromOctal("755"))
+  }
+
+  it must "convert FS permissions from Infinity into HDFS" in {
+    PermissionsMask.fromOctal("755").toHdfs must be (new FsPermission("755"))
   }
 }

@@ -22,7 +22,12 @@ case class PermissionsMask(
     group: PermissionClass,
     others: PermissionClass,
     isSticky: Boolean = false) {
+
   override def toString: String = Seq(if (isSticky) "1" else "", owner, group, others).mkString
+
+  def toShort: Short = (
+    (owner.toByte << 6) | (group.toByte << 3) | others.toByte | (if (isSticky) 0x200 else 0)
+  ).toShort
 }
 
 object PermissionsMask {

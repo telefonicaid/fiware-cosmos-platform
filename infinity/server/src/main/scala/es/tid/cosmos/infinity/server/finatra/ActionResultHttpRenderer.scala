@@ -24,5 +24,6 @@ import es.tid.cosmos.infinity.server.actions.Action
 object ActionResultHttpRenderer {
 
   def apply(result: Action.Result): ResponseBuilder = new ResponseBuilder()
-    .status(200)
+    .status(500)
+    .body("The ActionResultHttpRenderer class needs to be implemented")
 }

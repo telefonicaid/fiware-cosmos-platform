@@ -181,7 +181,7 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(JavaVersions.java6: _*)
-    dependsOn infinityCommon
+    dependsOn(infinityCommon, common, common_test % "test, it")
   )
 
   lazy val infinityDriver = (Project(id = "infinity-driver", base = file("infinity/driver"))

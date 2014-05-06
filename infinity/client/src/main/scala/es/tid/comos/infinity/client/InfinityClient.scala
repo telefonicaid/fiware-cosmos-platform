@@ -19,7 +19,7 @@ package es.tid.comos.infinity.client
 import java.io.{InputStreamReader, OutputStreamWriter}
 import scala.concurrent.Future
 
-import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.{SubPath, Path}
 import es.tid.cosmos.infinity.common.messages.PathMetadata
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
@@ -32,7 +32,6 @@ import es.tid.cosmos.infinity.common.permissions.PermissionsMask
   * All API methods can fail with the following exceptions:
   *
   *  * ConnectionException        when it is not possible to contact the infinity server
-  *  * TimeoutException           when server takes too much time to respond
   *  * UnauthorizedException      when credentials being used are rejected
   *  * ProtocolMismatchException  when client and server don't understand each other
   *  * ForbiddenException         when user access rights are not enough to perform the action
@@ -61,7 +60,7 @@ trait InfinityClient {
     *                       * NotFoundException       when the parent path doesn't exist
     */
   def createFile(
-      path: Path,
+      path: SubPath,
       permissions: PermissionsMask,
       replication: Option[Int] = None,
       blockSize: Option[Int] = None): Future[Unit]
@@ -76,7 +75,7 @@ trait InfinityClient {
     *                       * AlreadyExistsException  when the path already exists
     *                       * NotFoundException       when the parent path doesn't exist
     */
-  def createDirectory(path: Path, permissions: PermissionsMask): Future[Unit]
+  def createDirectory(path: SubPath, permissions: PermissionsMask): Future[Unit]
 
   /** Move a file or directory.
     *
@@ -87,7 +86,7 @@ trait InfinityClient {
     * @return            A successful future if the path is moved. Otherwise the common exceptions
     *                    or AlreadyExistsException when the target path already exists
     */
-  def move(originPath: Path, targetPath: Path): Future[Unit]
+  def move(originPath: SubPath, targetPath: Path): Future[Unit]
 
   /** Change path owner.
     *
@@ -111,15 +110,16 @@ trait InfinityClient {
     * @param mask  New mask
     * @return      Success or failure as a future
     */
-  def changeOwner(path: Path, mask: PermissionsMask): Future[Unit]
+  def changePermissions(path: Path, mask: PermissionsMask): Future[Unit]
 
   /** Delete a file or directory.
     *
-    * @param path  Path to delete
-    * @return      Success or failure as a future. Apart from the common exceptions, fail with
-    *              NotFoundException when the path to delete doesn't exist
+    * @param path        Path to delete
+    * @param isRecursive perform a recursive deletion iff the path is a directory
+    * @return            Success or failure as a future. Apart from the common exceptions, fail with
+    *                    NotFoundException when the path to delete doesn't exist
     */
-  def delete(path: Path): Future[Unit]
+  def delete(path: Path, isRecursive: Boolean): Future[Unit]
 
   /** Retrieve file contents.
     *

@@ -11,12 +11,13 @@
 
 package es.tid.cosmos.infinity.client
 
-import java.io.{PipedOutputStream, PipedInputStream, InputStreamReader, OutputStreamWriter}
+import java.io.{InputStreamReader, OutputStreamWriter, PipedInputStream, PipedOutputStream}
 import java.net.{ConnectException, URL}
 import scala.concurrent.{Future, blocking}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.ning.http.client.{RequestBuilder, Response}
+import com.ning.http.client.generators.InputStreamBodyGenerator
 import dispatch.{Future => _, _}
 
 import es.tid.cosmos.common.Wrapped
@@ -25,7 +26,6 @@ import es.tid.cosmos.infinity.common.messages._
 import es.tid.cosmos.infinity.common.messages.Action._
 import es.tid.cosmos.infinity.common.messages.json._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
-import com.ning.http.client.generators.InputStreamBodyGenerator
 
 class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
 

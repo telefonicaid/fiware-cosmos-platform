@@ -14,16 +14,22 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.actions
 
-import com.twitter.finatra.ResponseBuilder
+import scala.concurrent._
 
-import es.tid.cosmos.infinity.server.actions.Action
+import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
-/** An object able to render action results into HTTP responses. */
-object ActionResultHttpRenderer {
+import es.tid.cosmos.infinity.common.Path
 
-  def apply(result: Action.Result): ResponseBuilder = new ResponseBuilder()
-    .status(500)
-    .body("The ActionResultHttpRenderer class needs to be implemented")
+case class Delete(nameNode: NamenodeProtocols, on: Path, recursive: Boolean) extends Action {
+
+  import ExecutionContext.Implicits.global
+
+  override def apply(context: Action.Context): Future[Action.Result] = future {
+    if (nameNode.delete(on.toString, recursive))
+      Action.DeleteOK
+    else
+      Action.DeleteUnsuccessful
+  }
 }

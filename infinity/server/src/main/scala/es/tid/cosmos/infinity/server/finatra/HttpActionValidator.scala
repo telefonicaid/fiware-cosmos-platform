@@ -20,9 +20,10 @@ import scalaz.Validation
 
 import com.twitter.finagle.http.Request
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
+import org.jboss.netty.handler.codec.http.HttpMethod
 
 import es.tid.cosmos.infinity.common.Path
-import es.tid.cosmos.infinity.server.actions.{Action, GetMetadata}
+import es.tid.cosmos.infinity.server.actions.{Delete, Action, GetMetadata}
 
 /** An extractor object aimed to convert a Finagle HTTP request into a Infinity Server action. */
 class HttpActionValidator(nameNode: NamenodeProtocols) {
@@ -31,11 +32,18 @@ class HttpActionValidator(nameNode: NamenodeProtocols) {
 
   val MetadataUriPrefix = "/infinityfs/v1/metadata(.*)".r
 
-  def apply(request: Request): Validation[RequestParsingException, Action] = request.getUri() match {
-    case MetadataUriPrefix(path) => metadataAction(path, request)
-    case uri => RequestParsingException.InvalidResourcePath(uri).failure
-  }
+  def apply(request: Request): Validation[RequestParsingException, Action] =
+    request.getUri() match {
+      case MetadataUriPrefix(path) => metadataAction(path, request)
+      case uri => RequestParsingException.InvalidResourcePath(uri).failure
+    }
 
-  private def metadataAction(path: String, request: Request) =
-    GetMetadata(nameNode, Path.absolute(path)).success
+  private def metadataAction(path: String, request: Request) = {
+    val absolutePath = Path.absolute(path)
+    request.method match {
+      case HttpMethod.GET => GetMetadata(nameNode, absolutePath).success
+      case HttpMethod.DELETE =>
+        Delete(nameNode, absolutePath, request.getBooleanParam("recursive")).success
+    }
+  }
 }

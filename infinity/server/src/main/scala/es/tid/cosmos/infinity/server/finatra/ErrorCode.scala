@@ -16,6 +16,10 @@
 
 package es.tid.cosmos.infinity.server.finatra
 
+import java.io.FileNotFoundException
+
+import org.apache.hadoop.security.AccessControlException
+
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
 
 class ErrorCode[T <: Throwable](val code: String)
@@ -34,6 +38,10 @@ object ErrorCode {
     new ErrorCode[RequestParsingException.InvalidResourcePath]("105")
   implicit val AuthenticationException =
     new ErrorCode[AuthenticationException]("106")
+  implicit val AccessControlException =
+    new ErrorCode[AccessControlException]("107")
+  implicit val FileNotFoundException =
+    new ErrorCode[FileNotFoundException]("108")
 
   def apply[E <: Throwable : ErrorCode](e: E): ErrorCode[E] = implicitly[ErrorCode[E]]
 }

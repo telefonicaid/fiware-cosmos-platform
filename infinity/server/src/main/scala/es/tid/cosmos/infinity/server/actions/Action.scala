@@ -41,6 +41,12 @@ object Action {
     */
   sealed trait Result
 
+  /** A delete operation was successful */
+  case object DeleteOK extends Result
+
+  /** A delete operation was unsuccessful */
+  case object DeleteUnsuccessful extends Result
+
   /** A file or directory metadata object resulting from an action. */
   case class PathMetadataResult(metadata: PathMetadata) extends Result
 

@@ -47,7 +47,7 @@ case class FileMetadata(
     override val modificationTime: Date,
     override val accessTime: Date,
     override val permissions: PermissionsMask,
-    replication: Int,
+    replication: Short,
     blockSize: Long,
     override val size: Long) extends PathMetadata {
 
@@ -55,7 +55,7 @@ case class FileMetadata(
 
   def this(
       path: String, metadata: String, content: String, owner: String, group: String,
-      modificationTime: Date, accessTime: Date, permissions: String, replication: Int,
+      modificationTime: Date, accessTime: Date, permissions: String, replication: Short,
       blockSize: Long, size: Long) =
     this(Path.absolute(path), new URL(metadata), Option(content).map(new URL(_)), owner, group,
       modificationTime, accessTime, PermissionsMask.fromOctal(permissions), replication, blockSize,

@@ -62,8 +62,8 @@ trait InfinityClient {
   def createFile(
       path: SubPath,
       permissions: PermissionsMask,
-      replication: Option[Int] = None,
-      blockSize: Option[Int] = None): Future[Unit]
+      replication: Option[Short] = None,
+      blockSize: Option[Long] = None): Future[Unit]
 
   /** Create a new directory.
     *

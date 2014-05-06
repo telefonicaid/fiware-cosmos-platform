@@ -48,8 +48,8 @@ object Action {
   case class CreateFile(
       name: String,
       permissions: PermissionsMask,
-      replication: Option[Int],
-      blockSize: Option[Int]) extends Action {
+      replication: Option[Short],
+      blockSize: Option[Long]) extends Action {
 
     Path.requireValidPathElement(name)
     replication.foreach(r => require(r > 0, s"Replication should be positive but was $r"))

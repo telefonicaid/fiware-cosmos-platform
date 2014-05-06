@@ -33,7 +33,7 @@ class MetadataRoutes(
     urlMapper: UrlMapper) extends Controller {
 
   private val basePath = config.metadataBasePath
-  private val actionValidator = new HttpActionValidator(nameNode)
+  private val actionValidator = new HttpActionValidator(config, nameNode)
 
   get(s"$basePath/*") { request =>
     val url = s"${request.host.getOrElse("")}/$basePath"

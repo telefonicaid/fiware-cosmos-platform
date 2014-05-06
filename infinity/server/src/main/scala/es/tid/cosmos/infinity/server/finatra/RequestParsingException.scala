@@ -35,4 +35,6 @@ object RequestParsingException {
   case class InvalidResourcePath(path: String, cause: Throwable = null) extends RequestParsingException(
     s"invalid resource path $path", cause)
 
+  case class InvalidRequestBody(body: String, cause: Throwable = null) extends RequestParsingException(
+    s"invalid request body: \n$body", cause)
 }

@@ -44,8 +44,8 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
   override def createFile(
       path: SubPath,
       permissions: PermissionsMask,
-      replication: Option[Int],
-      blockSize: Option[Int]): Future[Unit] =
+      replication: Option[Short],
+      blockSize: Option[Long]): Future[Unit] =
     createPath(path, CreateFile(path.name, permissions, replication, blockSize))
 
   override def createDirectory(path: SubPath, permissions: PermissionsMask): Future[Unit] =
@@ -174,7 +174,10 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
     url(metadataEndpoint.toString) / "infinityfs" / "v1" / "metadata"
 
   private def contentResource(metadata: PathMetadata): RequestBuilder = metadata match {
-    case f: FileMetadata => url(f.content.toString)
+    case f: FileMetadata =>
+      val contentUrl = f.content.getOrElse(
+        throw new IllegalArgumentException("no content resource found for given path metadata"))
+      url(contentUrl.toString)
     case d: DirectoryMetadata => throw new IllegalArgumentException("Directory cannot have content")
   }
 

@@ -9,14 +9,15 @@
  * All rights reserved.
  */
 
-package es.tid.comos.infinity.client
+package es.tid.cosmos.infinity.client
 
-import java.io.{PipedOutputStream, PipedInputStream, InputStreamReader, OutputStreamWriter}
+import java.io.{InputStreamReader, OutputStreamWriter, PipedInputStream, PipedOutputStream}
 import java.net.{ConnectException, URL}
 import scala.concurrent.{Future, blocking}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.ning.http.client.{RequestBuilder, Response}
+import com.ning.http.client.generators.InputStreamBodyGenerator
 import dispatch.{Future => _, _}
 
 import es.tid.cosmos.common.Wrapped
@@ -25,7 +26,6 @@ import es.tid.cosmos.infinity.common.messages._
 import es.tid.cosmos.infinity.common.messages.Action._
 import es.tid.cosmos.infinity.common.messages.json._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
-import com.ning.http.client.generators.InputStreamBodyGenerator
 
 class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
 
@@ -71,13 +71,13 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
   override def changePermissions(path: Path, mask: PermissionsMask): Future[Unit] =
     actionWithNoContentResponse(path, ChangePermissions(mask))
 
-  override def delete(path: Path, isRecursive: Boolean = false): Future[Unit] = {
+  override def delete(path: SubPath, isRecursive: Boolean = false): Future[Unit] = {
     val params = Map("recursive" -> isRecursive.toString)
     requestWithNoContentResponse(path, (metadataResource(path) <<? params).DELETE)
   }
 
   override def read(
-      path: Path, offset: Option[Long], length: Option[Long]): Future[InputStreamReader] =
+      path: SubPath, offset: Option[Long], length: Option[Long]): Future[InputStreamReader] =
     // read metadata first, get content url and then read content
     existingMetaData(path) flatMap { metadata =>
       val params = List(
@@ -93,10 +93,10 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
       }
     }
 
-  override def overwrite(path: Path): Future[OutputStreamWriter] =
+  override def overwrite(path: SubPath): Future[OutputStreamWriter] =
     requestWithOutputStream(path, _.PUT)
 
-  override def append(path: Path): Future[OutputStreamWriter] =
+  override def append(path: SubPath): Future[OutputStreamWriter] =
     requestWithOutputStream(path, _.POST)
 
   private def requestWithOutputStream(
@@ -175,9 +175,8 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
 
   private def contentResource(metadata: PathMetadata): RequestBuilder = metadata match {
     case f: FileMetadata =>
-      val contentUrl = f.content.getOrElse(
-        throw new IllegalArgumentException("no content resource found for given path metadata"))
-      url(contentUrl.toString)
+      val location = f.content.getOrElse(throw NotFoundException(metadata.path))
+      url(location.toString)
     case d: DirectoryMetadata => throw new IllegalArgumentException("Directory cannot have content")
   }
 

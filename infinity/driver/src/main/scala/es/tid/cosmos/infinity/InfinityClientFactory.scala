@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.util
+package es.tid.cosmos.infinity
 
-import org.apache.hadoop.fs.permission.FsPermission
+import java.net.URL
 
-import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.client.InfinityClient
 
-/** This object provides implicits to bling HDFS objects into their equivalent Infinity messages. */
-object HdfsConversions {
+trait InfinityClientFactory {
 
-  implicit class BlingFsPermission(permission: FsPermission) {
-
-    def toInfinity: PermissionsMask = PermissionsMask.fromShort(permission.toShort)
-  }
-
-  implicit class BlingPermissionsMask(permission: PermissionsMask) {
-
-    def toHdfs: FsPermission = new FsPermission(permission.toShort)
-  }
+  /** Creates an Infinity client for a given metadata server. */
+  def build(metadataEndpoint: URL): InfinityClient
 }

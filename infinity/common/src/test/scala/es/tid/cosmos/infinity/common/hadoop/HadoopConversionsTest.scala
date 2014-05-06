@@ -14,23 +14,30 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.util
+package es.tid.cosmos.infinity.common.hadoop
 
+import org.apache.hadoop.fs.{Path => HadoopPath}
 import org.apache.hadoop.fs.permission.FsPermission
-import org.scalatest.{FlatSpec, Inside}
+import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.infinity.common.RootPath
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
-class HdfsConversionsTest extends FlatSpec with MustMatchers with Inside {
+class HadoopConversionsTest extends FlatSpec with MustMatchers {
 
-  import HdfsConversions._
+  import HadoopConversions._
 
   "HDFS conversions" must "convert FS permissions from HDFS into Infinity" in {
     new FsPermission("755").toInfinity must be (PermissionsMask.fromOctal("755"))
   }
 
   it must "convert FS permissions from Infinity into HDFS" in {
-    PermissionsMask.fromOctal("755").toHdfs must be (new FsPermission("755"))
+    PermissionsMask.fromOctal("755").toHadoop must be(new FsPermission("755"))
+  }
+
+  "A hadoop path" must "be converted to an infinity one" in {
+    new HadoopPath("/").toInfinity must be (RootPath)
+    new HadoopPath("/foo/bar").toInfinity must be (RootPath / "foo" / "bar")
   }
 }

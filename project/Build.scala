@@ -190,7 +190,7 @@ object Build extends sbt.Build {
     settings(Defaults.itSettings: _*)
     settings(RpmSettings.infinityDriverSettings: _*)
     settings(JavaVersions.java6: _*)
-    dependsOn infinityClient
+    dependsOn(infinityClient, infinityCommon)
   )
 
   lazy val infinityServer = (Project(id = "infinity-server", base = file("infinity/server"))

@@ -1,9 +1,9 @@
 Infinity HFS driver
 ===================
 
-HFS driver rebranding HDFS as Infinity by using a ``infinity://`` URI scheme.
-Apart from that, it can be configured to point to the infinity instance of
-the cluster in which Hadoop is deployed.
+Infinity is a Hadoop file system that provide HTTP access to HDFS under the
+security model of Cosmos.  It has a ``infinity://`` URI scheme and it is
+enabled as the only way to access the file system at the Infinity cluster.
 
 Build infinity-driver
 ---------------------
@@ -23,7 +23,7 @@ You can use infinity-driver on any cluster by adding the configuration on a per 
 basis. Sample execution of the standard wordcount example:
 
     hadoop jar /usr/lib/hadoop/hadoop-examples.jar wordcount \
-    	-Dfs.infinity.impl=es.tid.cosmos.platform.infinity.InfinityFileSystem \
+    	-Dfs.infinity.impl=es.tid.cosmos.infinity.InfinityFileSystem \
     	-Dfs.infinity.defaultAuthority=foo-infinity.hi.inet \
     	-libjars infinity-driver.jar \
     	infinity:///path/to/input infinity:///path/to/output
@@ -34,7 +34,7 @@ To configure a cluster for infinity-driver you must add the same properties to t
 
     <property>
         <name>fs.infinity.impl</name>
-        <value>es.tid.cosmos.platform.infinity.InfinityFileSystem</value>
+        <value>es.tid.cosmos.infinity.InfinityFileSystem</value>
     </property>
     <property>
         <name>fs.infinity.defaultAuthority</name>

@@ -23,10 +23,10 @@ import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 import org.apache.hadoop.io.EnumSetWritable
 
 import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 import es.tid.cosmos.infinity.server.actions.Action.{Context, Result}
 import es.tid.cosmos.infinity.server.config.InfinityConfig
-import es.tid.cosmos.infinity.server.util.HdfsConversions._
 
 case class CreateFile(
     config: InfinityConfig,
@@ -46,7 +46,7 @@ case class CreateFile(
   private def createFile(): Future[Unit] = future {
     nameNode.create(
       on.toString,  // src
-      permissions.toHdfs,
+      permissions.toHadoop,
       "hdfs", // TODO: determine what this parameter is used for
       new EnumSetWritable(util.EnumSet.of(CreateFlag.CREATE)),
       false, //createParent

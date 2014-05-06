@@ -18,7 +18,7 @@ package es.tid.cosmos.infinity.server.finatra
 
 import java.net.URL
 
-import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.config.InfinityConfig
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 

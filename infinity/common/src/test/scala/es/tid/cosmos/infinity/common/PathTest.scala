@@ -19,6 +19,8 @@ package es.tid.cosmos.infinity.common
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.infinity.common.fs.{Path, RootPath}
+
 class PathTest extends FlatSpec with MustMatchers {
 
   "Filesystem path" must "be constructed from its parent and element name" in {

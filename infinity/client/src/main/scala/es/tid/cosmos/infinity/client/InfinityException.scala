@@ -17,9 +17,8 @@
 package es.tid.cosmos.infinity.client
 
 import java.net.URL
-import scala.concurrent.duration.Duration
 
-import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
 
 /** Base class for exceptions related Infinity API use */

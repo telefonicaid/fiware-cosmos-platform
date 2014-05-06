@@ -16,7 +16,7 @@
 
 package es.tid.cosmos.infinity
 
-import java.net.{URL, URI}
+import java.net.{URI, URL}
 import java.util.concurrent.TimeoutException
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -30,7 +30,7 @@ import org.apache.hadoop.security.UserGroupInformation
 import org.apache.hadoop.util.Progressable
 
 import es.tid.cosmos.infinity.client.{HttpInfinityClient, InfinityClient}
-import es.tid.cosmos.infinity.common.{RootPath, SubPath}
+import es.tid.cosmos.infinity.common.fs.{Path => InfinityPath, RootPath, SubPath}
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
@@ -101,7 +101,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   override def mkdirs(f: Path, permission: FsPermission): Boolean =
     awaitAction(makeRecursiveDirectory(f.toInfinity, permission.toInfinity))
 
-  private def makeRecursiveDirectory(path: common.Path, mask: PermissionsMask): Future[Unit] =
+  private def makeRecursiveDirectory(path: InfinityPath, mask: PermissionsMask): Future[Unit] =
     path match {
       case RootPath => Future.successful(())
       case subPath @ SubPath(parent, _) => unless(pathExists(subPath)) {
@@ -109,7 +109,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
       }
     }
 
-  private def pathExists(path: common.Path): Future[Boolean] = path match {
+  private def pathExists(path: InfinityPath): Future[Boolean] = path match {
     case RootPath => Future.successful(true)
     case subPath: SubPath => client.pathMetadata(subPath).map(_.isDefined)
   }

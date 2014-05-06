@@ -19,6 +19,8 @@ package es.tid.cosmos.infinity.common.messages
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.infinity.common.fs.PathType
+
 class PathTypeTest extends FlatSpec with MustMatchers {
 
   "Path type" must "be parsed from string" in {

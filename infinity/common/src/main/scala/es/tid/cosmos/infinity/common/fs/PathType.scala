@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json
+package es.tid.cosmos.infinity.common.fs
 
-import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
+sealed trait PathType
 
-class ErrorDescriptorParser extends JsonParser[ErrorDescriptor] {
+object PathType {
 
-  /** Parses an error descriptor from JSON.
-    *
-    * @param input  Raw JSON
-    * @return       A parsed value
-    * @throws ParseException  If input cannot be parsed
-    */
-  override def parse(input: String): ErrorDescriptor = extract[ErrorDescriptor](parseJson(input))
+  case object File extends PathType {
+    override val toString = "file"
+  }
+
+  case object Directory extends PathType {
+    override val toString = "directory"
+  }
+
+  def valueOf(string: String): PathType = string.toLowerCase match {
+    case "file" => File
+    case "directory" => Directory
+    case _ => throw new IllegalArgumentException(s"Not a valid path type: '$string'")
+  }
 }

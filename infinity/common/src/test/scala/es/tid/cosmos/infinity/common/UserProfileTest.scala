@@ -21,7 +21,7 @@ import java.net.InetAddress
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.common.permissions.{UserProfile, PermissionsMask}
 
 class UserProfileTest extends FlatSpec with MustMatchers {
 

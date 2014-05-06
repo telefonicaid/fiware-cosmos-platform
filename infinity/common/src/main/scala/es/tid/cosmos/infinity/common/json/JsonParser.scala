@@ -14,28 +14,32 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json
+package es.tid.cosmos.infinity.common.json
 
-import net.liftweb.json.JsonAST.JValue
+import net.liftweb.json._
 
-import es.tid.cosmos.infinity.common.messages.Action
+import es.tid.cosmos.infinity.common.json.formats.JsonFormats
 
-class ActionMessageParser extends JsonParser[Action] {
+/** Base trait for JSON parsers. */
+trait JsonParser[Value] {
 
-  /** Parses an ActionMessage from JSON.
+  /** Parses a value from JSON.
     *
     * @param input  Raw JSON
     * @return       A parsed value
     * @throws ParseException  If input cannot be parsed
     */
-  override def parse(input: String): Action = {
-    val json = parseJson(input)
-    extract(json)(manifestFor(actionName(json)))
+  def parse(input: String): Value
+
+  protected implicit val formats = JsonFormats
+
+  protected def parseJson(input: String) =
+    JsonParser.parseOpt(input).getOrElse(throw ParseException(s"Malformed JSON: $input"))
+
+  protected def extract[T](json: JValue)(implicit mf: scala.reflect.Manifest[T]): T = try {
+    json.extract[T]
+  } catch {
+    case ex: MappingException =>
+      throw ParseException(s"Cannot map JSON to ${mf.runtimeClass.getSimpleName}", ex)
   }
-
-  private def actionName(json: JValue) = (json \ "action").extractOpt[String]
-    .getOrElse(throw ParseException(s"Missing 'action' field in $json"))
-
-  private def manifestFor(name: String) =
-    Action.manifestFor(name).getOrElse(throw ParseException(s"Unsupported action '$name'"))
 }

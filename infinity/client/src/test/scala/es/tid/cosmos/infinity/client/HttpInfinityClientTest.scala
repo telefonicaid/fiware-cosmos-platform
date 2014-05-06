@@ -20,7 +20,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.infinity.common.{SubPath, Path, RootPath}
+import es.tid.cosmos.infinity.common.fs.{Path, RootPath, SubPath}
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 class HttpInfinityClientTest extends FlatSpec

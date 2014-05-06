@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json.formats
+package es.tid.cosmos.infinity.common.json.formats
 
 import java.net.URL
 import scala.util.Try

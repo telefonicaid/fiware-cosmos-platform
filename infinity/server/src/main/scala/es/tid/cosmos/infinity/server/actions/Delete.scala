@@ -20,7 +20,7 @@ import scala.concurrent._
 
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
-import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.fs.Path
 
 case class Delete(nameNode: NamenodeProtocols, on: Path, recursive: Boolean) extends Action {
 

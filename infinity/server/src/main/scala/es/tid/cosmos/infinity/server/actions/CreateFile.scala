@@ -15,6 +15,7 @@
  */
 
 package es.tid.cosmos.infinity.server.actions
+
 import java.util
 import scala.concurrent._
 
@@ -22,7 +23,7 @@ import org.apache.hadoop.fs.CreateFlag
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 import org.apache.hadoop.io.EnumSetWritable
 
-import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 import es.tid.cosmos.infinity.server.actions.Action.{Context, Result}

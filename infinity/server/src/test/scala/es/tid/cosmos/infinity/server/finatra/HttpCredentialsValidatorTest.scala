@@ -17,7 +17,7 @@
 package es.tid.cosmos.infinity.server.finatra
 
 import java.net.InetAddress
-import scalaz.{Failure, Success, Validation}
+import scalaz.{Success, Validation}
 
 import com.twitter.finagle.http.{Request, RequestBuilder}
 import org.scalatest.{FlatSpec, Inside}

@@ -18,8 +18,8 @@ package es.tid.cosmos.infinity.server.authentication
 
 import scala.concurrent.Future
 
-import es.tid.cosmos.infinity.common.UserProfile
 import es.tid.cosmos.infinity.common.credentials.Credentials
+import es.tid.cosmos.infinity.common.permissions.UserProfile
 
 trait AuthenticationService {
 

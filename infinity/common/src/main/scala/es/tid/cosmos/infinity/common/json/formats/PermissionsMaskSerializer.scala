@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json
+package es.tid.cosmos.infinity.common.json.formats
 
 import net.liftweb.json._
 
-import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
+import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
-class ErrorDescriptorFormatter extends JsonFormatter[ErrorDescriptor] {
+private[formats] class PermissionsMaskSerializer extends Serializer[PermissionsMask] {
 
-  /** Formats error descriptions as JSON.
-    *
-    * @param error  Value to be formatted
-    * @return       JSON representation of the value
-    */
-  override def format(error: ErrorDescriptor): String = pretty(render(Extraction.decompose(error)))
+  private val maskClass = classOf[PermissionsMask]
+
+  override def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
+    case mask: PermissionsMask => JString(mask.toString)
+  }
+
+  override def deserialize(
+      implicit format: Formats): PartialFunction[(TypeInfo, JValue), PermissionsMask] = {
+    case (TypeInfo(`maskClass`, _), JString(rawMask @ PermissionsMask.OctalPattern(_, _, _, _))) =>
+      PermissionsMask.fromOctal(rawMask)
+  }
 }

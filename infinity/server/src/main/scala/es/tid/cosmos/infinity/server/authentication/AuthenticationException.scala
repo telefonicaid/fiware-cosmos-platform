@@ -18,7 +18,7 @@ package es.tid.cosmos.infinity.server.authentication
 
 import java.net.InetAddress
 
-import es.tid.cosmos.infinity.common.UserProfile
+import es.tid.cosmos.infinity.common.permissions.UserProfile
 
 /** An exception thrown when a request cannot be authenticated. */
 class AuthenticationException(msg: String, cause: Throwable = null) extends Exception(msg, cause)

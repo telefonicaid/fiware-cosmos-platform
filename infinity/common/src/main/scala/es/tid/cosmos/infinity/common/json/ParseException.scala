@@ -14,23 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages
+package es.tid.cosmos.infinity.common.json
 
-sealed trait PathType
-
-object PathType {
-
-  case object File extends PathType {
-    override val toString = "file"
-  }
-
-  case object Directory extends PathType {
-    override val toString = "directory"
-  }
-
-  def valueOf(string: String): PathType = string.toLowerCase match {
-    case "file" => File
-    case "directory" => Directory
-    case _ => throw new IllegalArgumentException(s"Not a valid path type: '$string'")
-  }
-}
+case class ParseException(message: String, cause: Throwable = null)
+  extends IllegalArgumentException(message, cause)

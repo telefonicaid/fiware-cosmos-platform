@@ -21,8 +21,8 @@ import java.io.FileNotFoundException
 import com.twitter.finatra.ResponseBuilder
 import org.apache.hadoop.security.AccessControlException
 
+import es.tid.cosmos.infinity.common.json.ErrorDescriptorFormatter
 import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
-import es.tid.cosmos.infinity.common.messages.json.ErrorDescriptorFormatter
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
 
 object ExceptionRenderer {

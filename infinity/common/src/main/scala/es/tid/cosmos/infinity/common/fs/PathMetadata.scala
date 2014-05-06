@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages
+package es.tid.cosmos.infinity.common.fs
 
 import java.net.URL
 import java.util.Date
 
-import es.tid.cosmos.infinity.common.Path
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 /** Fields that any metadata object should have. */

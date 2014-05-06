@@ -16,22 +16,22 @@
 
 package es.tid.cosmos.infinity.server.finatra
 
+import java.nio.charset.Charset
 import scalaz.{Failure, Success}
 
 import com.twitter.finagle.http.Request
 import com.typesafe.config.ConfigFactory
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
-import org.jboss.netty.handler.codec.http.{HttpVersion, DefaultHttpRequest, HttpMethod}
+import org.jboss.netty.buffer.ChannelBuffers
+import org.jboss.netty.handler.codec.http.{DefaultHttpRequest, HttpMethod, HttpVersion}
 import org.scalatest.{FlatSpec, Inside}
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.infinity.common.Path
-import es.tid.cosmos.infinity.server.actions.{Delete, CreateFile, GetMetadata}
-import es.tid.cosmos.infinity.server.config.InfinityConfig
-import org.jboss.netty.buffer.ChannelBuffers
-import java.nio.charset.Charset
+import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.server.actions.{CreateFile, Delete, GetMetadata}
+import es.tid.cosmos.infinity.server.config.InfinityConfig
 
 class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside with MockitoSugar {
 

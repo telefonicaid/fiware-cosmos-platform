@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common
+package es.tid.cosmos.infinity.common.fs
 
 /** A representation of filesystem path in Infinity. */
 sealed trait Path {

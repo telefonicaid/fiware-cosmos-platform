@@ -20,7 +20,7 @@ import net.liftweb.json
 import net.liftweb.json._
 import net.liftweb.json.JsonParser.ParseException
 
-import es.tid.cosmos.infinity.common.UserProfile
+import es.tid.cosmos.infinity.common.permissions.UserProfile
 
 private[cosmosapi] class UserProfileParser(superGroup: String) {
 

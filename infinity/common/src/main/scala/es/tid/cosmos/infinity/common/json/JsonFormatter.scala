@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common.messages.json
+package es.tid.cosmos.infinity.common.json
 
-import net.liftweb.json._
-import net.liftweb.json.JsonDSL._
+import es.tid.cosmos.infinity.common.json.formats.JsonFormats
 
-import es.tid.cosmos.infinity.common.messages.Action
+/** Base trait for JSON formatters. */
+trait JsonFormatter[Value] {
 
-class ActionMessageFormatter extends JsonFormatter[Action] {
-
-  /** Formats action messages as JSON.
+  /** Formats values as JSON.
     *
-    * @param actionMessage  Action message to be formatted
-    * @return               JSON representation of the action
+    * @param value  Value to be formatted
+    * @return       JSON representation of the value
     */
-  override def format(actionMessage: Action): String =
-    pretty(render(Extraction.decompose(actionMessage).merge(actionField(actionMessage))))
+  def format(value: Value): String
 
-  private def actionField(actionMessage: Action): JObject =
-    "action" -> actionMessage.action
+  protected implicit val formats = JsonFormats
 }

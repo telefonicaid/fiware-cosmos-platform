@@ -21,13 +21,14 @@ import net.liftweb.json.JsonDSL._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.common.Path
-import es.tid.cosmos.infinity.common.messages.Action._
+import es.tid.cosmos.infinity.common.fs.Path
+import es.tid.cosmos.infinity.common.json.RequestMessageFormatter
+import es.tid.cosmos.infinity.common.messages.Request._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
-class ActionFormatterTest extends FlatSpec with MustMatchers {
+class RequestFormatterTest extends FlatSpec with MustMatchers {
 
-  val formatter = new ActionMessageFormatter
+  val formatter = new RequestMessageFormatter
 
   "An action message formatter" must "format a create file action" in {
     val action = CreateFile(

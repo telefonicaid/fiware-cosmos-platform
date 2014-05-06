@@ -19,8 +19,7 @@ package es.tid.cosmos.infinity.client
 import java.io.{InputStreamReader, OutputStreamWriter}
 import scala.concurrent.Future
 
-import es.tid.cosmos.infinity.common.{SubPath, Path}
-import es.tid.cosmos.infinity.common.messages.PathMetadata
+import es.tid.cosmos.infinity.common.fs.{Path, PathMetadata, SubPath}
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 /** Infinity client API.

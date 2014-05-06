@@ -19,7 +19,7 @@ package es.tid.cosmos.infinity.common.hadoop
 import org.apache.hadoop.fs.{Path => HadoopPath}
 import org.apache.hadoop.fs.permission.FsPermission
 
-import es.tid.cosmos.infinity.common.Path
+import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 /** This object provides implicits to bling Hadoop objects into their equivalent Infinity ones. */

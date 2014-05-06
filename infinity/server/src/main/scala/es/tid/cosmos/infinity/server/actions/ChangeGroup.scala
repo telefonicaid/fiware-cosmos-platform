@@ -29,9 +29,9 @@ case class ChangeGroup(nameNode: NamenodeProtocols, on: Path, group: String) ext
   import ExecutionContext.Implicits.global
 
   override def apply(context: Action.Context): Future[Action.Result] = {
-    val metadata = new MetadataUtil(nameNode, context)
+    val metadata = MetadataUtil(nameNode)
     lazy val isUserPathOwner_> : Future[Boolean] =
-      metadata.forPath(on).map(_.owner == context.user.username)
+      metadata.forPath(context, on).map(_.owner == context.user.username)
 
     val isAllowed_> : Future[Boolean] =
       success(context.user.superuser) or
@@ -40,7 +40,7 @@ case class ChangeGroup(nameNode: NamenodeProtocols, on: Path, group: String) ext
     isAllowed_> flatMap { allowed =>
       if (allowed) {
         nameNode.setOwner(on.toString, ChangeGroup.SameOwner, group)
-        metadata.action(on)
+        metadata.action(context, on)
       }
       else
         success(OperationNotAllowed(context.user.username, on))

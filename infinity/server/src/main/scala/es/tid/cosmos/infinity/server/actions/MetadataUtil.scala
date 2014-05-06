@@ -16,33 +16,52 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, Future}
 
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
 import es.tid.cosmos.infinity.common.fs.{Path, PathMetadata}
-import es.tid.cosmos.infinity.server.actions.Action.PathMetadataResult
+import es.tid.cosmos.infinity.server.actions.Action.{Context, PathMetadataResult}
 
-/** Utility for the GetMetadata action to allow other actions to easily read metadata.
-  *
-  * @param nameNode the nameNode protocols
-  * @param context  the context within which the actions will take place.
-  */
-private[actions] class MetadataUtil(nameNode: NamenodeProtocols, context: Action.Context) {
+/** Utility for the [[GetMetadata]] action to allow other actions to easily read metadata. */
+trait MetadataUtil {
 
   /** Get the metadata for the given path.
     *
+    * @param context  the context within which the actions will take place.
     * @param path the path whose metadata to get
     * @return     the path metadata iff they exist
     */
-  def forPath(path: Path): Future[PathMetadata] =
-    for (PathMetadataResult(metadata) <-  action(path)) yield metadata
+  def forPath(context: Context, path: Path): Future[PathMetadata]
 
-  /** Perform the GetMetadata action on a given path
+  /** Perform the action on a given path
     *
+    * @param context  the context within which the actions will take place.
     * @param path the path whose metadata to get
     * @return     the action result
     */
-  def action(path: Path): Future[Action.Result] = GetMetadata(nameNode, path).apply(context)
+  def action(context: Context, path: Path): Future[Action.Result]
+}
+
+/** Builder for [[MetadataUtil]] instances. */
+object MetadataUtil {
+  def apply(nameNode: NamenodeProtocols) =
+    new MetadataUtilGetAction(nameNode)
+}
+
+/**
+ * [[MetadataUtil]] implementation based on Get action.
+ *
+ * @param nameNode the nameNode protocols
+ */
+private[actions] class MetadataUtilGetAction(
+  nameNode: NamenodeProtocols) extends MetadataUtil {
+
+  import ExecutionContext.Implicits.global
+
+  override def forPath(context: Context, path: Path): Future[PathMetadata] =
+    for (PathMetadataResult(metadata) <-  action(context, path)) yield metadata
+
+  override def action(context: Context, path: Path): Future[Action.Result] =
+    GetMetadata(nameNode, path).apply(context)
 }

@@ -119,6 +119,22 @@ class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside wit
     )
   }
 
+  it must "extract a MoveFile action" in {
+    val req = makeRequest(HttpMethod.POST, "/infinityfs/v1/metadata/path/to/file",
+      """
+        |{
+        |  "action" : "move",
+        |  "name" : "enemies.csv",
+        |  "from" : "/some/other/file.csv"
+        |}
+      """.stripMargin)
+    inside(instance(req)) {
+      case Success(MoveFile(_, _, path, from, _)) =>
+        path must be (Path.absolute("/path/to/file/enemies.csv"))
+        from must be (Path.absolute("/some/other/file.csv"))
+    }
+  }
+
   private def makeRequest(
       method: HttpMethod, uri: String, content: Option[String] = None): Request = {
     val req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, method, uri)

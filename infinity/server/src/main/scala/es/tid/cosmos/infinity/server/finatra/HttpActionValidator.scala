@@ -67,6 +67,10 @@ class HttpActionValidator(config: InfinityConfig, nameNode: NamenodeProtocols) {
           ChangeGroup(nameNode, absolutePath, group).success
         case ActionMessage.ChangePermissions(permissions) =>
           ChangePermissions(nameNode, absolutePath, permissions).success
+        case ActionMessage.Move(name, from) => {
+          val on = Path.absolute(s"$path/$name")
+          MoveFile(config, nameNode, on, from, MetadataUtil(nameNode)).success
+        }
       }
     } catch {
       case e: ParseException =>

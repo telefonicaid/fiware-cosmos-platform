@@ -39,9 +39,30 @@ class HadoopConversionsTest extends FlatSpec with MustMatchers {
     PermissionsMask.fromOctal("755").toHadoop must be(new FsPermission("755"))
   }
 
+  "Hadoop conversions" must "convert FS permission into Infinity with sticky bit" in {
+    new FsPermission(PermissionsMask.fromOctal("1755").toShort).toInfinity must be (
+      PermissionsMask.fromOctal("1755"))
+  }
+
+  it must "convert Infinity to FS permissions without sticky bit" in {
+    PermissionsMask.fromOctal("755").toHadoop.toString must be("rwxr-xr-x")
+  }
+
+  it must "convert Infinity to FS permissions with sticky bit" in {
+    PermissionsMask.fromOctal("1755").toHadoop.toString must be("rwxr-xr-t")
+  }
+
+  it must "be symmetric without sticky bit" in {
+      PermissionsMask.fromOctal("755").toHadoop.toInfinity must be (PermissionsMask.fromOctal("755"))
+  }
+
+  it must "be symmetric with sticky bit" in {
+    PermissionsMask.fromOctal("1755").toHadoop.toInfinity must be (PermissionsMask.fromOctal("1755"))
+  }
+
   "A Hadoop path" must "be converted to an infinity one" in {
-    new HadoopPath("/").toInfinity must be (RootPath)
-    new HadoopPath("/foo/bar").toInfinity must be (RootPath / "foo" / "bar")
+    new HadoopPath("/").toInfinity must be(RootPath)
+    new HadoopPath("/foo/bar").toInfinity must be(RootPath / "foo" / "bar")
   }
 
   "An infinity path" must "be converted to a Hadoop one" in {

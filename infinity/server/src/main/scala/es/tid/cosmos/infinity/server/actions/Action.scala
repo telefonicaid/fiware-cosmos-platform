@@ -55,4 +55,7 @@ object Action {
 
   /** A result of an action indicating that there is no such path. */
   case class NoSuchPath(path: Path) extends Result
+
+  /** Indicates that the action cannot be performed for that user on that path */
+  case class OperationNotAllowed(username: String, path: Path) extends Result
 }

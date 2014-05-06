@@ -27,4 +27,9 @@ object HdfsConversions {
 
     def toInfinity: PermissionsMask = PermissionsMask.fromShort(permission.toShort)
   }
+
+  implicit class BlingPermissionsMask(permission: PermissionsMask) {
+
+    def toHdfs: FsPermission = new FsPermission(permission.toShort)
+  }
 }

@@ -197,7 +197,7 @@ class MockInfinityServer(metadataPort: Int, defaultDate: Date) extends Assertion
 
   private implicit class MetadataOps(metadata: PathMetadata) {
     def moved(to: SubPath): PathMetadata = metadata.transform(
-      onFile = _.copy(path = to, metadata = metadataUrl(to), content = contentUrl(to)),
+      onFile = _.copy(path = to, metadata = metadataUrl(to), content = Some(contentUrl(to))),
       onDir  = _.copy(path = to, metadata = metadataUrl(to))
     )
 
@@ -224,12 +224,12 @@ class MockInfinityServer(metadataPort: Int, defaultDate: Date) extends Assertion
     def fileMetadata(
         path: Path,
         permissions: PermissionsMask,
-        replication: Option[Int] = None,
-        blockSize: Option[Int] = None): FileMetadata =
+        replication: Option[Short] = None,
+        blockSize: Option[Long] = None): FileMetadata =
       FileMetadata(
         path,
         metadata = metadataUrl(path),
-        content = contentUrl(path),
+        content = Some(contentUrl(path)),
         owner = "hdfs",
         group = "hdfs",
         modificationTime = defaultDate,

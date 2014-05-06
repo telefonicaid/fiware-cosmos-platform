@@ -23,27 +23,47 @@ import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 import org.jboss.netty.handler.codec.http.HttpMethod
 
 import es.tid.cosmos.infinity.common.Path
-import es.tid.cosmos.infinity.server.actions.{Delete, Action, GetMetadata}
+import es.tid.cosmos.infinity.common.messages.{Action => ActionMessage}
+import es.tid.cosmos.infinity.common.messages.json.{ActionMessageParser, ParseException}
+import es.tid.cosmos.infinity.server.actions.{Action, CreateFile, Delete, GetMetadata}
+import es.tid.cosmos.infinity.server.config.InfinityConfig
 
 /** An extractor object aimed to convert a Finagle HTTP request into a Infinity Server action. */
-class HttpActionValidator(nameNode: NamenodeProtocols) {
+class HttpActionValidator(config: InfinityConfig, nameNode: NamenodeProtocols) {
 
   import scalaz.Scalaz._
 
-  val MetadataUriPrefix = "/infinityfs/v1/metadata(.*)".r
+  private val jsonParser = new ActionMessageParser()
+  private val metadataUriPrefix = s"""${config.metadataBasePath}(/[^\\?]*)(\\?.*)?""".r
 
   def apply(request: Request): Validation[RequestParsingException, Action] =
     request.getUri() match {
-      case MetadataUriPrefix(path) => metadataAction(path, request)
+      case metadataUriPrefix(path, _) => metadataAction(path, request)
       case uri => RequestParsingException.InvalidResourcePath(uri).failure
     }
 
   private def metadataAction(path: String, request: Request) = {
     val absolutePath = Path.absolute(path)
     request.method match {
-      case HttpMethod.GET => GetMetadata(nameNode, absolutePath).success
+      case HttpMethod.GET =>
+        GetMetadata(nameNode, absolutePath).success
+      case HttpMethod.POST =>
+        postMetadataAction(path, request)
       case HttpMethod.DELETE =>
         Delete(nameNode, absolutePath, request.getBooleanParam("recursive")).success
+    }
+  }
+
+  private def postMetadataAction(path: String, request: Request) = {
+    val content = request.getContentString()
+    try {
+      jsonParser.parse(content) match {
+        case ActionMessage.CreateFile(name, perms, rep, bsize) =>
+          CreateFile(config, nameNode, Path.absolute(s"$path/$name"), perms, rep, bsize).success
+      }
+    } catch {
+      case e: ParseException =>
+        RequestParsingException.InvalidRequestBody(content, e).failure
     }
   }
 }

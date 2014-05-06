@@ -18,10 +18,11 @@ package es.tid.cosmos.infinity.common.permissions
 
 /** A permission class (owner, group, others). */
 case class PermissionClass(read: Boolean, write: Boolean, execute: Boolean) {
-  override def toString: String = {
-    val bin = (if (read) 0x4 else 0) | (if (write) 0x2 else 0) | (if (execute) 0x1 else 0)
-    bin.toString
-  }
+
+  override def toString: String = toByte.toString
+
+  def toByte: Byte =
+    ((if (read) 0x4 else 0) | (if (write) 0x2 else 0) | (if (execute) 0x1 else 0)).toByte
 }
 
 object PermissionClass {

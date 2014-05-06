@@ -30,6 +30,9 @@ class InfinityConfig(config: Config) {
   val metadataBasePath = mapOpt(config.getString("metadata.basePath")).getOrElse(DefaultBasePath)
   val metadataBaseUrl = new URL(
     s"$metadataProtocol://$metadataHost:$metadataPort/$metadataBasePath")
+  val replication = mapOpt(config.getInt("metadata.replication").toShort).getOrElse(DefaultReplication)
+  val blockSize = mapOpt(config.getLong("metadata.blockSize")).getOrElse(DefaultBlockSize)
+
 
   def contentServerUrl(hostname: String): Option[URL] = {
     val protocol = mapOpt(config.getString(s"contentServer.$hostname.protocol"))
@@ -47,6 +50,8 @@ class InfinityConfig(config: Config) {
 
 object InfinityConfig {
 
-  val DefaultProtocol = "https"
-  val DefaultBasePath = "/infinityfs/v1"
+  val DefaultProtocol: String = "https"
+  val DefaultBasePath: String = "/infinityfs/v1"
+  val DefaultReplication: Short = 3
+  val DefaultBlockSize: Long = 64l * 1024l * 1024l
 }

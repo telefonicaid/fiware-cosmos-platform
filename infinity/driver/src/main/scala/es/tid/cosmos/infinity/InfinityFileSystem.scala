@@ -135,6 +135,11 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
       case Some(metadata: DirectoryMetadata) => metadata.content.map(_.toHadoop).toArray
     })
 
+  override def delete(f: Path, recursive: Boolean): Boolean = f.toInfinity match {
+    case RootPath => false
+    case path: SubPath => awaitAction(client.delete(path, recursive))
+  }
+
   private def unless(condition: Future[Boolean])(body: Future[Unit]): Future[Unit] =
     condition.flatMap(if (_) Future.successful(()) else body)
 
@@ -174,8 +179,6 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
 
   // TODO: Not implemented methods
 
-
-  override def delete(f: Path, recursive: Boolean): Boolean = ???
 
   override def rename(src: Path, dst: Path): Boolean = ???
 

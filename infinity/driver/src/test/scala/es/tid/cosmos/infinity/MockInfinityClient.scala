@@ -21,7 +21,7 @@ import java.util.Date
 import scala.concurrent.{Future, Promise}
 
 import org.mockito.BDDMockito.given
-import org.mockito.Matchers.{any, eq => the}
+import org.mockito.Matchers.{any, anyBoolean, eq => the}
 import org.mockito.Mockito.verify
 import org.scalatest.mock.MockitoSugar
 
@@ -71,11 +71,25 @@ class MockInfinityClient extends MockitoSugar {
     givenDirectoryCreation(path).willReturn(never())
   }
 
+  def givenCanBeDeleted(path: Path): Unit = {
+    givenPathDeletion(path).willReturn(Future.successful(()))
+  }
+
+  def givenDeletionWillFail(path: Path, cause: Throwable): Unit = {
+    givenPathDeletion(path).willReturn(Future.failed(cause))
+  }
+
   private def givenDirectoryCreation(path: Path) =
     given(value.createDirectory(the(asSubPath(path)), any[PermissionsMask]))
 
+  private def givenPathDeletion(path: Path) = given(value.delete(the(asSubPath(path)), anyBoolean))
+
   def verifyDirectoryCreation(path: Path, mask: PermissionsMask): Unit = {
     verify(value).createDirectory(asSubPath(path), mask)
+  }
+
+  def verifyDeletion(path: Path, recursive: Boolean): Unit = {
+    verify(value).delete(the(asSubPath(path)), the(recursive))
   }
 
   private def asSubPath(path: Path): SubPath = path match {

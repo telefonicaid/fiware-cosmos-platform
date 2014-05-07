@@ -148,6 +148,26 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     } must produce [FileNotFoundException]
   }
 
+  it must "not try to delete the root path" in new Fixture {
+    fs.delete(new Path("/"), recursive = false) must be (false)
+  }
+
+  it must "delete subpaths" in new Fixture {
+    val path = new Path("/subdir")
+    val recursive = true
+    client.givenCanBeDeleted(path.toInfinity)
+    fs.delete(path, recursive) must be (true)
+    client.verifyDeletion(path.toInfinity, recursive)
+  }
+
+  it must "return false on failure" in new Fixture {
+    val path = new Path("/subdir")
+    val recursive = false
+    client.givenDeletionWillFail(path.toInfinity, new IllegalStateException("foo"))
+    fs.delete(path, recursive) must be (false)
+    client.verifyDeletion(path.toInfinity, recursive)
+  }
+
   val someTime = new Date(3600000L)
   val someFile = new Path("/some/file")
   val someFileMetadata = FileMetadata(

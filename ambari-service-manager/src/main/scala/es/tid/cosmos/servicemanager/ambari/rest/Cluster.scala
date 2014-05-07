@@ -39,8 +39,8 @@ private[ambari] class Cluster(clusterInfo: JValue, serverBaseUrl: Request)
   extends RequestProcessor {
   val name = clusterInfo \ "Clusters" \ "cluster_name" match {
     case JString(clusterName) => clusterName
-    case _ => throw new ServiceError("Ambari's cluster information response doesn't contain a " +
-      "Clusters/cluster_name element")
+    case other => throw new ServiceError("Ambari's cluster information response doesn't contain a " +
+      s"Clusters/cluster_name element. Response: ${pretty(render(other))}")
   }
 
   private[this] def baseUrl: RequestBuilder = new RequestBuilder(serverBaseUrl) / "clusters" / name

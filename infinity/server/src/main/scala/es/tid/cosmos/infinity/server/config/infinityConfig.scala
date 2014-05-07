@@ -16,7 +16,7 @@
 
 package es.tid.cosmos.infinity.server.config
 
-import java.net.URL
+import java.net.{InetAddress, URL}
 
 import com.typesafe.config.{Config, ConfigException}
 
@@ -33,7 +33,6 @@ class InfinityConfig(config: Config) {
   val replication = mapOpt(config.getInt("metadata.replication").toShort).getOrElse(DefaultReplication)
   val blockSize = mapOpt(config.getLong("metadata.blockSize")).getOrElse(DefaultBlockSize)
 
-
   def contentServerUrl(hostname: String): Option[URL] = {
     val protocol = mapOpt(config.getString(s"contentServer.$hostname.protocol"))
       .getOrElse(DefaultProtocol)
@@ -45,6 +44,14 @@ class InfinityConfig(config: Config) {
 
   private def mapOpt[T](f: => T): Option[T] = try { Some(f) } catch {
     case _: ConfigException.Missing => None
+  }
+}
+
+class InfinityContentServerConfig(config: Config) extends InfinityConfig(config) {
+  val contentServerUrl: URL = {
+    val hostname = InetAddress.getLocalHost.getHostName
+    contentServerUrl(hostname).getOrElse(throw new IllegalArgumentException(
+      s"Cannot initialize server because contentServer.$hostname configuration is missing."))
   }
 }
 

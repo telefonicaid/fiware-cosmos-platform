@@ -27,5 +27,5 @@ class FinatraUrlMapper(config: InfinityConfig) extends UrlMapper {
   override def metadataUrl(path: Path): URL = new URL(s"${config.metadataBaseUrl}/$path")
 
   override def contentUrl(path: Path, contentHost: String): Option[URL] =
-    config.contentServerUrl(contentHost)
+    config.contentServerUrl(contentHost).map(baseUrl => new URL(s"$baseUrl/$path"))
 }

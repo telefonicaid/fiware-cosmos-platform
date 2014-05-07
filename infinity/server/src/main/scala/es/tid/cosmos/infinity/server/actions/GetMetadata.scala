@@ -101,6 +101,7 @@ case class GetMetadata(nameNode: NamenodeProtocols, on: Path) extends Action {
     val blocks = nameNode.getBlockLocations(on.toString, 0, fileStatus.getLen)
     if (blocks.locatedBlockCount() != 0) {
       val locs = blocks.get(0).getLocations
+      val extBlock = blocks.get(0).getBlock
       if (locs.size != 0) context.urlMapper.contentUrl(on, locs(0).getHostName)
       else None
     }

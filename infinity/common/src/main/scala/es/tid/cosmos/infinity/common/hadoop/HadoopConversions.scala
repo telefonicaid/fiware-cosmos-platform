@@ -41,10 +41,10 @@ object HadoopConversions {
     def toHadoop: HadoopPath = new HadoopPath(path.toString)
   }
 
-  implicit class FileMetadataConversion(val metadata: FileMetadata) extends AnyVal {
+  implicit class AbstractMetadataConversion(val metadata: AbstractMetadata) extends AnyVal {
     def toHadoop: FileStatus = new FileStatus(
       metadata.size,
-      isDirectory(metadata),
+      metadata.isDirectory,
       metadata.replication,
       metadata.blockSize,
       metadata.modificationTime.getTime,
@@ -55,24 +55,4 @@ object HadoopConversions {
       metadata.path.toHadoop
     )
   }
-
-  implicit class DirectoryMetadataConversion(val metadata: DirectoryMetadata) extends AnyVal {
-    def toHadoop: FileStatus = new FileStatus(
-      metadata.size,
-      isDirectory(metadata),
-      DirectoryReplication,
-      DirectoryBlockSize,
-      metadata.modificationTime.getTime,
-      metadata.accessTime.getTime,
-      metadata.permissions.toHadoop,
-      metadata.owner,
-      metadata.group,
-      metadata.path.toHadoop
-    )
-  }
-
-  private def isDirectory(metadata: PathMetadata): Boolean = metadata.`type` == PathType.Directory
-
-  private val DirectoryReplication = 0
-  private val DirectoryBlockSize = 0L
 }

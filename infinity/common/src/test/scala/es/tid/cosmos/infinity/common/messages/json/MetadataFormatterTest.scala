@@ -75,27 +75,26 @@ class MetadataFormatterTest extends FlatSpec with MustMatchers {
       modificationTime = modificationTime,
       accessTime = accessTime,
       content = Seq(
-        DirectoryEntry(
+        DirectoryEntry.file(
           path = Path.absolute("/usr/gandalf/spells.txt"),
-          `type` = PathType.File,
           metadata = new URL("http://example.com/infinityfs/v1/metadata/usr/gandalf/spells.txt"),
           owner = "gandalf",
           group = "istari",
           modificationTime = modificationTime,
           accessTime = accessTime,
           permissions = PermissionsMask.fromOctal("600"),
+          replication = 3,
+          blockSize = 2048,
           size = 45566918656L
         ),
-        DirectoryEntry(
+        DirectoryEntry.directory(
           path = Path.absolute("/usr/gandalf/enemies"),
-          `type` = PathType.Directory,
           metadata = new URL("http://example.com/infinityfs/v1/metadata/usr/gandalf/enemies"),
           owner = "gandalf",
           group = "istari",
           modificationTime = modificationTime,
           accessTime = accessTime,
-          permissions = PermissionsMask.fromOctal("750"),
-          size = 0L
+          permissions = PermissionsMask.fromOctal("750")
         )
       )
     )
@@ -112,6 +111,8 @@ class MetadataFormatterTest extends FlatSpec with MustMatchers {
             ("modificationTime" -> Rfc822DateFormat.format(modificationTime)) ~
             ("accessTime" -> Rfc822DateFormat.format(accessTime)) ~
             ("permissions" -> "600") ~
+            ("replication" -> 3) ~
+            ("blockSize" -> 2048) ~
             ("size" -> 45566918656L),
           ("path" -> "/usr/gandalf/enemies") ~
             ("type" -> "directory") ~
@@ -121,6 +122,8 @@ class MetadataFormatterTest extends FlatSpec with MustMatchers {
             ("modificationTime" -> Rfc822DateFormat.format(modificationTime)) ~
             ("accessTime" -> Rfc822DateFormat.format(accessTime)) ~
             ("permissions" -> "750") ~
+            ("replication" -> 0) ~
+            ("blockSize" -> 0) ~
             ("size" -> 0)
         )) ~
         ("owner" -> "gandalf") ~

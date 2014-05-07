@@ -85,7 +85,9 @@ class MetadataParserTest extends FlatSpec with MustMatchers {
         |      "permissions" : "600",
         |      "size" : 45566918656,
         |      "modificationTime" : "2014-04-08T12:41:34+0100",
-        |      "accessTime" : "2014-04-08T12:54:32+0100"
+        |      "accessTime" : "2014-04-08T12:54:32+0100",
+        |      "replication" : 3,
+        |      "blockSize" : 1024
         |    },
         |    {
         |      "path" : "/usr/gandalf/enemies",
@@ -96,7 +98,9 @@ class MetadataParserTest extends FlatSpec with MustMatchers {
         |      "permissions" : "750",
         |      "size" : 0,
         |      "modificationTime" : "2014-04-08T12:55:45+0100",
-        |      "accessTime" : "2014-04-08T13:01:22+0100"
+        |      "accessTime" : "2014-04-08T13:01:22+0100",
+        |      "replication" : 0,
+        |      "blockSize" : 0
         |    }
         |  ]
         |}
@@ -109,27 +113,26 @@ class MetadataParserTest extends FlatSpec with MustMatchers {
       modificationTime = Rfc822DateFormat.parse("2014-04-08T12:31:45+0100"),
       accessTime = Rfc822DateFormat.parse("2014-04-08T12:45:22+0100"),
       content = Seq(
-        DirectoryEntry(
+        DirectoryEntry.file(
           path = Path.absolute("/usr/gandalf/spells.txt"),
-          `type` = PathType.File,
           metadata = new URL("http://example.com/infinityfs/v1/metadata/usr/gandalf/spells.txt"),
           owner = "gandalf",
           group = "istari",
           modificationTime = Rfc822DateFormat.parse("2014-04-08T12:41:34+0100"),
           accessTime = Rfc822DateFormat.parse("2014-04-08T12:54:32+0100"),
           permissions = PermissionsMask.fromOctal("600"),
+          replication = 3,
+          blockSize = 1024,
           size = 45566918656L
         ),
-        DirectoryEntry(
+        DirectoryEntry.directory(
           path = Path.absolute("/usr/gandalf/enemies"),
-          `type` = PathType.Directory,
           metadata = new URL("http://example.com/infinityfs/v1/metadata/usr/gandalf/enemies"),
           owner = "gandalf",
           group = "istari",
           modificationTime = Rfc822DateFormat.parse("2014-04-08T12:55:45+0100"),
           accessTime = Rfc822DateFormat.parse("2014-04-08T13:01:22+0100"),
-          permissions = PermissionsMask.fromOctal("750"),
-          size = 0L
+          permissions = PermissionsMask.fromOctal("750")
         )
       )
     ))

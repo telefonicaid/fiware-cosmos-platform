@@ -16,7 +16,7 @@
 
 package es.tid.cosmos.infinity
 
-import java.io.FileNotFoundException
+import java.io.{IOException, FileNotFoundException}
 import java.net.{URI, URL}
 import java.util.concurrent.TimeoutException
 import scala.concurrent.{Await, Future}
@@ -103,7 +103,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
 
   private def makeRecursiveDirectory(path: InfinityPath, mask: PermissionsMask): Future[Unit] =
     path match {
-      case RootPath => Future.successful(())
+      case RootPath => Ok
       case subPath @ SubPath(parent, _) => unless(pathExists(subPath)) {
         makeRecursiveDirectory(parent, mask).flatMap(_ => client.createDirectory(subPath, mask))
       }
@@ -121,8 +121,57 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
       case Some(metadata: DirectoryMetadata) => metadata.toHadoop
     })
 
+  /** List the status for a path.
+    *
+    *  * For file paths is just the file status in a singleton array
+    *  * For directory paths is the directory listing
+    *
+    * @throws FileNotFoundException  if path doesn't exist
+    */
+  override def listStatus(f: Path): Array[FileStatus] =
+    awaitResult(client.pathMetadata(f.toInfinity).map {
+      case None => throw new FileNotFoundException(f.toString)
+      case Some(metadata: FileMetadata) => Array(metadata.toHadoop)
+      case Some(metadata: DirectoryMetadata) => metadata.content.map(_.toHadoop).toArray
+    })
+
+  override def delete(f: Path, recursive: Boolean): Boolean = f.toInfinity match {
+    case RootPath => false
+    case path: SubPath => awaitAction(client.delete(path, recursive))
+  }
+
+  override def rename(source: Path, target: Path): Boolean =
+    (source.toInfinity, target.toInfinity) match {
+      case (from: SubPath, to: SubPath) => awaitAction(client.move(from, to))
+      case _ =>
+        Log.error(s"Cannot move from/to the root path (Moving $source to $target)")
+        false
+    }
+
+  override def setOwner(f: Path, ownerOrNull: String, groupOrNull: String): Unit = {
+    val path = f.toInfinity
+    def ownerChange = whenNotNull(ownerOrNull)(client.changeOwner(path, _))
+    def groupChange = whenNotNull(groupOrNull)(client.changeGroup(path, _))
+    awaitResult(ownerChange.flatMap(_ => groupChange))
+  }
+
+  override def setPermission(f: Path, perms: FsPermission): Unit =
+    awaitResult(client.changePermissions(f.toInfinity, perms.toInfinity))
+
+  override def open(f: Path, bufferSize: Int) =
+    awaitResult(client.pathMetadata(f.toInfinity).map {
+      case None => throw new FileNotFoundException(f.toString)
+      case Some(_: FileMetadata) =>
+        new FSDataInputStream(new InfinityInputStream(client, f.toInfinity))
+      case Some(_) =>
+        throw new IOException(s"Cannot read from directory at $f")
+    })
+
   private def unless(condition: Future[Boolean])(body: Future[Unit]): Future[Unit] =
-    condition.flatMap(if (_) Future.successful(()) else body)
+    condition.flatMap(if (_) Ok else body)
+
+  private def whenNotNull[T](valueOrNull: T)(body: T => Future[Unit]): Future[Unit] =
+    Option(valueOrNull).fold(Ok)(body)
 
   /** Blocks for an action completion.
     *
@@ -139,14 +188,15 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   /** Blocks for a result to be ready.
     *
     * @param result  Result to wait for
-    * @return        The result if the future succeeds on time. Otherwise an exception will
-    *                be thrown.
+    * @return        The result if the future succeeds on time
+    * @throws IOException If action fails or takes too much time
     */
   private def awaitResult[T](result: Future[T]): T = boundedWait(result) match {
     case Success(value) => value
+    case Failure(ex: IOException) => throw ex
     case Failure(ex) =>
       Log.error("Cannot perform Infinity file system action", ex)
-      throw ex;
+      throw new IOException("Cannot perform Infinity action", ex)
   }
 
   /** Blocks for a result to be ready (or failed) */
@@ -160,36 +210,13 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
 
   // TODO: Not implemented methods
 
-
-  override def listStatus(f: Path): Array[FileStatus] = ???
-
-  override def delete(f: Path, recursive: Boolean): Boolean = ???
-
-  override def rename(src: Path, dst: Path): Boolean = ???
-
-  override def append(f: Path, bufferSize: Int, progress: Progressable): FSDataOutputStream = ???
-
   override def create(f: Path, permission: FsPermission, overwrite: Boolean, bufferSize: Int, replication: Short, blockSize: Long, progress: Progressable): FSDataOutputStream = ???
 
-  override def open(f: Path, bufferSize: Int): FSDataInputStream = ???
-
-  override def setOwner(p: Path, username: String, groupname: String): Unit = super.setOwner(p, username, groupname)
-
-  override def setPermission(p: Path, permission: FsPermission): Unit = super.setPermission(p, permission)
-
-  override def getStatus(p: Path): FsStatus = super.getStatus(p)
-
-  override def getDefaultReplication(path: Path): Short = super.getDefaultReplication(path)
-
-  override def getDefaultBlockSize(f: Path): Long = super.getDefaultBlockSize(f)
-
-  override def concat(trg: Path, psrcs: Array[Path]): Unit = super.concat(trg, psrcs)
+  override def append(f: Path, bufferSize: Int, progress: Progressable): FSDataOutputStream = ???
 
   override def append(f: Path, bufferSize: Int): FSDataOutputStream = super.append(f, bufferSize)
 
   override def append(f: Path): FSDataOutputStream = super.append(f)
-
-  override def createNewFile(f: Path): Boolean = super.createNewFile(f)
 }
 
 object InfinityFileSystem {
@@ -200,4 +227,6 @@ object InfinityFileSystem {
   private object DefaultClientFactory extends InfinityClientFactory{
     override def build(metadataEndpoint: URL) = new HttpInfinityClient(metadataEndpoint)
   }
+
+  private val Ok = Future.successful(())
 }

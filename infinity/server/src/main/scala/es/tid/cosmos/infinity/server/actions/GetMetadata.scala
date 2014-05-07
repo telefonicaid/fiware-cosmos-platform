@@ -77,6 +77,10 @@ case class GetMetadata(nameNode: NamenodeProtocols, on: Path) extends Action {
 
   private def directoryEntryOf(context: Action.Context)(fileStatus: HdfsFileStatus) = {
     val path = SubPath(on, fileStatus.getLocalName)
+    val (pathType, replication, blockSize) =
+      if (fileStatus.isDir)
+        (PathType.Directory, DirectoryMetadata.Replication, DirectoryMetadata.BlockSize)
+      else (PathType.File, fileStatus.getReplication, fileStatus.getBlockSize)
     DirectoryEntry(
       path = path,
       metadata = context.urlMapper.metadataUrl(path),
@@ -86,7 +90,9 @@ case class GetMetadata(nameNode: NamenodeProtocols, on: Path) extends Action {
       modificationTime = new Date(fileStatus.getModificationTime),
       accessTime = new Date(fileStatus.getAccessTime),
       size = fileStatus.getLen,
-      `type` = if (fileStatus.isDir) PathType.Directory else PathType.File
+      `type` = pathType,
+      replication = replication,
+      blockSize = blockSize
     )
   }
 

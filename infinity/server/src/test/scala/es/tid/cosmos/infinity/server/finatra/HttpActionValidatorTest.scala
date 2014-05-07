@@ -30,7 +30,7 @@ import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
-import es.tid.cosmos.infinity.server.actions.{CreateFile, Delete, GetMetadata}
+import es.tid.cosmos.infinity.server.actions._
 import es.tid.cosmos.infinity.server.config.InfinityConfig
 
 class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside with MockitoSugar {
@@ -38,6 +38,8 @@ class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside wit
   private val nameNode = mock[NamenodeProtocols]
   private val config = new InfinityConfig(ConfigFactory.load())
   private val instance = new HttpActionValidator(config, nameNode)
+  private val someUri = "/infinityfs/v1/metadata/path/to/file"
+  private val somePath = Path.absolute("/path/to/file")
 
   "Valid HTTP Action" must "fail to extract from an unknown path" in {
     val req = makeRequest(HttpMethod.GET, "/this/is/an/invalid/path")
@@ -48,12 +50,12 @@ class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside wit
   }
 
   it must "extract a GetMetadata action" in {
-    val req = makeRequest(HttpMethod.GET, "/infinityfs/v1/metadata/path/to/file")
-    instance(req) must be (Success(GetMetadata(nameNode, Path.absolute("/path/to/file"))))
+    val req = makeRequest(HttpMethod.GET, someUri)
+    instance(req) must be (Success(GetMetadata(nameNode, somePath)))
   }
 
   it must "extract a CreateFile action" in {
-    val req = makeRequest(HttpMethod.POST, "/infinityfs/v1/metadata/path/to/file",
+    val req = makeRequest(HttpMethod.POST, someUri,
       """
         |{
         |  "action" : "mkfile",
@@ -65,7 +67,7 @@ class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside wit
       """.stripMargin)
     inside(instance(req)) {
       case Success(CreateFile(_, _, path, perms, rep, bsize)) =>
-        path must be (Path.absolute("/path/to/file/enemies.csv"))
+        path must be (somePath / "enemies.csv")
         perms must be (PermissionsMask.fromOctal("640"))
         rep must be (Some(2))
         bsize must be (Some(67108864l))
@@ -73,12 +75,52 @@ class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside wit
   }
 
   it must "extract a Delete action" in {
-    val req = makeRequest(HttpMethod.DELETE, "/infinityfs/v1/metadata/path/to/file?recursive=true")
+    val req = makeRequest(HttpMethod.DELETE, s"$someUri?recursive=true")
     instance(req) must be (
-      Success(Delete(nameNode, Path.absolute("/path/to/file"), recursive = true)))
+      Success(Delete(nameNode, somePath, recursive = true)))
   }
 
-  private def makeRequest(method: HttpMethod, uri: String, content: Option[String] = None): Request = {
+  it must "extract a ChangeOwner action" in {
+    val req = makeRequest(HttpMethod.POST, someUri,
+      """
+        |{
+        |  "action" : "chown",
+        |  "owner" : "theoden",
+        |}
+      """.stripMargin)
+    instance(req) must be (
+      Success(ChangeOwner(nameNode, somePath, "theoden"))
+    )
+  }
+
+  it must "extract a ChangeGroup action" in {
+    val req = makeRequest(HttpMethod.POST, someUri,
+      """
+        |{
+        |  "action" : "chgrp",
+        |  "group" : "valar",
+        |}
+      """.stripMargin)
+    instance(req) must be (
+      Success(ChangeGroup(nameNode, somePath, "valar"))
+    )
+  }
+
+  it must "extract a ChangePermission action" in {
+    val req = makeRequest(HttpMethod.POST, someUri,
+      """
+        |{
+        |  "action" : "chmod",
+        |  "permissions" : "755",
+        |}
+      """.stripMargin)
+    instance(req) must be (
+      Success(ChangePermissions(nameNode, somePath, PermissionsMask.fromOctal("755")))
+    )
+  }
+
+  private def makeRequest(
+      method: HttpMethod, uri: String, content: Option[String] = None): Request = {
     val req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, method, uri)
     content.foreach { c =>
       req.setContent(ChannelBuffers.copiedBuffer(c, Charset.forName("UTF-8")))

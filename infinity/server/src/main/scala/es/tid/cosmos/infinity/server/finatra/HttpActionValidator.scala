@@ -56,10 +56,17 @@ class HttpActionValidator(config: InfinityConfig, nameNode: NamenodeProtocols) {
 
   private def postMetadataAction(path: String, request: Request) = {
     val content = request.getContentString()
+    val absolutePath = Path.absolute(path)
     try {
       jsonParser.parse(content) match {
         case ActionMessage.CreateFile(name, perms, rep, bsize) =>
-          CreateFile(config, nameNode, Path.absolute(s"$path/$name"), perms, rep, bsize).success
+          CreateFile(config, nameNode, absolutePath / name, perms, rep, bsize).success
+        case ActionMessage.ChangeOwner(owner) =>
+          ChangeOwner(nameNode, absolutePath, owner).success
+        case ActionMessage.ChangeGroup(group) =>
+          ChangeGroup(nameNode, absolutePath, group).success
+        case ActionMessage.ChangePermissions(permissions) =>
+          ChangePermissions(nameNode, absolutePath, permissions).success
       }
     } catch {
       case e: ParseException =>

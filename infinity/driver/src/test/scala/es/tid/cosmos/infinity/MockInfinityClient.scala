@@ -22,7 +22,7 @@ import scala.concurrent.{Future, Promise}
 
 import org.mockito.BDDMockito.{BDDMyOngoingStubbing, given}
 import org.mockito.Matchers.{any, anyBoolean, eq => the}
-import org.mockito.Mockito.verify
+import org.mockito.Mockito.{never, verify}
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.client.InfinityClient
@@ -84,6 +84,21 @@ class MockInfinityClient extends MockitoSugar {
     given(value.move(asSubPath(source), asSubPath(target)))
   def verifyMove(source: Path, target: Path): Unit = {
     verify(value).move(the(asSubPath(source)), the(asSubPath(target)))
+  }
+
+  def givenOwnerCanBeChanged(path: Path): Unit = willSucceed(givenOwnerChange(path))
+  def givenOwnerChangeWillFail(path: Path): Unit = willFail(givenOwnerChange(path))
+  private def givenOwnerChange(path: Path) = given(value.changeOwner(the(path), any[String]))
+  def givenGroupCanBeChanged(path: Path): Unit = willSucceed(givenGroupChange(path))
+  def givenGroupChangeWillFail(path: Path): Unit = willFail(givenGroupChange(path))
+  private def givenGroupChange(path: Path) = given(value.changeGroup(the(path), any[String]))
+  def verifyOwnerChange(path: Path, owner: String): Unit = verify(value).changeOwner(path, owner)
+  def verifyNotChangedOwner(path: Path): Unit = {
+    verify(value, never()).changeOwner(any[Path], any[String])
+  }
+  def verifyGroupChange(path: Path, group: String): Unit = verify(value).changeGroup(path, group)
+  def verifyNotChangedGroup(path: Path): Unit = {
+    verify(value, never()).changeGroup(any[Path], any[String])
   }
 
   private def willSucceed(call: BDDMyOngoingStubbing[Future[Unit]]): Unit =

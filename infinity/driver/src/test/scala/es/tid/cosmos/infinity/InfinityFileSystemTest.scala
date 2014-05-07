@@ -16,7 +16,7 @@
 
 package es.tid.cosmos.infinity
 
-import java.io.FileNotFoundException
+import java.io.{IOException, FileNotFoundException}
 import java.net.{URI, URL}
 import java.util.Date
 
@@ -186,6 +186,51 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
 
   it must "fail to rename the root directory" in new Fixture {
     fs.rename(new Path("/"), new Path("/other")) must be (false)
+  }
+
+  it must "do nothing when setting owner or group to null" in new Fixture {
+    val path = new Path("/some/pah")
+    fs.setOwner(path, null, null)
+    client.verifyNotChangedOwner(path.toInfinity)
+    client.verifyNotChangedGroup(path.toInfinity)
+  }
+
+  it must "change path owner" in new Fixture {
+    val path = new Path("/some/pah")
+    client.givenOwnerCanBeChanged(path.toInfinity)
+    fs.setOwner(path, "gandalf", null)
+    client.verifyOwnerChange(path.toInfinity, "gandalf")
+    client.verifyNotChangedGroup(path.toInfinity)
+  }
+
+  it must "change path group" in new Fixture {
+    val path = new Path("/some/pah")
+    client.givenGroupCanBeChanged(path.toInfinity)
+    fs.setOwner(path, null, "istari")
+    client.verifyNotChangedOwner(path.toInfinity)
+    client.verifyGroupChange(path.toInfinity, "istari")
+  }
+
+  it must "throw IOException if owner change fail" in new Fixture {
+    val path = new Path("/some/pah")
+    client.givenOwnerChangeWillFail(path.toInfinity)
+    client.givenGroupCanBeChanged(path.toInfinity)
+    evaluating {
+      fs.setOwner(path, "gandalf", "istari")
+    } must produce [IOException]
+    client.verifyOwnerChange(path.toInfinity, "gandalf")
+    client.verifyNotChangedGroup(path.toInfinity)
+  }
+
+  it must "throw IOException if group change fail" in new Fixture {
+    val path = new Path("/some/pah")
+    client.givenOwnerCanBeChanged(path.toInfinity)
+    client.givenGroupChangeWillFail(path.toInfinity)
+    evaluating {
+      fs.setOwner(path, "gandalf", "istari")
+    } must produce [IOException]
+    client.verifyOwnerChange(path.toInfinity, "gandalf")
+    client.verifyGroupChange(path.toInfinity, "istari")
   }
 
   val someTime = new Date(3600000L)

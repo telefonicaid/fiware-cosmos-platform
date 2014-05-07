@@ -156,6 +156,9 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     awaitResult(ownerChange.flatMap(_ => groupChange))
   }
 
+  override def setPermission(f: Path, perms: FsPermission): Unit =
+    awaitResult(client.changePermissions(f.toInfinity, perms.toInfinity))
+
   private def unless(condition: Future[Boolean])(body: Future[Unit]): Future[Unit] =
     condition.flatMap(if (_) Ok else body)
 
@@ -205,8 +208,6 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   override def create(f: Path, permission: FsPermission, overwrite: Boolean, bufferSize: Int, replication: Short, blockSize: Long, progress: Progressable): FSDataOutputStream = ???
 
   override def open(f: Path, bufferSize: Int): FSDataInputStream = ???
-
-  override def setPermission(p: Path, permission: FsPermission): Unit = super.setPermission(p, permission)
 
   override def append(f: Path, bufferSize: Int): FSDataOutputStream = super.append(f, bufferSize)
 

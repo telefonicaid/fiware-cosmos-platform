@@ -189,50 +189,62 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
   }
 
   it must "do nothing when setting owner or group to null" in new Fixture {
-    val path = new Path("/some/pah")
-    fs.setOwner(path, null, null)
-    client.verifyNotChangedOwner(path.toInfinity)
-    client.verifyNotChangedGroup(path.toInfinity)
+    fs.setOwner(somePath, null, null)
+    client.verifyNotChangedOwner(somePath.toInfinity)
+    client.verifyNotChangedGroup(somePath.toInfinity)
   }
 
   it must "change path owner" in new Fixture {
-    val path = new Path("/some/pah")
-    client.givenOwnerCanBeChanged(path.toInfinity)
-    fs.setOwner(path, "gandalf", null)
-    client.verifyOwnerChange(path.toInfinity, "gandalf")
-    client.verifyNotChangedGroup(path.toInfinity)
+    client.givenOwnerCanBeChanged(somePath.toInfinity)
+    fs.setOwner(somePath, "gandalf", null)
+    client.verifyOwnerChange(somePath.toInfinity, "gandalf")
+    client.verifyNotChangedGroup(somePath.toInfinity)
   }
 
   it must "change path group" in new Fixture {
-    val path = new Path("/some/pah")
-    client.givenGroupCanBeChanged(path.toInfinity)
-    fs.setOwner(path, null, "istari")
-    client.verifyNotChangedOwner(path.toInfinity)
-    client.verifyGroupChange(path.toInfinity, "istari")
+    client.givenGroupCanBeChanged(somePath.toInfinity)
+    fs.setOwner(somePath, null, "istari")
+    client.verifyNotChangedOwner(somePath.toInfinity)
+    client.verifyGroupChange(somePath.toInfinity, "istari")
   }
 
   it must "throw IOException if owner change fail" in new Fixture {
-    val path = new Path("/some/pah")
-    client.givenOwnerChangeWillFail(path.toInfinity)
-    client.givenGroupCanBeChanged(path.toInfinity)
+    client.givenOwnerChangeWillFail(somePath.toInfinity)
+    client.givenGroupCanBeChanged(somePath.toInfinity)
     evaluating {
-      fs.setOwner(path, "gandalf", "istari")
+      fs.setOwner(somePath, "gandalf", "istari")
     } must produce [IOException]
-    client.verifyOwnerChange(path.toInfinity, "gandalf")
-    client.verifyNotChangedGroup(path.toInfinity)
+    client.verifyOwnerChange(somePath.toInfinity, "gandalf")
+    client.verifyNotChangedGroup(somePath.toInfinity)
   }
 
   it must "throw IOException if group change fail" in new Fixture {
-    val path = new Path("/some/pah")
-    client.givenOwnerCanBeChanged(path.toInfinity)
-    client.givenGroupChangeWillFail(path.toInfinity)
+    client.givenOwnerCanBeChanged(somePath.toInfinity)
+    client.givenGroupChangeWillFail(somePath.toInfinity)
     evaluating {
-      fs.setOwner(path, "gandalf", "istari")
+      fs.setOwner(somePath, "gandalf", "istari")
     } must produce [IOException]
-    client.verifyOwnerChange(path.toInfinity, "gandalf")
-    client.verifyGroupChange(path.toInfinity, "istari")
+    client.verifyOwnerChange(somePath.toInfinity, "gandalf")
+    client.verifyGroupChange(somePath.toInfinity, "istari")
   }
 
+  it must "change path permissions" in new Fixture {
+    client.givenMaskCanBeChanged(somePath.toInfinity)
+    val mask = PermissionsMask.fromOctal("750")
+    fs.setPermission(somePath, mask.toHadoop)
+    client.verifyMaskChange(somePath.toInfinity, mask)
+  }
+
+  it must "throw IOError when failing to change path permissions" in new Fixture {
+    client.givenMaskChangeWillFail(somePath.toInfinity)
+    val mask = PermissionsMask.fromOctal("750")
+    evaluating {
+      fs.setPermission(somePath, mask.toHadoop)
+    } must produce [IOException]
+    client.verifyMaskChange(somePath.toInfinity, mask)
+  }
+
+  val somePath = new Path("/some/pah")
   val someTime = new Date(3600000L)
   val someFile = new Path("/some/file")
   val someFileMetadata = FileMetadata(

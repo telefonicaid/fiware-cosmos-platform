@@ -101,6 +101,14 @@ class MockInfinityClient extends MockitoSugar {
     verify(value, never()).changeGroup(any[Path], any[String])
   }
 
+  def givenMaskCanBeChanged(path: Path): Unit = willSucceed(givenMaskChange(path))
+  def givenMaskChangeWillFail(path: Path): Unit = willFail(givenMaskChange(path))
+  private def givenMaskChange(path: Path) =
+    given(value.changePermissions(the(path), any[PermissionsMask]))
+  def verifyMaskChange(path: Path, mask: PermissionsMask): Unit = {
+    verify(value).changePermissions(path, mask)
+  }
+
   private def willSucceed(call: BDDMyOngoingStubbing[Future[Unit]]): Unit =
     call.willReturn(Future.successful(()))
 

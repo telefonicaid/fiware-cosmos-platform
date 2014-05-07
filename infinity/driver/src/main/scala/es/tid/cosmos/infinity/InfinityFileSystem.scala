@@ -121,6 +121,20 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
       case Some(metadata: DirectoryMetadata) => metadata.toHadoop
     })
 
+  /** List the status for a path.
+    *
+    *  * For file paths is just the file status in a singleton array
+    *  * For directory paths is the directory listing
+    *
+    * @throws FileNotFoundException  if path doesn't exist
+    */
+  override def listStatus(f: Path): Array[FileStatus] =
+    awaitResult(client.pathMetadata(f.toInfinity).map {
+      case None => throw new FileNotFoundException(f.toString)
+      case Some(metadata: FileMetadata) => Array(metadata.toHadoop)
+      case Some(metadata: DirectoryMetadata) => metadata.content.map(_.toHadoop).toArray
+    })
+
   private def unless(condition: Future[Boolean])(body: Future[Unit]): Future[Unit] =
     condition.flatMap(if (_) Future.successful(()) else body)
 
@@ -160,8 +174,6 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
 
   // TODO: Not implemented methods
 
-
-  override def listStatus(f: Path): Array[FileStatus] = ???
 
   override def delete(f: Path, recursive: Boolean): Boolean = ???
 

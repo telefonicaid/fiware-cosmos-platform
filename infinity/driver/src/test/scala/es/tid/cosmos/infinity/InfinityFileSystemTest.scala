@@ -29,7 +29,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.infinity.common.fs.{DirectoryMetadata, FileMetadata}
+import es.tid.cosmos.infinity.common.fs.{DirectoryEntry, RootPath, DirectoryMetadata, FileMetadata}
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
@@ -113,38 +113,13 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
   }
 
   it must "get the file status of an existing file" in new Fixture {
-    val path = new Path("/file")
-    val metadata = FileMetadata(
-      path = path.toInfinity,
-      metadata = new URL("http://metadata/file"),
-      content = None,
-      owner = "user",
-      group = "cosmos",
-      modificationTime = new Date(3600000L),
-      accessTime = new Date(3600000L),
-      permissions = PermissionsMask.fromOctal("640"),
-      replication = 2,
-      blockSize = 1024,
-      size = 0
-    )
-    client.givenExistingPath(metadata)
-    fs.getFileStatus(path) must be (metadata.toHadoop)
+    client.givenExistingPath(someFileMetadata)
+    fs.getFileStatus(someFile) must be (someFileMetadata.toHadoop)
   }
 
   it must "get the file status of an existing directory" in new Fixture {
-    val path = new Path("/dir")
-    val metadata = DirectoryMetadata(
-      path = path.toInfinity,
-      metadata = new URL("http://metadata/dir"),
-      content = Seq.empty,
-      owner = "user",
-      group = "cosmos",
-      modificationTime = new Date(3600000L),
-      accessTime = new Date(3600000L),
-      permissions = PermissionsMask.fromOctal("640")
-    )
-    client.givenExistingPath(metadata)
-    fs.getFileStatus(path) must be (metadata.toHadoop)
+    client.givenExistingPath(someDirMetadata)
+    fs.getFileStatus(someDir) must be (someDirMetadata.toHadoop)
   }
 
   it must "throw FileNotFoundException for non existing paths" in new Fixture {
@@ -154,6 +129,73 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
       fs.getFileStatus(path)
     } must produce [FileNotFoundException]
   }
+
+  it must "list directory status for files" in new Fixture {
+    client.givenExistingPath(someFileMetadata)
+    fs.listStatus(someFile) must be (Array(someFileMetadata.toHadoop))
+  }
+
+  it must "list status of children paths for directories" in new Fixture {
+    client.givenExistingPath(someDirMetadata)
+    fs.listStatus(someDir) must be (someDirMetadata.content.map(_.toHadoop).toArray)
+  }
+
+  it must "throw FileNotFoundException when listing non existing paths" in new Fixture {
+    val path = new Path("/cannot/list/you")
+    client.givenNonExistingPath(path.toInfinity)
+    evaluating {
+      fs.listStatus(path)
+    } must produce [FileNotFoundException]
+  }
+
+  val someTime = new Date(3600000L)
+  val someFile = new Path("/some/file")
+  val someFileMetadata = FileMetadata(
+    path = someFile.toInfinity,
+    metadata = new URL("http://metadata/file"),
+    content = None,
+    owner = "user",
+    group = "cosmos",
+    modificationTime = new Date(3600000L),
+    accessTime = new Date(3600000L),
+    permissions = PermissionsMask.fromOctal("640"),
+    replication = 2,
+    blockSize = 1024,
+    size = 0
+  )
+  val someDir = new Path("/dir")
+  val someDirMetadata = DirectoryMetadata(
+    path = someDir.toInfinity,
+    metadata = new URL("http://metadata/dir"),
+    content = Seq(
+      DirectoryEntry.file(
+        path = RootPath / "dir" / "file",
+        metadata = new URL("http://metadata/dir/file"),
+        owner = "user",
+        group = "cosmos",
+        modificationTime = someTime,
+        accessTime = someTime,
+        permissions = PermissionsMask.fromOctal("700"),
+        replication = 3,
+        blockSize = 1024,
+        size = 127
+      ),
+      DirectoryEntry.directory(
+        path = RootPath / "dir" / "tmp",
+        metadata = new URL("http://metadata/dir/tmp"),
+        owner = "user",
+        group = "cosmos",
+        modificationTime = someTime,
+        accessTime = someTime,
+        permissions = PermissionsMask.fromOctal("1777")
+      )
+    ),
+    owner = "user",
+    group = "cosmos",
+    modificationTime = someTime,
+    accessTime = someTime,
+    permissions = PermissionsMask.fromOctal("640")
+  )
 
   abstract class Fixture(uri: URI = URI.create("infinity://localhost:8888/")) {
     val client = new MockInfinityClient

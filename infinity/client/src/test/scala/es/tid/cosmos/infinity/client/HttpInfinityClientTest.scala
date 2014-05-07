@@ -216,8 +216,8 @@ class HttpInfinityClientTest extends FlatSpec
   }
 
   "Appending content" must behave like {
-    canHandleCommonErrors(_.append(somePath))
-    canHandleNotFoundError(_.append(somePath))
+    canHandleCommonErrors(_.append(somePath, bufferSize))
+    canHandleNotFoundError(_.append(somePath, bufferSize))
 
     it must "succeed for an existing file" in new Fixture {
       val parent = dataFactory.dirMetadata(somePath, permissions)
@@ -225,7 +225,7 @@ class HttpInfinityClientTest extends FlatSpec
       infinity.givenExistingPaths(parent, file)
       infinity.givenExistingContent(file, "aContent")
       infinity.withServer {
-        val writer = Await.result(client.append(aFile), timeOut)
+        val writer = Await.result(client.append(aFile, bufferSize), timeOut)
         writer.write(" appended")
         contentOf(client.read(aFile, None, None)) must be ("aContent")
         writer.close()
@@ -235,8 +235,8 @@ class HttpInfinityClientTest extends FlatSpec
   }
 
   "Overwriting content" must behave like {
-    canHandleCommonErrors(_.append(somePath))
-    canHandleNotFoundError(_.append(somePath))
+    canHandleCommonErrors(_.append(somePath, bufferSize))
+    canHandleNotFoundError(_.append(somePath, bufferSize))
 
     it must "succeed for an existing file" in new Fixture {
       val parent = dataFactory.dirMetadata(somePath, permissions)
@@ -244,7 +244,7 @@ class HttpInfinityClientTest extends FlatSpec
       infinity.givenExistingPaths(parent, file)
       infinity.givenExistingContent(file, "aContent")
       infinity.withServer {
-        val writer = Await.result(client.overwrite(aFile), timeOut)
+        val writer = Await.result(client.overwrite(aFile, bufferSize), timeOut)
         writer.write("newContent")
         contentOf(client.read(aFile, None, None)) must be ("aContent")
         writer.close()
@@ -258,6 +258,7 @@ class HttpInfinityClientTest extends FlatSpec
   val aDir = somePath / "aDir"
   val aDate = new Date(1398420798000L)
   val permissions = PermissionsMask.fromOctal("644")
+  val bufferSize = 1024
 
   trait Fixture {
     val infinity = new MockInfinityServer(metadataPort = 8898, defaultDate = aDate)

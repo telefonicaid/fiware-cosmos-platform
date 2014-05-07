@@ -16,7 +16,7 @@
 
 package es.tid.cosmos.infinity
 
-import java.io._
+import java.io.{FileSystem => _, _}
 import java.net.{URI, URL}
 import java.util.concurrent.TimeoutException
 import scala.concurrent.{Await, Future}
@@ -163,7 +163,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   private def appendToFile(f: Path, bufferSize: Int, progress: Progressable): Future[FSDataOutputStream] =
     for {
       metadata <- existingFileMetadata(f)
-      stream <- client.append(asSubPath(f))
+      stream <- client.append(asSubPath(f), bufferSize)
     } yield new FSDataOutputStream(new InfinityOutputStream(stream, progress), statistics)
 
   override def create(

@@ -21,7 +21,7 @@ import java.util.Date
 import scala.concurrent.{Future, Promise}
 
 import org.mockito.BDDMockito.{BDDMyOngoingStubbing, given}
-import org.mockito.Matchers.{any, anyBoolean, eq => the}
+import org.mockito.Matchers.{any, anyBoolean, anyInt, eq => the}
 import org.mockito.Mockito.{never, verify}
 import org.scalatest.mock.MockitoSugar
 
@@ -143,7 +143,7 @@ class MockInfinityClient extends MockitoSugar {
   def givenFileCanBeAppendedTo(path: Path): Unit = {
     givenFile(path)
     val output = new OutputStreamWriter(new ByteArrayOutputStream())
-    given(value.append(asSubPath(path))).willReturn(Future.successful(output))
+    given(value.append(the(asSubPath(path)), anyInt)).willReturn(Future.successful(output))
   }
 
   private def willSucceed(call: BDDMyOngoingStubbing[Future[Unit]]): Unit =

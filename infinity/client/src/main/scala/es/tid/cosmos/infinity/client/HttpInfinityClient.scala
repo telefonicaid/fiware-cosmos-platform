@@ -93,19 +93,21 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
       }
     }
 
-  override def overwrite(path: SubPath): Future[OutputStreamWriter] =
-    requestWithOutputStream(path, _.PUT)
+  override def overwrite(path: SubPath, bufferSize: Int): Future[OutputStreamWriter] =
+    requestWithOutputStream(path, _.PUT, bufferSize)
 
-  override def append(path: SubPath): Future[OutputStreamWriter] =
-    requestWithOutputStream(path, _.POST)
+  override def append(path: SubPath, bufferSize: Int): Future[OutputStreamWriter] =
+    requestWithOutputStream(path, _.POST, bufferSize)
 
   private def requestWithOutputStream(
-      path: Path, requestMethod: RequestBuilder => RequestBuilder): Future[OutputStreamWriter] =
+      path: Path,
+      requestMethod: RequestBuilder => RequestBuilder,
+      bufferSize: Int): Future[OutputStreamWriter] =
     existingMetaData(path) map { metadata =>
       /* Create a stream pipes to allow the caller to write on the output stream
        * while a separate thread is reading its input stream to form the HTTP request body
        */
-      val in = new PipedInputStream()
+      val in = new PipedInputStream(bufferSize)
       val out = new PipedOutputStream(in)
       val writer = new OutputStreamWriter(out)
       val request = requestMethod(contentResource(metadata)).setBody(

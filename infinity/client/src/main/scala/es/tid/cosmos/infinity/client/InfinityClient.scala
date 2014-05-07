@@ -132,19 +132,21 @@ trait InfinityClient {
 
   /** Append data to a file.
     *
-    * @param path  Path of the file to append to
-    * @return      A stream to write to, fail with the common exceptions or with NotFoundException
-    *              when the path to write doesn't exist. Note that the returned stream can fail
-    *              wrapping in IOException any common exception
+    * @param path        Path of the file to append to
+    * @param bufferSize  Size of the output stream buffer
+    * @return            A stream to write to, fail with the common exceptions or with
+    *                    NotFoundException when the path to write doesn't exist. Note that the
+    *                    returned stream can fail wrapping in IOException any common exception
     */
-  def append(path: SubPath): Future[OutputStreamWriter]
+  def append(path: SubPath, bufferSize: Int): Future[OutputStreamWriter]
 
   /** Overwrite a file.
     *
-    * @param path  Path of the file to be overwritten
-    * @return      A stream to write to, fail with the common exceptions or with NotFoundException
-    *              when the path to write doesn't exist. Note that the returned stream can fail
-    *              wrapping in IOException any common exception
+    * @param path        Path of the file to be overwritten
+    * @param bufferSize  Size of the output stream buffer
+    * @return            A stream to write to, fail with the common exceptions or with
+    *                    NotFoundException when the path to write doesn't exist. Note that the
+    *                    returned stream can fail wrapping in IOException any common exception
     */
-  def overwrite(path: SubPath): Future[OutputStreamWriter]
+  def overwrite(path: SubPath, bufferSize: Int): Future[OutputStreamWriter]
 }

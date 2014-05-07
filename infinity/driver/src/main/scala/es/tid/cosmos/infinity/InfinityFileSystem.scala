@@ -16,7 +16,7 @@
 
 package es.tid.cosmos.infinity
 
-import java.io.{IOException, FileNotFoundException}
+import java.io.{BufferedOutputStream, IOException, FileNotFoundException}
 import java.net.{URI, URL}
 import java.util.concurrent.TimeoutException
 import scala.concurrent.{Await, Future}
@@ -115,11 +115,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   }
 
   override def getFileStatus(f: Path): FileStatus =
-    awaitResult(client.pathMetadata(f.toInfinity).map {
-      case None => throw new FileNotFoundException(f.toString)
-      case Some(metadata: FileMetadata) => metadata.toHadoop
-      case Some(metadata: DirectoryMetadata) => metadata.toHadoop
-    })
+    awaitResult(existingPathMetadata(f).map(_.toHadoop))
 
   /** List the status for a path.
     *
@@ -129,10 +125,9 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     * @throws FileNotFoundException  if path doesn't exist
     */
   override def listStatus(f: Path): Array[FileStatus] =
-    awaitResult(client.pathMetadata(f.toInfinity).map {
-      case None => throw new FileNotFoundException(f.toString)
-      case Some(metadata: FileMetadata) => Array(metadata.toHadoop)
-      case Some(metadata: DirectoryMetadata) => metadata.content.map(_.toHadoop).toArray
+    awaitResult(existingPathMetadata(f).map {
+      case metadata: FileMetadata => Array(metadata.toHadoop)
+      case metadata: DirectoryMetadata => metadata.content.map(_.toHadoop).toArray
     })
 
   override def delete(f: Path, recursive: Boolean): Boolean = f.toInfinity match {
@@ -159,13 +154,30 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     awaitResult(client.changePermissions(f.toInfinity, perms.toInfinity))
 
   override def open(f: Path, bufferSize: Int) =
-    awaitResult(client.pathMetadata(f.toInfinity).map {
-      case None => throw new FileNotFoundException(f.toString)
-      case Some(_: FileMetadata) =>
-        new FSDataInputStream(new InfinityInputStream(client, f.toInfinity))
-      case Some(_) =>
-        throw new IOException(s"Cannot read from directory at $f")
+    awaitResult(existingFileMetadata(f).map { metadata =>
+      new FSDataInputStream(new InfinityInputStream(client, contentLocation(metadata)))
     })
+
+  override def append(f: Path, bufferSize: Int, progress: Progressable): FSDataOutputStream =
+    awaitResult(existingFileMetadata(f).map { metadata =>
+      val stream = new InfinityOutputStream(client, contentLocation(metadata))
+      new FSDataOutputStream(new BufferedOutputStream(stream, bufferSize), statistics)
+    })
+
+  override def create(
+      f: Path, perms: FsPermission, overwrite: Boolean, bufferSize: Int, replication: Short,
+      blockSize: Long, progress: Progressable): FSDataOutputStream = ???
+
+  private def contentLocation(metadata: FileMetadata): URL = metadata.content.getOrElse(
+    throw new IOException(s"${metadata.path} has no known content location"))
+
+  private def existingPathMetadata(f: Path): Future[PathMetadata] =
+    client.pathMetadata(f.toInfinity).map(_.getOrElse(throw new FileNotFoundException(f.toString)))
+
+  private def existingFileMetadata(f: Path): Future[FileMetadata] = existingPathMetadata(f).map {
+    case _: DirectoryMetadata => throw new IOException(s"$f expected to be a file but was a directory")
+    case metadata: FileMetadata => metadata
+  }
 
   private def unless(condition: Future[Boolean])(body: Future[Unit]): Future[Unit] =
     condition.flatMap(if (_) Ok else body)
@@ -207,16 +219,6 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   }
 
   override val getScheme = Scheme
-
-  // TODO: Not implemented methods
-
-  override def create(f: Path, permission: FsPermission, overwrite: Boolean, bufferSize: Int, replication: Short, blockSize: Long, progress: Progressable): FSDataOutputStream = ???
-
-  override def append(f: Path, bufferSize: Int, progress: Progressable): FSDataOutputStream = ???
-
-  override def append(f: Path, bufferSize: Int): FSDataOutputStream = super.append(f, bufferSize)
-
-  override def append(f: Path): FSDataOutputStream = super.append(f)
 }
 
 object InfinityFileSystem {

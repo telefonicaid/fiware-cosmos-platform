@@ -16,27 +16,11 @@
 
 package es.tid.cosmos.infinity
 
-import java.io.InputStream
+import java.io.OutputStream
 import java.net.URL
-
-import org.apache.hadoop.fs.{PositionedReadable, Seekable}
 
 import es.tid.cosmos.infinity.client.InfinityClient
 
-private[infinity] class InfinityInputStream(client: InfinityClient, content: URL)
-  extends InputStream with Seekable with PositionedReadable {
-
-  override def read(): Int = ???
-
-  override def getPos: Long = ???
-
-  override def seekToNewSource(targetPos: Long): Boolean = ???
-
-  override def seek(pos: Long): Unit = ???
-
-  override def read(position: Long, buffer: Array[Byte], offset: Int, length: Int): Int = ???
-
-  override def readFully(position: Long, buffer: Array[Byte], offset: Int, length: Int): Unit = ???
-
-  override def readFully(position: Long, buffer: Array[Byte]): Unit = ???
+class InfinityOutputStream(client: InfinityClient, location: URL) extends OutputStream {
+  override def write(b: Int): Unit = ???
 }

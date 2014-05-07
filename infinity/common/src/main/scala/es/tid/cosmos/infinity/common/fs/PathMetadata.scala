@@ -31,7 +31,11 @@ sealed trait AbstractMetadata {
   val modificationTime: Date
   val accessTime: Date
   val permissions: PermissionsMask
+  val replication: Short
+  val blockSize: Long
   val size: Long
+
+  def isDirectory: Boolean = `type` == PathType.Directory
 }
 
 /** Metadata of either a file or a directory. */
@@ -46,8 +50,8 @@ case class FileMetadata(
     override val modificationTime: Date,
     override val accessTime: Date,
     override val permissions: PermissionsMask,
-    replication: Short,
-    blockSize: Long,
+    override val replication: Short,
+    override val blockSize: Long,
     override val size: Long) extends PathMetadata {
 
   override val `type` = PathType.File
@@ -77,12 +81,20 @@ case class DirectoryMetadata(
     override val permissions: PermissionsMask) extends PathMetadata {
 
   override val `type` = PathType.Directory
-  override val size = 0L
+  override val replication = DirectoryMetadata.Replication
+  override val blockSize = DirectoryMetadata.BlockSize
+  override val size = DirectoryMetadata.Size
 
   def this(path: String, metadata: String, content: Seq[DirectoryEntry],
     owner: String, group: String, modificationTime: Date, accessTime: Date,
     permissions: String) = this(Path.absolute(path), new URL(metadata), content, owner, group,
     modificationTime, accessTime, PermissionsMask.fromOctal(permissions))
+}
+
+object DirectoryMetadata {
+  val Replication: Short = 0
+  val BlockSize: Long = 0L
+  val Size: Long = 0L
 }
 
 /** Metadata for every directory entry, without the content field to avoid recursion. */
@@ -95,12 +107,30 @@ case class DirectoryEntry (
     override val modificationTime: Date,
     override val accessTime: Date,
     override val permissions: PermissionsMask,
+    override val replication: Short,
+    override val blockSize: Long,
     override val size: Long) extends AbstractMetadata {
 
   require(size >= 0, s"File size must be non-negative but was $size")
 
   def this(path: String, `type`: String, metadata: String, owner: String, group: String,
-           modificationTime: Date, accessTime: Date, permissions: String, size: Long) =
+           modificationTime: Date, accessTime: Date, permissions: String, replication: Short,
+           blockSize: Long, size: Long) =
     this(Path.absolute(path), PathType.valueOf(`type`), new URL(metadata), owner, group,
-      modificationTime, accessTime, PermissionsMask.fromOctal(permissions), size)
+      modificationTime, accessTime, PermissionsMask.fromOctal(permissions), replication, blockSize,
+      size)
+}
+
+object DirectoryEntry {
+
+  def file(path: Path, metadata: URL, owner: String, group: String,
+           modificationTime: Date, accessTime: Date, permissions: PermissionsMask,
+           replication: Short, blockSize: Long, size: Long) = DirectoryEntry(
+    path, PathType.File, metadata, owner, group, modificationTime, accessTime, permissions,
+    replication, blockSize, size)
+
+  def directory(path: Path, metadata: URL, owner: String, group: String, modificationTime: Date,
+                accessTime: Date, permissions: PermissionsMask) = DirectoryEntry(
+    path, PathType.File, metadata, owner, group, modificationTime, accessTime, permissions,
+    DirectoryMetadata.Replication, DirectoryMetadata.BlockSize, DirectoryMetadata.Size)
 }

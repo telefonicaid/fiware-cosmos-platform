@@ -47,6 +47,9 @@ object Action {
   /** A delete operation was unsuccessful */
   case object DeleteUnsuccessful extends Result
 
+  /** A move operation was unsuccessful */
+  case object MoveUnsuccessful extends Result
+
   /** A file or directory metadata object resulting from an action. */
   case class PathMetadataResult(metadata: PathMetadata) extends Result
 

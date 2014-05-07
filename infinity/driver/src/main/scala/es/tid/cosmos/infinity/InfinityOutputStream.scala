@@ -16,20 +16,23 @@
 
 package es.tid.cosmos.infinity
 
-import java.io.{OutputStream, OutputStreamWriter}
+import java.io.OutputStream
 
 import org.apache.hadoop.util.Progressable
 
-class InfinityOutputStream (stream: OutputStreamWriter, progress: Progressable)
-  extends OutputStream {
+class InfinityOutputStream(stream: OutputStream, progress: Option[Progressable]) extends OutputStream {
 
-  override def write(b: Int): Unit = ???
+  override def write(b: Int): Unit = withProgress(stream.write(b))
 
-  override def write(b: Array[Byte]): Unit = super.write(b)
+  override def write(b: Array[Byte], off: Int, len: Int): Unit =
+    withProgress(stream.write(b, off, len))
 
-  override def write(b: Array[Byte], off: Int, len: Int): Unit = super.write(b, off, len)
+  override def flush(): Unit = withProgress(stream.flush())
 
-  override def flush(): Unit = super.flush()
+  override def close(): Unit = withProgress(stream.close())
 
-  override def close(): Unit = super.close()
+  private def withProgress[T](body: => T): T = {
+    progress.foreach(_.progress())
+    body
+  }
 }

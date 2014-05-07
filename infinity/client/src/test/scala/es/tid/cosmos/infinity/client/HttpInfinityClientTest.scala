@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.infinity.client
 
-import java.io.{BufferedReader, InputStreamReader}
+import java.io._
 import java.util.Date
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
@@ -226,7 +226,7 @@ class HttpInfinityClientTest extends FlatSpec
       infinity.givenExistingContent(file, "aContent")
       infinity.withServer {
         val writer = Await.result(client.append(aFile, bufferSize), timeOut)
-        writer.write(" appended")
+        writeString(writer, " appended")
         contentOf(client.read(aFile, None, None)) must be ("aContent")
         writer.close()
         contentOf(client.read(aFile, None, None)) must be ("aContent appended")
@@ -245,7 +245,7 @@ class HttpInfinityClientTest extends FlatSpec
       infinity.givenExistingContent(file, "aContent")
       infinity.withServer {
         val writer = Await.result(client.overwrite(aFile, bufferSize), timeOut)
-        writer.write("newContent")
+        writeString(writer, "newContent")
         contentOf(client.read(aFile, None, None)) must be ("aContent")
         writer.close()
         contentOf(client.read(aFile, None, None)) must be ("newContent")
@@ -266,11 +266,18 @@ class HttpInfinityClientTest extends FlatSpec
     val client = new HttpInfinityClient(infinity.metadataEndpoint)
     val timeOut = 10.seconds
 
-    def contentOf(reader_> : Future[InputStreamReader]): String = {
+    def contentOf(reader_> : Future[InputStream]): String = {
       val reader = Await.result(reader_>, timeOut)
       val contentStream =
-        Stream.continually(new BufferedReader(reader).readLine).takeWhile(_ != null)
+        Stream.continually(new BufferedReader(new InputStreamReader(reader)).readLine)
+          .takeWhile(_ != null)
       contentStream.toList.mkString
+    }
+
+    def writeString(output: OutputStream, content: String): Unit = {
+      val writer = new OutputStreamWriter(output)
+      writer.write(content)
+      writer.flush()
     }
   }
 }

@@ -142,7 +142,7 @@ class MockInfinityClient extends MockitoSugar {
 
   def givenFileCanBeAppendedTo(path: Path): Unit = {
     givenFile(path)
-    val output = new OutputStreamWriter(new ByteArrayOutputStream())
+    val output = new ByteArrayOutputStream()
     given(value.append(the(asSubPath(path)), anyInt)).willReturn(Future.successful(output))
   }
 

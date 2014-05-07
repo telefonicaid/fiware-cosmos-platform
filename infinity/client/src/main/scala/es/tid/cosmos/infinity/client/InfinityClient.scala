@@ -16,7 +16,7 @@
 
 package es.tid.cosmos.infinity.client
 
-import java.io.{InputStreamReader, OutputStreamWriter}
+import java.io.{InputStream, OutputStream}
 import scala.concurrent.Future
 
 import es.tid.cosmos.infinity.common.fs.{Path, PathMetadata, SubPath}
@@ -128,7 +128,7 @@ trait InfinityClient {
     * @return        A stream with the contents on success or fail with the common exceptions or
     *                NotFoundException when the path to read doesn't exist
     */
-  def read(path: SubPath, offset: Option[Long], length: Option[Long]): Future[InputStreamReader]
+  def read(path: SubPath, offset: Option[Long], length: Option[Long]): Future[InputStream]
 
   /** Append data to a file.
     *
@@ -138,7 +138,7 @@ trait InfinityClient {
     *                    NotFoundException when the path to write doesn't exist. Note that the
     *                    returned stream can fail wrapping in IOException any common exception
     */
-  def append(path: SubPath, bufferSize: Int): Future[OutputStreamWriter]
+  def append(path: SubPath, bufferSize: Int): Future[OutputStream]
 
   /** Overwrite a file.
     *
@@ -148,5 +148,5 @@ trait InfinityClient {
     *                    NotFoundException when the path to write doesn't exist. Note that the
     *                    returned stream can fail wrapping in IOException any common exception
     */
-  def overwrite(path: SubPath, bufferSize: Int): Future[OutputStreamWriter]
+  def overwrite(path: SubPath, bufferSize: Int): Future[OutputStream]
 }

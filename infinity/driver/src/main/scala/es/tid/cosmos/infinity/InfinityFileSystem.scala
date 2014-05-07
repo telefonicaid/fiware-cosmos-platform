@@ -157,10 +157,10 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
       new FSDataInputStream(new InfinityInputStream(client, contentLocation(metadata)))
     })
 
-  override def append(f: Path, bufferSize: Int, progress: Progressable): FSDataOutputStream =
-    awaitResult(appendToFile(f, bufferSize, progress: Progressable))
+  override def append(f: Path, bufferSize: Int, progressOrNull: Progressable): FSDataOutputStream =
+    awaitResult(appendToFile(f, bufferSize, Option(progressOrNull)))
 
-  private def appendToFile(f: Path, bufferSize: Int, progress: Progressable): Future[FSDataOutputStream] =
+  private def appendToFile(f: Path, bufferSize: Int, progress: Option[Progressable]): Future[FSDataOutputStream] =
     for {
       metadata <- existingFileMetadata(f)
       stream <- client.append(asSubPath(f), bufferSize)
@@ -168,9 +168,9 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
 
   override def create(
       f: Path, perms: FsPermission, overwrite: Boolean, bufferSize: Int, replication: Short,
-      blockSize: Long, progress: Progressable): FSDataOutputStream = {
+      blockSize: Long, progressOrNull: Progressable): FSDataOutputStream = {
     val fileCreation = client.createFile(asSubPath(f), perms.toInfinity, Some(replication), Some(blockSize))
-    awaitResult(fileCreation.flatMap(_ => appendToFile(f, bufferSize, progress)))
+    awaitResult(fileCreation.flatMap(_ => appendToFile(f, bufferSize, Option(progressOrNull))))
   }
 
   private def contentLocation(metadata: FileMetadata): URL = metadata.content.getOrElse(

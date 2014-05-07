@@ -20,7 +20,7 @@ import java.net.URL
 import java.util.Date
 import scala.concurrent.{Future, Promise}
 
-import org.mockito.BDDMockito.given
+import org.mockito.BDDMockito.{BDDMyOngoingStubbing, given}
 import org.mockito.Matchers.{any, anyBoolean, eq => the}
 import org.mockito.Mockito.verify
 import org.scalatest.mock.MockitoSugar
@@ -36,6 +36,7 @@ class MockInfinityClient extends MockitoSugar {
   val defaultMetadataUrl = new URL("https://metadata/some/path")
   val defaultTime = new Date(449964000000L)
   val defaultMask = PermissionsMask.fromOctal("755")
+  val defaultFailure = new IllegalStateException("forced failure")
 
   def givenNonExistingPath(path: Path): Unit = {
     given(value.pathMetadata(asSubPath(path))).willReturn(Future.successful(None))
@@ -60,43 +61,42 @@ class MockInfinityClient extends MockitoSugar {
 
   def givenDirectoryCanBeCreated(path: Path): Unit = {
     givenNonExistingPath(path)
-    givenDirectoryCreation(path).willReturn(Future.successful(()))
+    willSucceed(givenDirectoryCreation(path))
   }
-
-  def givenDirectoryCreationWillFail(path: Path, cause: Throwable): Unit = {
-    givenDirectoryCreation(path).willReturn(Future.failed(cause))
-  }
-
-  def givenDirectoryCreationWontFinish(path: Path): Unit = {
-    givenDirectoryCreation(path).willReturn(never())
-  }
-
-  def givenCanBeDeleted(path: Path): Unit = {
-    givenPathDeletion(path).willReturn(Future.successful(()))
-  }
-
-  def givenDeletionWillFail(path: Path, cause: Throwable): Unit = {
-    givenPathDeletion(path).willReturn(Future.failed(cause))
-  }
-
+  def givenDirectoryCreationWillFail(path: Path): Unit = willFail(givenDirectoryCreation(path))
+  def givenDirectoryCreationWontFinish(path: Path): Unit = wontFinish(givenDirectoryCreation(path))
   private def givenDirectoryCreation(path: Path) =
     given(value.createDirectory(the(asSubPath(path)), any[PermissionsMask]))
-
-  private def givenPathDeletion(path: Path) = given(value.delete(the(asSubPath(path)), anyBoolean))
-
   def verifyDirectoryCreation(path: Path, mask: PermissionsMask): Unit = {
     verify(value).createDirectory(asSubPath(path), mask)
   }
 
+  def givenCanBeDeleted(path: Path): Unit = willSucceed(givenPathDeletion(path))
+  def givenDeletionWillFail(path: Path): Unit = willFail(givenPathDeletion(path))
+  private def givenPathDeletion(path: Path) = given(value.delete(the(asSubPath(path)), anyBoolean))
   def verifyDeletion(path: Path, recursive: Boolean): Unit = {
     verify(value).delete(the(asSubPath(path)), the(recursive))
   }
+
+  def givenCanBeMoved(source: Path, target: Path): Unit = willSucceed(givenMove(source, target))
+  def givenMoveWillFail(source: Path, target: Path): Unit = willFail(givenMove(source, target))
+  private def givenMove(source: Path, target: Path) =
+    given(value.move(asSubPath(source), asSubPath(target)))
+  def verifyMove(source: Path, target: Path): Unit = {
+    verify(value).move(the(asSubPath(source)), the(asSubPath(target)))
+  }
+
+  private def willSucceed(call: BDDMyOngoingStubbing[Future[Unit]]): Unit =
+    call.willReturn(Future.successful(()))
+
+  private def willFail(call: BDDMyOngoingStubbing[Future[Unit]]): Unit =
+    call.willReturn(Future.failed(defaultFailure))
+
+  private def wontFinish[T](call: BDDMyOngoingStubbing[Future[T]]): Unit =
+    call.willReturn(Promise[T]().future)
 
   private def asSubPath(path: Path): SubPath = path match {
     case RootPath => throw new IllegalArgumentException("Not a relative path")
     case subPath: SubPath => subPath
   }
-
-  /** Creates a future that never completes */
-  private def never[T](): Future[T] = Promise[T]().future
 }

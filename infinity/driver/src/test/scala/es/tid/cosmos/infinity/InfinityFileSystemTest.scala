@@ -93,7 +93,7 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     val path = new Path("/parent/newdir")
     client.givenDirectory(path.getParent.toInfinity)
     client.givenNonExistingPath(path.toInfinity)
-    client.givenDirectoryCreationWillFail(path.toInfinity, new Error("problem"))
+    client.givenDirectoryCreationWillFail(path.toInfinity)
 
     fs.mkdirs(path, perms) must be (false)
 
@@ -163,9 +163,29 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
   it must "return false on failure" in new Fixture {
     val path = new Path("/subdir")
     val recursive = false
-    client.givenDeletionWillFail(path.toInfinity, new IllegalStateException("foo"))
+    client.givenDeletionWillFail(path.toInfinity)
     fs.delete(path, recursive) must be (false)
     client.verifyDeletion(path.toInfinity, recursive)
+  }
+
+  it must "rename paths" in new Fixture {
+    val source = new Path("/some/path")
+    val target = new Path("/some/renamed")
+    client.givenCanBeMoved(source.toInfinity, target.toInfinity)
+    fs.rename(source, target) must be (true)
+    client.verifyMove(source.toInfinity, target.toInfinity)
+  }
+
+  it must "return false when paths fail to be renamed" in new Fixture {
+    val source = new Path("/some/path")
+    val target = new Path("/some/renamed")
+    client.givenMoveWillFail(source.toInfinity, target.toInfinity)
+    fs.rename(source, target) must be (false)
+    client.verifyMove(source.toInfinity, target.toInfinity)
+  }
+
+  it must "fail to rename the root directory" in new Fixture {
+    fs.rename(new Path("/"), new Path("/other")) must be (false)
   }
 
   val someTime = new Date(3600000L)

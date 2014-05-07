@@ -140,6 +140,14 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     case path: SubPath => awaitAction(client.delete(path, recursive))
   }
 
+  override def rename(source: Path, target: Path): Boolean =
+    (source.toInfinity, target.toInfinity) match {
+      case (from: SubPath, to: SubPath) => awaitAction(client.move(from, to))
+      case _ =>
+        Log.error(s"Cannot move from/to the root path (Moving $source to $target)")
+        false
+    }
+
   private def unless(condition: Future[Boolean])(body: Future[Unit]): Future[Unit] =
     condition.flatMap(if (_) Future.successful(()) else body)
 
@@ -180,8 +188,6 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   // TODO: Not implemented methods
 
 
-  override def rename(src: Path, dst: Path): Boolean = ???
-
   override def append(f: Path, bufferSize: Int, progress: Progressable): FSDataOutputStream = ???
 
   override def create(f: Path, permission: FsPermission, overwrite: Boolean, bufferSize: Int, replication: Short, blockSize: Long, progress: Progressable): FSDataOutputStream = ???
@@ -192,19 +198,9 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
 
   override def setPermission(p: Path, permission: FsPermission): Unit = super.setPermission(p, permission)
 
-  override def getStatus(p: Path): FsStatus = super.getStatus(p)
-
-  override def getDefaultReplication(path: Path): Short = super.getDefaultReplication(path)
-
-  override def getDefaultBlockSize(f: Path): Long = super.getDefaultBlockSize(f)
-
-  override def concat(trg: Path, psrcs: Array[Path]): Unit = super.concat(trg, psrcs)
-
   override def append(f: Path, bufferSize: Int): FSDataOutputStream = super.append(f, bufferSize)
 
   override def append(f: Path): FSDataOutputStream = super.append(f)
-
-  override def createNewFile(f: Path): Boolean = super.createNewFile(f)
 }
 
 object InfinityFileSystem {

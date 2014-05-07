@@ -16,11 +16,12 @@
 
 package es.tid.cosmos.infinity
 
+import java.io.FileNotFoundException
 import java.net.{URI, URL}
 import java.util.concurrent.TimeoutException
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 import org.apache.commons.logging.LogFactory
 import org.apache.hadoop.conf.Configuration
@@ -30,7 +31,7 @@ import org.apache.hadoop.security.UserGroupInformation
 import org.apache.hadoop.util.Progressable
 
 import es.tid.cosmos.infinity.client.{HttpInfinityClient, InfinityClient}
-import es.tid.cosmos.infinity.common.fs.{Path => InfinityPath, RootPath, SubPath}
+import es.tid.cosmos.infinity.common.fs.{Path => InfinityPath, _}
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
@@ -88,7 +89,6 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
 
   private def homeDirectory(): String = s"/user/${ugi.getUserName}"
 
-
   override def setTimes(p: Path, mtime: Long, atime: Long): Unit = {
     Log.warn("#setTimes has no effect")
   }
@@ -114,6 +114,13 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     case subPath: SubPath => client.pathMetadata(subPath).map(_.isDefined)
   }
 
+  override def getFileStatus(f: Path): FileStatus =
+    awaitResult(client.pathMetadata(f.toInfinity).map {
+      case None => throw new FileNotFoundException(f.toString)
+      case Some(metadata: FileMetadata) => metadata.toHadoop
+      case Some(metadata: DirectoryMetadata) => metadata.toHadoop
+    })
+
   private def unless(condition: Future[Boolean])(body: Future[Unit]): Future[Unit] =
     condition.flatMap(if (_) Future.successful(()) else body)
 
@@ -122,24 +129,37 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     * @param action  Action to block for
     * @return        Whether the action succeeded
     */
-  private def awaitAction(action: Future[_]): Boolean = try {
-    Await.ready(action, infinityConfiguration.timeoutDuration).value.get match {
-      case Success(_) => true
-      case Failure(ex) =>
-        Log.error("Cannot perform Infinity file system action", ex)
-        false
-    }
-  } catch {
-    case ex: TimeoutException =>
-      Log.error(s"Infinity operation timed out after ${infinityConfiguration.timeoutDuration}", ex)
+  private def awaitAction(action: Future[_]): Boolean = boundedWait(action) match {
+    case Success(_) => true
+    case Failure(ex) =>
+      Log.error("Cannot perform Infinity file system action", ex)
       false
+  }
+
+  /** Blocks for a result to be ready.
+    *
+    * @param result  Result to wait for
+    * @return        The result if the future succeeds on time. Otherwise an exception will
+    *                be thrown.
+    */
+  private def awaitResult[T](result: Future[T]): T = boundedWait(result) match {
+    case Success(value) => value
+    case Failure(ex) =>
+      Log.error("Cannot perform Infinity file system action", ex)
+      throw ex;
+  }
+
+  /** Blocks for a result to be ready (or failed) */
+  private def boundedWait[T](result: Future[T]): Try[T] = try {
+    Await.ready(result, infinityConfiguration.timeoutDuration).value.get
+  } catch {
+    case ex: TimeoutException => Failure(ex)
   }
 
   override val getScheme = Scheme
 
   // TODO: Not implemented methods
 
-  override def getFileStatus(f: Path): FileStatus = ???
 
   override def listStatus(f: Path): Array[FileStatus] = ???
 

@@ -16,28 +16,69 @@
 
 package es.tid.cosmos.infinity.common.hadoop
 
-import org.apache.hadoop.fs.{Path => HadoopPath}
+import java.net.URL
+import java.util.Date
+
+import org.apache.hadoop.fs.{FileStatus, Path => HadoopPath}
 import org.apache.hadoop.fs.permission.FsPermission
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.common.RootPath
+import es.tid.cosmos.infinity.common.fs.{DirectoryMetadata, FileMetadata, Path, RootPath}
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 class HadoopConversionsTest extends FlatSpec with MustMatchers {
 
   import HadoopConversions._
 
-  "HDFS conversions" must "convert FS permissions from HDFS into Infinity" in {
+  "An FsPermission" must "be converted to PermissionsMask" in {
     new FsPermission("755").toInfinity must be (PermissionsMask.fromOctal("755"))
   }
 
-  it must "convert FS permissions from Infinity into HDFS" in {
+  "A PermissionsMask" must "be converted to FsPermission" in {
     PermissionsMask.fromOctal("755").toHadoop must be(new FsPermission("755"))
   }
 
-  "A hadoop path" must "be converted to an infinity one" in {
+  "A Hadoop path" must "be converted to an infinity one" in {
     new HadoopPath("/").toInfinity must be (RootPath)
     new HadoopPath("/foo/bar").toInfinity must be (RootPath / "foo" / "bar")
+  }
+
+  "An infinity path" must "be converted to a Hadoop one" in {
+    RootPath.toHadoop must be (new HadoopPath("/"))
+    Path.absolute("/foo/bar").toHadoop must be (new HadoopPath("/foo/bar"))
+  }
+
+  "A FileMetadata" must "be converted to a FileStatus" in {
+    val mask = PermissionsMask.fromOctal("755")
+    FileMetadata(
+      path = Path.absolute("/some/file"),
+      metadata = new URL("http://metadata/some/file"),
+      content = None,
+      owner = "owner",
+      group = "group",
+      modificationTime = new Date(42),
+      accessTime = new Date(43),
+      permissions = mask,
+      replication = 3,
+      blockSize = 32,
+      size = 1024
+    ).toHadoop must be (new FileStatus(1024, false, 3, 32, 42, 43, mask.toHadoop, "owner", "group",
+      new HadoopPath("/some/file")))
+  }
+
+  "A DirectoryMetadata" must "be converted to a FileStatus" in {
+    val mask = PermissionsMask.fromOctal("1755")
+    DirectoryMetadata(
+      path = RootPath,
+      metadata = new URL("http://metadata/"),
+      content = Seq.empty,
+      owner = "owner",
+      group = "group",
+      modificationTime = new Date(42),
+      accessTime = new Date(43),
+      permissions = mask
+    ).toHadoop must be (new FileStatus(0, true, 0, 32, 42, 43, mask.toHadoop, "owner", "group",
+      new HadoopPath("/")))
   }
 }

@@ -16,24 +16,63 @@
 
 package es.tid.cosmos.infinity.common.hadoop
 
-import org.apache.hadoop.fs.{Path => HadoopPath}
+import org.apache.hadoop.fs.{FileStatus, Path => HadoopPath}
 import org.apache.hadoop.fs.permission.FsPermission
 
-import es.tid.cosmos.infinity.common.fs.Path
+import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 /** This object provides implicits to bling Hadoop objects into their equivalent Infinity ones. */
 object HadoopConversions {
 
-  implicit class FsPermissionConversion(permission: FsPermission) {
+  implicit class FsPermissionConversion(val permission: FsPermission) extends AnyVal {
     def toInfinity: PermissionsMask = PermissionsMask.fromShort(permission.toShort)
   }
 
-  implicit class PermissionsMaskConversion(permission: PermissionsMask) {
+  implicit class PermissionsMaskConversion(val permission: PermissionsMask) extends AnyVal {
     def toHadoop: FsPermission = new FsPermission(permission.toShort)
   }
 
   implicit class HadoopPathConversion(val path: HadoopPath) extends AnyVal {
     def toInfinity: Path = Path.absolute(path.toUri.getPath)
   }
+
+  implicit class PathConversion(val path: Path) extends AnyVal {
+    def toHadoop: HadoopPath = new HadoopPath(path.toString)
+  }
+
+  implicit class FileMetadataConversion(val metadata: FileMetadata) extends AnyVal {
+    def toHadoop: FileStatus = new FileStatus(
+      metadata.size,
+      isDirectory(metadata),
+      metadata.replication,
+      metadata.blockSize,
+      metadata.modificationTime.getTime,
+      metadata.accessTime.getTime,
+      metadata.permissions.toHadoop,
+      metadata.owner,
+      metadata.group,
+      metadata.path.toHadoop
+    )
+  }
+
+  implicit class DirectoryMetadataConversion(val metadata: DirectoryMetadata) extends AnyVal {
+    def toHadoop: FileStatus = new FileStatus(
+      metadata.size,
+      isDirectory(metadata),
+      DirectoryReplication,
+      DirectoryBlockSize,
+      metadata.modificationTime.getTime,
+      metadata.accessTime.getTime,
+      metadata.permissions.toHadoop,
+      metadata.owner,
+      metadata.group,
+      metadata.path.toHadoop
+    )
+  }
+
+  private def isDirectory(metadata: PathMetadata): Boolean = metadata.`type` == PathType.Directory
+
+  private val DirectoryReplication = 0
+  private val DirectoryBlockSize = 0L
 }

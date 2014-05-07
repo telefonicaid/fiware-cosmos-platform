@@ -16,11 +16,20 @@
 
 package es.tid.cosmos.infinity
 
-import java.io.OutputStream
-import java.net.URL
+import java.io.{OutputStream, OutputStreamWriter}
 
-import es.tid.cosmos.infinity.client.InfinityClient
+import org.apache.hadoop.util.Progressable
 
-class InfinityOutputStream(client: InfinityClient, location: URL) extends OutputStream {
+class InfinityOutputStream (stream: OutputStreamWriter, progress: Progressable)
+  extends OutputStream {
+
   override def write(b: Int): Unit = ???
+
+  override def write(b: Array[Byte]): Unit = super.write(b)
+
+  override def write(b: Array[Byte], off: Int, len: Int): Unit = super.write(b, off, len)
+
+  override def flush(): Unit = super.flush()
+
+  override def close(): Unit = super.close()
 }

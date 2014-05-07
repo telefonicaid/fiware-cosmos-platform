@@ -16,7 +16,7 @@
 
 package es.tid.cosmos.infinity
 
-import java.io.{IOException, FileNotFoundException}
+import java.io.{FileNotFoundException, IOException}
 import java.net.{URI, URL}
 import java.util.Date
 
@@ -24,12 +24,13 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.permission.FsPermission
 import org.apache.hadoop.security.UserGroupInformation
+import org.apache.hadoop.util.Progressable
 import org.apache.log4j.BasicConfigurator
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.infinity.common.fs.{DirectoryEntry, RootPath, DirectoryMetadata, FileMetadata}
+import es.tid.cosmos.infinity.common.fs.{DirectoryEntry, DirectoryMetadata, FileMetadata, RootPath}
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
@@ -271,7 +272,7 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
   }
 
   it must "append to an existing file" in new Fixture {
-    client.givenExistingPath(someFileMetadata)
+    client.givenFileCanBeAppendedTo(someFile.toInfinity)
     fs.append(someFile, 4096, null) must not be null
   }
 
@@ -287,6 +288,26 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     evaluating {
       fs.append(someDir, 4096, null)
     } must produce [IOException]
+  }
+
+  it must "create a new file" in new Fixture {
+    client.givenFileCanBeCreated(someFile.toInfinity)
+    client.givenFileCanBeAppendedTo(someFile.toInfinity)
+    val mask = PermissionsMask.fromOctal("640")
+    val overwrite = false
+    val outputStream = fs.create(someFile, mask.toHadoop, overwrite, bufferSize, replication,
+      blockSize, progressable)
+    outputStream must not be null
+    client.verifyFileCreation(someFile.toInfinity, mask, Some(replication), Some(blockSize))
+  }
+
+  it must "reject creating the root directory" in new Fixture {
+    val mask = PermissionsMask.fromOctal("640")
+    val overwrite = false
+    evaluating {
+      fs.create(new Path("/"), mask.toHadoop, overwrite, bufferSize, replication, blockSize, progressable)
+    } must produce [IOException]
+    client.verifyNoFileWasCreated()
   }
 
   val somePath = new Path("/some/path")
@@ -338,6 +359,12 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     accessTime = someTime,
     permissions = PermissionsMask.fromOctal("640")
   )
+  val bufferSize = 2048
+  val replication: Short = 3
+  val blockSize = 100000L
+  val progressable = new Progressable {
+    override def progress(): Unit = {}
+  }
 
   abstract class Fixture(uri: URI = URI.create("infinity://localhost:8888/")) {
     val client = new MockInfinityClient

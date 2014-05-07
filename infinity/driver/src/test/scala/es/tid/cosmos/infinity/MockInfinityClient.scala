@@ -28,6 +28,7 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.infinity.client.InfinityClient
 import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import java.io.{ByteArrayOutputStream, OutputStreamWriter}
 
 class MockInfinityClient extends MockitoSugar {
 
@@ -55,8 +56,38 @@ class MockInfinityClient extends MockitoSugar {
     ))
   }
 
+  def givenFile(path: Path): Unit = {
+    givenExistingPath(FileMetadata(
+      path = path,
+      metadata = defaultMetadataUrl,
+      content = Some(new URL(s"https://content$path")),
+      owner = "user",
+      group = "group",
+      modificationTime = defaultTime,
+      accessTime = defaultTime,
+      permissions = defaultMask,
+      replication = 3,
+      blockSize = 2048,
+      size = 0
+    ))
+  }
+
   def givenExistingPath(metadata: PathMetadata): Unit = {
     given(value.pathMetadata(metadata.path)).willReturn(Future.successful(Some(metadata)))
+  }
+
+  def givenFileCanBeCreated(path: Path): Unit = {
+    givenFile(path)
+    willSucceed(given(value.createFile(the(asSubPath(path)), any[PermissionsMask],
+      any[Option[Short]], any[Option[Long]])))
+  }
+  def verifyFileCreation(
+      path: Path, perms: PermissionsMask, replication: Option[Short], blockSize: Option[Long]): Unit = {
+    verify(value).createFile(asSubPath(path), perms, replication, blockSize)
+  }
+  def verifyNoFileWasCreated(): Unit = {
+    verify(value, never()).createFile(any[SubPath], any[PermissionsMask], any[Option[Short]],
+      any[Option[Long]])
   }
 
   def givenDirectoryCanBeCreated(path: Path): Unit = {
@@ -107,6 +138,12 @@ class MockInfinityClient extends MockitoSugar {
     given(value.changePermissions(the(path), any[PermissionsMask]))
   def verifyMaskChange(path: Path, mask: PermissionsMask): Unit = {
     verify(value).changePermissions(path, mask)
+  }
+
+  def givenFileCanBeAppendedTo(path: Path): Unit = {
+    givenFile(path)
+    val output = new OutputStreamWriter(new ByteArrayOutputStream())
+    given(value.append(asSubPath(path))).willReturn(Future.successful(output))
   }
 
   private def willSucceed(call: BDDMyOngoingStubbing[Future[Unit]]): Unit =

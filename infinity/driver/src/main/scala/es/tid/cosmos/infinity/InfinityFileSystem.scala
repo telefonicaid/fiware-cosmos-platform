@@ -25,7 +25,6 @@ import scala.util.{Failure, Success, Try}
 
 import org.apache.commons.logging.LogFactory
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs
 import org.apache.hadoop.fs._
 import org.apache.hadoop.fs.permission.FsPermission
 import org.apache.hadoop.security.UserGroupInformation
@@ -159,6 +158,15 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   override def setPermission(f: Path, perms: FsPermission): Unit =
     awaitResult(client.changePermissions(f.toInfinity, perms.toInfinity))
 
+  override def open(f: Path, bufferSize: Int) =
+    awaitResult(client.pathMetadata(f.toInfinity).map {
+      case None => throw new FileNotFoundException(f.toString)
+      case Some(_: FileMetadata) =>
+        new FSDataInputStream(new InfinityInputStream(client, f.toInfinity))
+      case Some(_) =>
+        throw new IOException(s"Cannot read from directory at $f")
+    })
+
   private def unless(condition: Future[Boolean])(body: Future[Unit]): Future[Unit] =
     condition.flatMap(if (_) Ok else body)
 
@@ -181,12 +189,11 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     *
     * @param result  Result to wait for
     * @return        The result if the future succeeds on time
-    * @throws FileNotFoundException If path doesn't exist
     * @throws IOException If action fails or takes too much time
     */
   private def awaitResult[T](result: Future[T]): T = boundedWait(result) match {
     case Success(value) => value
-    case Failure(ex: FileNotFoundException) => throw ex
+    case Failure(ex: IOException) => throw ex
     case Failure(ex) =>
       Log.error("Cannot perform Infinity file system action", ex)
       throw new IOException("Cannot perform Infinity action", ex)
@@ -203,11 +210,9 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
 
   // TODO: Not implemented methods
 
-  override def append(f: Path, bufferSize: Int, progress: Progressable): FSDataOutputStream = ???
-
   override def create(f: Path, permission: FsPermission, overwrite: Boolean, bufferSize: Int, replication: Short, blockSize: Long, progress: Progressable): FSDataOutputStream = ???
 
-  override def open(f: Path, bufferSize: Int): FSDataInputStream = ???
+  override def append(f: Path, bufferSize: Int, progress: Progressable): FSDataOutputStream = ???
 
   override def append(f: Path, bufferSize: Int): FSDataOutputStream = super.append(f, bufferSize)
 

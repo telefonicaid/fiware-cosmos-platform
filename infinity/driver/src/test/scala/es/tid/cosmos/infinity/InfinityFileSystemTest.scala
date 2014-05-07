@@ -244,6 +244,25 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     client.verifyMaskChange(somePath.toInfinity, mask)
   }
 
+  it must "open an existing file" in new Fixture {
+    client.givenExistingPath(someFileMetadata)
+    fs.open(someFile) must not be null
+  }
+
+  it must "throw FileNotFoundException when opening a non existing file" in new Fixture {
+    client.givenNonExistingPath(someFile.toInfinity)
+    evaluating {
+      fs.open(someFile)
+    } must produce [FileNotFoundException]
+  }
+
+  it must "throw IOException when opening a directory" in new Fixture {
+    client.givenExistingPath(someDirMetadata)
+    evaluating {
+      fs.open(someDir)
+    } must produce [IOException]
+  }
+
   val somePath = new Path("/some/pah")
   val someTime = new Date(3600000L)
   val someFile = new Path("/some/file")

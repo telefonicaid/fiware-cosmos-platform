@@ -19,11 +19,27 @@ package es.tid.cosmos.infinity.server.finatra
 import com.twitter.finatra.ResponseBuilder
 
 import es.tid.cosmos.infinity.server.actions.Action
+import es.tid.cosmos.infinity.common.json.MetadataFormatter
 
 /** An object able to render action results into HTTP responses. */
 object ActionResultHttpRenderer {
 
-  def apply(result: Action.Result): ResponseBuilder = new ResponseBuilder()
-    .status(500)
-    .body("The ActionResultHttpRenderer class needs to be implemented")
+  private val metadataFormatter = new MetadataFormatter
+
+  def apply(result: Action.Result): ResponseBuilder = result match {
+    case Action.Retrieved(metadata) => new ResponseBuilder()
+      .status(200)
+      .json(metadataFormatter.format(metadata))
+    case Action.Created(metadata) => new ResponseBuilder()
+      .status(201)
+      .json(metadataFormatter.format(metadata))
+    case Action.Moved(metadata) => new ResponseBuilder()
+      .status(201)
+      .json(metadataFormatter.format(metadata))
+    case Action.Deleted(_) | Action.OwnerSet(_) | Action.GroupSet(_)  | Action.PermissionsSet(_) =>
+      new ResponseBuilder().status(204)
+    case _ => new ResponseBuilder()
+      .status(500)
+      .body("No HTTP rendering method defined for action result")
+  }
 }

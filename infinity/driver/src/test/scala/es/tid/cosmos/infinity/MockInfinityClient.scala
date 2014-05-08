@@ -16,6 +16,7 @@
 
 package es.tid.cosmos.infinity
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream}
 import java.net.URL
 import java.util.Date
 import scala.concurrent.{Future, Promise}
@@ -23,12 +24,13 @@ import scala.concurrent.{Future, Promise}
 import org.mockito.BDDMockito.{BDDMyOngoingStubbing, given}
 import org.mockito.Matchers.{any, anyBoolean, anyInt, eq => the}
 import org.mockito.Mockito.{never, verify}
+import org.mockito.invocation.InvocationOnMock
+import org.mockito.stubbing.Answer
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.client.InfinityClient
 import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
-import java.io.{ByteArrayOutputStream, OutputStreamWriter}
 
 class MockInfinityClient extends MockitoSugar {
 
@@ -146,10 +148,27 @@ class MockInfinityClient extends MockitoSugar {
     given(value.append(the(asSubPath(path)), anyInt)).willReturn(Future.successful(output))
   }
 
+  def givenFileWithContent(path: SubPath, content: String): Unit = {
+    val byteArray = content.getBytes
+    givenFileRead(path).willAnswer(
+      new Answer[Future[InputStream]] {
+        override def answer(invocation: InvocationOnMock): Future[InputStream] = {
+          val Array(_, offsetOpt: Option[Long], lenOpt: Option[Long]) = invocation.getArguments
+          val offset = offsetOpt.getOrElse(0L).toInt
+          val maxLength = byteArray.length - offset
+          val length = lenOpt.getOrElse(byteArray.length.toLong).toInt
+          Future.successful(new ByteArrayInputStream(byteArray, offset, Math.min(length, maxLength)))
+        }
+      })
+  }
+  def givenFileReadWillFail(path: SubPath): Unit = willFail(givenFileRead(path))
+  private def givenFileRead(path: SubPath) =
+    given(value.read(the(path), any[Option[Long]], any[Option[Long]]))
+
   private def willSucceed(call: BDDMyOngoingStubbing[Future[Unit]]): Unit =
     call.willReturn(Future.successful(()))
 
-  private def willFail(call: BDDMyOngoingStubbing[Future[Unit]]): Unit =
+  private def willFail[T](call: BDDMyOngoingStubbing[Future[T]]): Unit =
     call.willReturn(Future.failed(defaultFailure))
 
   private def wontFinish[T](call: BDDMyOngoingStubbing[Future[T]]): Unit =

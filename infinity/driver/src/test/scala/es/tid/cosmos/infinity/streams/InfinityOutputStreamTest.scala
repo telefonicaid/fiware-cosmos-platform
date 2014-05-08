@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity
+package es.tid.cosmos.infinity.streams
 
 import java.io.ByteArrayOutputStream
 

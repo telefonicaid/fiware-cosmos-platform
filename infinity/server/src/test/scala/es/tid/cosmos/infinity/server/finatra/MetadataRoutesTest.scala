@@ -84,7 +84,7 @@ class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar 
     def givenSuccessAuthentication(action: => Unit) {
       when(authService.authenticate(anyObject())).thenReturn(Future.successful(UserProfile(
         username = "gandalf",
-        group = "istari"
+        groups = Seq("istari")
       )))
       action
     }

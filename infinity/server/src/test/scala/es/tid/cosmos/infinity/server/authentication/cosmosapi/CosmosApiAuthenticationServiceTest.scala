@@ -31,7 +31,7 @@ class CosmosApiAuthenticationServiceTest extends FlatSpec with MustMatchers with
   "Cosmos API authorization" must "retrieve a profile given user credentials" in new Fixture {
     val profile = UserProfile(
       username = "john",
-      group = "scientists",
+      groups = Seq("scientists"),
       mask = PermissionsMask.fromOctal("777")
     )
     cosmosApi.givenInfinitySecret(sharedSecret)
@@ -70,7 +70,7 @@ class CosmosApiAuthenticationServiceTest extends FlatSpec with MustMatchers with
     val credentialsWithBadOrigin = clusterCredentials.copy(origin = InetAddress.getByName("10.0.0.2"))
     val profile = UserProfile(
       username = "john",
-      group = "scientists",
+      groups = Seq("scientists"),
       mask = PermissionsMask.fromOctal("770"),
       accessFrom = Some(Set("10.0.0.1"))
     )

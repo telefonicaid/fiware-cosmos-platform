@@ -29,24 +29,24 @@ class UserProfileParserTest extends FlatSpec with MustMatchers {
     parser.parse(
       """{
         | "user": "gandalf",
-        | "group": "istari",
+        | "groups": ["istari", "maiar"],
         | "accessMask": "752",
         | "origins": ["orion01", "orion02"]
         |}
       """.stripMargin
     ) must be (UserProfile(
       username = "gandalf",
-      group = "istari",
+      groups = Seq("istari", "maiar"),
       mask = PermissionsMask.fromOctal("752"),
       accessFrom = Some(Set("orion01", "orion02"))
     ))
   }
 
-  it must "be parsed as root if the group is the superuser group" in {
+  it must "be parsed as root if the groups contain the superuser group" in {
     parser.parse(
       """{
         | "user": "gandalf",
-        | "group": "hdfs",
+        | "groups": ["istari", "maiar", "hdfs"],
         | "accessMask": "752",
         |}
       """.stripMargin
@@ -57,13 +57,13 @@ class UserProfileParserTest extends FlatSpec with MustMatchers {
     parser.parse(
       """{
         | "user": "gandalf",
-        | "group": "istari",
+        | "groups": ["istari"],
         | "accessMask": "752"
         |}
       """.stripMargin
     ) must be (UserProfile(
       username = "gandalf",
-      group = "istari",
+      groups = Seq("istari"),
       mask = PermissionsMask.fromOctal("752")
     ))
   }

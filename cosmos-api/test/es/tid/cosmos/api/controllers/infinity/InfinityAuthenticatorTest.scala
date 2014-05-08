@@ -60,7 +60,7 @@ class InfinityAuthenticatorTest extends FlatSpec with MustMatchers {
     new WithAuthentication {
       instance.authenticateApiCredentials(profile.apiCredentials) must be (InfinityIdentity(
         user = "user",
-        group = "No Group",
+        groups = Seq("No Group"),
         accessMask = AccessMask("777")
       ).success)
     }
@@ -85,8 +85,8 @@ class InfinityAuthenticatorTest extends FlatSpec with MustMatchers {
       store.group.register(group)
       store.profile.setGroup(profile.id, group)
     }
-    instance.authenticateApiCredentials(profile.apiCredentials).map(_.group) must
-      be ("myGroup".success)
+    instance.authenticateApiCredentials(profile.apiCredentials).map(_.groups) must
+      be (Seq("myGroup").success)
   }
 
   "Cluster secret authentication" must "be accepted with 777 mask and just for the cluster hosts" in

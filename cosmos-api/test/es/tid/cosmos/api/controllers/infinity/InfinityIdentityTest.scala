@@ -24,12 +24,12 @@ class InfinityIdentityTest extends FlatSpec with MustMatchers {
 
   val auth = InfinityIdentity(
     user = "jsmith",
-    group = "analytics",
+    groups = Seq("analytics"),
     accessMask = AccessMask("777")
   )
   val authJson = Json.obj(
     "user" -> "jsmith",
-    "group" -> "analytics",
+    "groups" -> Seq("analytics"),
     "accessMask" -> "777"
   )
 

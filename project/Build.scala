@@ -89,7 +89,7 @@ object Build extends sbt.Build {
     settings(projectArtifact: _*)
     aggregate(
       cosmosApi, ambariServiceManager, serviceManager, ial, cosmosAdmin, common, common_test,
-      platformTests, infinityDriver, infinityServer
+      platformTests, infinityDriver, infinityServer, infinityCommon, infinityClient
     )
   )
 

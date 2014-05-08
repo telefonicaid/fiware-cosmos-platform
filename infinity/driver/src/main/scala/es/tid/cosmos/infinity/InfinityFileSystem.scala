@@ -16,12 +16,13 @@
 
 package es.tid.cosmos.infinity
 
-import java.io.{IOException, FileNotFoundException}
+import java.io.{FileSystem => _, _}
 import java.net.{URI, URL}
 import java.util.concurrent.TimeoutException
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success, Try}
+import scala.util.control.NonFatal
 
 import org.apache.commons.logging.LogFactory
 import org.apache.hadoop.conf.Configuration
@@ -115,11 +116,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   }
 
   override def getFileStatus(f: Path): FileStatus =
-    awaitResult(client.pathMetadata(f.toInfinity).map {
-      case None => throw new FileNotFoundException(f.toString)
-      case Some(metadata: FileMetadata) => metadata.toHadoop
-      case Some(metadata: DirectoryMetadata) => metadata.toHadoop
-    })
+    awaitResult(existingPathMetadata(f).map(_.toHadoop))
 
   /** List the status for a path.
     *
@@ -129,16 +126,13 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     * @throws FileNotFoundException  if path doesn't exist
     */
   override def listStatus(f: Path): Array[FileStatus] =
-    awaitResult(client.pathMetadata(f.toInfinity).map {
-      case None => throw new FileNotFoundException(f.toString)
-      case Some(metadata: FileMetadata) => Array(metadata.toHadoop)
-      case Some(metadata: DirectoryMetadata) => metadata.content.map(_.toHadoop).toArray
+    awaitResult(existingPathMetadata(f).map {
+      case metadata: FileMetadata => Array(metadata.toHadoop)
+      case metadata: DirectoryMetadata => metadata.content.map(_.toHadoop).toArray
     })
 
-  override def delete(f: Path, recursive: Boolean): Boolean = f.toInfinity match {
-    case RootPath => false
-    case path: SubPath => awaitAction(client.delete(path, recursive))
-  }
+  override def delete(f: Path, recursive: Boolean): Boolean =
+    awaitAction(client.delete(asSubPath(f), recursive))
 
   override def rename(source: Path, target: Path): Boolean =
     (source.toInfinity, target.toInfinity) match {
@@ -159,13 +153,41 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     awaitResult(client.changePermissions(f.toInfinity, perms.toInfinity))
 
   override def open(f: Path, bufferSize: Int) =
-    awaitResult(client.pathMetadata(f.toInfinity).map {
-      case None => throw new FileNotFoundException(f.toString)
-      case Some(_: FileMetadata) =>
-        new FSDataInputStream(new InfinityInputStream(client, f.toInfinity))
-      case Some(_) =>
-        throw new IOException(s"Cannot read from directory at $f")
+    awaitResult(existingFileMetadata(f).map { metadata =>
+      new FSDataInputStream(new InfinityInputStream(client, contentLocation(metadata)))
     })
+
+  override def append(f: Path, bufferSize: Int, progressOrNull: Progressable): FSDataOutputStream =
+    awaitResult(appendToFile(f, bufferSize, Option(progressOrNull)))
+
+  private def appendToFile(f: Path, bufferSize: Int, progress: Option[Progressable]): Future[FSDataOutputStream] =
+    for {
+      metadata <- existingFileMetadata(f)
+      stream <- client.append(asSubPath(f), bufferSize)
+    } yield new FSDataOutputStream(new InfinityOutputStream(stream, progress), statistics)
+
+  override def create(
+      f: Path, perms: FsPermission, overwrite: Boolean, bufferSize: Int, replication: Short,
+      blockSize: Long, progressOrNull: Progressable): FSDataOutputStream = {
+    val fileCreation = client.createFile(asSubPath(f), perms.toInfinity, Some(replication), Some(blockSize))
+    awaitResult(fileCreation.flatMap(_ => appendToFile(f, bufferSize, Option(progressOrNull))))
+  }
+
+  private def contentLocation(metadata: FileMetadata): URL = metadata.content.getOrElse(
+    throw new IOException(s"${metadata.path} has no known content location"))
+
+  private def existingPathMetadata(f: Path): Future[PathMetadata] =
+    client.pathMetadata(f.toInfinity).map(_.getOrElse(throw new FileNotFoundException(f.toString)))
+
+  private def existingFileMetadata(f: Path): Future[FileMetadata] = existingPathMetadata(f).map {
+    case _: DirectoryMetadata => throw new IOException(s"$f expected to be a file but was a directory")
+    case metadata: FileMetadata => metadata
+  }
+
+  private def asSubPath(f: Path): SubPath = f.toInfinity match {
+    case RootPath => throw new IOException(s"Cannot perform action on the root path")
+    case subPath: SubPath => subPath
+  }
 
   private def unless(condition: Future[Boolean])(body: Future[Unit]): Future[Unit] =
     condition.flatMap(if (_) Ok else body)
@@ -178,11 +200,18 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     * @param action  Action to block for
     * @return        Whether the action succeeded
     */
-  private def awaitAction(action: Future[_]): Boolean = boundedWait(action) match {
-    case Success(_) => true
-    case Failure(ex) =>
-      Log.error("Cannot perform Infinity file system action", ex)
-      false
+  private def awaitAction(action: => Future[_]): Boolean = {
+    val task = try {
+      action
+    } catch {
+      case NonFatal(ex) => Future.failed(ex)
+    }
+    boundedWait(task) match {
+      case Success(_) => true
+      case Failure(ex) =>
+        Log.error("Cannot perform Infinity file system action", ex)
+        false
+    }
   }
 
   /** Blocks for a result to be ready.
@@ -207,16 +236,6 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   }
 
   override val getScheme = Scheme
-
-  // TODO: Not implemented methods
-
-  override def create(f: Path, permission: FsPermission, overwrite: Boolean, bufferSize: Int, replication: Short, blockSize: Long, progress: Progressable): FSDataOutputStream = ???
-
-  override def append(f: Path, bufferSize: Int, progress: Progressable): FSDataOutputStream = ???
-
-  override def append(f: Path, bufferSize: Int): FSDataOutputStream = super.append(f, bufferSize)
-
-  override def append(f: Path): FSDataOutputStream = super.append(f)
 }
 
 object InfinityFileSystem {

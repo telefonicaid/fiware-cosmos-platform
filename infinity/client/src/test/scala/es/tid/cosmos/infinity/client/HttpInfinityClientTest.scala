@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.infinity.client
 
-import java.io.{BufferedReader, InputStreamReader}
+import java.io._
 import java.util.Date
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
@@ -216,8 +216,8 @@ class HttpInfinityClientTest extends FlatSpec
   }
 
   "Appending content" must behave like {
-    canHandleCommonErrors(_.append(somePath))
-    canHandleNotFoundError(_.append(somePath))
+    canHandleCommonErrors(_.append(somePath, bufferSize))
+    canHandleNotFoundError(_.append(somePath, bufferSize))
 
     it must "succeed for an existing file" in new Fixture {
       val parent = dataFactory.dirMetadata(somePath, permissions)
@@ -225,8 +225,8 @@ class HttpInfinityClientTest extends FlatSpec
       infinity.givenExistingPaths(parent, file)
       infinity.givenExistingContent(file, "aContent")
       infinity.withServer {
-        val writer = Await.result(client.append(aFile), timeOut)
-        writer.write(" appended")
+        val writer = Await.result(client.append(aFile, bufferSize), timeOut)
+        writeString(writer, " appended")
         contentOf(client.read(aFile, None, None)) must be ("aContent")
         writer.close()
         contentOf(client.read(aFile, None, None)) must be ("aContent appended")
@@ -235,8 +235,8 @@ class HttpInfinityClientTest extends FlatSpec
   }
 
   "Overwriting content" must behave like {
-    canHandleCommonErrors(_.append(somePath))
-    canHandleNotFoundError(_.append(somePath))
+    canHandleCommonErrors(_.append(somePath, bufferSize))
+    canHandleNotFoundError(_.append(somePath, bufferSize))
 
     it must "succeed for an existing file" in new Fixture {
       val parent = dataFactory.dirMetadata(somePath, permissions)
@@ -244,8 +244,8 @@ class HttpInfinityClientTest extends FlatSpec
       infinity.givenExistingPaths(parent, file)
       infinity.givenExistingContent(file, "aContent")
       infinity.withServer {
-        val writer = Await.result(client.overwrite(aFile), timeOut)
-        writer.write("newContent")
+        val writer = Await.result(client.overwrite(aFile, bufferSize), timeOut)
+        writeString(writer, "newContent")
         contentOf(client.read(aFile, None, None)) must be ("aContent")
         writer.close()
         contentOf(client.read(aFile, None, None)) must be ("newContent")
@@ -258,6 +258,7 @@ class HttpInfinityClientTest extends FlatSpec
   val aDir = somePath / "aDir"
   val aDate = new Date(1398420798000L)
   val permissions = PermissionsMask.fromOctal("644")
+  val bufferSize = 1024
 
   trait Fixture {
     val infinity = new MockInfinityServer(metadataPort = 8898, defaultDate = aDate)
@@ -265,11 +266,18 @@ class HttpInfinityClientTest extends FlatSpec
     val client = new HttpInfinityClient(infinity.metadataEndpoint)
     val timeOut = 10.seconds
 
-    def contentOf(reader_> : Future[InputStreamReader]): String = {
+    def contentOf(reader_> : Future[InputStream]): String = {
       val reader = Await.result(reader_>, timeOut)
       val contentStream =
-        Stream.continually(new BufferedReader(reader).readLine).takeWhile(_ != null)
+        Stream.continually(new BufferedReader(new InputStreamReader(reader)).readLine)
+          .takeWhile(_ != null)
       contentStream.toList.mkString
+    }
+
+    def writeString(output: OutputStream, content: String): Unit = {
+      val writer = new OutputStreamWriter(output)
+      writer.write(content)
+      writer.flush()
     }
   }
 }

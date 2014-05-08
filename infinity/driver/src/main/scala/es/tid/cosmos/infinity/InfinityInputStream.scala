@@ -17,13 +17,13 @@
 package es.tid.cosmos.infinity
 
 import java.io.InputStream
+import java.net.URL
 
 import org.apache.hadoop.fs.{PositionedReadable, Seekable}
 
 import es.tid.cosmos.infinity.client.InfinityClient
-import es.tid.cosmos.infinity.common.fs.Path
 
-private[infinity] class InfinityInputStream(client: InfinityClient, path: Path)
+private[infinity] class InfinityInputStream(client: InfinityClient, content: URL)
   extends InputStream with Seekable with PositionedReadable {
 
   override def read(): Int = ???

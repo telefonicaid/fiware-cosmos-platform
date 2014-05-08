@@ -22,7 +22,7 @@ import scala.math.min
 import org.apache.hadoop.hdfs.server.datanode.DataNode
 
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.server.actions.Action.{Result, Context}
+import es.tid.cosmos.infinity.server.actions.Action.{ContentFound, Result, Context}
 import org.apache.hadoop.hdfs.DFSClient
 import org.apache.hadoop.conf.Configuration
 import java.net.URI
@@ -31,12 +31,13 @@ import org.apache.hadoop.io.IOUtils
 import java.io.OutputStream
 import com.twitter.finagle.http.Response
 import org.jboss.netty.buffer.{ChannelBufferOutputStream, ChannelBuffers}
+import es.tid.cosmos.infinity.server.hadoop.DFSClientFactory
 
 /**
  * TODO: Insert description here
  *
  */
-case class GetContent(dataNode: DataNode, on: Path, offset: Option[Long], length: Option[Long]) extends Action {
+case class GetContent(dfsClientFactory: DFSClientFactory, on: Path, offset: Option[Long], length: Option[Long]) extends Action {
   // TODO: Figure out where to do offset and length checking for positive numbers
   import ExecutionContext.Implicits.global
 
@@ -44,21 +45,11 @@ case class GetContent(dataNode: DataNode, on: Path, offset: Option[Long], length
   val actualLength: Long = length.getOrElse(Long.MaxValue)
 
   override def apply(context: Context): Future[Result] = future {
-    val conf = new Configuration(dataNode.getConf)
-    val nnAddress: URI = null
-    val client = new DFSClient(nnAddress, conf)
-    val in = new HdfsDataInputStream(client.open(on.toString))
-    in.seek(actualOffset)
-    val upTo = min(actualLength, in.getVisibleLength - actualOffset)
-    //use the upTo to copy the in stream to the out stream from offset to upto
-    val channelBuffer = ChannelBuffers.dynamicBuffer(4096)    //IOUtils uses 4096. Should we be fixing it?
-    val out: OutputStream = new ChannelBufferOutputStream(channelBuffer)
-    IOUtils.copyBytes(in, out, upTo, false)
-
-    val response = Response()
-    response.setChunked(true)
-    response.setContent(channelBuffer)
-    // need to do clean up of closeables like DFSClient
-    ???
+    dfsClientFactory.withNewClient { client =>
+      val in = new HdfsDataInputStream(client.open(on.toString))
+      in.seek(actualOffset)
+      val upTo = min(actualLength, in.getVisibleLength - actualOffset)
+      ContentFound(in, upTo)
+    }
   }
 }

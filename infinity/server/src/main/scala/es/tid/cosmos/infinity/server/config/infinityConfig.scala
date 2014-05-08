@@ -16,9 +16,11 @@
 
 package es.tid.cosmos.infinity.server.config
 
-import java.net.{InetAddress, URL}
+import java.net.{URI, InetAddress, URL}
 
 import com.typesafe.config.{Config, ConfigException}
+
+import es.tid.cosmos.infinity.common.util.UriUtil
 
 class InfinityConfig(config: Config) {
 
@@ -47,18 +49,25 @@ class InfinityConfig(config: Config) {
   }
 }
 
+object InfinityConfig {
+  val DefaultProtocol: String = "https"
+  val DefaultBasePath: String = "/infinityfs/v1"
+  val DefaultReplication: Short = 3
+  val DefaultBlockSize: Long = 64l * 1024l * 1024l
+}
+
 class InfinityContentServerConfig(config: Config) extends InfinityConfig(config) {
+  import InfinityContentServerConfig._
+
   val contentServerUrl: URL = {
     val hostname = InetAddress.getLocalHost.getHostName
     contentServerUrl(hostname).getOrElse(throw new IllegalArgumentException(
       s"Cannot initialize server because contentServer.$hostname configuration is missing."))
   }
+  val nameNodeRPCUrl: URL = UriUtil.replaceScheme(new URI(config.getString(NameNodeHdfsAddressKey)), "http").toURL
 }
 
-object InfinityConfig {
-
-  val DefaultProtocol: String = "https"
-  val DefaultBasePath: String = "/infinityfs/v1"
-  val DefaultReplication: Short = 3
-  val DefaultBlockSize: Long = 64l * 1024l * 1024l
+object InfinityContentServerConfig {
+  private val NameNodeHdfsAddressKey = "fs.defaultFS"
+  val HadoopKeys = Seq(NameNodeHdfsAddressKey)
 }

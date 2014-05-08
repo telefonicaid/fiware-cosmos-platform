@@ -20,19 +20,18 @@ import scala.util.{Try, Success, Failure}
 import scalaz.Validation
 
 import com.twitter.finagle.http.Request
-import org.apache.hadoop.hdfs.server.datanode.DataNode
 import org.jboss.netty.handler.codec.http.HttpMethod
 
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.common.json.RequestMessageParser
 import es.tid.cosmos.infinity.server.actions.{GetContent, Action}
 import es.tid.cosmos.infinity.server.config.InfinityContentServerConfig
+import es.tid.cosmos.infinity.server.hadoop.DFSClientFactory
 
 /**
  * TODO: Insert description here
  *
  */
-class HttpContentActionValidator(config: InfinityContentServerConfig, dataNode: DataNode) {
+class HttpContentActionValidator(config: InfinityContentServerConfig, dfsClientFactory: DFSClientFactory) {
   //TODO: Consider moving actions to metadata and content packages
   // TODO: Extract common code between content and metadata plugin server and routes
   import scalaz.Scalaz._
@@ -52,7 +51,7 @@ class HttpContentActionValidator(config: InfinityContentServerConfig, dataNode: 
     request.method match {
       case HttpMethod.GET => {
         extractGetContentParams(request) match {
-          case Success((offset, length)) => GetContent(dataNode, absolutePath, offset, length).success
+          case Success((offset, length)) => GetContent(dfsClientFactory, absolutePath, offset, length).success
           case Failure(e) => RequestParsingException.InvalidRequestParams(Seq("offset", "length"), e).failure
         }
       }

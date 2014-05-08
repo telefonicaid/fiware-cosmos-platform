@@ -16,13 +16,12 @@
 
 package es.tid.cosmos.infinity.server.finatra
 
-import org.apache.hadoop.hdfs.server.datanode.DataNode
-
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.InfinityContentServerConfig
+import es.tid.cosmos.infinity.server.hadoop.DFSClientFactory
 
 class ContentServer(
-    dataNode: DataNode,
+    dfsClientFactory: DFSClientFactory,
     config: InfinityContentServerConfig,
     authService: AuthenticationService) {
 
@@ -33,7 +32,7 @@ class ContentServer(
 
   val server = new EmbeddableFinatraServer(serverConfig)
 
-  server.register(new ContentRoutes(config, authService, dataNode, urlMapper))
+  server.register(new ContentRoutes(config, authService, dfsClientFactory, urlMapper))
 
   def start(): Unit = server.start()
 

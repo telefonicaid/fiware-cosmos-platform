@@ -17,36 +17,36 @@
 package es.tid.cosmos.infinity.server.finatra
 
 import com.twitter.finatra.Controller
-import org.apache.hadoop.hdfs.server.datanode.DataNode
 
 import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.InfinityContentServerConfig
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 import es.tid.cosmos.infinity.server.util.TwitterConversions._
+import es.tid.cosmos.infinity.server.hadoop.DFSClientFactory
 
 class ContentRoutes(
     config: InfinityContentServerConfig,
     authService: AuthenticationService,
-    dataNode: DataNode,
+    dfsClientFactory: DFSClientFactory,
     urlMapper: UrlMapper) extends Controller {
 
   private val basePath = config.contentServerUrl.getPath
-  private val actionValidator = new HttpContentActionValidator(config, dataNode)
+  private val actionValidator = new HttpContentActionValidator(config, dfsClientFactory)
 
-  get(s"$basePath/*") { request =>
-    val response = for {
-      credentials <- HttpCredentialsValidator(request.remoteAddress, request)
-      action <- actionValidator(request)
-    } yield for {
-        profile <- authService.authenticate(credentials)
-        context = Action.Context(profile, urlMapper)
-        result <- action(context)
-      } yield ActionResultHttpRenderer(result)
-    response.fold(error => ExceptionRenderer(error).toFuture, success => success.toTwitter)
-  }
-
-  error { request => request.error match {
-    case Some(e) => ExceptionRenderer(e).toFuture
-  }}
+//  get(s"$basePath/*") { request =>
+//    val response = for {
+//      credentials <- HttpCredentialsValidator(request.remoteAddress, request)
+//      action <- actionValidator(request)
+//    } yield for {
+//        profile <- authService.authenticate(credentials)
+//        context = Action.Context(profile, urlMapper)
+//        result <- action(context)
+//      } yield ActionResultHttpRenderer(result)
+//    response.fold(error => ExceptionRenderer(error).toFuture, success => success.toTwitter)
+//  }
+//
+//  error { request => request.error match {
+//    case Some(e) => ExceptionRenderer(e).toFuture
+//  }}
 }

@@ -19,11 +19,15 @@ package es.tid.cosmos.infinity.server.finatra
 import com.twitter.finatra.ResponseBuilder
 
 import es.tid.cosmos.infinity.server.actions.Action
+import es.tid.cosmos.infinity.server.actions.Action.ContentFound
 
 /** An object able to render action results into HTTP responses. */
 object ActionResultHttpRenderer {
 
-  def apply(result: Action.Result): ResponseBuilder = new ResponseBuilder()
-    .status(500)
-    .body("The ActionResultHttpRenderer class needs to be implemented")
+  def apply(result: Action.Result): ResponseBuilder = result match {
+    case ContentFound(stream, upTo) => new StreamResponseBuilder().body(stream, upTo).status(200)
+    case _ => new ResponseBuilder()
+      .status(500)
+      .body("The ActionResultHttpRenderer class needs to be implemented")
+  }
 }

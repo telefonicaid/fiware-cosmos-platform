@@ -35,6 +35,7 @@ import es.tid.cosmos.infinity.client.{HttpInfinityClient, InfinityClient}
 import es.tid.cosmos.infinity.common.fs.{Path => InfinityPath, _}
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.streams.{InfinityInputStream, InfinityOutputStream}
 
 class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSystem {
 
@@ -154,7 +155,9 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
 
   override def open(f: Path, bufferSize: Int) =
     awaitResult(existingFileMetadata(f).map { metadata =>
-      new FSDataInputStream(new InfinityInputStream(client, contentLocation(metadata)))
+      requireContentLocation(metadata)
+      new FSDataInputStream(new InfinityInputStream(
+        client, asSubPath(f), infinityConfiguration.timeoutDuration))
     })
 
   override def append(f: Path, bufferSize: Int, progressOrNull: Progressable): FSDataOutputStream =
@@ -173,7 +176,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     awaitResult(fileCreation.flatMap(_ => appendToFile(f, bufferSize, Option(progressOrNull))))
   }
 
-  private def contentLocation(metadata: FileMetadata): URL = metadata.content.getOrElse(
+  private def requireContentLocation(metadata: FileMetadata): Unit = metadata.content.getOrElse(
     throw new IOException(s"${metadata.path} has no known content location"))
 
   private def existingPathMetadata(f: Path): Future[PathMetadata] =

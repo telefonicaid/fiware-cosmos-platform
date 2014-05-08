@@ -18,23 +18,14 @@ package es.tid.cosmos.infinity.server.actions
 
 import scala.concurrent._
 
-import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
-
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.server.actions.Action.OperationNotAllowed
 
-case class ChangeOwner(nameNode: NamenodeProtocols, on: Path, owner: String) extends Action {
+case class ChangeOwner(nameNode: NameNode, on: Path, owner: String) extends Action {
 
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] =
-    if (!context.user.superuser)
-      Future.successful(OperationNotAllowed(context.user.username, on))
-    else
-      future { nameNode.setOwner(on.toString, owner, ChangeOwner.SameGroup) }
-        .flatMap(_ => GetMetadata(nameNode, on).apply(context))
-}
-
-object ChangeOwner {
-  private val SameGroup = null
+  override def apply(context: Action.Context): Future[Action.Result] = for {
+    _ <- nameNode.setOwner(on, owner)
+    metadata <- nameNode.pathMetadata(on)
+  } yield Action.OwnerSet(metadata)
 }

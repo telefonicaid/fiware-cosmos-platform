@@ -18,9 +18,8 @@ package es.tid.cosmos.infinity.server.finatra
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.twitter.finatra.{Controller, Request}
-import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 
-import es.tid.cosmos.infinity.server.actions.Action
+import es.tid.cosmos.infinity.server.actions.{Action, NameNode}
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.InfinityConfig
 import es.tid.cosmos.infinity.server.urls.UrlMapper
@@ -29,7 +28,7 @@ import es.tid.cosmos.infinity.server.util.TwitterConversions._
 class MetadataRoutes(
     config: InfinityConfig,
     authService: AuthenticationService,
-    nameNode: NamenodeProtocols,
+    nameNode: NameNode,
     urlMapper: UrlMapper) extends Controller {
 
   private val basePath = config.metadataBasePath
@@ -51,6 +50,8 @@ class MetadataRoutes(
 
   error { request => request.error match {
     case Some(e) => ExceptionRenderer(e).toFuture
+    case None => ExceptionRenderer(new IllegalStateException(
+      "Finatra invoked the error handling routine but no error was found")).toFuture
   }}
 
   // `splat` is an undocumented Finatra tag. For wilcards routes extractions see

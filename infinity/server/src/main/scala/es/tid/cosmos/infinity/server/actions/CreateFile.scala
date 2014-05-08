@@ -16,22 +16,15 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import java.util
 import scala.concurrent._
 
-import org.apache.hadoop.fs.CreateFlag
-import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
-import org.apache.hadoop.io.EnumSetWritable
-
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
-import es.tid.cosmos.infinity.server.actions.Action.{Context, Result}
 import es.tid.cosmos.infinity.server.config.InfinityConfig
 
 case class CreateFile(
     config: InfinityConfig,
-    nameNode: NamenodeProtocols,
+    nameNode: NameNode,
     on: Path,
     permissions: PermissionsMask,
     replication: Option[Short],
@@ -39,19 +32,9 @@ case class CreateFile(
 
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Context): Future[Result] = for {
-    _ <- createFile()
-    metadata <- GetMetadata(nameNode, on)(context)
-  } yield metadata
-
-  private def createFile(): Future[Unit] = future {
-    nameNode.create(
-      on.toString,  // src
-      permissions.toHadoop,
-      "hdfs", // TODO: determine what this parameter is used for
-      new EnumSetWritable(util.EnumSet.of(CreateFlag.CREATE)),
-      false, //createParent
-      replication.getOrElse(config.replication),
-      blockSize.getOrElse(config.blockSize))
-  }
+  override def apply(context: Action.Context): Future[Action.Result] = for {
+    _ <- nameNode.createFile(
+      on, context.user.username, context.user.groups.head, permissions, replication, blockSize)
+    metadata <- nameNode.pathMetadata(on)
+  } yield Action.Created(metadata)
 }

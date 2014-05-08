@@ -35,7 +35,7 @@ case class ChangeGroup(nameNode: NamenodeProtocols, on: Path, group: String) ext
 
     val isAllowed_> : Future[Boolean] =
       success(context.user.superuser) or
-        (success(group == context.user.group) and isUserPathOwner_>)
+        (success(context.user.groups.contains(group)) and isUserPathOwner_>)
 
     isAllowed_> flatMap { allowed =>
       if (allowed) {

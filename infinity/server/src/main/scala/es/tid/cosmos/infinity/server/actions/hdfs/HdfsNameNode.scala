@@ -20,6 +20,7 @@ import java.util
 import java.io.FileNotFoundException
 import java.net.URL
 import java.util.Date
+import java.security.PrivilegedAction
 import scala.concurrent._
 import scala.util.Try
 
@@ -27,13 +28,14 @@ import org.apache.hadoop.fs.{CreateFlag, FileAlreadyExistsException, ParentNotDi
 import org.apache.hadoop.hdfs.protocol.{AlreadyBeingCreatedException, DirectoryListing, HdfsFileStatus}
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 import org.apache.hadoop.io.EnumSetWritable
-import org.apache.hadoop.security.AccessControlException
+import org.apache.hadoop.security.{UserGroupInformation, AccessControlException}
 
 import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
-import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.common.permissions.{PermissionClass, UserProfile, PermissionsMask}
 import es.tid.cosmos.infinity.server.actions.{NameNode, NameNodeException}
 import es.tid.cosmos.infinity.server.config.InfinityConfig
+import es.tid.cosmos.infinity.server.groups.ArtificialUsersGroupMapping
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 
 class HdfsNameNode(
@@ -99,6 +101,26 @@ class HdfsNameNode(
     protocols.forPath(path) { p =>
       p.setPermission(path.toString, permissions.toHadoop)
     }
+  }
+
+  override def as[A](user: UserProfile)(body: => A): A = {
+    val ugi = {
+      if (user.mask == PermissionsMask.fromOctal("777")) {
+        if (user.superuser && user.mask.owner == PermissionClass.fromOctal("7"))
+          UserGroupInformation.createProxyUser(user.username, UserGroupInformation.getCurrentUser)
+        else UserGroupInformation.createRemoteUser(user.username)
+      } else if (user.mask == PermissionsMask.fromOctal("077")) {
+        val artificialUser = UserGroupInformation.createRemoteUser(
+          ArtificialUsersGroupMapping.createUserFromGroups(user.groups))
+        UserGroupInformation.createProxyUser(user.username, artificialUser)
+      } else {
+        throw new UnsupportedOperationException(
+          "Masks different from 777 and 077 and not currently supported")
+      }
+    }
+    ugi.doAs(new PrivilegedAction[A] {
+      override def run(): A = body
+    })
   }
 
   private def checkedFileInfo(path: Path): HdfsFileStatus = protocols.forPath(path) { p =>

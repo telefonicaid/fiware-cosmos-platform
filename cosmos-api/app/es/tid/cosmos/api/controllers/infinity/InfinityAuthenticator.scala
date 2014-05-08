@@ -73,7 +73,7 @@ private[infinity] class InfinityAuthenticator(
       shared: Boolean,
       whiteList: Option[Set[String]] = None) = InfinityIdentity(
     user = profile.handle,
-    group = profile.group.name,
+    groups = Seq(profile.group.name),
     accessMask =
       if (shared) InfinityAuthenticator.SharedMask
       else InfinityAuthenticator.IndividualMask,

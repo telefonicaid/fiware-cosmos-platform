@@ -52,7 +52,7 @@ class MoveFileTest extends FlatSpec with MustMatchers with MockitoSugar with Fut
     val nameNode = mock[NamenodeProtocols]
     val urlMapper = mock[UrlMapper]
     val meta = mock[MetadataUtil]
-    val context = Context(UserProfile("bob", "users"), urlMapper)
+    val context = Context(UserProfile("bob", Seq("users")), urlMapper)
     val config = new InfinityConfig(ConfigFactory.load())
 
     val metadata = PathMetadataResult(null)

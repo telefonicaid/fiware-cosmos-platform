@@ -20,7 +20,7 @@ import es.tid.cosmos.infinity.common.permissions.{UserProfile, PermissionsMask}
 
 private[cosmosapi] case class UserProfileJson(
     user: String,
-    group: String,
+    groups: Seq[String],
     accessMask: String,
     origins: Option[List[String]]) {
 
@@ -29,9 +29,9 @@ private[cosmosapi] case class UserProfileJson(
 
   def toUserProfile(superGroup: String) = UserProfile(
     username = user,
-    group = group,
+    groups = groups,
     mask = PermissionsMask.fromOctal(accessMask),
     accessFrom = origins.map(_.toSet),
-    superuser = group == superGroup
+    superuser = groups.contains(superGroup)
   )
 }

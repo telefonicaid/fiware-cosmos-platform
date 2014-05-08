@@ -16,32 +16,42 @@
 
 package es.tid.cosmos.infinity.server.finatra
 
-import java.io.FileNotFoundException
-
-import org.apache.hadoop.security.AccessControlException
-
+import es.tid.cosmos.infinity.server.actions.NameNodeException
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
 
 class ErrorCode[T <: Throwable](val code: String)
 
 object ErrorCode {
 
+  /* Request errors. */
   implicit val MissingAuthorizationHeader =
-    new ErrorCode[RequestParsingException.MissingAuthorizationHeader]("101")
-  implicit val UnsupportedAuthorizationHeader =
-    new ErrorCode[RequestParsingException.UnsupportedAuthorizationHeader]("102")
-  implicit val MalformedKeySecretPair =
-    new ErrorCode[RequestParsingException.MalformedKeySecretPair]("103")
-  implicit val InvalidBasicHash =
-    new ErrorCode[RequestParsingException.InvalidBasicHash]("104")
+    new ErrorCode[RequestParsingException.MissingAuthorizationHeader]("REQ01")
   implicit val InvalidResourcePath =
-    new ErrorCode[RequestParsingException.InvalidResourcePath]("105")
-  implicit val AuthenticationException =
-    new ErrorCode[AuthenticationException]("106")
-  implicit val AccessControlException =
-    new ErrorCode[AccessControlException]("107")
-  implicit val FileNotFoundException =
-    new ErrorCode[FileNotFoundException]("108")
+    new ErrorCode[RequestParsingException.InvalidResourcePath]("REQ02")
+  implicit val UnsupportedAuthorizationHeader =
+    new ErrorCode[RequestParsingException.UnsupportedAuthorizationHeader]("REQ03")
+  implicit val MalformedKeySecretPair =
+    new ErrorCode[RequestParsingException.MalformedKeySecretPair]("REQ04")
+  implicit val InvalidBasicHash =
+    new ErrorCode[RequestParsingException.InvalidBasicHash]("REQ05")
+
+  /* Security errors. */
+  implicit val AuthenticationFailed =
+    new ErrorCode[AuthenticationException]("SEC01")
+  implicit val Unauthorized =
+    new ErrorCode[NameNodeException.Unauthorized]("SEC02")
+
+  /* Server errors. */
+  implicit val IOError =
+    new ErrorCode[NameNodeException.IOError]("SRV01")
+
+  /* Constraint errors. */
+  implicit val NoSuchPath =
+    new ErrorCode[NameNodeException.NoSuchPath]("CONST01")
+  implicit val PathAlreadyExists =
+    new ErrorCode[NameNodeException.PathAlreadyExists]("CONST02")
+  implicit val ParentNotDirectory =
+    new ErrorCode[NameNodeException.ParentNotDirectory]("CONST03")
 
   def apply[E <: Throwable : ErrorCode](e: E): ErrorCode[E] = implicitly[ErrorCode[E]]
 }

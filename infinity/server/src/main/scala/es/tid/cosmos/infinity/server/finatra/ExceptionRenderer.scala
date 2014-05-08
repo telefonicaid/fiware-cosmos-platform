@@ -16,13 +16,11 @@
 
 package es.tid.cosmos.infinity.server.finatra
 
-import java.io.FileNotFoundException
-
 import com.twitter.finatra.ResponseBuilder
-import org.apache.hadoop.security.AccessControlException
 
 import es.tid.cosmos.infinity.common.json.ErrorDescriptorFormatter
 import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
+import es.tid.cosmos.infinity.server.actions.NameNodeException
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
 
 object ExceptionRenderer {
@@ -39,13 +37,19 @@ object ExceptionRenderer {
     case e: RequestParsingException.InvalidBasicHash =>
       renderWithAuth(401, ErrorCode(e), e)
     case e: RequestParsingException.InvalidResourcePath =>
-      render(401, ErrorCode(e), e)
+      render(404, ErrorCode(e), e)
     case e: AuthenticationException =>
       render(401, ErrorCode(e), e)
-    case e: AccessControlException =>
-      render(403, ErrorCode(e), e)
-    case e: FileNotFoundException =>
+    case e: NameNodeException.IOError =>
+      render(500, ErrorCode(e), e)
+    case e: NameNodeException.NoSuchPath =>
       render(404, ErrorCode(e), e)
+    case e: NameNodeException.PathAlreadyExists =>
+      render(409, ErrorCode(e), e)
+    case e: NameNodeException.ParentNotDirectory =>
+      render(422, ErrorCode(e), e)
+    case e: NameNodeException.Unauthorized =>
+      render(403, ErrorCode(e), e)
     case _ => throw new IllegalArgumentException(
       s"no rendering mechanism defined for ${exception.getClass.getCanonicalName}")
   }

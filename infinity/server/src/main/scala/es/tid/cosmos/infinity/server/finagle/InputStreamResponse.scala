@@ -17,6 +17,7 @@
 package es.tid.cosmos.infinity.server.finagle
 
 import java.io.{Closeable, InputStream}
+import scala.math.min
 
 import com.twitter.concurrent.Broker
 import com.twitter.finagle.http.Response
@@ -29,16 +30,16 @@ import es.tid.cosmos.infinity.server.util.IoUtil
 
 /** Chunked stream response with contents from an input stream.
   *
-  * @param in         the input stream where the content will be read from
-  * @param chunkSize  the size of each chunk that the content will be split to
-  * @param length     the number of bytes to read from the input stream
-  * @param closeables all the resources involved in reading this stream that should be closed
-  *                   after reading it. This should include the input stream itself
-  * @param header     the response whose header will be used to form the streaming response
+  * @param in           the input stream where the content will be read from
+  * @param maxChunkSize the maximum size of each chunk that the content will be split to
+  * @param length       the number of bytes to read from the input stream
+  * @param closeables   all the resources involved in reading this stream that should be closed
+  *                     after reading it. This should include the input stream itself
+  * @param header       the response whose header will be used to form the streaming response
   */
 class InputStreamResponse(
     in: InputStream,
-    chunkSize: Int,
+    maxChunkSize: Int,
     length: Long,
     closeables: Seq[Closeable],
     header: Response) extends StreamResponse {
@@ -59,20 +60,24 @@ class InputStreamResponse(
     error foreach { _ => ()}
   }
 
-  private def streamNextChunk(): Unit = TwitterFuture {
+  private def streamNextChunk(leftToRead: Long): Unit = TwitterFuture {
+    val chunkSize = min(maxChunkSize, leftToRead).toInt
     val buffer = new Array[Byte](chunkSize)
     val bytesRead: Int = in.read(buffer, NoOffset, chunkSize)
     val chunk = copiedBuffer(buffer)
-    if (bytesRead > NoBytesLeft)
-      msgs.send(chunk) andThen streamNextChunk()
-    else
+    val nextLeftToRead = leftToRead - bytesRead
+    if (isEndOfStream(bytesRead) || noMoreLeftToRead(nextLeftToRead))
+      // Finagle's idiosyncratic way to terminate the stream with an EOF exception.
       errors.send(EOF).sync()
+    else
+      msgs.send(chunk) andThen streamNextChunk(nextLeftToRead)
   }
 
-  IoUtil.withAutoClose((in +: closeables).distinct) { streamNextChunk() }
+  IoUtil.withAutoClose((in +: closeables).distinct) { streamNextChunk(length) }
 }
 
 private object InputStreamResponse {
   val NoOffset = 0
-  val NoBytesLeft = -1
+  def isEndOfStream(bytesRead: Int) = bytesRead > -1
+  def noMoreLeftToRead(leftToRead: Long) = leftToRead > 0
 }

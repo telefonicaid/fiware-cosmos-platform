@@ -19,9 +19,10 @@ package es.tid.cosmos.infinity.server.actions
 import scala.concurrent._
 import scala.math.min
 
+import org.apache.hadoop.hdfs.client.HdfsDataInputStream
+
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.Action.{ContentFound, Result, Context}
-import org.apache.hadoop.hdfs.client.HdfsDataInputStream
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 
 case class GetContent(

@@ -23,8 +23,9 @@ import com.twitter.finagle.builder.{Server, ServerBuilder}
 import com.twitter.finagle.http.{Request => FinagleRequest}
 import com.twitter.finagle.stream.{Stream, StreamResponse}
 import org.jboss.netty.handler.codec.http.HttpRequest
-import es.tid.cosmos.infinity.server.config.InfinityContentServerConfig
+
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
+import es.tid.cosmos.infinity.server.config.InfinityContentServerConfig
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 

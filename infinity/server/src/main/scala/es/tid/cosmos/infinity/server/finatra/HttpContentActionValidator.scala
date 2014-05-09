@@ -50,7 +50,7 @@ class HttpContentActionValidator(
   private def contentAction(path: String, request: Request) = {
     val absolutePath = Path.absolute(path)
     request.method match {
-      case HttpMethod.GET =>  extractGetContentParams(request) match {
+      case HttpMethod.GET => extractGetContentParams(request) match {
         case Success((offset, length)) =>
           GetContent(dfsClientFactory, absolutePath, offset, length).success
         case Failure(e) =>

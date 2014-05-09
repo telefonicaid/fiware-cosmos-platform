@@ -19,6 +19,7 @@ import scala.concurrent.duration._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.common.scalatest.RandomTcpPort
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.fs.{Path, RootPath, SubPath}
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
@@ -261,7 +262,7 @@ class HttpInfinityClientTest extends FlatSpec
   val bufferSize = 1024
 
   trait Fixture {
-    val infinity = new MockInfinityServer(metadataPort = 8898, defaultDate = aDate)
+    val infinity = new MockInfinityServer(metadataPort = RandomTcpPort.choose(), defaultDate = aDate)
     val dataFactory = infinity.DataFactory
     val client = new HttpInfinityClient(infinity.metadataEndpoint)
     val timeOut = 10.seconds

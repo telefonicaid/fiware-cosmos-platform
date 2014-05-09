@@ -124,7 +124,6 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
       out
     }
 
-
   private def existingMetaData(path: Path): Future[PathMetadata] =
     pathMetadata(path) map (_.getOrElse(throw NotFoundException(path)))
 

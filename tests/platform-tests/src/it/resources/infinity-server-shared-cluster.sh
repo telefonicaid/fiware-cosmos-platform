@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
@@ -14,8 +15,13 @@
 # limitations under the License.
 #
 
-cosmosMaster="andromeda01.hi.inet"
-apiUrl="https://"${cosmosMaster}
-realm="horizon"
-realmSecret="horizon!"
-restTimeout=10
+set +e
+hdfs dfs -get infinity:///$TARGET_USER/onlyUser.txt .
+if [ $? == "0" ]; then
+  echo "Was able to read a user-only file from a shared cluster"
+  exit $?
+fi
+set -e
+
+hdfs dfs -get infinity:///$TARGET_USER/onlyGroup.txt .
+hdfs dfs -get infinity:///$TARGET_USER/onlyEveryone.txt .

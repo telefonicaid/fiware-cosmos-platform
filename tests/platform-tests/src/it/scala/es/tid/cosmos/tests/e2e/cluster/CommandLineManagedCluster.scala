@@ -27,7 +27,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.tests.e2e.{CommandLineMatchers, User}
 
-class CommandLineManagedCluster(val id: String, val owner: User)
+class CommandLineManagedCluster(val id: String, val owner: User, val shared: Boolean)
                                (implicit info: Informer)
   extends Cluster with MustVerb with MustMatchers with CommandLineMatchers {
 
@@ -74,12 +74,16 @@ class CommandLineManagedCluster(val id: String, val owner: User)
 object CommandLineManagedCluster extends Cluster.Factory with MustMatchers {
 
   /** Creates the cluster and returns its ID in case of success. */
-  def apply(clusterSize: Int, owner: User, services: Seq[String] = Seq.empty)
-           (implicit info: Informer): CommandLineManagedCluster = {
+  def apply(
+      clusterSize: Int,
+      owner: User,
+      services: Seq[String] = Seq.empty,
+      shared: Boolean = false)(implicit info: Informer): CommandLineManagedCluster = {
     val nameFlag = "--name default-services"
     val sizeFlag = s"--size $clusterSize"
     val srvFlag = servicesFlag(services, owner)
-    val command = s"cosmos -c ${owner.cosmosrcPath} create $nameFlag $sizeFlag $srvFlag"
+    val sharedFlag = if (shared) "--shared" else ""
+    val command = s"cosmos -c ${owner.cosmosrcPath} create $sharedFlag $nameFlag $sizeFlag $srvFlag"
     info(s"Calling create cluster with command '$command'")
     val commandOutput = command.lines_!.toList
     commandOutput.foreach(info(_))
@@ -89,7 +93,7 @@ object CommandLineManagedCluster extends Cluster.Factory with MustMatchers {
       .getOrElse(fail(s"unexpected create command output: ${commandOutput.mkString("\n")}"))
       .substring(expectedPrefix.length)
     info(s"Cluster created with id $id")
-    new CommandLineManagedCluster(id, owner)(info)
+    new CommandLineManagedCluster(id, owner, shared)(info)
   }
 
   private def servicesFlag(services: Seq[String], user: User) = {

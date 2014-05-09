@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions
+package es.tid.cosmos.infinity.server.hadoop
 
-import scala.concurrent._
+import java.net.URL
 
-import es.tid.cosmos.infinity.common.fs.Path
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.hdfs.DFSClient
+import org.apache.hadoop.hdfs.server.datanode.DataNode
 
-case class ChangeOwner(nameNode: NameNode, on: Path, owner: String) extends Action {
-
-  import ExecutionContext.Implicits.global
-
-  override def apply(context: Action.Context): Future[Action.Result] = for {
-    _ <- nameNode.setOwner(on, owner)
-    metadata <- nameNode.pathMetadata(on)
-  } yield Action.OwnerSet(metadata)
+/**
+ * TODO: Insert description here
+ */
+class DfsClientFactory(dataNode: DataNode, nameNodeRpcUrl: URL) {
+  def newClient: DFSClient = new DFSClient(nameNodeRpcUrl.toURI, new Configuration(dataNode.getConf))
 }

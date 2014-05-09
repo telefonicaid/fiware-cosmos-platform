@@ -18,31 +18,14 @@ package es.tid.cosmos.infinity.server.actions
 
 import scala.concurrent._
 
-import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
-
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.server.actions.Action.{MoveUnsuccessful, Context, Result}
-import es.tid.cosmos.infinity.server.config.InfinityConfig
 
-case class MoveFile(
-    config: InfinityConfig,
-    nameNode: NamenodeProtocols,
-    on: Path,
-    from: Path,
-    meta: MetadataUtil) extends Action {
+case class DeletePath(nameNode: NameNode, on: Path, recursive: Boolean) extends Action {
 
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Context): Future[Result] = for {
-    moved <- moveFile(context)
-    metadata <- metadata(context, moved)
-  } yield metadata
-
-  private def moveFile(context: Context) = future {
-    nameNode.rename(from.toString, on.toString)
-  }
-
-  private def metadata(context: Context, moved: Boolean) = {
-    if (moved) meta.action(context, on) else Future.successful(MoveUnsuccessful)
-  }
+  override def apply(context: Action.Context): Future[Action.Result] = for {
+    meta <- nameNode.pathMetadata(on)
+    _ <- nameNode.deletePath(on, recursive)
+  } yield Action.Deleted(meta)
 }

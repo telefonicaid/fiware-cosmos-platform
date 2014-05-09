@@ -14,16 +14,26 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions
-import scala.concurrent._
+package es.tid.cosmos.infinity.streams
 
-import es.tid.cosmos.infinity.common.fs._
+import java.io.OutputStream
 
-case class GetMetadata(nameNode: NameNode, on: Path) extends Action {
+import org.apache.hadoop.util.Progressable
 
-  import ExecutionContext.Implicits.global
+private[infinity] class InfinityOutputStream(stream: OutputStream, progress: Option[Progressable])
+  extends OutputStream {
 
-  override def apply(context: Action.Context): Future[Action.Result] = for {
-    meta <- nameNode.pathMetadata(on)
-  } yield Action.Retrieved(meta)
+  override def write(b: Int): Unit = withProgress(stream.write(b))
+
+  override def write(b: Array[Byte], off: Int, len: Int): Unit =
+    withProgress(stream.write(b, off, len))
+
+  override def flush(): Unit = withProgress(stream.flush())
+
+  override def close(): Unit = withProgress(stream.close())
+
+  private def withProgress[T](body: => T): T = {
+    progress.foreach(_.progress())
+    body
+  }
 }

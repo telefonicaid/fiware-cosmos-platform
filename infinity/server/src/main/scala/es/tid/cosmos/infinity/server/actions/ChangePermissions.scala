@@ -17,34 +17,17 @@
 package es.tid.cosmos.infinity.server.actions
 
 import scala.concurrent._
-import scala.concurrent.Future.{successful => success}
 
-import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
-
-import es.tid.cosmos.common.BooleanFutures._
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
-import es.tid.cosmos.infinity.server.actions.Action.OperationNotAllowed
 
 case class ChangePermissions(
-    nameNode: NamenodeProtocols, on: Path, permissions: PermissionsMask) extends Action {
+    nameNode: NameNode, on: Path, permissions: PermissionsMask) extends Action {
+
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] = {
-    val metadata = MetadataUtil(nameNode)
-    lazy val isUserPathOwner_> : Future[Boolean] =
-      metadata.forPath(context, on).map(_.owner == context.user.username)
-
-    val isAllowed_> : Future[Boolean] =  success(context.user.superuser) or  isUserPathOwner_>
-
-    isAllowed_> flatMap { allowed =>
-      if (allowed) {
-        nameNode.setPermission(on.toString, permissions.toHadoop)
-        metadata.action(context, on)
-      }
-      else
-        success(OperationNotAllowed(context.user.username, on))
-    }
-  }
+  override def apply(context: Action.Context): Future[Action.Result] = for {
+    _ <- nameNode.setPermissions(on, permissions)
+    metadata <- nameNode.pathMetadata(on)
+  } yield Action.PermissionsSet(metadata)
 }

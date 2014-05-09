@@ -35,7 +35,7 @@ import es.tid.cosmos.infinity.server.config.InfinityConfig
 
 class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside with MockitoSugar {
 
-  private val nameNode = mock[NamenodeProtocols]
+  private val nameNode = mock[NameNode]
   private val config = new InfinityConfig(ConfigFactory.load())
   private val instance = new HttpActionValidator(config, nameNode)
   private val someUri = "/infinityfs/v1/metadata/path/to/file"
@@ -77,7 +77,7 @@ class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside wit
   it must "extract a Delete action" in {
     val req = makeRequest(HttpMethod.DELETE, s"$someUri?recursive=true")
     instance(req) must be (
-      Success(Delete(nameNode, somePath, recursive = true)))
+      Success(DeletePath(nameNode, somePath, recursive = true)))
   }
 
   it must "extract a ChangeOwner action" in {
@@ -129,7 +129,7 @@ class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside wit
         |}
       """.stripMargin)
     inside(instance(req)) {
-      case Success(MoveFile(_, _, path, from, _)) =>
+      case Success(MovePath(_, _, path, from)) =>
         path must be (Path.absolute("/path/to/file/enemies.csv"))
         from must be (Path.absolute("/some/other/file.csv"))
     }

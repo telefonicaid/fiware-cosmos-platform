@@ -16,13 +16,16 @@
 
 package es.tid.cosmos.infinity
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream}
 import java.net.URL
 import java.util.Date
 import scala.concurrent.{Future, Promise}
 
 import org.mockito.BDDMockito.{BDDMyOngoingStubbing, given}
-import org.mockito.Matchers.{any, anyBoolean, eq => the}
+import org.mockito.Matchers.{any, anyBoolean, anyInt, eq => the}
 import org.mockito.Mockito.{never, verify}
+import org.mockito.invocation.InvocationOnMock
+import org.mockito.stubbing.Answer
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.client.InfinityClient
@@ -55,8 +58,38 @@ class MockInfinityClient extends MockitoSugar {
     ))
   }
 
+  def givenFile(path: Path): Unit = {
+    givenExistingPath(FileMetadata(
+      path = path,
+      metadata = defaultMetadataUrl,
+      content = Some(new URL(s"https://content$path")),
+      owner = "user",
+      group = "group",
+      modificationTime = defaultTime,
+      accessTime = defaultTime,
+      permissions = defaultMask,
+      replication = 3,
+      blockSize = 2048,
+      size = 0
+    ))
+  }
+
   def givenExistingPath(metadata: PathMetadata): Unit = {
     given(value.pathMetadata(metadata.path)).willReturn(Future.successful(Some(metadata)))
+  }
+
+  def givenFileCanBeCreated(path: Path): Unit = {
+    givenFile(path)
+    willSucceed(given(value.createFile(the(asSubPath(path)), any[PermissionsMask],
+      any[Option[Short]], any[Option[Long]])))
+  }
+  def verifyFileCreation(
+      path: Path, perms: PermissionsMask, replication: Option[Short], blockSize: Option[Long]): Unit = {
+    verify(value).createFile(asSubPath(path), perms, replication, blockSize)
+  }
+  def verifyNoFileWasCreated(): Unit = {
+    verify(value, never()).createFile(any[SubPath], any[PermissionsMask], any[Option[Short]],
+      any[Option[Long]])
   }
 
   def givenDirectoryCanBeCreated(path: Path): Unit = {
@@ -109,10 +142,33 @@ class MockInfinityClient extends MockitoSugar {
     verify(value).changePermissions(path, mask)
   }
 
+  def givenFileCanBeAppendedTo(path: Path): Unit = {
+    givenFile(path)
+    val output = new ByteArrayOutputStream()
+    given(value.append(the(asSubPath(path)), anyInt)).willReturn(Future.successful(output))
+  }
+
+  def givenFileWithContent(path: SubPath, content: String): Unit = {
+    val byteArray = content.getBytes
+    givenFileRead(path).willAnswer(
+      new Answer[Future[InputStream]] {
+        override def answer(invocation: InvocationOnMock): Future[InputStream] = {
+          val Array(_, offsetOpt: Option[Long], lenOpt: Option[Long]) = invocation.getArguments
+          val offset = offsetOpt.getOrElse(0L).toInt
+          val maxLength = byteArray.length - offset
+          val length = lenOpt.getOrElse(byteArray.length.toLong).toInt
+          Future.successful(new ByteArrayInputStream(byteArray, offset, Math.min(length, maxLength)))
+        }
+      })
+  }
+  def givenFileReadWillFail(path: SubPath): Unit = willFail(givenFileRead(path))
+  private def givenFileRead(path: SubPath) =
+    given(value.read(the(path), any[Option[Long]], any[Option[Long]]))
+
   private def willSucceed(call: BDDMyOngoingStubbing[Future[Unit]]): Unit =
     call.willReturn(Future.successful(()))
 
-  private def willFail(call: BDDMyOngoingStubbing[Future[Unit]]): Unit =
+  private def willFail[T](call: BDDMyOngoingStubbing[Future[T]]): Unit =
     call.willReturn(Future.failed(defaultFailure))
 
   private def wontFinish[T](call: BDDMyOngoingStubbing[Future[T]]): Unit =

@@ -20,7 +20,6 @@ import scala.concurrent.Future
 import com.twitter.finatra.FinatraServer
 import com.twitter.finatra.test.SpecHelper
 import com.typesafe.config.ConfigFactory
-import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
@@ -28,6 +27,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.common.permissions.UserProfile
+import es.tid.cosmos.infinity.server.actions.NameNode
 import es.tid.cosmos.infinity.server.authentication._
 import es.tid.cosmos.infinity.server.config.InfinityConfig
 
@@ -74,7 +74,7 @@ class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar 
 
   trait Fixture extends SpecHelper {
     val config = new InfinityConfig(ConfigFactory.load())
-    val nameNode = mock[NamenodeProtocols]
+    val nameNode = mock[NameNode]
     val urlMapper = new FinatraUrlMapper(config)
     val authService = mock[AuthenticationService]
     override val server = new FinatraServer
@@ -84,7 +84,7 @@ class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar 
     def givenSuccessAuthentication(action: => Unit) {
       when(authService.authenticate(anyObject())).thenReturn(Future.successful(UserProfile(
         username = "gandalf",
-        group = "istari"
+        groups = Seq("istari")
       )))
       action
     }

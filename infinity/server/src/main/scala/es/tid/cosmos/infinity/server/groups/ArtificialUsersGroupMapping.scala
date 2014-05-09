@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions
+package es.tid.cosmos.infinity.server.groups
 
-import scala.concurrent._
+object ArtificialUsersGroupMapping {
+  val artificialUserMarker = "@"
 
-import es.tid.cosmos.infinity.common.fs.Path
+  def getGroups(username: String): Seq[String] = {
+    ensureValidUsername(username)
+    username.split(artificialUserMarker).tail
+  }
 
-case class ChangeOwner(nameNode: NameNode, on: Path, owner: String) extends Action {
+  def createUserFromGroups(groups: Seq[String]) =
+    artificialUserMarker + groups.mkString(artificialUserMarker)
 
-  import ExecutionContext.Implicits.global
-
-  override def apply(context: Action.Context): Future[Action.Result] = for {
-    _ <- nameNode.setOwner(on, owner)
-    metadata <- nameNode.pathMetadata(on)
-  } yield Action.OwnerSet(metadata)
+  private def ensureValidUsername(username: String): Unit = require(
+    username.startsWith(artificialUserMarker),
+    s"Username does not start with '$artificialUserMarker'")
 }

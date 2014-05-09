@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions
-import scala.concurrent._
+package es.tid.cosmos.infinity.server.groups
 
-import es.tid.cosmos.infinity.common.fs._
+import org.scalatest.FlatSpec
+import org.scalatest.matchers.MustMatchers
 
-case class GetMetadata(nameNode: NameNode, on: Path) extends Action {
+class ArtificialUsersGroupMappingTest extends FlatSpec with MustMatchers {
 
-  import ExecutionContext.Implicits.global
+  "The ArtificialUsersGroupMappingTest" must "return artificial usernames" in {
+    ArtificialUsersGroupMapping.createUserFromGroups(Seq("foo")) must startWith
+      (ArtificialUsersGroupMapping.artificialUserMarker)
+  }
 
-  override def apply(context: Action.Context): Future[Action.Result] = for {
-    meta <- nameNode.pathMetadata(on)
-  } yield Action.Retrieved(meta)
+  it must "retrieve the set groups" in {
+    val groups = Seq("a", "b", "zzz")
+    val user = ArtificialUsersGroupMapping.createUserFromGroups(groups)
+    ArtificialUsersGroupMapping.getGroups(user) must be (groups)
+  }
 }

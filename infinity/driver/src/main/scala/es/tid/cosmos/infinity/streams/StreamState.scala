@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions
+package es.tid.cosmos.infinity.streams
 
-import scala.concurrent._
-
-import es.tid.cosmos.infinity.common.fs.Path
-
-case class ChangeOwner(nameNode: NameNode, on: Path, owner: String) extends Action {
-
-  import ExecutionContext.Implicits.global
-
-  override def apply(context: Action.Context): Future[Action.Result] = for {
-    _ <- nameNode.setOwner(on, owner)
-    metadata <- nameNode.pathMetadata(on)
-  } yield Action.OwnerSet(metadata)
+private[streams] trait StreamState {
+  def seek(context: StreamContext, pos: Long): Unit
+  def read(context: StreamContext, b: Array[Byte], off: Int, len: Int): Int
+  def read(context: StreamContext): Int
+  def close(context: StreamContext): Unit
 }

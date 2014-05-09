@@ -23,7 +23,8 @@ import org.apache.hadoop.util.ServicePlugin
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationComponent
 import es.tid.cosmos.infinity.server.config.InfinityConfig
-import es.tid.cosmos.infinity.server.finatra.MetadataServer
+import es.tid.cosmos.infinity.server.finatra.{FinatraUrlMapper, MetadataServer}
+import es.tid.cosmos.infinity.server.actions.hdfs.HdfsNameNode
 
 /** Namenode plugin to serve Infinity metadata. */
 class MetadataPlugin extends ServicePlugin with Configurable {
@@ -43,10 +44,15 @@ class MetadataPlugin extends ServicePlugin with Configurable {
 
   override def start(service: Any): Unit = service match {
     case nameNode: NameNode =>
+      while (nameNode.isInSafeMode) {
+        log.info("Waiting for NN to exit safe mode before starting metadata server")
+        Thread.sleep(1000)
+      }
       log.info("Starting Infinity metadata server as a namenode plugin")
       val config = new InfinityConfig(PluginConfig.load(getConf))
+      val urlMapper = new FinatraUrlMapper(config)
       val server = new MetadataServer(
-        namenodeProtocols = nameNode.getRpcServer,
+        nameNode = new HdfsNameNode(config, nameNode.getRpcServer, urlMapper),
         config = config,
         authService = authentication)
       server.start()

@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions
+package es.tid.cosmos.infinity.streams
 
-import scala.concurrent._
+import java.io.IOException
 
-import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
+private object ClosedStreamState extends StreamState {
 
-import es.tid.cosmos.infinity.common.fs.Path
-
-case class Delete(nameNode: NamenodeProtocols, on: Path, recursive: Boolean) extends Action {
-
-  import ExecutionContext.Implicits.global
-
-  override def apply(context: Action.Context): Future[Action.Result] = future {
-    if (nameNode.delete(on.toString, recursive))
-      Action.DeleteOK
-    else
-      Action.DeleteUnsuccessful
+  override def seek(context: StreamContext, position: Long): Unit = {
+    context.position = position
   }
+
+  override def read(context: StreamContext, b: Array[Byte], off: Int, len: Int) = throwError
+  override def read(context: StreamContext) = throwError
+  override def close(context: StreamContext) = throwError
+
+  private def throwError = throw new IOException("Stream is already closed")
 }
+

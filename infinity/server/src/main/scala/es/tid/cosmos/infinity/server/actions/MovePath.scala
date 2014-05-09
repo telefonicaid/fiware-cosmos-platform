@@ -19,22 +19,15 @@ package es.tid.cosmos.infinity.server.actions
 import scala.concurrent._
 
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 import es.tid.cosmos.infinity.server.config.InfinityConfig
 
-case class CreateFile(
-    config: InfinityConfig,
-    nameNode: NameNode,
-    on: Path,
-    permissions: PermissionsMask,
-    replication: Option[Short],
-    blockSize: Option[Long]) extends Action {
+case class MovePath(
+    config: InfinityConfig, nameNode: NameNode, on: Path, from: Path) extends Action {
 
   import ExecutionContext.Implicits.global
 
   override def apply(context: Action.Context): Future[Action.Result] = for {
-    _ <- nameNode.createFile(
-      on, context.user.username, context.user.groups.head, permissions, replication, blockSize)
+    _ <- nameNode.movePath(from, on)
     metadata <- nameNode.pathMetadata(on)
-  } yield Action.Created(metadata)
+  } yield Action.Moved(metadata)
 }

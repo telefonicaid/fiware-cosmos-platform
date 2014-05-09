@@ -73,6 +73,19 @@ class HdfsNameNode(
     }
   }
 
+  override def createDirectory(
+      path: Path,
+      owner: String,
+      group: String,
+      permissions: PermissionsMask): Future[Unit] = future {
+    protocols.forPath(path) { p =>
+      p.mkdirs(
+        path.toString, // src
+        permissions.toHadoop,
+        false) // createParent
+    }
+  }
+
   override def deletePath(path: Path, recursive: Boolean): Future[Unit] = future {
     protocols.forPath(path) { p =>
       if (!p.delete(path.toString, recursive)) {

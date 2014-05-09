@@ -66,6 +66,29 @@ trait NameNode {
     replication: Option[Short],
     blockSize: Option[Long]): Future[Unit]
 
+  /** Create a new directory on the given path.
+    *
+    * @param path The path where the new directory is to be created
+    * @param owner The owner of the new directory
+    * @param group The group of the new directory
+    * @param permissions The permissions for the new directory
+    * @return The future representing the requested action. It can fail with:
+    *         <ul>
+    *           <li>NameNodeException.NoSuchPath if some of the parents in the path doesn't exist
+    *           <li>NameNodeException.PathAlreadyExists if there is already a file or directory on
+    *               the given path
+    *           <li>NameNodeException.ParentNotDirectory if the parent path is not a directory
+    *           <li>NameNodeException.Unauthorized if the current user is not authorized to do the
+    *           action
+    *           <li>NameNodeException.IOError if there is an unexpected IO error
+    *         </ul>
+    */
+  def createDirectory(
+     path: Path,
+     owner: String,
+     group: String,
+     permissions: PermissionsMask): Future[Unit]
+
   /** Delete the file or directory on the given path.
     *
     * @param path The path of the file or directory to be removed.

@@ -74,6 +74,22 @@ class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside wit
     }
   }
 
+  it must "extract a CreateDirectory action" in {
+    val req = makeRequest(HttpMethod.POST, someUri,
+      """
+        |{
+        |  "action" : "mkdir",
+        |  "name" : "enemies",
+        |  "permissions" : "750"
+        |}
+      """.stripMargin)
+    inside(instance(req)) {
+      case Success(CreateDirectory(_, path, perms)) =>
+        path must be (somePath / "enemies")
+        perms must be (PermissionsMask.fromOctal("750"))
+    }
+  }
+
   it must "extract a Delete action" in {
     val req = makeRequest(HttpMethod.DELETE, s"$someUri?recursive=true")
     instance(req) must be (

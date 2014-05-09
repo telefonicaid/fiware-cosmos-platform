@@ -60,6 +60,7 @@ object Build extends sbt.Build {
     lazy val scalaLogging = "com.typesafe" %% "scalalogging-slf4j" % "1.0.1"
     lazy val scalaMigrations = "com.imageworks.scala-migrations" %% "scala-migrations" % "1.1.1"
     lazy val scalatest = "org.scalatest" %% "scalatest" % "1.9.1"
+    lazy val scalaStm = "org.scala-stm" %% "scala-stm" % "0.7"
     lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.4"
     lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
     lazy val typesafeConfig = "com.typesafe" % "config" % "1.2.0"

@@ -24,6 +24,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.RandomTcpPort
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.infinity.client.mock.MockInfinityServer
 
 trait HttpInfinityClientBehavior extends MustMatchers with FutureMatchers { this: FlatSpec =>
 

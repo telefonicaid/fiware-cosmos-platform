@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.urls
 
 import java.net.URL
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.config.InfinityConfig
-import es.tid.cosmos.infinity.server.urls.UrlMapper
 
-class FinatraUrlMapper(config: InfinityConfig) extends UrlMapper {
+class InfinityUrlMapper(config: InfinityConfig) extends UrlMapper {
 
   override def metadataUrl(path: Path): URL = new URL(s"${config.metadataBaseUrl}/$path")
 

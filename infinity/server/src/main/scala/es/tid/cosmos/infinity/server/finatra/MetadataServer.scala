@@ -19,6 +19,7 @@ package es.tid.cosmos.infinity.server.finatra
 import es.tid.cosmos.infinity.server.actions.NameNode
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.InfinityConfig
+import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
 class MetadataServer(
     nameNode: NameNode, config: InfinityConfig, authService: AuthenticationService) {
@@ -26,7 +27,7 @@ class MetadataServer(
   val serverConfig = FinatraServerCfg(
     http = Some(s"0.0.0.0:${config.metadataPort}")
   )
-  val urlMapper = new FinatraUrlMapper(config)
+  val urlMapper = new InfinityUrlMapper(config)
 
   val server = new EmbeddableFinatraServer(serverConfig)
 

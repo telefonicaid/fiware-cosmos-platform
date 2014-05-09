@@ -23,11 +23,10 @@ import com.twitter.finagle.builder.{Server, ServerBuilder}
 import com.twitter.finagle.http.{Request => FinagleRequest}
 import com.twitter.finagle.stream.{Stream, StreamResponse}
 import org.jboss.netty.handler.codec.http.HttpRequest
-
-import es.tid.cosmos.infinity.server.finatra.FinatraUrlMapper
 import es.tid.cosmos.infinity.server.config.InfinityContentServerConfig
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
+import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
 /** Finagle-based content server that makes use of [[StreamResponse]] to allow serving content
   * in streams via chunks, something not currently supported with Finatra.
@@ -43,7 +42,7 @@ class ContentStreamServer(
 
   private var server: Option[Server] = None
 
-  private val urlMapper = new FinatraUrlMapper(config)
+  private val urlMapper = new InfinityUrlMapper(config)
 
   private val nettyToFinagle =
     Filter.mk[HttpRequest, StreamResponse, FinagleRequest, StreamResponse] { (req, service) =>

@@ -30,7 +30,7 @@ class UserProfileTest extends FlatSpec with MustMatchers {
 
   val userWithoutWhitelist = UserProfile(
     username = "username",
-    group = "group",
+    groups = Seq("group"),
     mask = PermissionsMask.fromOctal("770"),
     accessFrom = None,
     superuser = false

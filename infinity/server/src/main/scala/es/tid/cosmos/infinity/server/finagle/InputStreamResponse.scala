@@ -44,10 +44,6 @@ class InputStreamResponse(
     header: Response) extends StreamResponse {
   import InputStreamResponse._
 
-  require(closeables.contains(in),
-    "Input Stream should also be provided in closeables " +
-      "so that the resource can be released after being read.")
-
   private val msgs = new Broker[ChannelBuffer]
   private  val errors = new Broker[Throwable]
 
@@ -73,7 +69,7 @@ class InputStreamResponse(
       errors.send(EOF).sync()
   }
 
-  IoUtil.withAutoClose(closeables) { streamNextChunk() }
+  IoUtil.withAutoClose((in +: closeables).distinct) { streamNextChunk() }
 }
 
 private object InputStreamResponse {

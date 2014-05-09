@@ -131,6 +131,6 @@ object DirectoryEntry {
 
   def directory(path: Path, metadata: URL, owner: String, group: String, modificationTime: Date,
                 accessTime: Date, permissions: PermissionsMask) = DirectoryEntry(
-    path, PathType.File, metadata, owner, group, modificationTime, accessTime, permissions,
+    path, PathType.Directory, metadata, owner, group, modificationTime, accessTime, permissions,
     DirectoryMetadata.Replication, DirectoryMetadata.BlockSize, DirectoryMetadata.Size)
 }

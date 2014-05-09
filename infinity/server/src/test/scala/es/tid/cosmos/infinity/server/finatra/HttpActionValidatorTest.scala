@@ -21,7 +21,6 @@ import scalaz.{Failure, Success}
 
 import com.twitter.finagle.http.Request
 import com.typesafe.config.ConfigFactory
-import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.handler.codec.http.{DefaultHttpRequest, HttpMethod, HttpVersion}
 import org.scalatest.{FlatSpec, Inside}
@@ -31,12 +30,12 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 import es.tid.cosmos.infinity.server.actions._
-import es.tid.cosmos.infinity.server.config.InfinityConfig
+import es.tid.cosmos.infinity.server.config.MetadataServerConfig
 
 class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside with MockitoSugar {
 
   private val nameNode = mock[NameNode]
-  private val config = new InfinityConfig(ConfigFactory.load())
+  private val config = new MetadataServerConfig(ConfigFactory.load())
   private val instance = new HttpActionValidator(config, nameNode)
   private val someUri = "/infinityfs/v1/metadata/path/to/file"
   private val somePath = Path.absolute("/path/to/file")

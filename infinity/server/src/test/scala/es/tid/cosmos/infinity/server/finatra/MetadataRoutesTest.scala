@@ -29,7 +29,7 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.infinity.common.permissions.UserProfile
 import es.tid.cosmos.infinity.server.actions.NameNode
 import es.tid.cosmos.infinity.server.authentication._
-import es.tid.cosmos.infinity.server.config.InfinityConfig
+import es.tid.cosmos.infinity.server.config.MetadataServerConfig
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
 class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar {
@@ -74,7 +74,7 @@ class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar 
   }
 
   trait Fixture extends SpecHelper {
-    val config = new InfinityConfig(ConfigFactory.load())
+    val config = new MetadataServerConfig(ConfigFactory.load())
     val nameNode = mock[NameNode]
     val urlMapper = new InfinityUrlMapper(config)
     val authService = mock[AuthenticationService]

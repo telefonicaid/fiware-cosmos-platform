@@ -25,7 +25,7 @@ import com.twitter.finagle.stream.{Stream, StreamResponse}
 import org.jboss.netty.handler.codec.http.HttpRequest
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
-import es.tid.cosmos.infinity.server.config.InfinityContentServerConfig
+import es.tid.cosmos.infinity.server.config.ContentServerConfig
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
@@ -38,7 +38,7 @@ import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
   */
 class ContentStreamServer(
     clientFactory: DfsClientFactory,
-    config: InfinityContentServerConfig,
+    config: ContentServerConfig,
     authService: AuthenticationService) {
 
   private var server: Option[Server] = None
@@ -58,7 +58,7 @@ class ContentStreamServer(
   def start(): Unit = {
     server = Some(ServerBuilder()
       .codec(Stream())
-      .bindTo(new InetSocketAddress(config.contentServerUrl.getPort))
+      .bindTo(new InetSocketAddress(config.localContentServerUrl.getPort))
       .name("infinity_content_server")
       .build(service))
   }

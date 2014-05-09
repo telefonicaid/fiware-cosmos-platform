@@ -24,7 +24,7 @@ import org.jboss.netty.handler.codec.http.HttpMethod
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.{GetContent, Action}
-import es.tid.cosmos.infinity.server.config.InfinityContentServerConfig
+import es.tid.cosmos.infinity.server.config.ContentServerConfig
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 
 /** The validator for content actions.
@@ -34,12 +34,12 @@ import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
   *                         file system
   */
 class HttpContentActionValidator(
-    config: InfinityContentServerConfig,
+    config: ContentServerConfig,
     dfsClientFactory: DfsClientFactory) {
   //TODO: Consider moving actions, renderers and validators to metadata and content packages
   import scalaz.Scalaz._
 
-  private val contentUriPrefix = s"""${config.contentServerUrl.getPath}(/[^\\?]*)(\\?.*)?""".r
+  private val contentUriPrefix = s"""${config.localContentServerUrl.getPath}(/[^\\?]*)(\\?.*)?""".r
 
   def apply(request: Request): Validation[RequestParsingException, Action] =
     request.getUri() match {

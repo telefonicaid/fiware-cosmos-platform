@@ -23,7 +23,7 @@ import com.typesafe.config.ConfigFactory
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-class InfinityConfigTest extends FlatSpec with MustMatchers {
+class MetadataServerConfigTest extends FlatSpec with MustMatchers {
 
   it must "retrieve content server URL with all settings are present" in {
     val config = configFor(
@@ -57,6 +57,6 @@ class InfinityConfigTest extends FlatSpec with MustMatchers {
     val defaultSettings = ConfigFactory.load()
     val customSettings = ConfigFactory.parseMap(settings.toMap.asJava)
     val config = customSettings.withFallback(defaultSettings)
-    new InfinityConfig(config)
+    new MetadataServerConfig(config)
   }
 }

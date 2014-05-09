@@ -25,7 +25,7 @@ import com.twitter.util.{Future => TwitterFuture}
 
 import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
-import es.tid.cosmos.infinity.server.config.InfinityContentServerConfig
+import es.tid.cosmos.infinity.server.config.ContentServerConfig
 import es.tid.cosmos.infinity.server.finagle.StreamConversions._
 import es.tid.cosmos.infinity.server.finatra._
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
@@ -33,7 +33,7 @@ import es.tid.cosmos.infinity.server.util.TwitterConversions._
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 
 class ContentStreamRoutes(
-      config: InfinityContentServerConfig,
+      config: ContentServerConfig,
       authService: AuthenticationService,
       clientFactory: DfsClientFactory,
       urlMapper: UrlMapper) extends Service[Request, StreamResponse] {

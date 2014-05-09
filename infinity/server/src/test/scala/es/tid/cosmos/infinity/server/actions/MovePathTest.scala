@@ -21,7 +21,7 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.fs.{FileMetadata, Path}
 import es.tid.cosmos.infinity.common.permissions.UserProfile
-import es.tid.cosmos.infinity.server.config.InfinityConfig
+import es.tid.cosmos.infinity.server.config.MetadataServerConfig
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 
 class MovePathTest extends FlatSpec with MustMatchers with MockitoSugar with FutureMatchers {
@@ -51,7 +51,7 @@ class MovePathTest extends FlatSpec with MustMatchers with MockitoSugar with Fut
     val nameNode = mock[NameNode]
     val urlMapper = mock[UrlMapper]
     val context = Action.Context(UserProfile("bob", Seq("users")), urlMapper)
-    val config = new InfinityConfig(ConfigFactory.load())
+    val config = new MetadataServerConfig(ConfigFactory.load())
 
     val metadata = mock[FileMetadata]
     val metadataResult = Action.Moved(metadata)

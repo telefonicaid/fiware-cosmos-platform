@@ -21,19 +21,16 @@ import java.net.{URI, InetAddress, URL}
 import com.typesafe.config.{Config, ConfigException}
 
 import es.tid.cosmos.infinity.common.util.UriUtil
+import es.tid.cosmos.infinity.server.config.InfinityConfig._
 
-class InfinityConfig(config: Config) {
-
-  import InfinityConfig._
+abstract class InfinityConfig(config: Config) {
 
   val metadataProtocol = config.getString("metadata.protocol")
   val metadataHost = config.getString("metadata.host")
   val metadataPort = config.getInt("metadata.port")
   val metadataBasePath = mapOpt(config.getString("metadata.basePath")).getOrElse(DefaultBasePath)
   val metadataBaseUrl = new URL(
-    s"$metadataProtocol://$metadataHost:$metadataPort/$metadataBasePath")
-  val replication = mapOpt(config.getInt("metadata.replication").toShort).getOrElse(DefaultReplication)
-  val blockSize = mapOpt(config.getLong("metadata.blockSize")).getOrElse(DefaultBlockSize)
+      s"$metadataProtocol://$metadataHost:$metadataPort/$metadataBasePath")
 
   def contentServerUrl(hostname: String): Option[URL] = {
     val protocol = mapOpt(config.getString(s"contentServer.$hostname.protocol"))
@@ -45,36 +42,36 @@ class InfinityConfig(config: Config) {
   }
 }
 
+class MetadataServerConfig(config: Config) extends InfinityConfig(config) {
+  val replication = mapOpt(config.getInt("metadata.replication").toShort).getOrElse(DefaultReplication)
+  val blockSize = mapOpt(config.getLong("metadata.blockSize")).getOrElse(DefaultBlockSize)
+}
+
+class ContentServerConfig(config: Config) extends InfinityConfig(config) {
+  val chunkSize = mapOpt(config.getInt("infinity.server.content.chunkSize"))
+    .getOrElse(DefaultChunkSize)
+
+  val nameNodeRPCUrl: URL = UriUtil.replaceScheme(
+    new URI(config.getString(NameNodeHdfsAddressKey)), "http").toURL
+
+  val localContentServerUrl: URL = {
+    val hostname = InetAddress.getLocalHost.getHostName
+    contentServerUrl(hostname).getOrElse(throw new IllegalArgumentException(
+      s"Cannot initialize server because contentServer.$hostname configuration is missing."))
+  }
+}
+
 object InfinityConfig {
   val DefaultProtocol: String = "https"
   val DefaultBasePath: String = "/infinityfs/v1"
   val DefaultReplication: Short = 3
   val DefaultBlockSize: Long = 64l * 1024l * 1024l
-
-  def mapOpt[T](f: => T): Option[T] = try { Some(f) } catch {
-    case _: ConfigException.Missing => None
-  }
-}
-
-class InfinityContentServerConfig(config: Config) extends InfinityConfig(config) {
-  import InfinityConfig._
-  import InfinityContentServerConfig._
-
-  val contentServerUrl: URL = {
-    val hostname = InetAddress.getLocalHost.getHostName
-    contentServerUrl(hostname).getOrElse(throw new IllegalArgumentException(
-      s"Cannot initialize server because contentServer.$hostname configuration is missing."))
-  }
-  val nameNodeRPCUrl: URL = UriUtil.replaceScheme(
-    new URI(config.getString(NameNodeHdfsAddressKey)), "http").toURL
-
-  val chunkSize = mapOpt(config.getInt("content.chunkSize")).getOrElse(DefaultChunkSize)
-}
-
-object InfinityContentServerConfig {
-  private val NameNodeHdfsAddressKey = "fs.defaultFS"
+  val NameNodeHdfsAddressKey = "fs.defaultFS"
   // 4096 is taken from Hadoop IOUtils.copy
   val DefaultChunkSize = 4096
   val HadoopKeys = Seq(NameNodeHdfsAddressKey)
 
+  def mapOpt[T](f: => T): Option[T] = try { Some(f) } catch {
+    case _: ConfigException.Missing => None
+  }
 }

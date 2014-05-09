@@ -30,6 +30,8 @@ trait Cluster extends Closeable with Patience {
 
   val owner: User
 
+  val shared: Boolean
+
   def id: String
 
   def describe(executedBy: User = owner): JValue
@@ -82,11 +84,17 @@ trait Cluster extends Closeable with Patience {
 object Cluster {
 
   trait Factory {
-    def apply(clusterSize: Int, owner: User, services: Seq[String] = Seq.empty)
-             (implicit info: Informer): Cluster
+    def apply(
+        clusterSize: Int,
+        owner: User,
+        services: Seq[String] = Seq.empty,
+        shared: Boolean = false)(implicit info: Informer): Cluster
   }
 
-  def apply(clusterSize: Int, owner: User, services: Seq[String] = Seq.empty)
-           (implicit info: Informer): Cluster =
+  def apply(
+      clusterSize: Int,
+      owner: User,
+      services: Seq[String] = Seq.empty,
+      shared: Boolean = false)(implicit info: Informer): Cluster =
     CommandLineManagedCluster(clusterSize, owner, services)
 }

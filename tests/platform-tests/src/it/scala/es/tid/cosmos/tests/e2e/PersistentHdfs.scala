@@ -46,8 +46,12 @@ class PersistentHdfs(user: User)(implicit info: Informer) extends MustVerb with 
     new File(localPath)
   }
 
-  def rm(targetPath: String, checkOutput: Boolean = true) {
+  def rm(targetPath: String, checkOutput: Boolean = true): Unit = {
     val output = (s"cosmos -c ${user.cosmosrcPath} rm $targetPath" !!).stripLineEnd
     if (checkOutput) output must be === s"$targetPath was successfully deleted"
+  }
+
+  def chmod(permissions: String, targetPath: String): Unit = {
+    s"cosmos -c ${user.cosmosrcPath} chmod $permissions $targetPath".! must be (0)
   }
 }

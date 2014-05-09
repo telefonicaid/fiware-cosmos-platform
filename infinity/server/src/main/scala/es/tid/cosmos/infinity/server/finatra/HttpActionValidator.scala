@@ -19,12 +19,11 @@ package es.tid.cosmos.infinity.server.finatra
 import scalaz.Validation
 
 import com.twitter.finagle.http.Request
-import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 import org.jboss.netty.handler.codec.http.HttpMethod
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.json.{ParseException, RequestMessageParser}
-import es.tid.cosmos.infinity.common.messages.{Request => ActionMessage}
+import es.tid.cosmos.infinity.common.messages.{Request => RequestMessage}
 import es.tid.cosmos.infinity.server.actions._
 import es.tid.cosmos.infinity.server.config.InfinityConfig
 
@@ -59,15 +58,17 @@ class HttpActionValidator(config: InfinityConfig, nameNode: NameNode) {
     val absolutePath = Path.absolute(path)
     try {
       jsonParser.parse(content) match {
-        case ActionMessage.CreateFile(name, perms, rep, bsize) =>
+        case RequestMessage.CreateFile(name, perms, rep, bsize) =>
           CreateFile(config, nameNode, absolutePath / name, perms, rep, bsize).success
-        case ActionMessage.ChangeOwner(owner) =>
+        case RequestMessage.CreateDirectory(name, perms) =>
+          CreateDirectory(nameNode, absolutePath / name, perms).success
+        case RequestMessage.ChangeOwner(owner) =>
           ChangeOwner(nameNode, absolutePath, owner).success
-        case ActionMessage.ChangeGroup(group) =>
+        case RequestMessage.ChangeGroup(group) =>
           ChangeGroup(nameNode, absolutePath, group).success
-        case ActionMessage.ChangePermissions(permissions) =>
+        case RequestMessage.ChangePermissions(permissions) =>
           ChangePermissions(nameNode, absolutePath, permissions).success
-        case ActionMessage.Move(name, from) =>
+        case RequestMessage.Move(name, from) =>
           MovePath(config, nameNode, Path.absolute(s"$path/$name"), from).success
       }
     } catch {

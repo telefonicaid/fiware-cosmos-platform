@@ -16,12 +16,12 @@
 
 package es.tid.cosmos.infinity.server.actions
 
+import java.io.{Closeable, InputStream}
 import scala.concurrent.Future
 
 import es.tid.cosmos.infinity.common.fs.{Path, PathMetadata}
 import es.tid.cosmos.infinity.common.permissions.UserProfile
 import es.tid.cosmos.infinity.server.urls.UrlMapper
-import java.io.InputStream
 
 /** An action performed on a Infinity path. */
 trait Action {
@@ -62,6 +62,7 @@ object Action {
 
   /** Indicates that the action cannot be performed for that user on that path */
   case class OperationNotAllowed(username: String, path: Path) extends Result
-
-  case class ContentFound(stream: InputStream, readUpTo: Long) extends Result
+  /** A file content response with the input stream to read from and the resources to release */
+  case class ContentFound(
+      stream: InputStream, readUpTo: Long, closeables: Seq[Closeable]) extends Result
 }

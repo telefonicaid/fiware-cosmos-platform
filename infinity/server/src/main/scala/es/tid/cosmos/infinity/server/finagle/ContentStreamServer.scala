@@ -16,51 +16,49 @@
 
 package es.tid.cosmos.infinity.server.finagle
 
-import com.twitter.concurrent.Broker
-import com.twitter.finagle.builder.{Server, ServerBuilder}
-import com.twitter.finagle.{Filter, Service}
-import com.twitter.finagle.stream.{Stream, StreamResponse, EOF}
-import com.twitter.util.Future
-import java.net.{URI, InetSocketAddress}
-import org.jboss.netty.buffer.ChannelBuffer
-import org.jboss.netty.buffer.ChannelBuffers.copiedBuffer
-import org.jboss.netty.handler.codec.http._
-import java.io.{File, FileInputStream, InputStream}
-import scala.util.matching.Regex
-import scala.Some
-import com.twitter.finagle.http.{Request => FinagleRequest}
+import java.net.InetSocketAddress
 
-/**
- * TODO: Insert description here
- *
- * @author adamos
- */
-class ContentStreamServer(port: Int, basePath: Regex) {
+import com.twitter.finagle.{Service, Filter}
+import com.twitter.finagle.builder.{Server, ServerBuilder}
+import com.twitter.finagle.http.{Request => FinagleRequest}
+import com.twitter.finagle.stream.{Stream, StreamResponse}
+import org.jboss.netty.handler.codec.http.HttpRequest
+
+import es.tid.cosmos.infinity.server.finatra.FinatraUrlMapper
+import es.tid.cosmos.infinity.server.config.InfinityContentServerConfig
+import es.tid.cosmos.infinity.server.authentication.AuthenticationService
+import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
+
+/** Finagle-based content server that makes use of [[StreamResponse]] to allow serving content
+  * in streams via chunks, something not currently supported with Finatra.
+  *
+  * @param clientFactory the DFSClient factory for accessing the underlying file system
+  * @param config        the server configuration
+  * @param authService   the authentication service
+  */
+class ContentStreamServer(
+    clientFactory: DfsClientFactory,
+    config: InfinityContentServerConfig,
+    authService: AuthenticationService) {
 
   private var server: Option[Server] = None
 
-  private[this] val nettyToFinagle =
+  private val urlMapper = new FinatraUrlMapper(config)
+
+  private val nettyToFinagle =
     Filter.mk[HttpRequest, StreamResponse, FinagleRequest, StreamResponse] { (req, service) =>
       service(FinagleRequest(req))
     }
 
-  private[this] lazy val service = {
-    val contentService = new Service[FinagleRequest, StreamResponse] {
-      def apply(request: FinagleRequest) = Future {
-        val path = new URI(request.getUri).getPath
-        val method = request.getMethod
-        (method, path) match {
-          case (HttpMethod.GET, basePath(subPath)) => getContent(subPath, responseHeader(request))
-        }
-      }
-    }
+  private lazy val service: Service[HttpRequest, StreamResponse] = {
+    val contentService = new ContentStreamRoutes(config, authService, clientFactory, urlMapper)
     nettyToFinagle andThen contentService
   }
 
   def start(): Unit = {
     server = Some(ServerBuilder()
       .codec(Stream())
-      .bindTo(new InetSocketAddress(port))
+      .bindTo(new InetSocketAddress(config.contentServerUrl.getPort))
       .name("infinity_content_server")
       .build(service))
   }
@@ -68,51 +66,4 @@ class ContentStreamServer(port: Int, basePath: Regex) {
   def stop(): Unit = {
     server.map(_.close())
   }
-
-  private def getContent(path: String, responseHeader: HttpResponse): StreamResponse = {
-    println("processing path " + path)
-//    GetContent(null, null, null).apply()
-    val in: InputStream = new FileInputStream(new File(s"/Users/adamos/dev/workspaces/cosmos/cosmos-platform/infinity/server/src/main/scala/es/tid/cosmos/infinity/server/finagle/$path"))
-    new InputStreamResponse(in, responseHeader)
-  }
-
-  private def responseHeader(request: HttpRequest): HttpResponse =
-    new DefaultHttpResponse(request.getProtocolVersion, HttpResponseStatus.OK)
-
-}
-
-object Test {
-  def main(args: Array[String]) {
-    val server = new ContentStreamServer(8080, "/infinityfs/v1/content/(.*)".r)
-    server.start()
-  }
-}
-
-class InputStreamResponse(in: InputStream, header: HttpResponse) extends StreamResponse {
-  private val msgs = new Broker[ChannelBuffer]
-  private  val errors = new Broker[Throwable]
-
-  override val httpResponse = header
-
-  override def messages = msgs.recv
-
-  override def error = errors.recv
-
-  override def release() = {
-    println("RELEASE")
-    messages foreach { b => println(b.getChar(0))}
-    error foreach { e => println(e.getMessage)}
-  }
-
-  private def fromStream(): Unit = Future {
-    Thread.sleep(50)
-    val bufferSize = 16
-    val buffer = new Array[Byte](bufferSize)
-    val result = in.read(buffer, 0, bufferSize)
-    val m = copiedBuffer(buffer)
-    if (result > -1) msgs.send(m) andThen fromStream()
-    else errors.send(EOF).sync()
-  }
-
-  fromStream()
 }

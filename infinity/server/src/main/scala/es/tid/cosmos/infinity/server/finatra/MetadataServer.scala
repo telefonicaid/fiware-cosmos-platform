@@ -35,5 +35,5 @@ class MetadataServer(
 
   def start(): Unit = server.start()
 
-  def shutdown(): Unit = server.stop()
+  def stop(): Unit = server.stop()
 }

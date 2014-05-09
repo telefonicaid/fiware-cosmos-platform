@@ -25,18 +25,20 @@ import org.jboss.netty.handler.codec.http.HttpMethod
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.{GetContent, Action}
 import es.tid.cosmos.infinity.server.config.InfinityContentServerConfig
-import es.tid.cosmos.infinity.server.hadoop.DFSClientFactory
+import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 
-/**
- * TODO: Insert description here
- *
- */
-class HttpContentActionValidator(config: InfinityContentServerConfig, dfsClientFactory: DFSClientFactory) {
-  //TODO: Consider moving actions to metadata and content packages
-  // TODO: Extract common code between content and metadata plugin server and routes
+/** The validator for content actions.
+  *
+  * @param config           the content server configuration
+  * @param dfsClientFactory the DFS client factory that will be used to access the underlying
+  *                         file system
+  */
+class HttpContentActionValidator(
+    config: InfinityContentServerConfig,
+    dfsClientFactory: DfsClientFactory) {
+  //TODO: Consider moving actions, renderers and validators to metadata and content packages
   import scalaz.Scalaz._
 
-//  private val jsonParser = new RequestMessageParser()
   private val contentUriPrefix = s"""${config.contentServerUrl.getPath}(/[^\\?]*)(\\?.*)?""".r
 
   def apply(request: Request): Validation[RequestParsingException, Action] =
@@ -45,20 +47,15 @@ class HttpContentActionValidator(config: InfinityContentServerConfig, dfsClientF
       case uri => RequestParsingException.InvalidResourcePath(uri).failure
     }
 
-
   private def contentAction(path: String, request: Request) = {
     val absolutePath = Path.absolute(path)
     request.method match {
-      case HttpMethod.GET => {
-        extractGetContentParams(request) match {
-          case Success((offset, length)) => GetContent(dfsClientFactory, absolutePath, offset, length).success
-          case Failure(e) => RequestParsingException.InvalidRequestParams(Seq("offset", "length"), e).failure
-        }
+      case HttpMethod.GET =>  extractGetContentParams(request) match {
+        case Success((offset, length)) =>
+          GetContent(dfsClientFactory, absolutePath, offset, length).success
+        case Failure(e) =>
+          RequestParsingException.InvalidRequestParams(Seq("offset", "length"), e).failure
       }
-//      case HttpMethod.POST =>
-//        postMetadataAction(path, request)
-//      case HttpMethod.DELETE =>
-//        Delete(nameNode, absolutePath, request.getBooleanParam("recursive")).success
     }
   }
 
@@ -68,8 +65,11 @@ class HttpContentActionValidator(config: InfinityContentServerConfig, dfsClientF
       require(condition(n), s"$message. Found: $n")
       n
     }
-    val optionalOffset = Option(request.getParam("offset")) map (toValidLong(_, _ >= 0, s"offset cannot be negative"))
-    val optionalLength = Option(request.getParam("length")) map (toValidLong(_, _ > 0, s"length must be positive"))
+    val optionalOffset =
+      Option(request.getParam("offset")) map (toValidLong(_, _ >= 0, s"offset cannot be negative"))
+    val optionalLength =
+      Option(request.getParam("length")) map (toValidLong(_, _ > 0, s"length must be positive"))
+
     (optionalOffset, optionalLength)
   }
 }

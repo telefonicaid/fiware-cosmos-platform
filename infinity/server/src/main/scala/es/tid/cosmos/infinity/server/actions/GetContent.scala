@@ -19,37 +19,32 @@ package es.tid.cosmos.infinity.server.actions
 import scala.concurrent._
 import scala.math.min
 
-import org.apache.hadoop.hdfs.server.datanode.DataNode
-
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.Action.{ContentFound, Result, Context}
-import org.apache.hadoop.hdfs.DFSClient
-import org.apache.hadoop.conf.Configuration
-import java.net.URI
 import org.apache.hadoop.hdfs.client.HdfsDataInputStream
-import org.apache.hadoop.io.IOUtils
-import java.io.OutputStream
-import com.twitter.finagle.http.Response
-import org.jboss.netty.buffer.{ChannelBufferOutputStream, ChannelBuffers}
-import es.tid.cosmos.infinity.server.hadoop.DFSClientFactory
+import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 
-/**
- * TODO: Insert description here
- *
- */
-case class GetContent(dfsClientFactory: DFSClientFactory, on: Path, offset: Option[Long], length: Option[Long]) extends Action {
-  // TODO: Figure out where to do offset and length checking for positive numbers
+case class GetContent(
+    dfsClientFactory: DfsClientFactory,
+    on: Path,
+    offset: Option[Long],
+    length: Option[Long]) extends Action {
+
   import ExecutionContext.Implicits.global
+  import GetContent._
 
-  val actualOffset: Long = offset.getOrElse(0)
+  val actualOffset: Long = offset.getOrElse(NoOffset)
   val actualLength: Long = length.getOrElse(Long.MaxValue)
 
   override def apply(context: Context): Future[Result] = future {
-    dfsClientFactory.withNewClient { client =>
-      val in = new HdfsDataInputStream(client.open(on.toString))
-      in.seek(actualOffset)
-      val upTo = min(actualLength, in.getVisibleLength - actualOffset)
-      ContentFound(in, upTo)
-    }
+    val client = dfsClientFactory.newClient
+    val in = new HdfsDataInputStream(client.open(on.toString))
+    in.seek(actualOffset)
+    val readUpTo = min(actualLength, in.getVisibleLength - actualOffset)
+    ContentFound(in, readUpTo, Seq(in, client))
   }
+}
+
+object GetContent {
+  private val NoOffset = 0
 }

@@ -36,8 +36,6 @@ class MetadataRoutes(
   private val actionValidator = new HttpActionValidator(config, nameNode)
 
   get(s"$basePath/*") { request =>
-    val url = s"${request.host.getOrElse("")}/$basePath"
-    val path = getPath(request)
     val response = for {
       credentials <- HttpCredentialsValidator(request.remoteAddress, request)
       action <- actionValidator(request)

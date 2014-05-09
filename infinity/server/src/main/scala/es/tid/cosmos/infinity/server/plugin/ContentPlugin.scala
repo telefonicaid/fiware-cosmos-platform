@@ -22,9 +22,9 @@ import org.apache.hadoop.hdfs.server.datanode.DataNode
 import org.apache.hadoop.util.ServicePlugin
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationComponent
-import es.tid.cosmos.infinity.server.config.{InfinityContentServerConfig, InfinityConfig}
-import es.tid.cosmos.infinity.server.finatra.ContentServer
-import es.tid.cosmos.infinity.server.hadoop.DFSClientFactory
+import es.tid.cosmos.infinity.server.config.InfinityContentServerConfig
+import es.tid.cosmos.infinity.server.finagle.ContentStreamServer
+import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 
 /** Datanode plugin to serve Infinity file content */
 class ContentPlugin extends ServicePlugin with Configurable {
@@ -32,7 +32,7 @@ class ContentPlugin extends ServicePlugin with Configurable {
 
   private val log = LogFactory.getLog(classOf[ContentPlugin])
   private var hadoopConfOpt: Option[Configuration] = None
-  private var serverOpt: Option[ContentServer] = None
+  private var serverOpt: Option[ContentStreamServer] = None
 
   override def setConf(conf: Configuration): Unit = {
     hadoopConfOpt = Some(conf)
@@ -46,8 +46,8 @@ class ContentPlugin extends ServicePlugin with Configurable {
         log.info("Starting Infinity content server as a datanode plugin")
         val config = new InfinityContentServerConfig(
           PluginConfig.load(getConf, InfinityContentServerConfig.HadoopKeys: _*))
-        val server = new ContentServer(
-          dfsClientFactory = new DFSClientFactory(dataNode, config.nameNodeRPCUrl),
+        val server = new ContentStreamServer(
+          clientFactory = new DfsClientFactory(dataNode, config.nameNodeRPCUrl),
           config = config,
           authService = authentication)
         server.start()
@@ -62,7 +62,7 @@ class ContentPlugin extends ServicePlugin with Configurable {
 
     override def stop(): Unit = {
       log.info("Shutting down Infinity content plugin")
-      serverOpt.foreach(_.shutdown())
+      serverOpt.foreach(_.stop())
       serverOpt = None
     }
 

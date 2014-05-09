@@ -43,10 +43,6 @@ class InfinityConfig(config: Config) {
       .getOrElse(DefaultBasePath)
     port.map(new URL(protocol, hostname, _, basePath))
   }
-
-  private def mapOpt[T](f: => T): Option[T] = try { Some(f) } catch {
-    case _: ConfigException.Missing => None
-  }
 }
 
 object InfinityConfig {
@@ -54,9 +50,14 @@ object InfinityConfig {
   val DefaultBasePath: String = "/infinityfs/v1"
   val DefaultReplication: Short = 3
   val DefaultBlockSize: Long = 64l * 1024l * 1024l
+
+  def mapOpt[T](f: => T): Option[T] = try { Some(f) } catch {
+    case _: ConfigException.Missing => None
+  }
 }
 
 class InfinityContentServerConfig(config: Config) extends InfinityConfig(config) {
+  import InfinityConfig._
   import InfinityContentServerConfig._
 
   val contentServerUrl: URL = {
@@ -64,10 +65,16 @@ class InfinityContentServerConfig(config: Config) extends InfinityConfig(config)
     contentServerUrl(hostname).getOrElse(throw new IllegalArgumentException(
       s"Cannot initialize server because contentServer.$hostname configuration is missing."))
   }
-  val nameNodeRPCUrl: URL = UriUtil.replaceScheme(new URI(config.getString(NameNodeHdfsAddressKey)), "http").toURL
+  val nameNodeRPCUrl: URL = UriUtil.replaceScheme(
+    new URI(config.getString(NameNodeHdfsAddressKey)), "http").toURL
+
+  val chunkSize = mapOpt(config.getInt("content.chunkSize")).getOrElse(DefaultChunkSize)
 }
 
 object InfinityContentServerConfig {
   private val NameNodeHdfsAddressKey = "fs.defaultFS"
+  // 4096 is taken from Hadoop IOUtils.copy
+  val DefaultChunkSize = 4096
   val HadoopKeys = Seq(NameNodeHdfsAddressKey)
+
 }

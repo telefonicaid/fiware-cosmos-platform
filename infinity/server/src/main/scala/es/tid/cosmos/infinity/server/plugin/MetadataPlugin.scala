@@ -61,7 +61,7 @@ class MetadataPlugin extends ServicePlugin with Configurable {
 
   override def stop(): Unit = {
     log.info("Shutting down Infinity metadata plugin")
-    serverOpt.foreach(_.shutdown())
+    serverOpt.foreach(_.stop())
     serverOpt = None
   }
 

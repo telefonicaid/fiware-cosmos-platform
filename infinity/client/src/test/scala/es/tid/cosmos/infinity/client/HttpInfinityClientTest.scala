@@ -16,6 +16,7 @@ import java.util.Date
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
+import org.apache.log4j.BasicConfigurator
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.MustMatchers
@@ -28,6 +29,8 @@ import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 class HttpInfinityClientTest extends FlatSpec
     with MustMatchers with FutureMatchers with HttpInfinityClientBehavior with Eventually {
+
+  BasicConfigurator.configure()
 
   "Reading metadata" must behave like {
     canHandleCommonErrors(_.pathMetadata(somePath))

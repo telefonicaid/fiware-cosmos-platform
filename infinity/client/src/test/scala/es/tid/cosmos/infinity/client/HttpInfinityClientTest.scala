@@ -16,15 +16,21 @@ import java.util.Date
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
+import org.apache.log4j.BasicConfigurator
 import org.scalatest.FlatSpec
+import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.common.scalatest.RandomTcpPort
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.infinity.client.mock.MockInfinityServer
 import es.tid.cosmos.infinity.common.fs.{Path, RootPath, SubPath}
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 class HttpInfinityClientTest extends FlatSpec
-    with MustMatchers with FutureMatchers with HttpInfinityClientBehavior {
+    with MustMatchers with FutureMatchers with HttpInfinityClientBehavior with Eventually {
+
+  BasicConfigurator.configure()
 
   "Reading metadata" must behave like {
     canHandleCommonErrors(_.pathMetadata(somePath))
@@ -225,11 +231,11 @@ class HttpInfinityClientTest extends FlatSpec
       infinity.givenExistingPaths(parent, file)
       infinity.givenExistingContent(file, "aContent")
       infinity.withServer {
-        val writer = Await.result(client.append(aFile, bufferSize), timeOut)
-        writeString(writer, " appended")
         contentOf(client.read(aFile, None, None)) must be ("aContent")
-        writer.close()
-        contentOf(client.read(aFile, None, None)) must be ("aContent appended")
+        writeString(client.append(aFile, bufferSize), " appended")
+        eventually {
+          contentOf(client.read(aFile, None, None)) must be ("aContent appended")
+        }
       }
     }
   }
@@ -244,11 +250,11 @@ class HttpInfinityClientTest extends FlatSpec
       infinity.givenExistingPaths(parent, file)
       infinity.givenExistingContent(file, "aContent")
       infinity.withServer {
-        val writer = Await.result(client.overwrite(aFile, bufferSize), timeOut)
-        writeString(writer, "newContent")
         contentOf(client.read(aFile, None, None)) must be ("aContent")
-        writer.close()
-        contentOf(client.read(aFile, None, None)) must be ("newContent")
+        writeString(client.overwrite(aFile, bufferSize), "newContent")
+        eventually {
+          contentOf(client.read(aFile, None, None)) must be ("newContent")
+        }
       }
     }
   }
@@ -261,8 +267,8 @@ class HttpInfinityClientTest extends FlatSpec
   val bufferSize = 1024
 
   trait Fixture {
-    val infinity = new MockInfinityServer(metadataPort = 8898, defaultDate = aDate)
-    val dataFactory = infinity.DataFactory
+    val infinity = new MockInfinityServer(metadataPort = RandomTcpPort.choose(), defaultDate = aDate)
+    val dataFactory = infinity.TestDataFactory
     val client = new HttpInfinityClient(infinity.metadataEndpoint)
     val timeOut = 10.seconds
 
@@ -271,13 +277,15 @@ class HttpInfinityClientTest extends FlatSpec
       val contentStream =
         Stream.continually(new BufferedReader(new InputStreamReader(reader)).readLine)
           .takeWhile(_ != null)
+      reader.close()
       contentStream.toList.mkString
     }
 
-    def writeString(output: OutputStream, content: String): Unit = {
+    def writeString(futureOutput: Future[OutputStream], content: String): Unit = {
+      val output = Await.result(futureOutput, timeOut)
       val writer = new OutputStreamWriter(output)
       writer.write(content)
-      writer.flush()
+      writer.close()
     }
   }
 }

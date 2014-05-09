@@ -35,8 +35,7 @@ class UserProfileTest extends FlatSpec with MustMatchers {
     accessFrom = None,
     superuser = false
   )
-  val userWithWhitelist =
-    userWithoutWhitelist.copy(accessFrom = Some(Set("10.95.236.25")))
+  val userWithWhitelist = userWithoutWhitelist.copy(accessFrom = Some(Set("10.95.236.25")))
 
   "A user profile with no access whitelist" must "be accessible from anywhere" in {
     userWithoutWhitelist.accessibleFrom(allowedHost) must be (true)

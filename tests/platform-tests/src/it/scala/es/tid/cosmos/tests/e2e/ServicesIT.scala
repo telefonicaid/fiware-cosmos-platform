@@ -43,6 +43,11 @@ class ServicesIT extends E2ETestBase {
       cluster.sshCommand("bash ./mapreduce2-test.sh")
     }
 
+    ignore(s"The user can use MapReduce2 on the cluster with Infinity") {
+      cluster.scp(resource("/mapreduce2-infinity-test.sh"))
+      cluster.sshCommand("bash ./mapreduce2-test.sh")
+    }
+
     scenario(s"The user can use Hive on the cluster") {
       cluster.scp(resource("/hive-test.sh"))
       cluster.sshCommand("bash ./hive-test.sh")

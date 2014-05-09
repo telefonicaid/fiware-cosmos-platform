@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
@@ -13,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+set -e
 
-cosmosMaster="andromeda01.hi.inet"
-apiUrl="https://"${cosmosMaster}
-realm="horizon"
-realmSecret="horizon!"
-restTimeout=10
+echo "Test file" > test.txt
+hdfs dfs -get infinity:///$USER/onlyUser.txt .
+hdfs dfs -get infinity:///$USER/onlyGroup.txt .
+hdfs dfs -get infinity:///$USER/onlyEveryone.txt .

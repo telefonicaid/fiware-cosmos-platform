@@ -17,37 +17,14 @@
 package es.tid.cosmos.infinity.server.actions
 
 import scala.concurrent._
-import scala.concurrent.Future.{successful => success}
 
-import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
-
-import es.tid.cosmos.common.BooleanFutures._
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.server.actions.Action.OperationNotAllowed
 
-case class ChangeGroup(nameNode: NamenodeProtocols, on: Path, group: String) extends Action {
+case class ChangeGroup(nameNode: NameNode, on: Path, group: String) extends Action {
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] = {
-    val metadata = MetadataUtil(nameNode)
-    lazy val isUserPathOwner_> : Future[Boolean] =
-      metadata.forPath(context, on).map(_.owner == context.user.username)
-
-    val isAllowed_> : Future[Boolean] =
-      success(context.user.superuser) or
-        (success(context.user.groups.contains(group)) and isUserPathOwner_>)
-
-    isAllowed_> flatMap { allowed =>
-      if (allowed) {
-        nameNode.setOwner(on.toString, ChangeGroup.SameOwner, group)
-        metadata.action(context, on)
-      }
-      else
-        success(OperationNotAllowed(context.user.username, on))
-    }
-  }
-}
-
-object ChangeGroup {
-  private val SameOwner = null
+  override def apply(context: Action.Context): Future[Action.Result] = for {
+    _ <- nameNode.setGroup(on, group)
+    metadata <- nameNode.pathMetadata(on)
+  } yield Action.GroupSet(metadata)
 }

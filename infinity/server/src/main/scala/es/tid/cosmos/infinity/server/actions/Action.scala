@@ -41,24 +41,24 @@ object Action {
     */
   sealed trait Result
 
-  /** A delete operation was successful */
-  case object DeleteOK extends Result
+  /** A file or directory metadata was successfully retrieved. */
+  case class Retrieved(metadata: PathMetadata) extends Result
 
-  /** A delete operation was unsuccessful */
-  case object DeleteUnsuccessful extends Result
+  /** A file or directory was successfully created. */
+  case class Created(metadata: PathMetadata) extends Result
 
-  /** A move operation was unsuccessful */
-  case object MoveUnsuccessful extends Result
+  /** A file or directory was successfully moved. */
+  case class Moved(metadata: PathMetadata) extends Result
 
-  /** A file or directory metadata object resulting from an action. */
-  case class PathMetadataResult(metadata: PathMetadata) extends Result
+  /** A file or directory was successfully deleted. */
+  case class Deleted(metadata: PathMetadata) extends Result
 
-  /** A directory metadata object resulting from an action. */
-  case class DirectoryMetadataResult(metadata: PathMetadata) extends Result
+  /** A file or directory owner was successfully set. */
+  case class OwnerSet(metadata: PathMetadata) extends Result
 
-  /** A result of an action indicating that there is no such path. */
-  case class NoSuchPath(path: Path) extends Result
+  /** A file or directory group was successfully set. */
+  case class GroupSet(metadata: PathMetadata) extends Result
 
-  /** Indicates that the action cannot be performed for that user on that path */
-  case class OperationNotAllowed(username: String, path: Path) extends Result
+  /** A file or directory permissions were successfully set. */
+  case class PermissionsSet(metadata: PathMetadata) extends Result
 }

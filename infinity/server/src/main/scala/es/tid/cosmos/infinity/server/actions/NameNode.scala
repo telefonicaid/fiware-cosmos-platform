@@ -52,6 +52,7 @@ trait NameNode {
     *           <li>NameNodeException.NoSuchPath if some of the parents in the path doesn't exist
     *           <li>NameNodeException.PathAlreadyExists if there is already a file or directory on
     *               the given path
+    *           <li>NameNodeException.ParentNotDirectory if the parent path is not a directory
     *           <li>NameNodeException.Unauthorized if the current user is not authorized to do the
     *           action
     *           <li>NameNodeException.IOError if there is an unexpected IO error

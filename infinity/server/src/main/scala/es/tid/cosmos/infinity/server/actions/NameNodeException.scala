@@ -31,12 +31,6 @@ object NameNodeException {
   case class PathAlreadyExists(path: Path, cause: Throwable = null) extends NameNodeException(
     s"path $path already exists", cause)
 
-  case class NotFile(path: Path, cause: Throwable = null) extends NameNodeException(
-    s"resource in $path is not a file", cause)
-
-  case class NotDirectory(path: Path, cause: Throwable = null) extends NameNodeException(
-    s"resource in $path is not a directory", cause)
-
   case class ParentNotDirectory(path: Path, cause: Throwable = null) extends NameNodeException(
     s"the parent of resource in $path is not a directory", cause)
 

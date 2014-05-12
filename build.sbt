@@ -11,7 +11,7 @@ addCommandAlias("run-local-it", ";it:compile ;it:test-only * -- -l \"HasExternal
 
 resolvers in ThisBuild ++= Seq(
     DefaultMavenRepository,
-    "Cosmos Nexus Repository" at "http://cosmos10/nexus/content/groups/public/",
+    "Cosmos Nexus Repository" at "http://cosmos10.hi.inet/nexus/content/groups/public/",
     "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
     "Twitter" at "http://maven.twttr.com",
     Resolver.url("Play", url("http://download.playframework.org/ivy-releases/"))(Resolver.ivyStylePatterns)

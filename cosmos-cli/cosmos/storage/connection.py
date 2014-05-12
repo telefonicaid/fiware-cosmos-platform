@@ -20,7 +20,7 @@ from cosmos.common.cosmos_requests import CosmosRequests
 from cosmos.common.exceptions import OperationError, ResponseError
 from cosmos.common.routes import Routes
 from cosmos.common.version import assert_supported_version
-from cosmos.storage.webhdfs import WebHdfsClient
+from cosmos.storage.infinity import InfinityClient
 
 
 def connect(api_key, api_secret, api_url):
@@ -37,15 +37,15 @@ def connect(api_key, api_secret, api_url):
         raise ResponseError("Cannot get WebHDFS details",
                             response)
     details = response.json()
-    client = WebHdfsClient(details["location"], details["user"], api_key, api_secret)
+    client = InfinityClient(details["location"], details["user"], api_key, api_secret)
     return StorageConnection(client)
 
 
 class StorageConnection(object):
     """A connection with the persistent storage service"""
 
-    def __init__(self, webhdfs_client):
-        self.__client = webhdfs_client
+    def __init__(self, infinity_client):
+        self.__client = infinity_client
 
     def upload_file(self, local_file, remote_path):
         """Upload an open file to the persistent storage.

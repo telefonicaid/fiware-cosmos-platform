@@ -24,7 +24,7 @@ from cosmos.common.exceptions import (OperationError, ResponseError,
                                       UnsupportedApiVersionException)
 from cosmos.common.tests.util import mock_response
 from cosmos.storage.connection import connect, StorageConnection
-from cosmos.storage.webhdfs import DirectoryListing
+from cosmos.storage.infinity import DirectoryListing
 
 
 API_KEY='AL2jHQ25a1I3Bb4ZCUzs'
@@ -36,13 +36,13 @@ class ConnectionTest(unittest.TestCase):
 
     def test_connect(self):
         response = mock_response(json={
-            'location': 'webhdfs://host:8080/',
+            'location': 'infinity://host:8080/',
             'user': 'username'
         })
         with patch('requests.get', MagicMock(return_value=response)):
             result = connect(API_KEY, API_SECRET, API_URL)
             client = result._StorageConnection__client
-            self.assertEquals(client.webhdfs_uri, 'webhdfs://host:8080/')
+            self.assertEquals(client.infinity_uri, 'infinity://host:8080/')
             self.assertEquals(client.username, 'username')
 
     def test_connect_with_incompatible_api_version(self):

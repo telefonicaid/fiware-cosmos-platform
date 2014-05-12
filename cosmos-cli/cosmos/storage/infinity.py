@@ -14,14 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging as log
 from urlparse import urlparse, urljoin
 
+import json
 import requests
 
-from cosmos.common.exceptions import (OperationError, ResponseError,
-                                      UnsupportedApiVersionException)
-from cosmos.common.routes import Routes
+from cosmos.common.exceptions import (OperationError, ResponseError)
 
 
 SUPPORTED_VERSIONS = [1]
@@ -31,7 +29,8 @@ BUFFER_SIZE = 4096
 class DirectoryListing(object):
     """Returned when an existing or non-existing directory is listed"""
 
-    def __init__(self, statuses=[], exists=True):
+    def __init__(self, statuses=None, exists=True):
+        if not statuses: statuses = []
         self.statuses = statuses
         self.exists = exists
 
@@ -47,67 +46,66 @@ class DirectoryListing(object):
     def path_type(self):
         """Checks the type of the listed path returning either 'DIRECTORY',
         'FILE' or 'NONE'."""
-        if not self.exists or self.statuses is None:
+        if not self.exists or len(self.statuses) == 0:
             return 'NONE'
-        if len(self.statuses) == 1 and self.statuses[0]["pathSuffix"] == '':
+        if len(self.statuses) == 1:
             return self.statuses[0]["type"]
         return 'DIRECTORY'
 
 
-class WebHdfsClient(object):
+class InfinityClient(object):
 
-    def __init__(self, webhdfs_uri, username, api_key, api_secret, client=requests):
-        self.webhdfs_uri = webhdfs_uri
+    def __init__(self, infinity_uri, username, api_key, api_secret, client=requests):
+        self.infinity_uri = infinity_uri
         self.username = username
         self.api_key = api_key
         self.api_secret = api_secret
         self.client = client
-
-    def opParams(self, operation, **kwargs):
-        return dict(kwargs.items() + [
-            ('op', operation),
-            ('user.name', self.username),
-        ])
+        self.metadata = 'metadata'
+        self.content = 'content'
 
     def put_file(self, local_file, remote_path):
-        datanode_url = self.__request_upload_location(remote_path)
-        response = self.client.put(datanode_url, data=local_file)
+        (base_path, filename) = str(remote_path).rsplit('/', 1)
+        create_file_body = json.dumps({
+            "action": "mkfile",
+            "name": filename
+        })
+        response = self.make_call(self.client.post, base_path, self.metadata,
+                                  data=create_file_body)
         if response.status_code != 201:
-            raise ResponseError('Cannot upload file to %s' % datanode_url,
+            # TODO: Add better error messages
+            error_messages = {
+                404: 'The parent directory does not exist',
+                409: 'There is a directory entry with the given file name',
+                422: 'The parent path where the new file or directory is to be created is not a directory'
+            }
+            error_message = error_messages.get(response.status_code,
+                                               'Unspecified error')
+            raise ResponseError('Cannot create file %s: %s' % (remote_path, error_message),
                                 response)
-
-    def __request_upload_location(self, remote_path):
-        response = self.make_call(self.client.put, remote_path,
-                                  allow_redirects=False,
-                                  params=self.opParams('CREATE'))
-        if response.status_code == 201:
-            raise OperationError('WebHDFS uploads are not supported on '
-                                 '1-machine clusters: an empty file has been '
-                                 'created. See #862.')
-        if self.__is_replication_exception(response):
-            raise OperationError('Cannot replicate file %s blocks' %
-                                 remote_path)
-        if response.status_code != 307:
-            raise ResponseError('Not redirected by the WebHDFS frontend',
+        content_url = response.json()["content"]
+        response = self.client.put(content_url, data=local_file,
+                                   auth=(self.api_key, self.api_secret))
+        if response.status_code != 204:
+            raise ResponseError('Cannot upload file to %s' % content_url,
                                 response)
-        return response.headers['Location']
 
     def list_path(self, path):
         """Lists a directory or check a file status. Returns an instance
         of DirectoryListing."""
-        r = self.make_call(self.client.get, path,
-                           params=self.opParams('LISTSTATUS'))
+        r = self.make_call(self.client.get, path, self.metadata)
         if r.status_code == 200:
+            json = r.json()
             return DirectoryListing(
-                statuses=r.json()["FileStatuses"]["FileStatus"])
+                statuses=json["content"])
         elif r.status_code == 404:
             return DirectoryListing(exists=False)
         else:
             raise ResponseError('Cannot list directory %s' % path, r)
 
     def get_file(self, remote_path, out_file):
-        response = self.make_call(self.client.get, remote_path, stream=True,
-                                  params=self.opParams('OPEN'))
+        response = self.make_call(self.client.get, remote_path, self.content,
+                                  stream=True)
         if response.status_code == 404:
             raise ResponseError('File %s does not exist' % remote_path,
                                 response)
@@ -116,37 +114,27 @@ class WebHdfsClient(object):
                                 response)
         buf = response.raw.read(BUFFER_SIZE)
         written = 0
-        while (len(buf) > 0):
+        while len(buf) > 0:
             written += len(buf)
             out_file.write(buf)
             buf = response.raw.read(BUFFER_SIZE)
         return written
 
     def delete_path(self, path, recursive=False):
-        r = self.make_call(self.client.delete, path, params=self.opParams(
-            'DELETE', recursive=str(recursive).lower()))
-        if r.status_code != 200:
+        r = self.make_call(self.client.delete, path, self.metadata,
+                           params=dict(recursive=str(recursive).lower()))
+        if r.status_code != 204:
             raise ResponseError('Cannot delete path %s' % path, r)
-        return r.json()["boolean"]
 
-    def make_call(self, method, path, **kwargs):
-        """Translates a simple path to the related WebHDFS HTTP URL."""
+    def make_call(self, method, path, type, **kwargs):
+        """Translates a simple path to the related Infinity HTTP URL."""
         if path.startswith("/"):
             rel_path = path[1:]
         else:
             rel_path = path
         processedPath = urljoin(
-            'http://' + urlparse(self.webhdfs_uri).netloc,
-            '/webhdfs/v1/user/%s/%s' % (self.username, rel_path))
+            'http://' + urlparse(self.infinity_uri).netloc,
+            '/infinityfs/v1/%s/user/%s/%s' % (type, self.username, rel_path))
         return method(processedPath,
                       auth=(self.api_key, self.api_secret), **kwargs)
 
-    def __is_replication_exception(self, response):
-        if response.status_code != 500:
-            return False
-        try:
-            exception = response.json()
-        except ValueError:
-            return False
-        return (exception.get('RemoteException', {}).get('exception') ==
-                'ArrayIndexOutOfBoundsException')

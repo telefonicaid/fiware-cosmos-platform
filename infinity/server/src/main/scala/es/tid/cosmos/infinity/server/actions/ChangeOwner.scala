@@ -24,8 +24,10 @@ case class ChangeOwner(nameNode: NameNode, on: Path, owner: String) extends Acti
 
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] = for {
-    _ <- nameNode.setOwner(on, owner)
-    metadata <- nameNode.pathMetadata(on)
-  } yield Action.OwnerSet(metadata)
+  override def apply(context: Action.Context): Future[Action.Result] = nameNode.as(context.user) {
+    for {
+      _ <- nameNode.setOwner(on, owner)
+      metadata <- nameNode.pathMetadata(on)
+    } yield Action.OwnerSet(metadata)
+  }
 }

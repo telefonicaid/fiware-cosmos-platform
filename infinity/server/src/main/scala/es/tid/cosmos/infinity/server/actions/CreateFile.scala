@@ -32,9 +32,11 @@ case class CreateFile(
 
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] = for {
-    _ <- nameNode.createFile(
-      on, context.user.username, context.user.groups.head, permissions, replication, blockSize)
-    metadata <- nameNode.pathMetadata(on)
-  } yield Action.Created(metadata)
+  override def apply(context: Action.Context): Future[Action.Result] = nameNode.as(context.user) {
+    for {
+      _ <- nameNode.createFile(
+        on, context.user.username, context.user.groups.head, permissions, replication, blockSize)
+      metadata <- nameNode.pathMetadata(on)
+    } yield Action.Created(metadata)
+  }
 }

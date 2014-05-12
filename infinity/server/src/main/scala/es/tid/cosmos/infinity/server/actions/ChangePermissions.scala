@@ -26,8 +26,10 @@ case class ChangePermissions(
 
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] = for {
-    _ <- nameNode.setPermissions(on, permissions)
-    metadata <- nameNode.pathMetadata(on)
-  } yield Action.PermissionsSet(metadata)
+  override def apply(context: Action.Context): Future[Action.Result] = nameNode.as(context.user) {
+    for {
+      _ <- nameNode.setPermissions(on, permissions)
+      metadata <- nameNode.pathMetadata(on)
+    } yield Action.PermissionsSet(metadata)
+  }
 }

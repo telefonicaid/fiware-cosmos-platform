@@ -20,6 +20,6 @@ import doctest
 
 def test_suite():
     return unittest.TestSuite([
-        doctest.DocTestSuite("cosmos.storage.webhdfs"),
+        doctest.DocTestSuite("cosmos.storage.infinity"),
     ])
 

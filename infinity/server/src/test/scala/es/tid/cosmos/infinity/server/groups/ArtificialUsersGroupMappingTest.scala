@@ -22,8 +22,8 @@ import org.scalatest.matchers.MustMatchers
 class ArtificialUsersGroupMappingTest extends FlatSpec with MustMatchers {
 
   "The ArtificialUsersGroupMappingTest" must "return artificial usernames" in {
-    ArtificialUsersGroupMapping.createUserFromGroups(Seq("foo")) must startWith
-      (ArtificialUsersGroupMapping.artificialUserMarker)
+    ArtificialUsersGroupMapping.createUserFromGroups(Seq("foo")) must startWith (
+      ArtificialUsersGroupMapping.artificialUserMarker)
   }
 
   it must "retrieve the set groups" in {

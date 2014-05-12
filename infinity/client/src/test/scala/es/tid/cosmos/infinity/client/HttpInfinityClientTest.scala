@@ -21,6 +21,7 @@ import org.apache.log4j.BasicConfigurator
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.MustMatchers
+import org.scalatest.time.{Millis, Seconds, Span}
 
 import es.tid.cosmos.common.scalatest.RandomTcpPort
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
@@ -255,6 +256,11 @@ class HttpInfinityClientTest extends FlatSpec
       }
     }
   }
+
+  override implicit def patienceConfig = PatienceConfig(
+    timeout = Span(10, Seconds),
+    interval = Span(500, Millis)
+  )
 
   val somePath = RootPath / "some" / "path"
   val aFile = somePath / "aFile"

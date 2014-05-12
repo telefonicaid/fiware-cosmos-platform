@@ -18,11 +18,14 @@ class yum::thirdparty::puppetlabs(
     $repo_server = $yum::params::yum_puppet,
     $repo_deps = $yum::params::yum_puppet_deps) {
 
+  include cosmos::params
+
   yumrepo { 'puppetlabs-products':
     descr    => "Puppet Labs Products - $operatingsystemmajrelease",
     enabled  => '1',
     gpgcheck => '0',
     baseurl  => $repo_server,
+    proxy    => $cosmos::params::proxy
   }
 
   yumrepo { 'puppetlabs-deps':
@@ -30,5 +33,6 @@ class yum::thirdparty::puppetlabs(
     enabled  => '1',
     gpgcheck => '0',
     baseurl  => $repo_deps,
+    proxy    => $cosmos::params::proxy
   }
 }

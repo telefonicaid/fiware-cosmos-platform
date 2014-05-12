@@ -29,6 +29,7 @@ class ambari::repos inherits ambari::params {
       enabled  => 1,
       gpgcheck => 0,
       metadata_expire => 900,
+      proxy    => $cosmos::params::proxy,
     }
   } else {
     yumrepo { 'ambari':
@@ -37,6 +38,7 @@ class ambari::repos inherits ambari::params {
       enabled  => 1,
       gpgcheck => 0,
       metadata_expire => 900,
+      proxy    => $cosmos::params::proxy
     }
   }
 
@@ -46,5 +48,6 @@ class ambari::repos inherits ambari::params {
     enabled  => 1,
     gpgcheck => 0,
     priority => 1,
+    proxy    => $cosmos::params::proxy
   }
 }

@@ -1,0 +1,78 @@
+#
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+ambari::params::repo_url: 'http://cosmos10.hi.inet/nexus/service/local/yum/repos/snapshots/development'
+ambari::params::hdp_stack_repo_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/hortonworks/HDP-2.0.6.0/'
+ambari::params::enable_repo_mirroring: true
+ambari::params::cosmos_stack_repo_url: 'http://%{cosmos::params::master_ip}:%{cosmos::params::master_repo_port}/'
+ambari::params::jdk_url: 'http://public-repo-1.hortonworks.com/ARTIFACTS/jdk-6u31-linux-x64.bin'
+ambari::params::jce_url: 'http://public-repo-1.hortonworks.com/ARTIFACTS/jce_policy-6.zip'
+ambari::params::hdp_utils_repo_url: 'http://repos.hi.inet/redhat/ambari-x86_64/RPMS.hdp-utils-1.1.0.15/'
+timezone::region: 'Europe'
+timezone::locality: 'Madrid'
+yum::params::yum_epel: 'http://repos.hi.inet/centos/epel%{operatingsystemmajrelease}-$basearch/RPMS.all/'
+yum::params::yum_centos: 'http://repos.hi.inet/redhat/centos%{operatingsystemmajrelease}-$basearch/RPMS.all/'
+yum::params::yum_centos_updates: 'http://repos.hi.inet/redhat/centos%{operatingsystemmajrelease}-$basearch/RPMS.updates'
+yum::params::yum_redhat: 'http://repos.hi.inet/redhat/rhel%{operatingsystemmajrelease}s-$basearch/RPMS.all/'
+yum::params::yum_redhat_optional: 'http://repos.hi.inet/redhat/rhel%{operatingsystemmajrelease}s-$basearch/RPMS.optional/'
+yum::params::yum_puppet: 'http://repos.hi.inet/redhat/puppet-el%{operatingsystemmajrelease}-$basearch/RPMS.products/'
+yum::params::yum_puppet_deps: 'http://repos.hi.inet/redhat/puppet-el%{operatingsystemmajrelease}-$basearch/RPMS.dependencies/'
+cosmos::params::cosmos_repo_deps_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps'
+cosmos::openvz::images::base_image_url: 'http://cosmos10.hi.inet/develenv/repos/ovz-templates'
+cosmos::openvz::images::image_name: 'centos-6-cosmos.HDP.2.0.6-20140123-x86_64.tar.gz'
+cosmos::params::cosmos_subnet: '10.0.0.0'
+cosmos::params::cosmos_netmask: '255.255.255.0'
+cosmos::params::cosmos_api_mode: 'dev'
+cosmos::params::cosmos_ssl_cert_source: "puppet:///modules/cosmos/environments/%{environment}/certs/%{hostname}_cer.pem"
+cosmos::params::cosmos_ssl_key_source: "puppet:///modules/cosmos/environments/%{environment}/certs/%{hostname}_key.pem"
+cosmos::slave::ct_gateway: '10.0.0.1'
+cosmos::slave::gateway: ''
+cosmos::slave::ct_hostname_is_nat_ip: true
+cosmos::slave::ct_routes: '10.95.0.0/16 via 10.0.0.2'
+cosmos::slave::host_key_priv_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"
+cosmos::slave::ct_key_priv_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_ct_key"
+cosmos::params::domain: '.vagrant'
+cosmos::params::master_ip: '10.0.0.101'
+cosmos::params::master_repo_port: '8081'
+cosmos::params::master_hostname: 'master'
+cosmos::params::master_use_ip_as_hostname: true
+cosmos::params::pdihub_client_id: 'e86cb3c9ffd8bd51f9ec'
+cosmos::params::pdihub_client_secret: '843e55ffe646e223f75fe1f6a3d6f880c3c507ce'
+cosmos::params::proxy: 'http://10.95.169.242:6666'
+cosmos::params::horizon_password: 'horizon'
+cosmos::params::iface_bootproto: 'dhcp'
+cosmos::params::overwrite_hosts_file: false
+cosmos::params::ssl_authority: 'TID'
+cosmos::params::ssl_cert_location: 'https://issuecatid.hi.inet/certsrv'
+cosmos::params::ssl_support_name: 'EPG'
+cosmos::params::ssl_support_email: 'epg@tid.es'
+cosmos::params::ambari_mr_app_master_memory: 200
+cosmos::params::ambari_map_task_memory: 600
+cosmos::params::ambari_map_heap_memory: 400
+cosmos::params::ambari_reduce_task_memory: 600
+cosmos::params::ambari_reduce_heap_memory: 400
+cosmos::params::ambari_yarn_total_memory: 600
+cosmos::params::ambari_yarn_container_min_memory: 10
+cosmos::params::ambari_yarn_virtual_physical_memory_ratio: 2.1
+cosmos::params::infinity_secret: 'inf1nity_secret'
+cosmos::params::infinity_proxy_ssl_cert_source: "cosmos/environments/%{environment}/certs/infinity-proxy_cer.pem.erb"
+cosmos::params::infinity_proxy_ssl_key_source: "cosmos/environments/%{environment}/certs/infinity-proxy_key.pem.erb"
+cosmos::openvz::network::host_iface: 'eth0'
+slave_hosts:
+    - 'compute1'
+    - 'compute2'
+    - 'store1'
+    - 'store2'

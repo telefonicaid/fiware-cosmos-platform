@@ -4,7 +4,7 @@
 # are loaded after the firewall rules are applied. Options for the helpers are
 # stored in /etc/modprobe.conf.
 # Cosmos note: Added modules to support OpenVZ container firewall
-IPTABLES_MODULES="ip_conntrack ipt_LOG ipt_conntrack ipt_state ipt_comment xt_state"
+IPTABLES_MODULES="ip_conntrack ipt_LOG ipt_conntrack ipt_state ipt_comment xt_state iptable_nat iptable_filter"
 
 # Unload modules on restart and stop
 #   Value: yes|no,  default: yes

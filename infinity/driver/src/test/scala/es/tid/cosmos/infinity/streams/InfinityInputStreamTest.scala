@@ -90,10 +90,11 @@ class InfinityInputStreamTest extends FlatSpec with MustMatchers {
   val path = RootPath / "some" / "file"
   val timeout = 200.millis
   val content = "01234567890123456789"
+  val bufferSize = 1024
 
   trait Fixture {
     val client = new MockInfinityClient
-    val stream = new InfinityInputStream(client.value, path, timeout)
+    val stream = new InfinityInputStream(client.value, path, bufferSize, timeout)
     val buffer = new Array[Byte](20)
   }
 }

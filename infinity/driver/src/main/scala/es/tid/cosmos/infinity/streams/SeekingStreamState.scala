@@ -42,7 +42,12 @@ object SeekingStreamState extends StreamState {
   }
 
   private def openStream(context: StreamContext): InputStream = {
-    val readAttempt = context.client.read(context.path, offset = Some(context.position), length = None)
+    val readAttempt = context.client.read(
+      path = context.path,
+      offset = Some(context.position),
+      length = None,
+      bufferSize = context.bufferSize
+    )
     Await.ready(readAttempt, context.timeout).value.get match {
       case Success(stream) => stream
       case Failure(ex) => throw new IOException("Error opening stream", ex)

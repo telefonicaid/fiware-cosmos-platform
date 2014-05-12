@@ -33,12 +33,14 @@ import es.tid.cosmos.infinity.common.fs.SubPath
   * to the desired part and then start reading.  This strategy is inspired on the analogous class
   * of WebHdfsFileSystem, [[org.apache.hadoop.hdfs.ByteRangeInputStream]].
   *
-  * @param client   Infinity client
-  * @param path     File to access to
-  * @param timeout  Request timeout
+  * @param client      Infinity client
+  * @param path        File to access to
+  * @param bufferSize  Size of the reception buffer
+  * @param timeout     Request timeout
   */
 private[infinity] class InfinityInputStream(
-    client: InfinityClient, path: SubPath, timeout: FiniteDuration) extends FSInputStream {
+    client: InfinityClient, path: SubPath, bufferSize: Int, timeout: FiniteDuration)
+  extends FSInputStream {
 
   private val context = new StreamContext {
     override def setState(nextState: StreamState): Unit = {
@@ -47,6 +49,7 @@ private[infinity] class InfinityInputStream(
     override val path: SubPath = InfinityInputStream.this.path
     override def client: InfinityClient = InfinityInputStream.this.client
     override def timeout: FiniteDuration = InfinityInputStream.this.timeout
+    override val bufferSize: Int = InfinityInputStream.this.bufferSize
     override var position: Long = 0L
   }
   private var state: StreamState = SeekingStreamState

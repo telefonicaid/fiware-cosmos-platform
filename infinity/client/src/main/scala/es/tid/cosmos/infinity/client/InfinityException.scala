@@ -44,7 +44,13 @@ case class ProtocolMismatchException(
 case class UnauthorizedException(error: ErrorDescriptor) extends InfinityException(error)
 
 /** User access rights are not enough to perform an action */
-case class ForbiddenException(error: ErrorDescriptor) extends InfinityException(error)
+case class ForbiddenException(description: String, code: Option[String] = None)
+    extends InfinityException(description, code)
+
+object ForbiddenException {
+  def apply(error: ErrorDescriptor): ForbiddenException =
+    ForbiddenException(error.cause, Some(error.code))
+}
 
 case class AlreadyExistsException(path: Path) extends InfinityException(s"$path already exists")
 

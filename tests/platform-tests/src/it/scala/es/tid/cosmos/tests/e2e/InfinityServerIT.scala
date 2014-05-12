@@ -71,7 +71,7 @@ class InfinityServerIT extends E2ETestBase {
     }
 
     withNewCluster(1, user3, shared = true) { cluster =>
-      scenario("Users can only access files with 'other' permissions if they don't own and aren't part of the group") {
+      ignore("Users can only access files with 'other' permissions if they don't own and aren't part of the group") {
         cluster.scp(resource("/infinity-server-unrelated-user.sh"))
         cluster.sshCommand(s"TARGET_USER=${user1.handle}; bash ./infinity-server-shared-test.sh")
       }

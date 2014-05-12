@@ -16,6 +16,7 @@
 
 package es.tid.cosmos.infinity.server.actions
 
+import java.io.{Closeable, InputStream}
 import scala.concurrent.Future
 
 import es.tid.cosmos.infinity.common.fs.{Path, PathMetadata}
@@ -61,4 +62,11 @@ object Action {
 
   /** A file or directory permissions were successfully set. */
   case class PermissionsSet(metadata: PathMetadata) extends Result
+
+  /** Indicates that the action cannot be performed for that user on that path */
+  case class OperationNotAllowed(username: String, path: Path) extends Result
+
+  /** A file content response with the input stream to read from and the resources to release */
+  case class ContentFound(
+      stream: InputStream, readUpTo: Long, closeables: Seq[Closeable]) extends Result
 }

@@ -34,18 +34,18 @@ import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.{PermissionClass, UserProfile, PermissionsMask}
 import es.tid.cosmos.infinity.server.actions.{NameNode, NameNodeException}
-import es.tid.cosmos.infinity.server.config.InfinityConfig
+import es.tid.cosmos.infinity.server.config.MetadataServerConfig
 import es.tid.cosmos.infinity.server.groups.ArtificialUsersGroupMapping
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 
 class HdfsNameNode(
-    config: InfinityConfig,
+    config: MetadataServerConfig,
     protocols: HdfsNameNode.NamenodeProtocolsLoaner,
     urlMapper: UrlMapper) extends NameNode {
 
   import ExecutionContext.Implicits.global
 
-  def this(config: InfinityConfig, protocols: NamenodeProtocols, urlMapper: UrlMapper) =
+  def this(config: MetadataServerConfig, protocols: NamenodeProtocols, urlMapper: UrlMapper) =
     this(config, new HdfsNameNode.NamenodeProtocolsLoaner(protocols), urlMapper)
 
   override def pathMetadata(path: Path): Future[PathMetadata] = future {

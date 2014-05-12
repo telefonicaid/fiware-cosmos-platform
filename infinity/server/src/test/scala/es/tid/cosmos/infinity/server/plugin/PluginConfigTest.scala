@@ -28,7 +28,7 @@ class PluginConfigTest extends FlatSpec with MustMatchers {
     hadoopConfig.set("dfs.infinity.relevant", "ok")
     hadoopConfig.set("dfs.namenode.plugins", "ko")
     val defaultConfig = ConfigFactory.parseString("")
-    val pluginConfig = PluginConfig.load(hadoopConfig, defaultConfig)
+    val pluginConfig = PluginConfig.load(hadoopConfig, Set.empty[String], defaultConfig)
     pluginConfig.hasPath("relevant") must be (true)
     pluginConfig.entrySet().size() must be (1)
   }
@@ -36,7 +36,7 @@ class PluginConfigTest extends FlatSpec with MustMatchers {
   it must "have default Typesafe config settings" in {
     val hadoopConfig = new Configuration(false)
     val defaultConfig = ConfigFactory.parseString("akka.sample-setting=42")
-    val pluginConfig = PluginConfig.load(hadoopConfig, defaultConfig)
+    val pluginConfig = PluginConfig.load(hadoopConfig, Set.empty[String], defaultConfig)
     pluginConfig.getInt("akka.sample-setting") must be (42)
     pluginConfig.entrySet().size() must be (1)
   }
@@ -45,7 +45,7 @@ class PluginConfigTest extends FlatSpec with MustMatchers {
     val hadoopConfig = new Configuration(false)
     hadoopConfig.set("dfs.infinity.setting", "hadoop")
     val defaultConfig = ConfigFactory.parseString("setting='typesafe'")
-    val pluginConfig = PluginConfig.load(hadoopConfig, defaultConfig)
+    val pluginConfig = PluginConfig.load(hadoopConfig, Set.empty[String], defaultConfig)
     pluginConfig.getString("setting") must be ("hadoop")
     pluginConfig.entrySet().size() must be (1)
   }

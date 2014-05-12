@@ -35,6 +35,7 @@ import es.tid.cosmos.infinity.client.{HttpInfinityClient, InfinityClient}
 import es.tid.cosmos.infinity.common.fs.{Path => InfinityPath, _}
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.common.util.UriUtil
 import es.tid.cosmos.infinity.streams.{InfinityInputStream, InfinityOutputStream}
 
 class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSystem {

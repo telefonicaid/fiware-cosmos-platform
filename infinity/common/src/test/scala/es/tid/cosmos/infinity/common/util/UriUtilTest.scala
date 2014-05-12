@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity
+package es.tid.cosmos.infinity.common.util
 
 import java.net.{URISyntaxException, URI}
 

@@ -50,6 +50,7 @@ object Build extends sbt.Build {
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
     lazy val finatra = "com.twitter" %% "finatra" % "1.5.2" exclude(
       "org.scalatest", "scalatest_2.10")
+    lazy val finagleStream = "com.twitter" %% "finagle-stream" % "6.11.1"
     lazy val h2database = "com.h2database" % "h2" % "1.3.175"
     lazy val hadoopCommon = "org.apache.hadoop" % "hadoop-common" % Versions.hdp2Hadoop
     lazy val hadoopHdfs = "org.apache.hadoop" % "hadoop-hdfs" % Versions.hdp2Hadoop

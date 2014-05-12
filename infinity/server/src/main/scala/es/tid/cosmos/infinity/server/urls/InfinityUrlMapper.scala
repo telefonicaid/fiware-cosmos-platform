@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity
+package es.tid.cosmos.infinity.server.urls
 
-import java.net.URI
+import java.net.URL
 
-object UriUtil {
+import es.tid.cosmos.infinity.common.fs.Path
+import es.tid.cosmos.infinity.server.config.InfinityConfig
 
-  /** Replace URI scheme keeping all other fields */
-  def replaceScheme(uri: URI, newScheme: String): URI =
-    new URI(newScheme, uri.getUserInfo, uri.getHost, uri.getPort, uri.getPath, uri.getRawQuery,
-      uri.getFragment)
+class InfinityUrlMapper(config: InfinityConfig) extends UrlMapper {
 
-  def replaceAuthority(uri: URI, newAuthority: String): URI =
-    new URI(uri.getScheme, newAuthority, uri.getPath, uri.getRawQuery, uri.getFragment)
+  override def metadataUrl(path: Path): URL = new URL(s"${config.metadataBaseUrl}/$path")
 
-  def replacePath(uri: URI, newPath: String): URI =
-    new URI(uri.getScheme, uri.getAuthority, newPath, uri.getRawQuery, uri.getFragment)
+  override def contentUrl(path: Path, contentHost: String): Option[URL] =
+    config.contentServerUrl(contentHost).map(baseUrl => new URL(s"$baseUrl/$path"))
 }

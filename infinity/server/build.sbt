@@ -16,6 +16,7 @@ libraryDependencies ++= Dependencies.unfiltered ++ Seq(
   Dependencies.anorm,
   Dependencies.commonsCodec,
   Dependencies.dispatch,
+  Dependencies.finagleStream,
   Dependencies.finatra,
   Dependencies.h2database % "test",
   Dependencies.hadoopCommon % "provided",

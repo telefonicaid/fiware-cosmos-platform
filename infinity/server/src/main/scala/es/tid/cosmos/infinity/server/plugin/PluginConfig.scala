@@ -28,15 +28,18 @@ import org.apache.hadoop.conf.Configuration
 private[plugin] object PluginConfig {
 
   private val SettingKeyPattern = """dfs\.infinity\.(.*)""".r
+  private val HadoopKeyPrefix = "hadoop"
 
-  def load(hadoopConfig: Configuration): Config = load(hadoopConfig, ConfigFactory.load())
+  def load(hadoopConfig: Configuration, hadoopKeys: String*): Config =
+    load(hadoopConfig, hadoopKeys.toSet, ConfigFactory.load())
 
-  def load(hadoopConfig: Configuration, defaultConfig: Config): Config =
-    filterPluginConfig(hadoopConfig).withFallback(defaultConfig)
+  def load(hadoopConfig: Configuration, hadoopKeys: Set[String], defaultConfig: Config): Config =
+    filterPluginConfig(hadoopConfig, hadoopKeys).withFallback(defaultConfig)
 
-  private def filterPluginConfig(hadoopConfig: Configuration): Config = {
+  private def filterPluginConfig(hadoopConfig: Configuration, hadoopKeys: Set[String]): Config = {
     val settings = hadoopConfig.iterator().asScala.map(asTuple).collect {
       case (SettingKeyPattern(suffix), value) => suffix -> value
+      case (key, value) if hadoopKeys.contains(key) => s"$HadoopKeyPrefix.$key" -> value
     }.toMap
     ConfigFactory.parseMap(settings.asJava)
   }

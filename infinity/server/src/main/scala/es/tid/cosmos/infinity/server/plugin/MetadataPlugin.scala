@@ -22,9 +22,10 @@ import org.apache.hadoop.hdfs.server.namenode.NameNode
 import org.apache.hadoop.util.ServicePlugin
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationComponent
-import es.tid.cosmos.infinity.server.config.InfinityConfig
-import es.tid.cosmos.infinity.server.finatra.{FinatraUrlMapper, MetadataServer}
+import es.tid.cosmos.infinity.server.config.MetadataServerConfig
+import es.tid.cosmos.infinity.server.finatra.MetadataServer
 import es.tid.cosmos.infinity.server.actions.hdfs.HdfsNameNode
+import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
 /** Namenode plugin to serve Infinity metadata. */
 class MetadataPlugin extends ServicePlugin with Configurable {
@@ -49,8 +50,8 @@ class MetadataPlugin extends ServicePlugin with Configurable {
         Thread.sleep(1000)
       }
       log.info("Starting Infinity metadata server as a namenode plugin")
-      val config = new InfinityConfig(PluginConfig.load(getConf))
-      val urlMapper = new FinatraUrlMapper(config)
+      val config = new MetadataServerConfig(PluginConfig.load(getConf))
+      val urlMapper = new InfinityUrlMapper(config)
       val server = new MetadataServer(
         nameNode = new HdfsNameNode(config, nameNode.getRpcServer, urlMapper),
         config = config,
@@ -67,7 +68,7 @@ class MetadataPlugin extends ServicePlugin with Configurable {
 
   override def stop(): Unit = {
     log.info("Shutting down Infinity metadata plugin")
-    serverOpt.foreach(_.shutdown())
+    serverOpt.foreach(_.stop())
     serverOpt = None
   }
 

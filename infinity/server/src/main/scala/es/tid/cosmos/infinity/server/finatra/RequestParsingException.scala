@@ -37,4 +37,7 @@ object RequestParsingException {
 
   case class InvalidRequestBody(body: String, cause: Throwable = null) extends RequestParsingException(
     s"invalid request body: \n$body", cause)
+
+  case class InvalidRequestParams(parameters: Seq[String], cause: Throwable = null) extends RequestParsingException(
+      s"invalid request parameters: \n${parameters.mkString(", ")}", cause)
 }

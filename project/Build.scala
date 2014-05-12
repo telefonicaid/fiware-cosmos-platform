@@ -46,6 +46,7 @@ object Build extends sbt.Build {
   object Dependencies {
     lazy val anorm = "play" %% "anorm" % "2.1.5"
     lazy val commonsCodec = "commons-codec" % "commons-codec" % "1.9"
+    lazy val commonsIO = "org.apache.commons" % "commons-io" % "1.3.2"
     lazy val commonsLogging = "commons-logging" % "commons-logging" % "1.1.1"
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
     lazy val finatra = "com.twitter" %% "finatra" % "1.5.2" exclude(

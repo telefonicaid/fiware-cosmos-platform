@@ -27,4 +27,5 @@ private[streams] trait StreamContext {
   def client: InfinityClient
   def setState(nextState: StreamState): Unit
   def timeout: FiniteDuration
+  def bufferSize: Int
 }

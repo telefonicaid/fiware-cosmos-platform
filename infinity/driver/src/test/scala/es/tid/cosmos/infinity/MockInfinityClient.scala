@@ -153,7 +153,7 @@ class MockInfinityClient extends MockitoSugar {
     givenFileRead(path).willAnswer(
       new Answer[Future[InputStream]] {
         override def answer(invocation: InvocationOnMock): Future[InputStream] = {
-          val Array(_, offsetOpt: Option[Long], lenOpt: Option[Long]) = invocation.getArguments
+          val Array(_, offsetOpt: Option[Long], lenOpt: Option[Long], _) = invocation.getArguments
           val offset = offsetOpt.getOrElse(0L).toInt
           val maxLength = byteArray.length - offset
           val length = lenOpt.getOrElse(byteArray.length.toLong).toInt
@@ -163,7 +163,7 @@ class MockInfinityClient extends MockitoSugar {
   }
   def givenFileReadWillFail(path: SubPath): Unit = willFail(givenFileRead(path))
   private def givenFileRead(path: SubPath) =
-    given(value.read(the(path), any[Option[Long]], any[Option[Long]]))
+    given(value.read(the(path), any[Option[Long]], any[Option[Long]], anyInt))
 
   private def willSucceed(call: BDDMyOngoingStubbing[Future[Unit]]): Unit =
     call.willReturn(Future.successful(()))

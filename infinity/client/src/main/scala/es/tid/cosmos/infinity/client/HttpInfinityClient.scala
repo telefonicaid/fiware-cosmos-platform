@@ -16,14 +16,14 @@ import java.net.{ConnectException, URL}
 import scala.concurrent.{Future, blocking}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import com.ning.http.client.{RequestBuilder, Response}
+import com.ning.http.client._
 import com.ning.http.client.generators.InputStreamBodyGenerator
 import dispatch.{Future => _, _}
 
 import es.tid.cosmos.common.Wrapped
 import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.common.json._
-import es.tid.cosmos.infinity.common.messages._
+import es.tid.cosmos.infinity.common.messages.{ErrorDescriptor, Request}
 import es.tid.cosmos.infinity.common.messages.Request._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
@@ -77,20 +77,16 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
   }
 
   override def read(
-      path: SubPath, offset: Option[Long], length: Option[Long]): Future[InputStream] =
+      path: SubPath, offset: Option[Long], length: Option[Long], bufferSize: Int): Future[InputStream] =
     // read metadata first, get content url and then read content
     existingMetaData(path) flatMap { metadata =>
       val params = List(
         offset.map("offset" -> _.toString),
         length.map("length" -> _.toString)
       ).flatten.toMap
-
-      httpRequest(contentResource(metadata) <<? params) { response =>
-        response.getStatusCode match {
-          case 404 => throw NotFoundException(path)
-          case 200 => response.getResponseBodyAsStream
-        }
-      }
+      val handler = new InputStreamHandler(path, bufferSize)
+      Http(contentResource(metadata) <<? params > handler)
+      handler.future
     }
 
   override def overwrite(path: SubPath, bufferSize: Int): Future[OutputStream] =

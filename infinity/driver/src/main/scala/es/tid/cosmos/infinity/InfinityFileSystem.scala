@@ -158,7 +158,8 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     awaitResult(existingFileMetadata(f).map { metadata =>
       requireContentLocation(metadata)
       new FSDataInputStream(new InfinityInputStream(
-        client, asSubPath(f), infinityConfiguration.timeoutDuration))
+        client, asSubPath(f), bufferSize, infinityConfiguration.timeoutDuration
+      ))
     })
 
   override def append(f: Path, bufferSize: Int, progressOrNull: Progressable): FSDataOutputStream =

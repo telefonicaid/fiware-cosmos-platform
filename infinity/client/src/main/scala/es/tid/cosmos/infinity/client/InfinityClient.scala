@@ -122,13 +122,14 @@ trait InfinityClient {
 
   /** Retrieve file contents.
     *
-    * @param path    Path of the file to read
-    * @param offset  Optionally, where to start reading
-    * @param length  Optionally, how much to retrieve
+    * @param path        Path of the file to read
+    * @param offset      Optionally, where to start reading
+    * @param length      Optionally, how much to retrieve
+    * @param bufferSize  Size of the output stream buffer
     * @return        A stream with the contents on success or fail with the common exceptions or
     *                NotFoundException when the path to read doesn't exist
     */
-  def read(path: SubPath, offset: Option[Long], length: Option[Long]): Future[InputStream]
+  def read(path: SubPath, offset: Option[Long], length: Option[Long], bufferSize: Int): Future[InputStream]
 
   /** Append data to a file.
     *

@@ -23,7 +23,9 @@ case class GetMetadata(nameNode: NameNode, on: Path) extends Action {
 
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] = for {
-    meta <- nameNode.pathMetadata(on)
-  } yield Action.Retrieved(meta)
+  override def apply(context: Action.Context): Future[Action.Result] = nameNode.as(context.user) {
+    for {
+      meta <- nameNode.pathMetadata(on)
+    } yield Action.Retrieved(meta)
+  }
 }

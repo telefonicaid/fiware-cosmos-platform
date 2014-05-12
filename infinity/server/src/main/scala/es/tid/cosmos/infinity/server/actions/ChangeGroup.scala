@@ -23,8 +23,10 @@ import es.tid.cosmos.infinity.common.fs.Path
 case class ChangeGroup(nameNode: NameNode, on: Path, group: String) extends Action {
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] = for {
-    _ <- nameNode.setGroup(on, group)
-    metadata <- nameNode.pathMetadata(on)
-  } yield Action.GroupSet(metadata)
+  override def apply(context: Action.Context): Future[Action.Result] = nameNode.as(context.user) {
+    for {
+      _ <- nameNode.setGroup(on, group)
+      metadata <- nameNode.pathMetadata(on)
+    } yield Action.GroupSet(metadata)
+  }
 }

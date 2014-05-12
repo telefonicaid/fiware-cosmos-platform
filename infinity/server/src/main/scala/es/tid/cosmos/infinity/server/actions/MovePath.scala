@@ -26,8 +26,10 @@ case class MovePath(
 
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] = for {
-    _ <- nameNode.movePath(from, on)
-    metadata <- nameNode.pathMetadata(on)
-  } yield Action.Moved(metadata)
+  override def apply(context: Action.Context): Future[Action.Result] = nameNode.as(context.user) {
+    for {
+      _ <- nameNode.movePath(from, on)
+      metadata <- nameNode.pathMetadata(on)
+    } yield Action.Moved(metadata)
+  }
 }

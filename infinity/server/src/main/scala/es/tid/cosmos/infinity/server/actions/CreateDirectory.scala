@@ -27,8 +27,10 @@ case class CreateDirectory(
 
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Context): Future[Result] = for {
-    _ <- nameNode.createDirectory(on, context.user.username, context.user.groups.head, permissions)
-    metadata <- nameNode.pathMetadata(on)
-  } yield Action.Created(metadata)
+  override def apply(context: Context): Future[Result] = nameNode.as(context.user) {
+    for {
+      _ <- nameNode.createDirectory(on, context.user.username, context.user.groups.head, permissions)
+      metadata <- nameNode.pathMetadata(on)
+    } yield Action.Created(metadata)
+  }
 }

@@ -17,6 +17,7 @@
 from urlparse import urlparse, urljoin
 
 import json
+import re
 import requests
 
 from cosmos.common.exceptions import (OperationError, ResponseError)
@@ -119,6 +120,19 @@ class InfinityClient(object):
             out_file.write(buf)
             buf = response.raw.read(BUFFER_SIZE)
         return written
+
+    def chmod(self, remote_path, permissions):
+        if not re.match('^[0-7]{3}$', permissions):
+            raise OperationError('%s are not valid permissions' % permissions)
+        chmod_body = json.dumps({
+            "action": "chmod",
+            "permissions": permissions
+        })
+        r = self.make_call(self.client.post, remote_path,
+                           self.metadata, body=chmod_body)
+        if r.status_code != 204:
+            raise ResponseError(
+                'Cannot change permissions on path %s' % remote_path, r)
 
     def delete_path(self, path, recursive=False):
         r = self.make_call(self.client.delete, path, self.metadata,

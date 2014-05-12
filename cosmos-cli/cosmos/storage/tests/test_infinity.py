@@ -24,6 +24,7 @@ from testfixtures import TempDirectory
 
 import cosmos.storage.infinity as webhdfs
 from cosmos.storage.infinity import DirectoryListing
+from cosmos.common.exceptions import OperationError
 from cosmos.common.exceptions import ResponseError
 from cosmos.common.tests.util import mock_response
 
@@ -166,6 +167,20 @@ class InfinityClientTest(unittest.TestCase):
         self.client.get.return_value = mock_response(status_code=404)
         listing = self.instance.list_path('/some/path')
         self.assertFalse(listing.exists)
+
+    def test_invalid_permissions_chmod(self):
+        self.assertRaises(OperationError, self.instance.chmod, '/some/path', '1111')
+        self.assertRaises(OperationError, self.instance.chmod, '/some/path', '118')
+        self.assertRaises(OperationError, self.instance.chmod, '/some/path', '4')
+
+    def test_chmod(self):
+        self.client.post.return_value = mock_response(status_code=204)
+        self.instance.chmod('/some/path', '777')
+        self.client.post.assert_called_with(
+            self.namenode_base + '/some/path',
+            auth=self.auth,
+            body=json.dumps({'action': 'chmod', 'permissions': '777'})
+        )
 
     def test_get_file(self):
         self.client.get.return_value = mock_response(raw=StringIO("hello"))

@@ -24,9 +24,12 @@ class MockNameNode extends NameNode {
 
   override def pathMetadata(path: Path): Future[PathMetadata] = ???
 
-  override def createDirectory(path: Path, owner: String, group: String, permissions: PermissionsMask): Future[Unit] = ???
+  override def createDirectory(
+    path: Path, owner: String, group: String, permissions: PermissionsMask): Future[Unit] = ???
 
-  override def createFile(path: Path, owner: String, group: String, permissions: PermissionsMask, replication: Option[Short], blockSize: Option[Long]): Future[Unit] = ???
+  override def createFile(
+    path: Path, owner: String, group: String, permissions: PermissionsMask,
+    replication: Option[Short], blockSize: Option[Long]): Future[Unit] = ???
 
   override def deletePath(path: Path, recursive: Boolean): Future[Unit] = ???
 

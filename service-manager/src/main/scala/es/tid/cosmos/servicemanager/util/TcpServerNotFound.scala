@@ -16,4 +16,4 @@
 
 package es.tid.cosmos.servicemanager.util
 
-case class TcpServerNotFound(server: TcpServer) extends RuntimeException(s"$server not found")
+case class TcpServerNotFound(server: TcpServerWatcher) extends RuntimeException(s"$server not found")

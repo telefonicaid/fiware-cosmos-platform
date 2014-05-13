@@ -49,4 +49,12 @@ class PluginConfigTest extends FlatSpec with MustMatchers {
     pluginConfig.getString("setting") must be ("hadoop")
     pluginConfig.entrySet().size() must be (1)
   }
+
+  it must "prefix with 'hadoop.' hadoop configurations" in {
+    val hadoopConfig = new Configuration(false)
+    hadoopConfig.set("setting", "value")
+    val defaultConfig = ConfigFactory.parseString("")
+    val pluginConfig = PluginConfig.load(hadoopConfig, Set("setting"), defaultConfig)
+    pluginConfig.getString("hadoop.setting") must be ("value")
+  }
 }

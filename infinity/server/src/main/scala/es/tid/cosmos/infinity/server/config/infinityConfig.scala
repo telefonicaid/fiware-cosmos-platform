@@ -25,44 +25,45 @@ import es.tid.cosmos.infinity.server.config.InfinityConfig._
 
 abstract class InfinityConfig(config: Config) {
 
-  val metadataProtocol = config.getString("metadata.protocol")
+  val metadataProtocol = withDefault(config.getString("metadata.protocol"), DefaultProtocol)
   val metadataHost = config.getString("metadata.host")
-  val metadataPort = config.getInt("metadata.port")
-  val metadataBasePath = mapOpt(config.getString("metadata.basePath")).getOrElse(DefaultBasePath)
+  val metadataPort = withDefault(config.getInt("metadata.port"), DefaultMetadataPort)
+  val metadataBasePath = withDefault(config.getString("metadata.basePath"), DefaultBasePath)
   val metadataBaseUrl = new URL(
-      s"$metadataProtocol://$metadataHost:$metadataPort/$metadataBasePath")
+      s"$metadataProtocol://$metadataHost:$metadataPort/$metadataBasePath/metadata")
 
-  def contentServerUrl(hostname: String): Option[URL] = {
-    val protocol = mapOpt(config.getString(s"contentServer.$hostname.protocol"))
-      .getOrElse(DefaultProtocol)
-    val port = mapOpt(config.getInt(s"contentServer.$hostname.port"))
-    val basePath = mapOpt(config.getString(s"contentServer.$hostname.basePath"))
-      .getOrElse(DefaultBasePath)
-    port.map(new URL(protocol, hostname, _, basePath))
+  def contentServerUrl(hostname: String): URL = {
+    val protocol = withDefault(config.getString(s"content.server.$hostname.protocol"), DefaultProtocol)
+    val port = withDefault(config.getInt(s"content.server.$hostname.port"), DefaultContentPort)
+    val basePath = withDefault(config.getString(s"content.server.$hostname.basePath"), DefaultBasePath)
+    new URL(protocol, hostname, port, s"$basePath/content")
+  }
+
+  protected def withDefault[T](block: => T, default: T): T = try {
+    block
+  } catch {
+    case _: ConfigException.Missing => default
   }
 }
 
 class MetadataServerConfig(config: Config) extends InfinityConfig(config) {
-  val replication = mapOpt(config.getInt("metadata.replication").toShort).getOrElse(DefaultReplication)
-  val blockSize = mapOpt(config.getLong("metadata.blockSize")).getOrElse(DefaultBlockSize)
+  val replication = withDefault(config.getInt("metadata.replication").toShort, DefaultReplication)
+  val blockSize = withDefault(config.getLong("metadata.blockSize"), DefaultBlockSize)
 }
 
 class ContentServerConfig(config: Config) extends InfinityConfig(config) {
-  val chunkSize = mapOpt(config.getInt("infinity.server.content.chunkSize"))
-    .getOrElse(DefaultChunkSize)
+  val chunkSize = withDefault(config.getInt("content.chunkSize"), DefaultChunkSize)
 
   val nameNodeRPCUrl: URL = UriUtil.replaceScheme(
     new URI(config.getString(NameNodeHdfsAddressKey)), "http").toURL
 
-  val localContentServerUrl: URL = {
-    val hostname = InetAddress.getLocalHost.getHostName
-    contentServerUrl(hostname).getOrElse(throw new IllegalArgumentException(
-      s"Cannot initialize server because contentServer.$hostname configuration is missing."))
-  }
+  val localContentServerUrl: URL = contentServerUrl(InetAddress.getLocalHost.getHostName)
 }
 
 object InfinityConfig {
   val DefaultProtocol: String = "https"
+  val DefaultContentPort: Int = 50175
+  val DefaultMetadataPort: Int = 50170
   val DefaultBasePath: String = "/infinityfs/v1"
   val DefaultReplication: Short = 3
   val DefaultBlockSize: Long = 64l * 1024l * 1024l
@@ -70,8 +71,4 @@ object InfinityConfig {
   // 4096 is taken from Hadoop IOUtils.copy
   val DefaultChunkSize = 4096
   val HadoopKeys = Seq(NameNodeHdfsAddressKey)
-
-  def mapOpt[T](f: => T): Option[T] = try { Some(f) } catch {
-    case _: ConfigException.Missing => None
-  }
 }

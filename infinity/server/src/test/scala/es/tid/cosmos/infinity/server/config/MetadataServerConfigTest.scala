@@ -27,30 +27,31 @@ class MetadataServerConfigTest extends FlatSpec with MustMatchers {
 
   it must "retrieve content server URL with all settings are present" in {
     val config = configFor(
-      "contentServer.content01.example.com.protocol" -> "https",
-      "contentServer.content01.example.com.port" -> "1234",
-      "contentServer.content01.example.com.basePath" -> "/inf/v1")
-    config.contentServerUrl("content01.example.com") must be (Some(new URL(
-      "https://content01.example.com:1234/inf/v1")))
+      "content.server.content01.example.com.protocol" -> "https",
+      "content.server.content01.example.com.port" -> "1234",
+      "content.server.content01.example.com.basePath" -> "/inf/v1")
+    config.contentServerUrl("content01.example.com") must be (new URL(
+      "https://content01.example.com:1234/inf/v1/content"))
   }
 
   it must "retrieve content server URL when protocol is missing" in {
     val config = configFor(
-      "contentServer.content01.example.com.port" -> "1234",
-      "contentServer.content01.example.com.basePath" -> "/inf/v1")
-    config.contentServerUrl("content01.example.com") must be (Some(new URL(
-      "https://content01.example.com:1234/inf/v1")))
+      "content.server.content01.example.com.port" -> "1234",
+      "content.server.content01.example.com.basePath" -> "/inf/v1")
+    config.contentServerUrl("content01.example.com") must be (new URL(
+      "https://content01.example.com:1234/inf/v1/content"))
   }
 
   it must "retrieve content server URL when base path is missing" in {
-    val config = configFor("contentServer.content01.example.com.port" -> "1234")
-    config.contentServerUrl("content01.example.com") must be (Some(new URL(
-      "https://content01.example.com:1234/infinityfs/v1")))
+    val config = configFor("content.server.content01.example.com.port" -> "1234")
+    config.contentServerUrl("content01.example.com") must be (new URL(
+      "https://content01.example.com:1234/infinityfs/v1/content"))
   }
 
-  it must "fail to retrieve content server URL when port is missing" in {
+  it must "retrieve content server URL when port is missing" in {
     val config = configFor()
-    config.contentServerUrl("content01.example.com") must be (None)
+    config.contentServerUrl("content01.example.com") must be (new URL(
+      "https://content01.example.com:50175/infinityfs/v1/content"))
   }
 
   def configFor(settings: (String, String)*): InfinityConfig = {

@@ -16,69 +16,60 @@
 
 package es.tid.cosmos.servicemanager.util
 
-import java.net.{BindException, InetSocketAddress, Socket, ServerSocket}
-import scala.concurrent.Await
+import java.net.{InetSocketAddress, ServerSocket, Socket}
 import scala.concurrent.duration._
-import scala.language.postfixOps
 
 import org.scalatest.FlatSpec
+import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.MustMatchers
+import org.scalatest.time.{Millis, Seconds, Span}
 
+import es.tid.cosmos.common.scalatest.RandomTcpPort
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 
-class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
+class TcpServerWatcherTest extends FlatSpec with MustMatchers with FutureMatchers with Eventually {
 
-  val timeout: FiniteDuration = 15 second
+  override implicit def patienceConfig = PatienceConfig(
+    timeout = Span(10, Seconds),
+    interval = Span(500, Millis)
+  )
 
-  class RandomServer {
-    val port = availablePort()
-    val server = TcpServer("localhost", port)
+  val timeout: FiniteDuration = 15.second
+
+  trait RandomServer {
+    val port = RandomTcpPort.choose()
+    val watcher = TcpServerWatcher("localhost", port)
 
     def withServerMock[T](f: LocalServer => T): T = {
-      val serverMock = new LocalServer(server.port)
-      try {
-        f(serverMock)
-      } finally {
-        serverMock.close()
+      val server = eventually {
+        new LocalServer(watcher.port)
       }
-    }
-
-    private def availablePort(): Int = {
-      val socket = new ServerSocket(0)
-      val port = socket.getLocalPort
-      socket.close()
-      port
+      try {
+        f(server)
+      } finally {
+        server.close()
+      }
     }
   }
 
   "A tcp server" must "be waited for until it starts" in new RandomServer {
-    eventuallyTcpBind { withServerMock { mock =>
-      val f = server.waitForServer()
-      f must not be ('completed)
+    withServerMock { server =>
+      val f = watcher.waitForServer()
+      f must not be 'completed
       Thread.sleep(1500)
-      f must not be ('completed)
-      mock.acceptClient()
-      f must runUnder(timeout)
-      f must eventually (be ())
-    }}
+      f must not be 'completed
+      server.acceptClient()
+      f must (runUnder(timeout) and eventuallySucceed)
+    }
   }
 
   it must "be waited for until timeout is exceeded" in new RandomServer {
-    val f = server.waitForServer(1500 milliseconds)
-    f must not be ('completed)
-    val ex = evaluating {
-      Await.result(f, Duration.Inf)
-    } must produce[RuntimeException]
-    ex.getMessage must include ("not found")
+    watcher.waitForServer(1500.millis) must eventuallyFailWith("not found")
   }
 
   it must "handle unavailable servers" in {
-    val server = TcpServer("idontexist", 38)
-    val f = server.waitForServer(1500 milliseconds)
-    f must not be ('completed)
-    val ex = evaluating {
-      Await.result(f, Duration.Inf)
-    } must produce[TcpServerNotFound]
+    val server = TcpServerWatcher("iDonTExist", 38)
+    server.waitForServer(1500.millis) must eventuallyFailWith [TcpServerNotFound]
   }
 
   class LocalServer(port: Int) {
@@ -99,21 +90,5 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
       clientSocket.map(_.close())
       socket.map(_.close())
     }
-  }
-
-  def eventuallyTcpBind(action: => Unit) {
-    val maxAttemps = 5
-    for (i <- 1 to maxAttemps) {
-      try {
-        action
-        return
-      } catch {
-        case e: BindException =>
-        case e: Throwable => throw e
-      }
-    }
-    throw new IllegalStateException(
-      s"cannot execute the test due to a BindException after $maxAttemps attempts"
-    )
   }
 }

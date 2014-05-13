@@ -28,8 +28,8 @@ import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.AmbariServiceManager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.util.TcpServer
-import es.tid.cosmos.servicemanager.util.TcpServer._
+import es.tid.cosmos.servicemanager.util.TcpServerWatcher
+import es.tid.cosmos.servicemanager.util.TcpServerWatcher._
 import es.tid.cosmos.servicemanager.services._
 import es.tid.cosmos.servicemanager.services.dependencies.ServiceDependencies
 import es.tid.cosmos.servicemanager.services.InfinityServer.InfinityServerParameters
@@ -232,5 +232,5 @@ private[ambari] object AmbariServiceManager {
   private def toHostInfo(host: MachineState) = HostDetails(host.hostname, host.ipAddress)
 
   private def waitForSsh(state: MachineState): Future[Unit] =
-    TcpServer(state.hostname, SshServicePort).waitForServer()
+    TcpServerWatcher(state.hostname, SshServicePort).waitForServer()
 }

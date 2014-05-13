@@ -29,6 +29,8 @@ include "cluster-properties"
     "config-type"="hdfs-site",
     "properties" {
         "dfs.namenode.plugins" = "es.tid.cosmos.infinity.server.plugin.MetadataPlugin",
+        "dfs.datanode.plugins" = "es.tid.cosmos.infinity.server.plugin.ContentPlugin",
+        "dfs.infinity.metadata.host" = ${MasterNode}
         "dfs.infinity.metadata.port" = "51070"
     }
 }

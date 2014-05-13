@@ -29,12 +29,11 @@ trait UrlMapper {
   /** Retrieve the URL of the the content resource for datanode hostname.
     *
     * This operation can be used to map the HDFS datanode hostnames to the URLs of the wrapping
-    * content server. If there is no mapping for the given datanode host, None is returned.
-    * 
+    * content server.
+    *
     * @param path The path of the resource
     * @param datanode The datanode hostname
-    * @return The URL of the content resource for the given path in the mapped content server,
-    *         or None if there is no such mapping.
+    * @return The URL of the content resource for the given path in the mapped content server
     */
-  def contentUrl(path: Path, datanode: String): Option[URL]
+  def contentUrl(path: Path, datanode: String): URL
 }

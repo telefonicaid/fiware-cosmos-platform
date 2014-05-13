@@ -4,7 +4,7 @@ baseurl=<%= scope.lookupvar('cosmos::openvz::service::vz_utils_repo') %>
 enabled=1
 gpgcheck=0
 priority=1
-<% if @proxy %>
+<% if @proxy != 'absent' %>
 proxy=<%= @proxy %>
 <% end %>
 
@@ -21,6 +21,6 @@ baseurl=<%= scope.lookupvar('cosmos::openvz::service::vz_kernel_repo') %>
 enabled=1
 gpgcheck=0
 priority=1
-<% if @proxy %>
+<% if @proxy != 'absent'%>
 proxy=<%= @proxy %>
 <% end %>

@@ -3,7 +3,7 @@ name=[Cosmos] Ambari Repository 1.x
 baseurl=<%= scope.lookupvar('ambari::params::repo_url') %>
 enabled=1
 gpgcheck=0
-<% if @proxy %>
+<% if @proxy != 'absent' %>
 proxy=<%= @proxy %>
 <% end %>
 
@@ -11,6 +11,6 @@ proxy=<%= @proxy %>
 baseurl=<%= scope.lookupvar('ambari::params::hdp_stack_repo_url') %>
 enabled=1
 gpgcheck=0
-<% if @proxy %>
+<% if @proxy != 'absent' %>
 proxy=<%= @proxy %>
 <% end %>

@@ -199,8 +199,7 @@ class HdfsNameNode(
       val blocks = p.getBlockLocations(path.toString, 0, fileStatus.getLen)
       if (blocks.locatedBlockCount() != 0) {
         val locs = blocks.get(0).getLocations
-        if (locs.size != 0) urlMapper.contentUrl(path, locs(0).getHostName)
-        else None
+        if (locs.size != 0) Some(urlMapper.contentUrl(path, locs(0).getHostName)) else None
       }
       else None
     }

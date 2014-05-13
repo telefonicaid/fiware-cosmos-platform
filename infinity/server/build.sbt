@@ -10,6 +10,11 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
   cp filter { path => path.data.getName.contains("cglib-nodep-2.2.jar") }
 }
 
+mergeStrategy in assembly <<= (mergeStrategy in assembly) { oldStrategy => {
+  case "com/twitter/common/args/apt/cmdline.arg.info.txt.1" => MergeStrategy.first
+  case other => oldStrategy(other)
+}}
+
 jarName in assembly <<= (name, version) map { (name, version) => name + "-" + version + ".jar" }
 
 libraryDependencies ++= Dependencies.unfiltered ++ Seq(

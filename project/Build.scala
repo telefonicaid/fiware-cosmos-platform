@@ -157,7 +157,7 @@ object Build extends sbt.Build {
       } yield (file, distDir / name)
       IO.copy(relativeModulePaths, overwrite = true)
 
-      val distFile = target.value / s"cosmos-platform-$projectVersion.zip"
+      val distFile = target.value / s"cosmos-platform-${POM.version}.zip"
 
       s.log.info("Generating cosmos-platform zip package...")
       val distFiles = (distDir.*** --- distDir) pair relativeTo(distDir)

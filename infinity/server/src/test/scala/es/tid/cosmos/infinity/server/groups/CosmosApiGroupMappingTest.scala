@@ -76,7 +76,7 @@ class CosmosApiGroupMappingTest extends FlatSpec with MustMatchers {
     val port = 6783
     val sharedSecret = "shared_secret"
     val fallbackGroups = Seq("hdfs")
-    val apiTimeout = 1.seconds
+    val apiTimeout = 5.seconds
     val mapping = new CosmosApiGroupMapping(
       apiBase = s"http://127.0.0.1:$port",
       infinitySecret = sharedSecret,

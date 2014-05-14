@@ -21,8 +21,10 @@ import scalaz.Validation
 
 import com.twitter.finagle.http.Request
 import org.apache.commons.codec.binary.{Base64, StringUtils}
+import unfiltered.request.{Authorization, HttpRequest}
 
 import es.tid.cosmos.infinity.common.credentials.{UserCredentials, Credentials, ClusterCredentials}
+import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 object HttpCredentialsValidator {
 
@@ -34,8 +36,21 @@ object HttpCredentialsValidator {
   private val bearerLinePattern = "Bearer (.*)".r
 
   def apply(
-      from: InetAddress, request: Request): Validation[RequestParsingException, Credentials] = {
-    request.headers().get("Authorization") match {
+      from: InetAddress, request: Request): Validation[RequestParsingException, Credentials] =
+    authorize(from, request.headers().get("Authorization"))
+
+  // TODO: This class depends on Finagle and on Unfiltered. Consider abstracting away
+  def apply[T](
+      from: String,
+      request: HttpRequest[T]): Validation[RequestParsingException, Credentials] =
+    request match {
+      case Authorization(header) => authorize(InetAddress.getByName(from), header)
+      case _ => RequestParsingException.MissingAuthorizationHeader().failure
+    }
+
+  private def authorize(
+      from: InetAddress, header: String): Validation[RequestParsingException, Credentials] =
+    header match {
       case basicLinePattern(hash) =>
         userCredentials(hash)
       case bearerLinePattern(secret) =>
@@ -45,7 +60,6 @@ object HttpCredentialsValidator {
       case headerValue =>
         RequestParsingException.UnsupportedAuthorizationHeader(headerValue).failure
     }
-  }
 
   private def userCredentials(hash: String) = {
     for {

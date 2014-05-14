@@ -14,45 +14,62 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finagle
+package es.tid.cosmos.infinity.server.content
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-import com.twitter.finagle.Service
-import com.twitter.finagle.http.Request
-import com.twitter.finagle.stream.StreamResponse
-import com.twitter.util.{Future => TwitterFuture}
+import unfiltered.Async
+import unfiltered.filter.async
+import unfiltered.filter.async.Plan.Intent
+import unfiltered.response._
 
 import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.ContentServerConfig
-import es.tid.cosmos.infinity.server.finagle.StreamConversions._
-import es.tid.cosmos.infinity.server.finatra._
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
-import es.tid.cosmos.infinity.server.util.TwitterConversions._
 import es.tid.cosmos.infinity.server.urls.UrlMapper
+import es.tid.cosmos.infinity.server.finatra.HttpCredentialsValidator
 
-class ContentStreamRoutes(
+class ContentRoutes(
       config: ContentServerConfig,
       authService: AuthenticationService,
       clientFactory: DfsClientFactory,
-      urlMapper: UrlMapper) extends Service[Request, StreamResponse] {
+      urlMapper: UrlMapper) extends async.Plan {
+
+  import ContentRoutes._
+
   //TODO: Extract common code between content and metadata plugin server and routes
   private val actionValidator = new HttpContentActionValidator(config, clientFactory)
-  private val renderResult = new ActionResultStreamRenderer(config.chunkSize)
+  private val renderResult = new ContentActionResultRenderer(config.chunkSize)
 
-  override def apply(request: Request): TwitterFuture[StreamResponse] = {
+  override def intent: Intent = { case request =>
     val response = for {
-      credentials <- HttpCredentialsValidator(request.remoteAddress, request)
+      credentials <- HttpCredentialsValidator(request.remoteAddr, request)
       action <- actionValidator(request)
     } yield for {
         profile <- authService.authenticate(credentials)
         context = Action.Context(profile, urlMapper)
         result <- action(context)
       } yield renderResult(result)
+    val responder = Responder(request)
     response.fold(
-      error => ExceptionRenderer(error).toFuture.map(_.toStream),
-      success => success.toTwitter
+      error => responder.respond(ContentExceptionRenderer(error)),
+      success => responder.respond(success)
     )
+  }
+}
+
+private object ContentRoutes {
+
+  case class Responder[T](responder: Async.Responder[T]) {
+    def respond(response_> : Future[ResponseFunction[T]]): Unit = {
+      response_>.onSuccess { case response => responder.respond(response) }
+      response_>.onFailure { case e => responder.respond(InternalServerError) } //TODO: Log error here
+    }
+
+    def respond(response: ResponseFunction[T]): Unit = {
+      responder.respond(response)
+    }
   }
 }

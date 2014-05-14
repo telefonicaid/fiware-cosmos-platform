@@ -26,6 +26,7 @@ import es.tid.cosmos.infinity.common.json.{ParseException, RequestMessageParser}
 import es.tid.cosmos.infinity.common.messages.{Request => RequestMessage}
 import es.tid.cosmos.infinity.server.actions._
 import es.tid.cosmos.infinity.server.config.InfinityConfig
+import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 /** An extractor object aimed to convert a Finagle HTTP request into a Infinity Server action. */
 class HttpActionValidator(config: InfinityConfig, nameNode: NameNode) {

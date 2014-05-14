@@ -18,9 +18,11 @@ package es.tid.cosmos.infinity.server.finatra
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
+
+import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
 import es.tid.cosmos.infinity.server.actions.NameNodeException
-import es.tid.cosmos.infinity.common.fs.Path
+import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 class ExceptionRendererTest extends FlatSpec with MustMatchers {
 

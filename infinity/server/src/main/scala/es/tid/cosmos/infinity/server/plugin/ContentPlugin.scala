@@ -26,7 +26,7 @@ import org.apache.hadoop.util.ServicePlugin
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationComponent
 import es.tid.cosmos.infinity.server.config.{InfinityConfig, ContentServerConfig}
-import es.tid.cosmos.infinity.server.finagle.ContentStreamServer
+import es.tid.cosmos.infinity.server.content.ContentServer
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 
 /** Datanode plugin to serve Infinity file content */
@@ -35,7 +35,7 @@ class ContentPlugin extends ServicePlugin with Configurable {
 
   private val log = LogFactory.getLog(classOf[ContentPlugin])
   private var hadoopConfOpt: Option[Configuration] = None
-  private var serverOpt: Option[ContentStreamServer] = None
+  private var serverOpt: Option[ContentServer] = None
 
   override def setConf(conf: Configuration): Unit = {
     hadoopConfOpt = Some(conf)
@@ -70,7 +70,7 @@ class ContentPlugin extends ServicePlugin with Configurable {
   override def close(): Unit = stop()
 
   private def createServer(dataNode: DataNode, config: ContentServerConfig) = {
-    val server = new ContentStreamServer(
+    val server = new ContentServer(
       clientFactory = new DfsClientFactory(dataNode, config.nameNodeRPCUrl),
       config = config,
       authService = authentication)

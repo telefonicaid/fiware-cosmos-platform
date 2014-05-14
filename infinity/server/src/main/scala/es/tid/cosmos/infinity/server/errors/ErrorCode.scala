@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.errors
 
 import es.tid.cosmos.infinity.server.actions.NameNodeException
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException

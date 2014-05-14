@@ -14,25 +14,20 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.content
 
-import com.twitter.finagle.stream.StreamResponse
-import com.twitter.finatra.ResponseBuilder
+import unfiltered.response._
 
 import es.tid.cosmos.infinity.server.actions.Action
-import es.tid.cosmos.infinity.server.actions.Action.ContentFound
-import es.tid.cosmos.infinity.server.finagle.InputStreamResponse
+import es.tid.cosmos.infinity.server.actions.Action.{ContentAppended, ContentFound}
+import es.tid.cosmos.infinity.server.unfiltered.response.ResponseInputStream
 
-class ActionResultStreamRenderer(chunkSize: Int) {
+class ContentActionResultRenderer(chunkSize: Int) {
 
-  def apply(result: Action.Result): StreamResponse = result match {
+  def apply[T](result: Action.Result): ResponseFunction[T] = result match {
     case ContentFound(stream, readUpTo, closeables) =>
-      new InputStreamResponse(
-        stream,
-        chunkSize,
-        readUpTo,
-        closeables,
-        new ResponseBuilder().status(200).build
-      )
+      Ok ~> ResponseInputStream(stream, chunkSize, readUpTo, closeables)
+    case ContentAppended(path) => ???
+    case _ => ???
   }
 }

@@ -69,4 +69,7 @@ object Action {
   /** A file content response with the input stream to read from and the resources to release */
   case class ContentFound(
       stream: InputStream, readUpTo: Long, closeables: Seq[Closeable]) extends Result
+
+  /** A content was successfully appended to a file. */
+  case class ContentAppended(path: Path) extends Result
 }

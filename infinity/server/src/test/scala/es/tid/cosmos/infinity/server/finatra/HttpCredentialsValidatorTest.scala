@@ -24,6 +24,7 @@ import org.scalatest.{FlatSpec, Inside}
 import org.scalatest.matchers.{MatchResult, Matcher, MustMatchers}
 
 import es.tid.cosmos.infinity.common.credentials.{ClusterCredentials, Credentials, UserCredentials}
+import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers with Inside {
 

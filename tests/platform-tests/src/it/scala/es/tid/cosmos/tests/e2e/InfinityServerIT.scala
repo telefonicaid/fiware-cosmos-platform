@@ -44,6 +44,8 @@ class InfinityServerIT extends E2ETestBase {
         file.getAbsolutePath
       }
       val infinity = new PersistentHdfs(user1)
+      infinity.chmod("777", "/")
+
       infinity.put(source, "onlyUser.txt")
       infinity.chmod("700", "onlyUser.txt")
 

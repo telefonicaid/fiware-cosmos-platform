@@ -26,12 +26,15 @@ import org.scalatest.verb.MustVerb
 
 class PersistentHdfs(user: User)(implicit info: Informer) extends MustVerb with MustMatchers {
 
-  def ls(): Seq[String] =
-    stringToProcess(s"cosmos -c ${user.cosmosrcPath} ls /")
-      .lines(ProcessLogger(info(_)))
-      .filterNot(_ == "No directory entries")
-      .map(line => line.substring(line.lastIndexOf(' ') + 1))
-      .force
+  case class FileEntry(name: String, permissions: String, owner: String, group: String)
+
+  def ls(): Seq[FileEntry] = stringToProcess(s"cosmos -c ${user.cosmosrcPath} ls /")
+    .lines(ProcessLogger(info(_)))
+    .filterNot(_ == "No directory entries")
+    .map(line => {
+      val chunks = line.split("  ", 5)
+      FileEntry(chunks(5), chunks(0), chunks(1), chunks(2))
+    }).force
 
   def put(sourcePath: String, targetPath: String) {
     (s"cosmos -c ${user.cosmosrcPath} put $sourcePath $targetPath" !!).stripLineEnd must be ===

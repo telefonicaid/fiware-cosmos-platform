@@ -14,14 +14,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+set -e
+
+echo "Test file" > test.txt
+hdfs dfs -put test.txt infinity:///${TARGET_USER}/test.txt
+hdfs dfs -chmod 700 infinity:///${TARGET_USER}/test.txt
+hdfs def -get infinity:///${TARGET_USER}/test.txt test2.txt
+diff test.txt test2.txt
+hdfs dfs -ls infinity:///${TARGET_USER}/
+hdfs dfs -ls infinity:///${TARGET_USER}/test.txt
+hdfs dfs -mkdir infinity:///${TARGET_USER}/dummy_dir
+hdfs dfs -mv infinity:///${TARGET_USER}/test.txt infinity:///${TARGET_USER}/test2.txt
+hdfs dfs -cp infinity:///${TARGET_USER}/test2.txt infinity:///${TARGET_USER}/dummy_dir/test3.txt
+hdfs dfs -rm -r infinity:///${TARGET_USER}/dummy_dir
+hdfs dfs -rm infinity:///${TARGET_USER}/test*
 
 set +e
-hdfs dfs -get infinity:///$TARGET_USER/onlyUser.txt .
+hdfs dfs -get infinity:///${TARGET_USER}/onlyUser.txt .
 if [ $? == "0" ]; then
   echo "Was able to read a user-only file from a shared cluster"
   exit $?
 fi
 set -e
 
-hdfs dfs -get infinity:///$TARGET_USER/onlyGroup.txt .
-hdfs dfs -get infinity:///$TARGET_USER/onlyEveryone.txt .
+hdfs dfs -get infinity:///${TARGET_USER}/onlyGroup.txt .
+hdfs dfs -get infinity:///${TARGET_USER}/onlyEveryone.txt .

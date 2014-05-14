@@ -66,6 +66,7 @@ abstract class Application {
     val ial = this.infrastructureProvider
     val multiAuthProvider = this.multiAuthProvider
     val auth = apiRequestAuthentication
+    val infinityPort = conf.getInt("infinity.httpPort")
     controllerMap(
       // Pages
       new Pages(
@@ -88,7 +89,7 @@ abstract class Application {
       new InfoResource(auth, store, serviceManager, machineUsage),
       new ProfileResource(auth, store),
       new ClusterResource(auth, serviceManager, machineUsage, taskDao, store, status, reporter),
-      new StorageResource(auth, serviceManager, status),
+      new StorageResource(auth, serviceManager, status, infinityPort),
       new MaintenanceResource(auth, status),
       new TaskResource(auth, taskDao),
 

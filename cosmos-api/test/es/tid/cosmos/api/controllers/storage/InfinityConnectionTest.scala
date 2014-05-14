@@ -21,18 +21,18 @@ import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.Json
 import java.net.URI
 
-class WebHdfsConnectionTest extends FlatSpec with MustMatchers {
+class InfinityConnectionTest extends FlatSpec with MustMatchers {
 
-  "WebHDFS connection details" must "require locations with 'webhdfs' scheme" in {
+  "Infinity connection details" must "require locations with 'infinity' scheme" in {
     evaluating {
-      WebHdfsConnection(location = new URI("ftp://host:8080/path"), user = "user")
+      InfinityConnection(location = new URI("ftp://host:8080/path"), user = "user")
     } must produce [IllegalArgumentException]
   }
 
   it must "be serializable to JSON" in {
-    val connection = WebHdfsConnection(location = new URI("webhdfs://localhost/"), user = "jsmith")
+    val connection = InfinityConnection(location = new URI("infinity://localhost/"), user = "jsmith")
     Json.toJson(connection) must be (Json.obj(
-      "location" -> "webhdfs://localhost/",
+      "location" -> "infinity://localhost/",
       "user" -> "jsmith"
     ))
   }

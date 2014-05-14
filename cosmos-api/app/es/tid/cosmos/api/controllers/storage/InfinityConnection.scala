@@ -22,23 +22,23 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 /**
- * Represents a connection to a WebHDFS resource.
+ * Represents a connection to an Infinity resource.
  *
- * @param location url with webhdfs: scheme
- * @param user     username to access the WebHDFS
+ * @param location url with infinity: scheme
+ * @param user     username to access Infinity
  */
-case class WebHdfsConnection(location: URI, user: String) {
-  require(location.getScheme == "webhdfs")
+case class InfinityConnection(location: URI, user: String) {
+  require(location.getScheme == "infinity")
 }
 
-object WebHdfsConnection {
-  implicit val webHdfsConnectionReads: Reads[WebHdfsConnection] = (
+object InfinityConnection {
+  implicit val infinityConnectionReads: Reads[InfinityConnection] = (
     (__ \ "location").read[String] ~
     (__ \ "user").read[String]
-  )((location, user) => WebHdfsConnection(new URI(location), user))
+  )((location, user) => InfinityConnection(new URI(location), user))
 
-  implicit object WebHdfsConnectionWrites extends Writes[WebHdfsConnection] {
-    def writes(connection: WebHdfsConnection): JsValue = Json.obj(
+  implicit object InfinityConnectionWrites extends Writes[InfinityConnection] {
+    def writes(connection: InfinityConnection): JsValue = Json.obj(
       "location" -> connection.location.toString,
       "user" -> connection.user
     )

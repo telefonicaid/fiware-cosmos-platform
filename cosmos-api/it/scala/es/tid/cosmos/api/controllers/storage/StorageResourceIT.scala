@@ -45,9 +45,9 @@ class StorageResourceIT
     val result = regUserInGroup.doRequest(request)
     status(result) must be (OK)
     val jsonBody = contentAsJson(result)
-    val conn = Json.fromJson[WebHdfsConnection](jsonBody)
+    val conn = Json.fromJson[InfinityConnection](jsonBody)
     conn must not be JsError
-    conn.get.location.getScheme must be ("webhdfs")
+    conn.get.location.getScheme must be ("infinity")
     conn.get.location.getHost must be (persistentHdfsCluster.master.get.ipAddress)
     conn.get.user must be (regUserInGroup.handle)
   }

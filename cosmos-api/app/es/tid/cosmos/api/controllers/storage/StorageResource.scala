@@ -36,7 +36,8 @@ import es.tid.cosmos.api.auth.request.RequestAuthentication
 class StorageResource(
     override val auth: RequestAuthentication,
     serviceManager: ServiceManager,
-    override val maintenanceStatus: MaintenanceStatus)
+    override val maintenanceStatus: MaintenanceStatus,
+    infinityHttpPort: Int)
   extends ApiAuthController with MaintenanceAwareController {
 
   import Scalaz._
@@ -55,7 +56,7 @@ class StorageResource(
       _ <- requireResourceNotUnderMaintenance()
       profile <- requireAuthenticatedApiRequest(request)
       location <- persistentWebHdfsUri().toSuccess(UnavailableHdfsResponse)
-    } yield Ok(Json.toJson(WebHdfsConnection(location, profile.handle)))
+    } yield Ok(Json.toJson(InfinityConnection(location, profile.handle)))
   }
 
   private def persistentWebHdfsUri(): Option[URI] = for {
@@ -64,5 +65,5 @@ class StorageResource(
   } yield toWebHdfsUri(description.nameNode.get)
 
   private def toWebHdfsUri(nameNode: URI): URI =
-    new URI("webhdfs", null, nameNode.getHost, nameNode.getPort, null, null, null)
+    new URI("infinity", null, nameNode.getHost, infinityHttpPort, null, null, null)
 }

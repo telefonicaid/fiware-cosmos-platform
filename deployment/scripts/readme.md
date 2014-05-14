@@ -110,7 +110,10 @@ references from `openstack/common.yaml` from `cosmos10.hi.inet` to
    --command "bash ~/cosmos/scripts/puppet-apply.sh \
      --base ~/cosmos/deployment --slave \
      --hostname store1 --environment openstack \
-     --store1_cthostname <public ip>"
+     --store1_cthostname <public ip> \
+     --store2_cthostname <public ip> \
+     --compute1_cthostname <public ip> \
+     --compute2_cthostname <public ip>"
    ```
 
    Repeat for `store2`, `compute1` and `compute2`.

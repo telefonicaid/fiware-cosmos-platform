@@ -15,17 +15,20 @@
  */
 
 package es.tid.cosmos.infinity.server.actions
+
 import scala.concurrent._
 
 import es.tid.cosmos.infinity.common.fs._
+import es.tid.cosmos.infinity.server.actions.Action.Context
+import es.tid.cosmos.infinity.server.actions.MetadataAction.Retrieved
 
-case class GetMetadata(nameNode: NameNode, on: Path) extends Action {
+case class GetMetadata(nameNode: NameNode, on: Path) extends MetadataAction {
 
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] = nameNode.as(context.user) {
+  override def apply(context: Context): Future[MetadataAction.Result] = nameNode.as(context.user) {
     for {
       meta <- nameNode.pathMetadata(on)
-    } yield Action.Retrieved(meta)
+    } yield Retrieved(meta)
   }
 }

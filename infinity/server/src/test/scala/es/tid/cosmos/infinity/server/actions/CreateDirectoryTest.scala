@@ -31,7 +31,7 @@ class CreateDirectoryTest extends FlatSpec with MustMatchers with FutureMatchers
     doReturn(Future.successful(())).when(nameNode)
       .createDirectory(on, user.username, user.groups.head, permissions)
     doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
-    createDirectory(context) must eventually (be (Action.Created(metadata)))
+    createDirectory(context) must eventually (be (MetadataAction.Created(metadata)))
   }
 
   it must "fail if name node fails to create the directory" in new Fixture {

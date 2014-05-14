@@ -19,14 +19,16 @@ package es.tid.cosmos.infinity.server.actions
 import scala.concurrent._
 
 import es.tid.cosmos.infinity.common.fs.Path
+import es.tid.cosmos.infinity.server.actions.Action.Context
+import es.tid.cosmos.infinity.server.actions.MetadataAction.GroupSet
 
-case class ChangeGroup(nameNode: NameNode, on: Path, group: String) extends Action {
+case class ChangeGroup(nameNode: NameNode, on: Path, group: String) extends MetadataAction {
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] = nameNode.as(context.user) {
+  override def apply(context: Context): Future[MetadataAction.Result] = nameNode.as(context.user) {
     for {
       _ <- nameNode.setGroup(on, group)
       metadata <- nameNode.pathMetadata(on)
-    } yield Action.GroupSet(metadata)
+    } yield GroupSet(metadata)
   }
 }

@@ -28,7 +28,7 @@ class GetMetadataTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   "Get metadata action" must "return Retrieved upon successful retrieve" in new Fixture {
     doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
-    getMetadata(context) must eventually (be (Action.Retrieved(metadata)))
+    getMetadata(context) must eventually (be (MetadataAction.Retrieved(metadata)))
   }
 
   it must "fail if name node fails to retrieve old metadata" in new Fixture {

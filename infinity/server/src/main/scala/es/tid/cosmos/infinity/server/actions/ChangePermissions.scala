@@ -20,16 +20,18 @@ import scala.concurrent._
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.server.actions.Action.Context
+import es.tid.cosmos.infinity.server.actions.MetadataAction.PermissionsSet
 
 case class ChangePermissions(
-    nameNode: NameNode, on: Path, permissions: PermissionsMask) extends Action {
+    nameNode: NameNode, on: Path, permissions: PermissionsMask) extends MetadataAction {
 
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] = nameNode.as(context.user) {
+  override def apply(context: Context): Future[MetadataAction.Result] = nameNode.as(context.user) {
     for {
       _ <- nameNode.setPermissions(on, permissions)
       metadata <- nameNode.pathMetadata(on)
-    } yield Action.PermissionsSet(metadata)
+    } yield PermissionsSet(metadata)
   }
 }

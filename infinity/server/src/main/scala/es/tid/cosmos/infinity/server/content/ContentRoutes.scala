@@ -28,9 +28,9 @@ import unfiltered.response._
 import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.ContentServerConfig
+import es.tid.cosmos.infinity.server.finatra.HttpCredentialsValidator
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 import es.tid.cosmos.infinity.server.urls.UrlMapper
-import es.tid.cosmos.infinity.server.finatra.HttpCredentialsValidator
 
 class ContentRoutes(
       config: ContentServerConfig,

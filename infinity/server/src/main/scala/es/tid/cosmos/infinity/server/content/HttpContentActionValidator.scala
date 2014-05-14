@@ -41,7 +41,7 @@ class HttpContentActionValidator(
 
   private val contentUriPrefix = s"""${config.localContentServerUrl.getPath}(/[^\\?]*)(\\?.*)?""".r
 
-  def apply[T](request: HttpRequest[T]): Validation[RequestParsingException, Action] =
+  def apply[T](request: HttpRequest[T]): Validation[RequestParsingException, ContentAction] =
     request.uri match {
       case contentUriPrefix(path, _) => contentAction(path, request)
       case uri => RequestParsingException.InvalidResourcePath(uri).failure

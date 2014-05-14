@@ -29,7 +29,7 @@ class ChangeGroupTest extends FlatSpec with MustMatchers with FutureMatchers {
   "Change group action" must "return GroupSet upon successful group set" in new Fixture {
     doReturn(Future.successful(())).when(nameNode).setGroup(on, newGroup)
     doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
-    changeGroup(context) must eventually (be (Action.GroupSet(metadata)))
+    changeGroup(context) must eventually (be (MetadataAction.GroupSet(metadata)))
   }
 
   it must "fail if name node fails to set group" in new Fixture {

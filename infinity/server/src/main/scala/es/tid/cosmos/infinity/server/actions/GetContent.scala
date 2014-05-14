@@ -22,14 +22,15 @@ import scala.math.min
 import org.apache.hadoop.hdfs.client.HdfsDataInputStream
 
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.server.actions.Action.{ContentFound, Result, Context}
+import es.tid.cosmos.infinity.server.actions.Action.Context
+import es.tid.cosmos.infinity.server.actions.ContentAction.Found
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 
 case class GetContent(
     dfsClientFactory: DfsClientFactory,
     on: Path,
     offset: Option[Long],
-    length: Option[Long]) extends Action {
+    length: Option[Long]) extends ContentAction {
 
   import ExecutionContext.Implicits.global
   import GetContent._
@@ -37,12 +38,12 @@ case class GetContent(
   val actualOffset: Long = offset.getOrElse(NoOffset)
   val actualLength: Long = length.getOrElse(Long.MaxValue)
 
-  override def apply(context: Context): Future[Result] = future {
+  override def apply(context: Context): Future[ContentAction.Result] = future {
     val client = dfsClientFactory.newClient
     val in = new HdfsDataInputStream(client.open(on.toString))
     in.seek(actualOffset)
     val readUpTo = min(actualLength, in.getVisibleLength - actualOffset)
-    ContentFound(in, readUpTo, Seq(in, client))
+    Found(in, readUpTo, Seq(in, client))
   }
 }
 

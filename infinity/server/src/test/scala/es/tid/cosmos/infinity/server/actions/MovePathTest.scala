@@ -42,7 +42,7 @@ class MovePathTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   trait Fixture extends ActionFixture {
     val from = Path.absolute("/from/file")
-    val metadataResult = Action.Moved(metadata)
+    val metadataResult = MetadataAction.Moved(metadata)
     val moveFile = MovePath(config, nameNode, on, from)
   }
 }

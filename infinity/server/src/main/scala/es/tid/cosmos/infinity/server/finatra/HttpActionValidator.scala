@@ -36,7 +36,7 @@ class HttpActionValidator(config: InfinityConfig, nameNode: NameNode) {
   private val jsonParser = new RequestMessageParser()
   private val metadataUriPrefix = s"""${config.metadataBasePath}(/[^\\?]*)(\\?.*)?""".r
 
-  def apply(request: Request): Validation[RequestParsingException, Action] =
+  def apply(request: Request): Validation[RequestParsingException, MetadataAction] =
     request.getUri() match {
       case metadataUriPrefix(path, _) => metadataAction(path, request)
       case uri => RequestParsingException.InvalidResourcePath(uri).failure

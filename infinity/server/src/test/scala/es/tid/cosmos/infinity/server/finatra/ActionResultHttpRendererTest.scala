@@ -22,7 +22,7 @@ import es.tid.cosmos.infinity.common.fs.{Path, FileMetadata}
 import java.net.URL
 import java.util.Date
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
-import es.tid.cosmos.infinity.server.actions.Action
+import es.tid.cosmos.infinity.server.actions.MetadataAction._
 import org.jboss.netty.handler.codec.http.HttpResponseStatus
 
 class ActionResultHttpRendererTest extends FlatSpec with MustMatchers {
@@ -42,43 +42,43 @@ class ActionResultHttpRendererTest extends FlatSpec with MustMatchers {
   )
 
   "Action resut HTTP renderer" must "render Action.Retrieved" in {
-    val rep = ActionResultHttpRenderer(Action.Retrieved(metadata)).build
+    val rep = ActionResultHttpRenderer(Retrieved(metadata)).build
     rep.status must be (HttpResponseStatus.OK)
     rep.getContentString() must include ("/path/to/file")
   }
 
-  it must "render Action.Created" in {
-    val rep = ActionResultHttpRenderer(Action.Created(metadata)).build
+  it must "render Created" in {
+    val rep = ActionResultHttpRenderer(Created(metadata)).build
     rep.status must be (HttpResponseStatus.CREATED)
     rep.getContentString() must include ("/path/to/file")
   }
 
-  it must "render Action.Moved" in {
-    val rep = ActionResultHttpRenderer(Action.Moved(metadata)).build
+  it must "render Moved" in {
+    val rep = ActionResultHttpRenderer(Moved(metadata)).build
     rep.status must be (HttpResponseStatus.CREATED)
     rep.getContentString() must include ("/path/to/file")
   }
 
-  it must "render Action.Deleted" in {
-    val rep = ActionResultHttpRenderer(Action.Deleted(metadata)).build
+  it must "render Deleted" in {
+    val rep = ActionResultHttpRenderer(Deleted(metadata)).build
     rep.status must be (HttpResponseStatus.NO_CONTENT)
     rep.getContentString() must be ('empty)
   }
 
-  it must "render Action.OwnerSet" in {
-    val rep = ActionResultHttpRenderer(Action.OwnerSet(metadata)).build
+  it must "render OwnerSet" in {
+    val rep = ActionResultHttpRenderer(OwnerSet(metadata)).build
     rep.status must be (HttpResponseStatus.NO_CONTENT)
     rep.getContentString() must be ('empty)
   }
 
-  it must "render Action.GroupSet" in {
-    val rep = ActionResultHttpRenderer(Action.GroupSet(metadata)).build
+  it must "render GroupSet" in {
+    val rep = ActionResultHttpRenderer(GroupSet(metadata)).build
     rep.status must be (HttpResponseStatus.NO_CONTENT)
     rep.getContentString() must be ('empty)
   }
 
-  it must "render Action.PermissionsSet" in {
-    val rep = ActionResultHttpRenderer(Action.PermissionsSet(metadata)).build
+  it must "render PermissionsSet" in {
+    val rep = ActionResultHttpRenderer(PermissionsSet(metadata)).build
     rep.status must be (HttpResponseStatus.NO_CONTENT)
     rep.getContentString() must be ('empty)
   }

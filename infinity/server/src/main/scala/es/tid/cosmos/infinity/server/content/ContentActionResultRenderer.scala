@@ -18,16 +18,16 @@ package es.tid.cosmos.infinity.server.content
 
 import unfiltered.response._
 
-import es.tid.cosmos.infinity.server.actions.Action
-import es.tid.cosmos.infinity.server.actions.Action.{ContentAppended, ContentFound}
+import es.tid.cosmos.infinity.server.actions.ContentAction
+import es.tid.cosmos.infinity.server.actions.ContentAction.{Appended, Found}
 import es.tid.cosmos.infinity.server.unfiltered.response.ResponseInputStream
 
 class ContentActionResultRenderer(chunkSize: Int) {
 
-  def apply[T](result: Action.Result): ResponseFunction[T] = result match {
-    case ContentFound(stream, readUpTo, closeables) =>
+  def apply[T](result: ContentAction.Result): ResponseFunction[T] = result match {
+    case Found(stream, readUpTo, closeables) =>
       Ok ~> ResponseInputStream(stream, chunkSize, readUpTo, closeables)
-    case ContentAppended(path) => ???
+    case Appended(path) => ???
     case _ => ???
   }
 }

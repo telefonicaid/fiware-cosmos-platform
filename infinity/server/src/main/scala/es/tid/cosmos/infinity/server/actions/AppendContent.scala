@@ -20,26 +20,27 @@ import java.io.InputStream
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 
+import org.apache.hadoop.io.IOUtils
+
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.Action._
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
-import org.apache.hadoop.io.IOUtils
 
 case class AppendContent(
     dfsClientFactory: DfsClientFactory,
     on: Path,
-    in: InputStream) extends Action {
+    in: InputStream,
+    bufferSize: Int) extends Action {
   import AppendContent._
 
   override def apply(context: Context): Future[Result] = future {
     val client = dfsClientFactory.newClient
-    val out = client.append(on.toString, BufferSize, NoProgress, NoStatistics)
-    IOUtils.copyBytes(in, out, BufferSize)
+    val out = client.append(on.toString, bufferSize, NoProgress, NoStatistics)
+    IOUtils.copyBytes(in, out, bufferSize)
     ContentAppended(on)
   }
 }
 
 object AppendContent {
-  private val BufferSize = 4096
   private val NoProgress, NoStatistics = null
 }

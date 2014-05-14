@@ -16,6 +16,7 @@
 
 package es.tid.cosmos.infinity.server.content
 
+import javax.servlet.http.HttpServletResponse
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -54,13 +55,14 @@ class ContentRoutes(
       } yield renderResult(result)
     val responder = Responder(request)
     response.fold(
-      error => responder.respond(ContentExceptionRenderer(error)),
+      error => responder.respond(ExceptionRenderer(error)),
       success => responder.respond(success)
     )
   }
 }
 
 private object ContentRoutes {
+  lazy val ExceptionRenderer = new UnfilteredExceptionRenderer[HttpServletResponse]
 
   case class Responder[T](responder: Async.Responder[T]) {
     def respond(response_> : Future[ResponseFunction[T]]): Unit = {

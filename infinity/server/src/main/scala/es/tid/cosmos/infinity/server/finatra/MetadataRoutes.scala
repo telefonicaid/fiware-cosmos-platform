@@ -30,6 +30,7 @@ class MetadataRoutes(
     authService: AuthenticationService,
     nameNode: NameNode,
     urlMapper: UrlMapper) extends Controller {
+  import MetadataRoutes._
 
   private val basePath = config.metadataBasePath
   private val actionValidator = new HttpActionValidator(config, nameNode)
@@ -55,4 +56,8 @@ class MetadataRoutes(
   // `splat` is an undocumented Finatra tag. For wilcards routes extractions see
   // https://github.com/twitter/finatra/blob/master/src/main/scala/com/twitter/finatra/PathParser.scala
   private def getPath(request: Request): String = "/" + request.routeParams.getOrElse("splat", "")
+}
+
+private object MetadataRoutes {
+  lazy val ExceptionRenderer = new FinatraExceptionRenderer
 }

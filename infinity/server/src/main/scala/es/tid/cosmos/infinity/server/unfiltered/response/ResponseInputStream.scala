@@ -17,6 +17,7 @@
 package es.tid.cosmos.infinity.server.unfiltered.response
 
 import java.io.{Closeable, OutputStream, InputStream}
+import java.util
 import scala.annotation.tailrec
 import scala.math.min
 
@@ -31,16 +32,17 @@ case class ResponseInputStream(
     closeables: Seq[Closeable]) extends ResponseStreamer {
 
   import ResponseInputStream._
+  lazy val buffer = new Array[Byte](maxChunkSize)
 
   override def stream(out: OutputStream): Unit = IoUtil.withAutoClose((in +: closeables).distinct) {
     @tailrec
     def transfer(leftToRead: Long): Unit = {
       val chunkSize = min(maxChunkSize, leftToRead).toInt
-      val buffer = new Array[Byte](chunkSize)
+      cleanBuffer()
       val bytesRead: Int = in.read(buffer, NoOffset, chunkSize)
       val nextLeftToRead = leftToRead - bytesRead
       if (gotContentFromStream(bytesRead)) {
-        out.write(buffer)
+        out.write(buffer, NoOffset, bytesRead)
         out.flush()
         if (moreLeftToRead(nextLeftToRead)) transfer(nextLeftToRead)
       }
@@ -48,10 +50,15 @@ case class ResponseInputStream(
 
     transfer(length)
   }
+
+  private def cleanBuffer(): Unit = {
+    util.Arrays.fill(buffer, NullByte)
+  }
 }
 
 object ResponseInputStream {
   private val NoOffset = 0
+  private val NullByte: Byte = 0
   private def gotContentFromStream(bytesRead: Int) = bytesRead > -1
   private def moreLeftToRead(leftToRead: Long) = leftToRead > 0
 }

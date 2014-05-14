@@ -56,7 +56,8 @@ class HttpContentActionValidator(
         case Failure(e) =>
           RequestParsingException.InvalidRequestParams(Seq("offset", "length"), e).failure
       }
-      case POST(_) => AppendContent(dfsClientFactory, absolutePath, request.inputStream).success
+      case POST(_) =>
+        AppendContent(dfsClientFactory, absolutePath, request.inputStream, config.bufferSize).success
     }
   }
 

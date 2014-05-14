@@ -24,7 +24,7 @@ import es.tid.cosmos.infinity.server.authentication.AuthenticationException
 import es.tid.cosmos.infinity.server.actions.NameNodeException
 import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
-class ExceptionRendererTest extends FlatSpec with MustMatchers {
+class FinatraExceptionRendererTest extends FlatSpec with MustMatchers {
 
   "Exception renderer" must "render MissingAuthorizationHeader" in {
     givenException(new RequestParsingException.MissingAuthorizationHeader())
@@ -83,7 +83,7 @@ class ExceptionRendererTest extends FlatSpec with MustMatchers {
 
   case class givenException(e: Throwable) {
     def mustRenderTo(statusCode: Int, errorCode: String) = {
-      val rep = ExceptionRenderer(e).build
+      val rep = new FinatraExceptionRenderer().apply(e).build
       rep.getStatusCode() must be (statusCode)
       rep.getContentString() must include (errorCode)
     }

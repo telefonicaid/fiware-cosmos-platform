@@ -15,13 +15,17 @@
  */
 package es.tid.cosmos.infinity.server.finatra
 
+import java.net.InetAddress
 import scala.concurrent.ExecutionContext.Implicits.global
+import scalaz.Validation
 
 import com.twitter.finatra.{Controller, Request}
 
 import es.tid.cosmos.infinity.server.actions.{Action, NameNode}
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
+import es.tid.cosmos.infinity.server.authorization.{AuthInfo, HttpCredentialsValidator}
 import es.tid.cosmos.infinity.server.config.InfinityConfig
+import es.tid.cosmos.infinity.server.errors.RequestParsingException
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 import es.tid.cosmos.infinity.server.util.TwitterConversions._
 
@@ -37,19 +41,20 @@ class MetadataRoutes(
 
   get(s"$basePath/*") { request =>
     val response = for {
-      credentials <- HttpCredentialsValidator(request.remoteAddress, request)
+      authInfo <- authorizationInfo(request.remoteAddress, request)
+      credentials <- HttpCredentialsValidator(authInfo)
       action <- actionValidator(request)
     } yield for {
       profile <- authService.authenticate(credentials)
       context = Action.Context(profile, urlMapper)
       result <- action(context)
     } yield ActionResultHttpRenderer(result)
-    response.fold(error => ExceptionRenderer(error).toFuture, success => success.toTwitter)
+    response.fold(error => FinatraExceptionRenderer(error).toFuture, success => success.toTwitter)
   }
 
   error { request => request.error match {
-    case Some(e) => ExceptionRenderer(e).toFuture
-    case None => ExceptionRenderer(new IllegalStateException(
+    case Some(e) => FinatraExceptionRenderer(e).toFuture
+    case None => FinatraExceptionRenderer(new IllegalStateException(
       "Finatra invoked the error handling routine but no error was found")).toFuture
   }}
 
@@ -59,5 +64,11 @@ class MetadataRoutes(
 }
 
 private object MetadataRoutes {
-  lazy val ExceptionRenderer = new FinatraExceptionRenderer
+  def authorizationInfo(
+      from: InetAddress, request: Request): Validation[RequestParsingException, AuthInfo] = {
+    import scalaz.Scalaz._
+    Option(request.headers().get("Authorization"))
+      .map(AuthInfo(from, _).success)
+      .getOrElse(RequestParsingException.MissingAuthorizationHeader().failure)
+  }
 }

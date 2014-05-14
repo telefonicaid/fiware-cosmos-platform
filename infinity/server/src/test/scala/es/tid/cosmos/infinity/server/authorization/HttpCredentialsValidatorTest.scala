@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.authorization
 
 import java.net.InetAddress
 import scalaz.{Success, Validation}
 
-import com.twitter.finagle.http.{Request, RequestBuilder}
 import org.scalatest.{FlatSpec, Inside}
 import org.scalatest.matchers.{MatchResult, Matcher, MustMatchers}
 
@@ -30,52 +29,30 @@ class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers with Insid
 
   val from = InetAddress.getLocalHost
 
-  "HTTP credentials validator" must "fail to extract credentials on missing Authorization header" in {
-    val req = Request(RequestBuilder()
-      .url("http://example.com/")
-      .buildGet())
-    HttpCredentialsValidator(from, req) must failWith[RequestParsingException.MissingAuthorizationHeader]
-  }
-
-  it must "fail to extract credentials on unsupported Authorization header" in {
+  "HTTP credentials validator" must "fail to extract credentials on unsupported Authorization header" in {
     val auth = "Digest YXBpLWtleTphcGktc2VjcmV0" // "api-key:api-secret"
-    val req = Request(RequestBuilder()
-      .url("http://example.com/")
-      .addHeader("Authorization", auth)
-      .buildGet())
-    HttpCredentialsValidator(from, req) must failWith[RequestParsingException.UnsupportedAuthorizationHeader]
+    val info = AuthInfo(from, auth)
+    HttpCredentialsValidator(info) must failWith[RequestParsingException.UnsupportedAuthorizationHeader]
   }
 
   it must "extract user credentials" in {
-    val req = Request(RequestBuilder()
-      .url("http://example.com/")
-      .addHeader("Authorization", "Basic YXBpLWtleTphcGktc2VjcmV0") // "api-key:api-secret"
-      .buildGet())
-    HttpCredentialsValidator(from, req) must be (Success(UserCredentials("api-key", "api-secret")))
+    val info = AuthInfo(from, "Basic YXBpLWtleTphcGktc2VjcmV0")
+    HttpCredentialsValidator(info) must be (Success(UserCredentials("api-key", "api-secret")))
   }
 
   it must "fail to extract user credentials from unexpected basic pair" in {
-    val req = Request(RequestBuilder()
-      .url("http://example.com/")
-      .addHeader("Authorization", "Basic YXBpLWtleUBhcGktc2VjcmV0") // "api-key@api-secret"
-      .buildGet())
-    HttpCredentialsValidator(from, req) must failWith[RequestParsingException.MalformedKeySecretPair]
+    val info = AuthInfo(from, "Basic YXBpLWtleUBhcGktc2VjcmV0")
+    HttpCredentialsValidator(info) must failWith[RequestParsingException.MalformedKeySecretPair]
   }
 
   it must "fail to extract user credentials from invalid hash" in {
-    val req = Request(RequestBuilder()
-      .url("http://example.com/")
-      .addHeader("Authorization", "Basic @@@@@@@@@")
-      .buildGet())
-    HttpCredentialsValidator(from, req) must failWith[RequestParsingException.InvalidBasicHash]
+    val info = AuthInfo(from, "Basic @@@@@@@@@")
+    HttpCredentialsValidator(info) must failWith[RequestParsingException.InvalidBasicHash]
   }
 
   it must "extract cluster credentials" in {
-    val req = Request(RequestBuilder()
-      .url("http://example.com/")
-      .addHeader("Authorization", "Bearer cluster-secret")
-      .buildGet())
-    HttpCredentialsValidator(from, req) must
+    val info = AuthInfo(from, "Bearer cluster-secret")
+    HttpCredentialsValidator(info) must
       be (Success(ClusterCredentials(from, "cluster-secret")))
   }
 

@@ -32,17 +32,17 @@ case class ResponseInputStream(
     closeables: Seq[Closeable]) extends ResponseStreamer {
 
   import ResponseInputStream._
-  lazy val buffer = new Array[Byte](maxChunkSize)
+  lazy val mutableBuffer = new Array[Byte](maxChunkSize)
 
   override def stream(out: OutputStream): Unit = IoUtil.withAutoClose((in +: closeables).distinct) {
     @tailrec
     def transfer(leftToRead: Long): Unit = {
       val chunkSize = min(maxChunkSize, leftToRead).toInt
       cleanBuffer()
-      val bytesRead: Int = in.read(buffer, NoOffset, chunkSize)
+      val bytesRead: Int = in.read(mutableBuffer, NoOffset, chunkSize)
       val nextLeftToRead = leftToRead - bytesRead
       if (gotContentFromStream(bytesRead)) {
-        out.write(buffer, NoOffset, bytesRead)
+        out.write(mutableBuffer, NoOffset, bytesRead)
         out.flush()
         if (moreLeftToRead(nextLeftToRead)) transfer(nextLeftToRead)
       }
@@ -52,7 +52,7 @@ case class ResponseInputStream(
   }
 
   private def cleanBuffer(): Unit = {
-    util.Arrays.fill(buffer, NullByte)
+    util.Arrays.fill(mutableBuffer, NullByte)
   }
 }
 

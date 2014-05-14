@@ -16,21 +16,25 @@
 
 package es.tid.cosmos.infinity.server.content
 
+import java.net.InetAddress
 import javax.servlet.http.HttpServletResponse
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scalaz.Validation
 
 import unfiltered.Async
 import unfiltered.filter.async
 import unfiltered.filter.async.Plan.Intent
 import unfiltered.response._
+import unfiltered.request.{Authorization, HttpRequest}
 
 import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.ContentServerConfig
-import es.tid.cosmos.infinity.server.finatra.HttpCredentialsValidator
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 import es.tid.cosmos.infinity.server.urls.UrlMapper
+import es.tid.cosmos.infinity.server.authorization._
+import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 class ContentRoutes(
       config: ContentServerConfig,
@@ -46,7 +50,8 @@ class ContentRoutes(
 
   override def intent: Intent = { case request =>
     val response = for {
-      credentials <- HttpCredentialsValidator(request.remoteAddr, request)
+      authInfo <- authorizationInfo(request.remoteAddr, request)
+      credentials <- HttpCredentialsValidator(authInfo)
       action <- actionValidator(request)
     } yield for {
         profile <- authService.authenticate(credentials)
@@ -63,6 +68,15 @@ class ContentRoutes(
 
 private object ContentRoutes {
   lazy val ExceptionRenderer = new UnfilteredExceptionRenderer[HttpServletResponse]
+
+  private def authorizationInfo[T](
+      from: String, request: HttpRequest[T]): Validation[RequestParsingException, AuthInfo] = {
+    import scalaz.Scalaz._
+    request match {
+      case Authorization(header) => AuthInfo(InetAddress.getByName(from), header).success
+      case _ => RequestParsingException.MissingAuthorizationHeader().failure
+    }
+  }
 
   case class Responder[T](responder: Async.Responder[T]) {
     def respond(response_> : Future[ResponseFunction[T]]): Unit = {

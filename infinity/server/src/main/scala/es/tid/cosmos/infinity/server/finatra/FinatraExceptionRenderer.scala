@@ -20,9 +20,10 @@ import com.twitter.finatra.ResponseBuilder
 
 import es.tid.cosmos.infinity.server.errors.ExceptionRenderer
 
-class FinatraExceptionRenderer extends ExceptionRenderer[ResponseBuilder] {
-  override protected def withAuthHeader(response: ResponseBuilder): ResponseBuilder =
-    response.header("WWW-Authenticate", """Basic realm="Infinity", Bearer realm="Infinity"""")
+object FinatraExceptionRenderer extends ExceptionRenderer[ResponseBuilder] {
+  override protected def withAuthHeader(
+      response: ResponseBuilder, headerContent: String): ResponseBuilder =
+    response.header("WWW-Authenticate", headerContent)
 
   override protected def render(status: Int, jsonContent: String): ResponseBuilder =
     new ResponseBuilder().status(status).json(jsonContent)

@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.content
+package es.tid.cosmos.infinity.server.authorization
 
-import unfiltered.response._
+import java.net.InetAddress
 
-import es.tid.cosmos.infinity.server.errors.ExceptionRenderer
-
-class UnfilteredExceptionRenderer[T] extends ExceptionRenderer[ResponseFunction[T]] {
-  override protected def withAuthHeader(
-      response: ResponseFunction[T], headerContent: String): ResponseFunction[T] =
-    response ~> WWWAuthenticate(headerContent)
-
-  override protected def render(status: Int, jsonContent: String): ResponseFunction[T] =
-    Status(status) ~> JsonContent ~> ResponseString(jsonContent)
+/** A request's authorization information.
+  *
+  * @param from   the request's origin host
+  * @param header the request's authorization request
+  */
+case class AuthInfo(from: InetAddress, header: String) {
+  require(!header.isEmpty, "Cannot have an empty authorization header")
 }

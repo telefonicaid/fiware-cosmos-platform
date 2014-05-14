@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.errors
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.server.authentication.AuthenticationException
 import es.tid.cosmos.infinity.server.actions.NameNodeException
-import es.tid.cosmos.infinity.server.errors.RequestParsingException
+import es.tid.cosmos.infinity.server.authentication.AuthenticationException
 
-class FinatraExceptionRendererTest extends FlatSpec with MustMatchers {
+class ExceptionRendererTest extends FlatSpec with MustMatchers {
 
   "Exception renderer" must "render MissingAuthorizationHeader" in {
     givenException(new RequestParsingException.MissingAuthorizationHeader())
@@ -83,9 +82,14 @@ class FinatraExceptionRendererTest extends FlatSpec with MustMatchers {
 
   case class givenException(e: Throwable) {
     def mustRenderTo(statusCode: Int, errorCode: String) = {
-      val rep = new FinatraExceptionRenderer().apply(e).build
-      rep.getStatusCode() must be (statusCode)
-      rep.getContentString() must include (errorCode)
+      val rep = MockRenderer(e)
+      rep.status must be (statusCode)
+      rep.content must include (errorCode)
     }
+  }
+  case class Response(status: Int, content: String)
+  object MockRenderer extends ExceptionRenderer[Response] {
+    protected def withAuthHeader(response: Response, headerContent: String) = response
+    protected def render(status: Int, jsonContent: String)= Response(status, jsonContent)
   }
 }

@@ -16,7 +16,7 @@
 
 class cosmos::cluster_hosts inherits cosmos::params {
 
-  # NOTE: This function presupones that ct_hostname contains the vm public IP.
+  # NOTE: This function assumes that ct_hostname contains the vm public IP.
   define addHostEntry {
     host { $title:
       ip => hiera('cosmos::slave::ct_hostname',nil, $title),

@@ -23,7 +23,7 @@ include "cluster-properties"
     }
 }
 
-"webhcat" {
+"services" = [{
     "configType" = "webhcat-site"
     "properties" {
         "templeton.exec.timeout": "60000",
@@ -43,4 +43,4 @@ include "cluster-properties"
         "templeton.streaming.jar": "hdfs:///apps/webhcat/hadoop-streaming.jar",
         "templeton.zookeeper.hosts": ${ZookeeperHosts}
     }
-}
+}]

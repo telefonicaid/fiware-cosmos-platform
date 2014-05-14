@@ -18,7 +18,7 @@ package es.tid.cosmos.servicemanager.ambari
 
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.ambari.services.{AmbariService, AmbariServiceFactory, TestService}
+import es.tid.cosmos.servicemanager.ambari.services.{AmbariService, AmbariServiceFactory}
 import es.tid.cosmos.servicemanager.configuration._
 import es.tid.cosmos.servicemanager.services.ServiceCatalogue
 
@@ -68,7 +68,7 @@ object ConfiguratorTestHelpers {
     ConfigurationBundle(
       Some(GlobalConfiguration(properties("Global", number))),
       Some(CoreConfiguration(properties("Core", number))),
-      List(ServiceConfiguration(s"service-site$number", properties("Service", number), TestService)))
+      List(ServiceConfiguration(s"service-site$number", properties("Service", number))))
   }
 
   def expectedConfigurationOf(number: Int) = properties("Service", number)

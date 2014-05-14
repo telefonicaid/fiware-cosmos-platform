@@ -16,13 +16,11 @@
 
 package es.tid.cosmos.servicemanager.ambari.configuration
 
-import org.scalatest.{OneInstancePerTest, FlatSpec}
+import org.scalatest.{FlatSpec, OneInstancePerTest}
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
-import es.tid.cosmos.servicemanager.configuration.{ServiceConfiguration, CoreConfiguration, GlobalConfiguration, ConfigurationKeys}
-import es.tid.cosmos.servicemanager.ambari.services.{TestService, AmbariService}
-import es.tid.cosmos.servicemanager.services.Service
+import es.tid.cosmos.servicemanager.configuration._
 
 class FileConfigurationContributorTest extends FlatSpec with MustMatchers with OneInstancePerTest
     with TestResourcePaths {
@@ -36,22 +34,22 @@ class FileConfigurationContributorTest extends FlatSpec with MustMatchers with O
   val expectedCore = CoreConfiguration(Map(
     "core.example" -> s"core-$masterName"))
   val expectedService = ServiceConfiguration("test-service-site",
-    Map("service.example" -> s"service-$masterName"), TestService
+    Map("service.example" -> s"service-$masterName")
   )
-  val expectedServiceList = (1 to 2).toList.map(index =>
+  val expectedServiceList = (1 to 2).toList.map { index =>
     ServiceConfiguration(s"test-service-site$index",
-      Map(s"service.example$index" -> s"service$index-$masterName"),
-      TestService)
-  )
-  class ClasspathFileConfigurationContributor(configName: String, service: Option[Service])
-    extends FileConfigurationContributor(packageResourcesConfigDirectory, configName, service)
+      Map(s"service.example$index" -> s"service$index-$masterName"))
+  }
+  class ClasspathFileConfigurationContributor(configName: String, associatedService: Boolean)
+    extends FileConfigurationContributor(packageResourcesConfigDirectory, configName,
+      associatedService)
 
-  val full = new ClasspathFileConfigurationContributor("global-core-service", Some(TestService))
-  val noGlobal = new ClasspathFileConfigurationContributor("core-service", Some(TestService))
-  val noCore = new ClasspathFileConfigurationContributor("global-service", Some(TestService))
-  val justService = new ClasspathFileConfigurationContributor("service", Some(TestService))
-  val noService = new ClasspathFileConfigurationContributor("no-service", None)
-  val serviceList = new ClasspathFileConfigurationContributor("service-list", Some(TestService))
+  val full = new ClasspathFileConfigurationContributor("global-core-service", associatedService = true)
+  val noGlobal = new ClasspathFileConfigurationContributor("core-service", associatedService = true)
+  val noCore = new ClasspathFileConfigurationContributor("global-service", associatedService = true)
+  val justService = new ClasspathFileConfigurationContributor("service", associatedService = true)
+  val noService = new ClasspathFileConfigurationContributor("no-service", associatedService = false)
+  val serviceList = new ClasspathFileConfigurationContributor("service-list", associatedService = true)
 
   val properties = Map(ConfigurationKeys.MasterNode -> masterName)
 

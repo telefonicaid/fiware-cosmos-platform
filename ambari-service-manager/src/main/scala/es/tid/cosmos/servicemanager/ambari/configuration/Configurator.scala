@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.servicemanager.ambari
+package es.tid.cosmos.servicemanager.ambari.configuration
 
 import java.util.Date
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.rest.Cluster
 import es.tid.cosmos.servicemanager.configuration._
-import es.tid.cosmos.servicemanager.configuration.FactoryTypes.Factory
-import es.tid.cosmos.servicemanager.configuration.FactoryTypes.Implicits._
 
 /** Class for consolidating configuration from multiple contributors and applying it to a cluster. */
 object Configurator {
@@ -53,42 +50,7 @@ object Configurator {
   private def consolidateConfiguration(
       contributors: Seq[ConfigurationContributor],
       properties: ConfigProperties): ConfigurationBundle =
-    contributors.map(_.contributions(properties)).foldLeft(empty)(consolidate)
-
-  private def consolidate(
-    alreadyMerged: ConfigurationBundle, toMerge: ConfigurationBundle): ConfigurationBundle = {
-      val ConfigurationBundle(globalLeft, coreLeft, services) = alreadyMerged
-      val ConfigurationBundle(globalRight, coreRight, servicesToAdd) = toMerge
-      ConfigurationBundle(
-        merge[GlobalConfiguration](globalLeft, globalRight),
-        merge[CoreConfiguration](coreLeft, coreRight),
-        concatenateIfNoDuplicates(servicesToAdd, services))
-    }
-
-  private def merge[T <: Configuration : Factory](left: Option[T], right: Option[T]): Option[T] =
-    (left, right) match {
-      case (None, _) => right
-      case (_, None) => left
-      case (Some(leftValue), Some(rightValue)) =>
-        val conflictingKeys = leftValue.properties.filterKeys(rightValue.properties.contains)
-        if (conflictingKeys.isEmpty)
-          Some(implicitly[Factory[T]].apply(leftValue.properties ++ rightValue.properties))
-        else
-          throw new ConfigurationConflict(s"Found keys in conflict: $conflictingKeys")
-    }
-
-  private def concatenateIfNoDuplicates(
-    toAdd: List[ServiceConfiguration],
-    target: List[ServiceConfiguration]): List[ServiceConfiguration] = {
-      val typesInConflict = toAdd.filter(candidate =>
-        target.exists(candidate.configType == _.configType)).map(_.configType)
-      if (typesInConflict.isEmpty)
-        toAdd ++ target
-      else throw new ConfigurationConflict(
-        s"Already found a service configuration for type [${typesInConflict.mkString(", ")}")
-  }
+    contributors.map(_.contributions(properties)).foldLeft(empty)(_.merge(_))
 
   private def timestampedTag() = s"version${new Date().getTime}"
-
-  class ConfigurationConflict(message: String) extends Exception(message)
 }

@@ -30,7 +30,7 @@ include "cluster-properties"
     }
 }
 
-"mapreduce2" {
+"services" = [{
     "configType" = "mapred-site",
     "properties" {
         "mapreduce.admin.map.child.java.opts" = "-Djava.net.preferIPv4Stack=true -Dhadoop.metrics.log.level=WARN",
@@ -73,4 +73,4 @@ include "cluster-properties"
         "yarn.app.mapreduce.am.resource.mb" = ${MrAppMasterMemory},
         "yarn.app.mapreduce.am.staging-dir" = "/user"
     }
-}
+}]

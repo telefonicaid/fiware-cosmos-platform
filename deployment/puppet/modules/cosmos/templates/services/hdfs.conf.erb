@@ -61,7 +61,7 @@ include "cluster-properties"
     }
 }
 
-"hdfs" {
+"services" = [{
     "configType"="hdfs-site",
     "properties" {
         "dfs.block.access.token.enable" = "true",
@@ -108,4 +108,4 @@ include "cluster-properties"
         "dfs.webhdfs.enabled" = "true",
         "fs.permissions.umask-mode" = ${UmaskMode}
     }
-}
+}]

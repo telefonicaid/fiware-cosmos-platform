@@ -34,7 +34,7 @@ include "cluster-properties"
     }
 }
 
-"oozie" {
+"services" = [{
     "configType"="oozie-site",
     "properties" {
         "oozie.authentication.kerberos.name.rules" = "\n        RULE:[2:$1@$0]([jt]t@.*TODO-KERBEROS-DOMAIN)s/.*/TODO-MAPREDUSER/\n        RULE:[2:$1@$0]([nd]n@.*TODO-KERBEROS-DOMAIN)s/.*/TODO-HDFSUSER/\n        RULE:[2:$1@$0](hm@.*TODO-KERBEROS-DOMAIN)s/.*/TODO-HBASE-USER/\n        RULE:[2:$1@$0](rs@.*TODO-KERBEROS-DOMAIN)s/.*/TODO-HBASE-USER/\n        DEFAULT",
@@ -69,4 +69,4 @@ include "cluster-properties"
         "oozie.systemmode" = "NORMAL",
         "use.system.libpath.for.mapreduce.and.pig.jobs" = "false"
     }
-}
+}]

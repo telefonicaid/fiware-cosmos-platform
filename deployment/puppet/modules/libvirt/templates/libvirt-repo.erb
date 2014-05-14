@@ -4,4 +4,7 @@ baseurl=<%= scope.lookupvar('libvirt::libvirt_repo_url') %>
 gpgcheck=0
 priority=10
 enabled=1
+<% if @proxy != 'absent' %>
+proxy=<%= @proxy %>
+<% end %>
 

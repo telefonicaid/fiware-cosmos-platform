@@ -4,6 +4,9 @@ baseurl=<%= scope.lookupvar('cosmos::openvz::service::vz_utils_repo') %>
 enabled=1
 gpgcheck=0
 priority=1
+<% if @proxy != 'absent' %>
+proxy=<%= @proxy %>
+<% end %>
 
 # In addition to openvz-utils repo, you have to enable one the the
 # kernel repositories below. In the stock config, openvz-kernel-rhel6
@@ -18,3 +21,6 @@ baseurl=<%= scope.lookupvar('cosmos::openvz::service::vz_kernel_repo') %>
 enabled=1
 gpgcheck=0
 priority=1
+<% if @proxy != 'absent'%>
+proxy=<%= @proxy %>
+<% end %>

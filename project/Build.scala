@@ -146,19 +146,18 @@ object Build extends sbt.Build {
       val infinityRPM = (dist in infinityfs).value
       IO.copyFile(infinityRPM, filesDir / infinityRPM.name)
 
-      val puppetDir = target.value / "dist/puppet"
-      puppetDir.mkdirs()
+      val distDir = target.value / "dist"
+      distDir.mkdirs()
 
-      s.log.info("Copying puppet to project dist directory...")
-      val puppetBase = baseDirectory.value / "deployment/puppet/"
-      val modules = (puppetBase / "modules" ***) +++
-        (puppetBase / "modules_third_party" ***)
-      IO.copy(for {
-        (file, name) <- modules pair relativeTo(puppetBase)
-      } yield (file, puppetDir / name))
+      s.log.info("Copying deployment files to project dist directory...")
+      val depBase = baseDirectory.value / "deployment"
+      val depFiles = (depBase.*** --- depBase)
+      val relativeModulePaths = for {
+        (file, name) <- depFiles pair relativeTo(depBase)
+      } yield (file, distDir / name)
+      IO.copy(relativeModulePaths, overwrite = true)
 
       val distFile = target.value / s"cosmos-platform-${POM.version}.zip"
-      val distDir = target.value / "dist"
 
       s.log.info("Generating cosmos-platform zip package...")
       val distFiles = (distDir.*** --- distDir) pair relativeTo(distDir)

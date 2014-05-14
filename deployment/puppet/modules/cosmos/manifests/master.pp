@@ -26,6 +26,19 @@ class cosmos::master {
     mode   => '0440',
   }
 
+  if $cosmos::params::master_use_ip_as_hostname {
+    # This is a kinda of a hack: set master hostname as its IP. In this way
+    # ambari server will set master hostname to be used by agents by its IP
+    # instead of its hostname, which is not resoluble on slaves.
+    class { 'hostname':
+      hostname => $cosmos::params::master_ip,
+      ip       => $cosmos::params::master_ip,
+    }
+
+    Class['hostname']
+      -> Class['ambari::server']
+  }
+
   anchor { 'cosmos::master::begin': }
     -> Class['stdlib', 'ssh_keys', 'mysql']
     -> Class['cosmos::base']

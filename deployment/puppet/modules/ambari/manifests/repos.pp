@@ -17,14 +17,15 @@ class ambari::repos inherits ambari::params {
     descr    => '[Cosmos] Ambari Repository 1.x',
     enabled  => 1,
     gpgcheck => 0,
+    proxy    => $cosmos::params::proxy
   }
 
   yumrepo { 'HDP-UTILS-1.1.0.15':
     baseurl  => $ambari::params::hdp_utils_repo_url,
     descr    => '[PDI] Hortonworks Data Platform Utils Version - HDP-UTILS-1.1.0.15',
     enabled  => 1,
-    gpgcheck => 1,
-    gpgkey   => $ambari::params::hdp_utils_gpg_url,
+    gpgcheck => 0,
     priority => 1,
+    proxy    => $cosmos::params::proxy
   }
 }

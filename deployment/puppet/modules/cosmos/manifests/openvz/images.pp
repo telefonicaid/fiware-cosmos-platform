@@ -13,6 +13,9 @@ class cosmos::openvz::images(
   $ip_address = $cosmos::slave::ct_ip,
   $netmask    = $cosmos::slave::netmask,
   $gateway    = $cosmos::slave::ct_gateway,
+  $routes     = $cosmos::slave::ct_routes,
+  $ct_hostname = $cosmos::slave::ct_hostname,
+  $natted     = $cosmos::slave::ct_hostname_is_nat_ip,
   $base_image_url,
   $image_name,
   $source_image_file_dir = '/tmp'
@@ -24,9 +27,18 @@ class cosmos::openvz::images(
   $dest_image_file       = '/vz/template/cache/centos-6-cosmos-x86_64.tar.gz'
   $replacements_dir      = '/tmp/centos-6-cosmos-x86_64'
 
-  wget::fetch { 'Download base image' :
-    source      => $image_url,
-    destination => $source_image_file,
+  if $cosmos::params::proxy {
+    $environment = [ "HTTP_PROXY=${cosmos::params::proxy}", "http_proxy=${cosmos::params::proxy}" ]
+  } else {
+    $environment = []
+  }
+
+  exec { "Download base image":
+    command     => "wget --output-document=${$source_image_file} ${image_url}",
+    environment => $environment,
+    path        => '/usr/bin:/usr/sbin:/bin:/usr/local/bin:/opt/local/bin',
+    timeout     => 900,
+    creates     => $source_image_file,
   }
 
   exec { 'Remove extraction dir' :
@@ -99,6 +111,33 @@ class cosmos::openvz::images(
     content => template("${module_name}/ifcfg-eth0.erb"),
   }
 
+  if !empty('routes') {
+    file { "${replacements_dir}/etc/sysconfig/network-scripts/route-eth0" :
+      ensure  => 'present',
+      content => $routes,
+    }
+
+    File["${replacements_dir}/etc/sysconfig/network-scripts/route-eth0"]
+    -> Exec['pack_image']
+
+  }
+
+  if $natted {
+    file { "${replacements_dir}/etc/sysconfig/network-scripts/ifcfg-eth0:0" :
+      ensure  => 'present',
+      content => template("${module_name}/ifcfg-eth0_0.erb"),
+    }
+
+    file { "${replacements_dir}/etc/sysconfig/iptables" :
+      ensure  => 'present',
+      content => template("${module_name}/iptables-nat.erb"),
+    }
+
+    File["${replacements_dir}/etc/sysconfig/network-scripts/ifcfg-eth0:0",
+         "${replacements_dir}/etc/sysconfig/iptables"]
+    -> Exec['pack_image']
+  }
+
   file { "${replacements_dir}/etc/localtime" :
     ensure  => 'present',
     source => '/etc/localtime'
@@ -113,7 +152,7 @@ class cosmos::openvz::images(
   Class['ssh_keys'] ~> File["${replacements_dir}/root/.ssh"]
   Class['ambari::repos'] ~> File["${replacements_dir}/etc/yum.repos.d"]
 
-  Wget::Fetch['Download base image']
+  Exec['Download base image']
     -> Exec['Remove extraction dir']
     ~> File['Create extraction dir']
     -> Exec['unpack_image']

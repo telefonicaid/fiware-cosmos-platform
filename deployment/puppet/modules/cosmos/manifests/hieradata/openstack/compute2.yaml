@@ -1,0 +1,26 @@
+#
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+cosmos::params::cosmos_netmask: ''
+cosmos::slave::rack: "rack01"
+cosmos::slave::ip: '10.0.0.205'
+cosmos::slave::ct_ip: '10.0.0.105'
+cosmos::slave::ct_hostname: '%{compute2_cthostname}'
+cosmos::slave::hardware_profile: g1-compute
+cosmos::slave::name: "Compute 2"
+cosmos::slave::ram: 1024
+cosmos::slave::host_key_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDgjwPtdSQ4g0gYfU36P7c+qAEs6HwxhFph6Jf913WTZ90yRNXGNx2auRo0XdYSTadWnbWZ+7AS43fJSs9AiKaZiFmPDwSEW+avu2YczCEAz2YtmnK3P9g+vmfQbbtTuCoa+r31vEM4Mp+PbTS8+GAXmN4ACYAqlc+bnUuVyf3ShWJKbIyiH5pJSwFNKlYPRiAQQMd9xRnVIgnIdHFJZgoRJtl2XlgA+O31bqoBPQOEjfwgoBOo3nxysNl1QQUbjZq9nQNULyDvh5URpjXyPxPSOFwWlN64/nbQ043Iv4Z2NRYRTRE84oqXrbM6bxbcW/EnRwz7cuTOIjFcA5MBMtTt"
+cosmos::slave::ct_key_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDRICDkOmudQ9nWronCOtoh8KMsFyZ/e2vQpwe15a4Re9LCqqSmsgBm3ZuPWWi+HNZaLXQ5Ykj9qQKrcwGEYuVWmpH27w/z9XE1REbimJ+MdYvwn3TvmZFQOrz+4REoFj+u9nmBOxmfZJ9TdBWrFZ6s4D0lZiiBAVr8fwG1+iUWhN3hGUZwXlOsU1LCu7e/NoHeg7ja8e+9sKaPr6HkwWEY4H+YKmkiQYlb1V57/ECKa0ZGSry3Oy7S3VuDxpYrCw7BsP9hhl37rWAdRgeofPhx1nQs9U3z6Y4DhHYGNucUB7grjHUzblTZ7VcKTI0828B5zNru4VnP2nCVq0Elg99T"

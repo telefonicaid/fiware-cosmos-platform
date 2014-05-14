@@ -1,10 +1,12 @@
 DEVICE=vzbr0
 ONBOOT=yes
 TYPE=Bridge
-BOOTPROTO=none
+BOOTPROTO=<%= @iface_bootproto %>
 DELAY=0
 IPADDR=<%= @ip %>
+<% unless @netmask.empty? %>
 NETMASK=<%= @netmask %>
+<% end %>
 <% unless @gateway.empty? %>
 GATEWAY=<%= @gateway %>
 <% end %>

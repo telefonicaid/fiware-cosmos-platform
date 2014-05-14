@@ -29,6 +29,7 @@ class StorageCommandsTest(unittest.TestCase):
         added_commands = [call[1][0] for call in parser.add_parser.mock_calls
                           if call[0] == '']
         self.assertIn('put', added_commands)
+        self.assertIn('chmod', added_commands)
         self.assertIn('ls', added_commands)
         self.assertIn('get', added_commands)
         self.assertIn('rm', added_commands)

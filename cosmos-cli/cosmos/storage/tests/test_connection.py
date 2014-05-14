@@ -133,6 +133,12 @@ class StorageConnectionTest(unittest.TestCase):
                               args=['/remote/file.txt', False],
                               retval=True)
 
+    def test_chmod_path(self):
+        self.assertDelegation(self.instance.chmod,
+                              self.client.chmod,
+                              args=['/remote/file.txt', '555'],
+                              retval=None)
+
     def assertUploadFileToRemotePath(self, remote_path, renaming_to=None,
                                      target_type=None, raising=None):
         expected_target = remote_path if renaming_to is None else renaming_to

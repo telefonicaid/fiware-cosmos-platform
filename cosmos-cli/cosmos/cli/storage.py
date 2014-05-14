@@ -196,18 +196,31 @@ def add_get_command(subparsers):
 
 def rm_command(args, config, conn):
     """Delete a path or path tree"""
-    deleted = conn.delete_path(args.path, args.recursive)
-    print "%s was %s deleted" % (args.path,
-                                 "successfully" if deleted else "not")
+    conn.delete_path(args.path, args.recursive)
+    print "%s was successfully deleted" % args.path
 
 
 def add_rm_command(subparsers):
-    get_parser = subparsers.add_parser(
+    rm_parser = subparsers.add_parser(
         'rm', help='delete a file or directory in the persistent storage')
-    get_parser.add_argument('--recursive', '-r', action='store_true',
+    rm_parser.add_argument('--recursive', '-r', action='store_true',
                             help='recursive delete')
-    get_parser.add_argument('path', help='remote path to delete')
-    get_parser.set_defaults(func=StorageCommand(rm_command))
+    rm_parser.add_argument('path', help='remote path to delete')
+    rm_parser.set_defaults(func=StorageCommand(rm_command))
+
+def chmod_command(args, config, conn):
+    """Change permissions on path"""
+    conn.chmod(args.path, args.permissions)
+    print "Permissions of %s change to %s" % (args.path, args.permissions)
+
+def add_chmod_command(subparsers):
+    chmod_parser = subparsers.add_parser(
+        'chmod',
+        help='change permissions on a file or directory in the persistent storage')
+    chmod_parser.add_argument('permissions',
+                              help='new permissions in octal notation [000-777]')
+    chmod_parser.add_argument('path', help='remote path')
+    chmod_parser.set_defaults(func=StorageCommand(chmod_command))
 
 
 def add_storage_commands(subparsers):
@@ -215,4 +228,5 @@ def add_storage_commands(subparsers):
     add_ls_command(subparsers)
     add_get_command(subparsers)
     add_rm_command(subparsers)
+    add_chmod_command(subparsers)
 

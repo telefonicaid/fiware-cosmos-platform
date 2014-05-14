@@ -179,7 +179,7 @@ class InfinityClientTest(unittest.TestCase):
         self.client.post.assert_called_with(
             self.namenode_base + '/some/path',
             auth=self.auth,
-            body=json.dumps({'action': 'chmod', 'permissions': '777'})
+            data=json.dumps({'action': 'chmod', 'permissions': '777'})
         )
 
     def test_get_file(self):

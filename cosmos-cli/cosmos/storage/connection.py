@@ -113,8 +113,10 @@ class StorageConnection(object):
         return (target_path, size)
 
     def delete_path(self, path, recursive):
-        """Delete a file of the persistent storage.
-        Returns whether the path was deleted as boolean value.
-        """
+        """Delete a file of the persistent storage."""
         return self.__client.delete_path(path, recursive)
+
+    def chmod(self, path, permissions):
+        """Changes file or directory permissions."""
+        return self.__client.chmod(path, permissions)
 

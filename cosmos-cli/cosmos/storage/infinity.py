@@ -129,7 +129,7 @@ class InfinityClient(object):
             "permissions": permissions
         })
         r = self.make_call(self.client.post, remote_path,
-                           self.metadata, body=chmod_body)
+                           self.metadata, data=chmod_body)
         if r.status_code != 204:
             raise ResponseError(
                 'Cannot change permissions on path %s' % remote_path, r)

@@ -17,6 +17,18 @@
 set -e
 
 echo "Test file" > test.txt
-hdfs dfs -get infinity:///$USER/onlyUser.txt .
-hdfs dfs -get infinity:///$USER/onlyGroup.txt .
-hdfs dfs -get infinity:///$USER/onlyEveryone.txt .
+hdfs dfs -put test.txt infinity:///${USER}/test.txt
+hdfs dfs -chmod 700 infinity:///${USER}/test.txt
+hdfs def -get infinity:///${USER}/test.txt test2.txt
+diff test.txt test2.txt
+hdfs dfs -ls infinity:///${USER}/
+hdfs dfs -ls infinity:///${USER}/test.txt
+hdfs dfs -mkdir infinity:///${USER}/dummy_dir
+hdfs dfs -mv infinity:///${USER}/test.txt infinity:///${USER}/test2.txt
+hdfs dfs -cp infinity:///${USER}/test2.txt infinity:///${USER}/dummy_dir/test3.txt
+hdfs dfs -rm -r infinity:///${USER}/dummy_dir
+hdfs dfs -rm infinity:///${USER}/test*
+
+hdfs dfs -get infinity:///${USER}/onlyUser.txt .
+hdfs dfs -get infinity:///${USER}/onlyGroup.txt .
+hdfs dfs -get infinity:///${USER}/onlyEveryone.txt .

@@ -41,7 +41,12 @@ class PersistentHdfsAccessIT extends E2ETestBase {
 
       ignore("The user can upload a file to Infinity through the CLI") {
         infinity.put(source, target)
-        infinity.ls() must be (Seq(target))
+        infinity.ls().map(_.name) must be (Seq(target))
+      }
+
+      ignore("The user can change a file's permissions thorugh the CLI") {
+        infinity.chmod("720", target)
+        infinity.ls().map(_.permissions) must be (Seq("-rwx-w----"))
       }
 
       ignore("The user can get the file that was uploaded") {

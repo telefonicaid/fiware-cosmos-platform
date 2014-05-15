@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,21 +16,20 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import com.typesafe.config.ConfigFactory
-import org.mockito.Mockito._
+import java.io.InputStream
+
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.infinity.common.fs.{FileMetadata, Path}
+import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.UserProfile
-import es.tid.cosmos.infinity.server.config.MetadataServerConfig
+import es.tid.cosmos.infinity.server.hadoop.DataNode
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 
-trait ActionFixture extends MockitoSugar {
-  val on = Path.absolute("/to/file")
-  val nameNode = spy(new MockNameNode)
+trait ContentActionFixture extends MockitoSugar {
   val urlMapper = mock[UrlMapper]
   val user = UserProfile("gandalf", Seq("istari"))
   val context = Action.Context(user, urlMapper)
-  val config = new MetadataServerConfig(ConfigFactory.load())
-  val metadata = mock[FileMetadata]
+  val on = Path.absolute("/to/file")
+  val dataNode = mock[DataNode]
+  val in = mock[InputStream]("internalStream")
 }

@@ -20,8 +20,8 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.server.actions.NameNodeException
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
+import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 
 class ExceptionRendererTest extends FlatSpec with MustMatchers {
 

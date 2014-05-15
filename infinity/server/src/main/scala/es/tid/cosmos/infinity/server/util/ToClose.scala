@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.hadoop
+package es.tid.cosmos.infinity.server.util
 
-import java.net.URL
+import java.io.Closeable
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.hdfs.DFSClient
-import org.apache.hadoop.hdfs.server.{datanode => hadoop}
-
-class DfsClientFactory(dataNode: hadoop.DataNode, nameNodeRpcUrl: URL) {
-  def newClient: DFSClient = new DFSClient(nameNodeRpcUrl.toURI, new Configuration(dataNode.getConf))
+case class ToClose[+C <: Closeable](value :C, closeables: Closeable*) {
+  @volatile private var isClosed: Boolean = false
+  def useAndClose[R](f: C => R): R = synchronized {
+    require(!isClosed, "cannot use value because resources are already released")
+    val result = IoUtil.withAutoClose((value +: closeables).distinct)(f(value))
+    isClosed = true
+    result
+  }
 }

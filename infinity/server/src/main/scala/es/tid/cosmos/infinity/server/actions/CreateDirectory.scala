@@ -22,6 +22,7 @@ import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 import es.tid.cosmos.infinity.server.actions.Action.Context
 import es.tid.cosmos.infinity.server.actions.MetadataAction.Created
+import es.tid.cosmos.infinity.server.hadoop.NameNode
 
 case class CreateDirectory(
     nameNode: NameNode, on: Path, permissions: PermissionsMask) extends MetadataAction {

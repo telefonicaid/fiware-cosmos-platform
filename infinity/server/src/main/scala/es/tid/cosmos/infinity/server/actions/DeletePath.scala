@@ -21,6 +21,7 @@ import scala.concurrent._
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.Action.Context
 import es.tid.cosmos.infinity.server.actions.MetadataAction.Deleted
+import es.tid.cosmos.infinity.server.hadoop.NameNode
 
 case class DeletePath(nameNode: NameNode, on: Path, recursive: Boolean) extends MetadataAction {
 

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,23 +16,20 @@
 
 package es.tid.cosmos.infinity.server.actions
 
+import java.io.InputStream
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.Action.Context
-import es.tid.cosmos.infinity.server.actions.MetadataAction.Moved
-import es.tid.cosmos.infinity.server.config.InfinityConfig
-import es.tid.cosmos.infinity.server.hadoop.NameNode
+import es.tid.cosmos.infinity.server.actions.ContentAction.Overwritten
+import es.tid.cosmos.infinity.server.hadoop.DataNode
 
-case class MovePath(
-    config: InfinityConfig, nameNode: NameNode, on: Path, from: Path) extends MetadataAction {
+case class OverwriteContent(
+    dataNode: DataNode,
+    on: Path,
+    in: InputStream) extends ContentAction {
 
-  import ExecutionContext.Implicits.global
-
-  override def apply(context: Context): Future[MetadataAction.Result] = nameNode.as(context.user) {
-    for {
-      _ <- nameNode.movePath(from, on)
-      metadata <- nameNode.pathMetadata(on)
-    } yield Moved(metadata)
-  }
+  override def apply(context: Context): Future[ContentAction.Result] =
+    for (_ <- dataNode.overwrite(on, in)) yield Overwritten(on)
 }

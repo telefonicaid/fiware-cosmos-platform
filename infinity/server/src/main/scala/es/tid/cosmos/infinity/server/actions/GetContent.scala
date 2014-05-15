@@ -16,37 +16,22 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import scala.concurrent._
-import scala.math.min
-
-import org.apache.hadoop.hdfs.client.HdfsDataInputStream
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.Action.Context
 import es.tid.cosmos.infinity.server.actions.ContentAction.Found
-import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
+import es.tid.cosmos.infinity.server.hadoop.DataNode
 
 case class GetContent(
-    dfsClientFactory: DfsClientFactory,
+    dataNode: DataNode,
     on: Path,
     offset: Option[Long],
     length: Option[Long]) extends ContentAction {
 
-  import ExecutionContext.Implicits.global
-  import GetContent._
-
-  val actualOffset: Long = offset.getOrElse(NoOffset)
-  val actualLength: Long = length.getOrElse(Long.MaxValue)
-
-  override def apply(context: Context): Future[ContentAction.Result] = future {
-    val client = dfsClientFactory.newClient
-    val in = new HdfsDataInputStream(client.open(on.toString))
-    in.seek(actualOffset)
-    val readUpTo = min(actualLength, in.getVisibleLength - actualOffset)
-    Found(in, readUpTo, Seq(in, client))
-  }
-}
-
-object GetContent {
-  private val NoOffset = 0
+  override def apply(context: Context): Future[ContentAction.Result] =
+    for (inputStream <- dataNode.open(on, offset, length)) yield {
+      Found(inputStream)
+    }
 }

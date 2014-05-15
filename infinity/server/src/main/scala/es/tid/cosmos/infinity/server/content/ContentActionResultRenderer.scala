@@ -19,15 +19,15 @@ package es.tid.cosmos.infinity.server.content
 import unfiltered.response._
 
 import es.tid.cosmos.infinity.server.actions.ContentAction
-import es.tid.cosmos.infinity.server.actions.ContentAction.{Appended, Found}
 import es.tid.cosmos.infinity.server.unfiltered.response.ResponseInputStream
 
 class ContentActionResultRenderer(chunkSize: Int) {
 
   def apply[T](result: ContentAction.Result): ResponseFunction[T] = result match {
-    case Found(stream, readUpTo, closeables) =>
-      Ok ~> ResponseInputStream(stream, chunkSize, readUpTo, closeables)
-    case Appended(path) => ???
-    case _ => ???
+    case ContentAction.Found(stream) => Ok ~> ResponseInputStream(stream, chunkSize)
+    case ContentAction.Appended(_) => NoContent
+    case ContentAction.Overwritten(_) => NoContent
+    case _ =>
+      InternalServerError ~> ResponseString("No HTTP rendering method defined for action result")
   }
 }

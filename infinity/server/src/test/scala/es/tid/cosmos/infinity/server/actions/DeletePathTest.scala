@@ -24,6 +24,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 
 class DeletePathTest extends FlatSpec with MustMatchers with FutureMatchers {
 
@@ -46,7 +47,7 @@ class DeletePathTest extends FlatSpec with MustMatchers with FutureMatchers {
     deletePath(context) must eventuallyFailWith[NameNodeException.IOError]
   }
 
-  trait Fixture extends ActionFixture {
+  trait Fixture extends MetadataActionFixture {
     val permissions = PermissionsMask.fromOctal("640")
     val isRecursive = false
     val deletePath = DeletePath(nameNode, on, isRecursive)

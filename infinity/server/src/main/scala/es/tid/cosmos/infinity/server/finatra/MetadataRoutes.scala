@@ -21,11 +21,12 @@ import scalaz.Validation
 
 import com.twitter.finatra.{Controller, Request}
 
-import es.tid.cosmos.infinity.server.actions.{Action, NameNode}
+import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.authorization.{AuthInfo, HttpCredentialsValidator}
 import es.tid.cosmos.infinity.server.config.InfinityConfig
 import es.tid.cosmos.infinity.server.errors.RequestParsingException
+import es.tid.cosmos.infinity.server.hadoop.NameNode
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 import es.tid.cosmos.infinity.server.util.TwitterConversions._
 

@@ -21,6 +21,7 @@ import scala.concurrent._
 import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.server.actions.Action.Context
 import es.tid.cosmos.infinity.server.actions.MetadataAction.Retrieved
+import es.tid.cosmos.infinity.server.hadoop.NameNode
 
 case class GetMetadata(nameNode: NameNode, on: Path) extends MetadataAction {
 

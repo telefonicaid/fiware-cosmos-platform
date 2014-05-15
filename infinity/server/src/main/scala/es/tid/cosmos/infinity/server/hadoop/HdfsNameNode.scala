@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions.hdfs
+package es.tid.cosmos.infinity.server.hadoop
 
 import java.util
 import java.io.FileNotFoundException
@@ -33,7 +33,6 @@ import org.apache.hadoop.security.{UserGroupInformation, AccessControlException}
 import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.{PermissionClass, UserProfile, PermissionsMask}
-import es.tid.cosmos.infinity.server.actions.{NameNode, NameNodeException}
 import es.tid.cosmos.infinity.server.config.MetadataServerConfig
 import es.tid.cosmos.infinity.server.groups.ArtificialUsersGroupMapping
 import es.tid.cosmos.infinity.server.urls.UrlMapper

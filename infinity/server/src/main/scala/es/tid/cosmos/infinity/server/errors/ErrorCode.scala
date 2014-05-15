@@ -16,8 +16,8 @@
 
 package es.tid.cosmos.infinity.server.errors
 
-import es.tid.cosmos.infinity.server.actions.NameNodeException
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
+import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 
 class ErrorCode[T <: Throwable](val code: String)
 

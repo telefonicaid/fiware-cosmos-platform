@@ -20,7 +20,7 @@ import unfiltered.jetty.Http
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.ContentServerConfig
-import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
+import es.tid.cosmos.infinity.server.hadoop.{HdfsDataNode, DataNode, DfsClientFactory}
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
 /** Unfiltered-based content server.
@@ -38,8 +38,10 @@ class ContentServer(
 
   private val urlMapper = new InfinityUrlMapper(config)
 
+  private val dataNode = new HdfsDataNode(clientFactory, config.bufferSize)
+
   private lazy val contentRoutes =
-    new ContentRoutes(config, authService, clientFactory, urlMapper)
+    new ContentRoutes(config, authService, dataNode, urlMapper)
 
   def start(): Unit = server.start()
 

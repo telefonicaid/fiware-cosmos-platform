@@ -23,6 +23,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 
 class GetMetadataTest extends FlatSpec with MustMatchers with FutureMatchers {
 
@@ -37,7 +38,7 @@ class GetMetadataTest extends FlatSpec with MustMatchers with FutureMatchers {
     getMetadata(context) must eventuallyFailWith[NameNodeException.IOError]
   }
 
-  trait Fixture extends ActionFixture {
+  trait Fixture extends MetadataActionFixture {
     val getMetadata = GetMetadata(nameNode, on)
   }
 }

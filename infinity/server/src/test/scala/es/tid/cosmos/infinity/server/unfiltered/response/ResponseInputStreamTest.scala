@@ -16,80 +16,51 @@
 
 package es.tid.cosmos.infinity.server.unfiltered.response
 
-import java.io.{ByteArrayOutputStream, OutputStream, ByteArrayInputStream}
+import java.io.{InputStream, OutputStream, ByteArrayInputStream}
 
-import java.nio.charset.Charset
-
-import org.mockito.Mockito.{spy, verify}
+import org.mockito.Mockito.{spy, inOrder}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
+import es.tid.cosmos.infinity.server.util.ToClose
+
 class ResponseInputStreamTest extends FlatSpec with MustMatchers with MockitoSugar {
+
+  //TODO: Ensure there exists test with regards to bounded read.
+  // This is now an part of the HdfsDataNode implementation
+
   "An input stream response" must "write the response in chunks according to given max size" in
     new Fixture {
       val response = ResponseInputStream(
         in,
-        maxChunkSize = 4,
-        length = 8,
-        closeables = Seq(in, out)
-      )
+        maxChunkSize = 4)
       response.stream(out)
       out.chunks must be (Seq(
-       ChunkWrites("1234".getBytes, 0, 4),
-       ChunkWrites("5678".getBytes, 0, 4)
+        ChunkWrites("1234".getBytes, 0, 4),
+        ChunkWrites("5678".getBytes, 0, 4),
+        ChunkWrites(Seq("9".getBytes.apply(0), 0, 0, 0), 0, 1)
       ))
     }
 
-  it must "contain only the specified length" in new Fixture {
-    val response = ResponseInputStream(
-      in,
-      maxChunkSize = 4,
-      length = 5,
-      closeables = Seq(in, out)
-    )
-    response.stream(out)
-    out.chunks must be (Seq(
-      ChunkWrites("1234".getBytes, 0, 4),
-      ChunkWrites(Seq("5".getBytes.apply(0), 0, 0, 0), 0, 1)
-    ))
-  }
-
-  it must "close all used resources in the end" in {
-    val _in = new ByteArrayInputStream(content.getBytes)
-    try {
-      val in = spy(_in)
-      val out = mock[OutputStream]
+  it must "close the input stream and related resources after reading all the content" in
+    new Fixture{
       val response = ResponseInputStream(
         in,
-        maxChunkSize = 4,
-        length = 8,
-        closeables = Seq(in, out)
-      )
+        maxChunkSize = 10)
       response.stream(out)
-      verify(in).close()
-      verify(out).close()
-    } finally {
-      _in.close()
+      out.chunks must be (Seq(ChunkWrites(content.getBytes ++ Seq[Byte](0), 0, 9)))
+      val order = inOrder(internalIn, otherResource)
+      order.verify(internalIn).close()
+      order.verify(otherResource).close()
     }
-  }
 
-  it must "not fail when attempting to read beyond the stream's length" in new Fixture {
-    val stringOut = new ByteArrayOutputStream()
-    val response = ResponseInputStream(
-      in,
-      maxChunkSize = 4,
-      length = 9,
-      closeables = Seq(in, stringOut)
-    )
-    response.stream(stringOut)
-    stringOut.toString(Charset.defaultCharset().toString) must be (content)
-  }
-
-  val content = "12345678"
+  val content = "123456789"
 
   trait Fixture {
-    val in = new ByteArrayInputStream(content.getBytes)
+    val otherResource = mock[InputStream]
+    val internalIn = spy(new ByteArrayInputStream(content.getBytes))
+    val in = ToClose(internalIn, otherResource)
     val out = new MockOutputStream
   }
 

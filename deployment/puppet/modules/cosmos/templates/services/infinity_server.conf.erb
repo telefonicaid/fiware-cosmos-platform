@@ -25,21 +25,22 @@ include "cluster-properties"
     }
 }
 
-"hdfs" {
-    "config-type"="hdfs-site",
-    "properties" {
-        "dfs.namenode.plugins" = "es.tid.cosmos.infinity.server.plugin.MetadataPlugin",
-        "dfs.datanode.plugins" = "es.tid.cosmos.infinity.server.plugin.ContentPlugin",
-        "dfs.infinity.metadata.host" = ${MasterNode}
-        "dfs.infinity.metadata.port" = "51070"
+"services" = [
+    {
+        "configType"="hdfs-site",
+        "properties" {
+            "dfs.namenode.plugins" = "es.tid.cosmos.infinity.server.plugin.MetadataPlugin",
+            "dfs.datanode.plugins" = "es.tid.cosmos.infinity.server.plugin.ContentPlugin",
+            "dfs.infinity.metadata.host" = ${MasterNode}
+            "dfs.infinity.metadata.port" = "51070"
+        }
+    },
+    {
+        "configType"="infinity-server",
+        "properties" {
+          "blocked_ports" = "8020,9000,50070,50010,50020,50075",
+          "ssl_certificate_content" = "<%= @infinity_proxy_ssl_cert %>",
+          "ssl_certificate_key_content" = "<%= @infinity_proxy_ssl_key %>"
+        }
     }
-}
-
-"infinity_server" {
-    "configType"="infinity-server",
-    "properties" {
-      "blocked_ports" = "8020,9000,50070,50010,50020,50075",
-      "ssl_certificate_content" = "<%= @infinity_proxy_ssl_cert %>",
-      "ssl_certificate_key_content" = "<%= @infinity_proxy_ssl_key %>"
-    }
-}
+]

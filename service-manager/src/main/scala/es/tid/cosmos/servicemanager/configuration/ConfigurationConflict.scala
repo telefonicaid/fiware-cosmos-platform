@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.servicemanager.ambari.services
+package es.tid.cosmos.servicemanager.configuration
 
-import es.tid.cosmos.servicemanager.services.{NoParametrization, Service}
-
-object TestService extends Service with NoParametrization {
-  override val name: String = "Test"
-}
+class ConfigurationConflict(message: String) extends Exception(message)

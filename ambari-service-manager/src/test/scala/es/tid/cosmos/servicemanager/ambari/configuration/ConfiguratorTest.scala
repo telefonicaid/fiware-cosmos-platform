@@ -14,24 +14,20 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.servicemanager.ambari
+package es.tid.cosmos.servicemanager.ambari.configuration
 
 import org.mockito.BDDMockito.given
+import org.mockito.Matchers.{any, eq => isEq, matches}
 import org.mockito.Mockito.{verify, verifyNoMoreInteractions}
-import org.mockito.Matchers.{eq => isEq, any, matches}
-import org.scalatest.{OneInstancePerTest, FlatSpec}
+import org.scalatest.{FlatSpec, OneInstancePerTest}
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.servicemanager.ambari.Configurator.ConfigurationConflict
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers.contributionsWithNumber
-import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.rest.Cluster
-import es.tid.cosmos.servicemanager.configuration.{ConfigurationBundle, ServiceConfiguration, CoreConfiguration, GlobalConfiguration}
-import es.tid.cosmos.servicemanager.ambari.services.{TestService, AmbariService}
+import es.tid.cosmos.servicemanager.configuration._
 
-class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatchers
-    with MockitoSugar {
+class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatchers with MockitoSugar {
 
   val cluster = mock[Cluster]
   val noProperties: ConfigProperties = Map.empty
@@ -65,10 +61,10 @@ class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatcher
         Map("someCoreContent1" -> "somevalue1", "someCoreContent2" -> "somevalue2"))),
       tagPattern)
     verify(cluster).applyConfiguration(
-      isEq(ServiceConfiguration("service-site1", Map("someServiceContent1" -> "somevalue1"), TestService)),
+      isEq(ServiceConfiguration("service-site1", Map("someServiceContent1" -> "somevalue1"))),
       tagPattern)
     verify(cluster).applyConfiguration(
-      isEq(ServiceConfiguration("service-site2", Map("someServiceContent2" -> "somevalue2"), TestService)),
+      isEq(ServiceConfiguration("service-site2", Map("someServiceContent2" -> "somevalue2"))),
       tagPattern)
   }
 
@@ -97,27 +93,6 @@ class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatcher
       Configurator.applyConfiguration(cluster, noProperties, List(contributor1, contributor2))
     } must produce [ConfigurationConflict]
   }
-
-//  it must "apply a configuration with dynamic properties created from hadoop configuration" in {
-//    val hadoopConfig = HadoopConfig(mappersPerSlave = 4, reducersPerSlave = 8, zookeeperPort = 1234)
-//    val contributor = mock[ConfigurationContributor]
-//    val configuration = ConfigurationBundle(GlobalConfiguration(Map.empty))
-//    given(contributor.contributions(any())).willReturn(configuration)
-//    val master, slave = mock[Host]
-//    given(master.name).willReturn("master")
-//    given(slave.name).willReturn("slave")
-//    Configurator.applyConfiguration(cluster, master, Seq(slave), hadoopConfig, List(contributor))
-//    verify(contributor).contributions(Map(
-//      HdfsReplicationFactor -> "1",
-//      MappersPerSlave -> "4",
-//      MasterNode -> "master",
-//      MaxReduceTasks -> "14",
-//      MaxMapTasks -> "4",
-//      ReducersPerSlave -> "8",
-//      ZookeeperHosts -> "slave:1234",
-//      ZookeeperPort -> "1234"
-//    ))
-//  }
 
   def tagPattern = matches("version\\d+")
 }

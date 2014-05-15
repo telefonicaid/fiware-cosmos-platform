@@ -18,8 +18,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.configuration.{ConfigurationBundle, ServiceConfiguration, ConfigurationKeys}
-import es.tid.cosmos.servicemanager.services.CosmosUserService
+import es.tid.cosmos.servicemanager.configuration.{ConfigurationBundle, ConfigurationKeys, ServiceConfiguration}
 import es.tid.cosmos.servicemanager.util.SshKeyGenerator
 
 /** Configurator for the CosmosUserService
@@ -49,6 +48,6 @@ private[services] class CosmosUserConfigurator(users: Seq[ClusterUser])
         s"${prefix}is_sudoer" -> user.isSudoer
       )
     } yield pair)).toMap
-    ServiceConfiguration("cosmos-user", properties, CosmosUserService)
+    ServiceConfiguration("cosmos-user", properties)
   }
 }

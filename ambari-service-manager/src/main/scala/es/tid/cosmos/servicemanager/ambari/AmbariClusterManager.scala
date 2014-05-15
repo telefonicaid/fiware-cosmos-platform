@@ -20,7 +20,7 @@ import scala.concurrent.{blocking, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationContributor, FileConfigurationContributor}
+import es.tid.cosmos.servicemanager.ambari.configuration.{Configurator, ConfigurationContributor, FileConfigurationContributor}
 import es.tid.cosmos.servicemanager.ambari.rest.{Host, ServiceClient, AmbariServer, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services.{ComponentDescription, AmbariService}
 import es.tid.cosmos.servicemanager.clusters._

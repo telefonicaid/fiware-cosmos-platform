@@ -119,7 +119,7 @@ class AmbariServiceManager(
     } yield {
       dbClusterDescription.nameNode = toNameNodeUri(master)
       dbClusterDescription.state = Running
-      configuration.services.find(_.service == InfinityDriver).foreach { serviceConfig =>
+      configuration.services.find(_.configType == "infinity-driver").foreach { serviceConfig =>
         val blockedPortsString = serviceConfig.properties("blocked_ports").asInstanceOf[String]
         dbClusterDescription.blockedPorts = blockedPortsString.split(',').map(_.toInt).toSet
       }

@@ -46,7 +46,7 @@ include "cluster-properties"
     }
 }
 
-"hive" {
+"services" = [{
     "configType"="hive-site"
     "properties" {
         "fs.file.impl.disable.cache": "true",
@@ -85,4 +85,4 @@ include "cluster-properties"
         "javax.jdo.option.ConnectionURL": "jdbc:mysql://"${MasterNode}"/hive?createDatabaseIfNotExist=true",
         "javax.jdo.option.ConnectionUserName": "hive"
     }
-}
+}]

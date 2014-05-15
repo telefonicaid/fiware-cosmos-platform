@@ -63,8 +63,8 @@ class ContentServerConfig(config: Config) extends InfinityConfig(config) {
 
 object InfinityConfig {
   val DefaultProtocol: String = "https"
-  val DefaultContentPort: Int = 50175
-  val DefaultMetadataPort: Int = 50170
+  val DefaultContentPort: Int = 51075
+  val DefaultMetadataPort: Int = 51070
   val DefaultBasePath: String = "/infinityfs/v1"
   val DefaultReplication: Short = 3
   val DefaultBlockSize: Long = 64l * 1024l * 1024l

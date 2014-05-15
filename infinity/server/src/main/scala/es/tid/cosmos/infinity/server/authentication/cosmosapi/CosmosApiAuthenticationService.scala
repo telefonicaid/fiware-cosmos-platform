@@ -76,7 +76,7 @@ private[cosmosapi] class CosmosApiAuthenticationService(
     }
 }
 
-private[cosmosapi] object CosmosApiAuthenticationService {
+object CosmosApiAuthenticationService {
 
   /** Creates a CosmosApiAuthentication taking its parameters from the passed configuration */
   def fromConfig(config: Config): CosmosApiAuthenticationService = new CosmosApiAuthenticationService(

@@ -22,6 +22,7 @@ import com.typesafe.config.{Config, ConfigException}
 
 import es.tid.cosmos.infinity.common.util.UriUtil
 import es.tid.cosmos.infinity.server.config.InfinityConfig._
+import es.tid.cosmos.infinity.server.plugin.PluginConfig
 
 abstract class InfinityConfig(config: Config) {
 
@@ -56,7 +57,9 @@ class ContentServerConfig(config: Config) extends InfinityConfig(config) {
   val bufferSize = withDefault(config.getInt("content.bufferSize"), DefaultBufferSize)
 
   val nameNodeRPCUrl: URL = UriUtil.replaceScheme(
-    new URI(config.getString(NameNodeHdfsAddressKey)), "http").toURL
+    new URI(
+      config.getString(s"${PluginConfig.HadoopKeyPrefix}.$NameNodeHdfsAddressKey")),
+      "http").toURL
 
   val localContentServerUrl: URL = contentServerUrl(InetAddress.getLocalHost.getHostName)
 }

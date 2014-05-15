@@ -25,10 +25,10 @@ import org.apache.hadoop.conf.Configuration
 /** Plugin configuration comes from hadoop settings (those with dfs.infinity.* prefix) taking
   * its default values from the embedded application.conf resource.
   */
-private[plugin] object PluginConfig {
+object PluginConfig {
 
   private val SettingKeyPattern = """dfs\.infinity\.(.*)""".r
-  private val HadoopKeyPrefix = "hadoop"
+  val HadoopKeyPrefix = "hadoop"
 
   def load(hadoopConfig: Configuration, hadoopKeys: String*): Config =
     load(hadoopConfig, hadoopKeys.toSet, ConfigFactory.load())

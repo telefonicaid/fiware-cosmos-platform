@@ -24,14 +24,14 @@ import org.apache.hadoop.conf.{Configuration, Configurable}
 import org.apache.hadoop.hdfs.server.datanode.DataNode
 import org.apache.hadoop.util.ServicePlugin
 
-import es.tid.cosmos.infinity.server.authentication.AuthenticationComponent
+import es.tid.cosmos.infinity.server.authentication.AuthenticationService
+import es.tid.cosmos.infinity.server.authentication.cosmosapi.CosmosApiAuthenticationService
 import es.tid.cosmos.infinity.server.config.{InfinityConfig, ContentServerConfig}
 import es.tid.cosmos.infinity.server.content.ContentServer
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 
 /** Datanode plugin to serve Infinity file content */
 class ContentPlugin extends ServicePlugin with Configurable {
-  this: AuthenticationComponent =>
 
   private val log = LogFactory.getLog(classOf[ContentPlugin])
   private var hadoopConfOpt: Option[Configuration] = None
@@ -47,8 +47,7 @@ class ContentPlugin extends ServicePlugin with Configurable {
   override def start(service: Any): Unit = service match {
     case dataNode: DataNode =>
       log.info("Starting Infinity content server as a datanode plugin")
-      val config = new ContentServerConfig(
-        PluginConfig.load(getConf, InfinityConfig.HadoopKeys: _*))
+      val config = new ContentServerConfig(pluginConfig)
       checkDataNode(dataNode, config).fold(
         succ = (checkedNode) => createServer(checkedNode, config),
         fail = (errors) => illegalDataNodeState(errors.list)
@@ -96,4 +95,9 @@ class ContentPlugin extends ServicePlugin with Configurable {
 
     (up |@| fullyStarted |@| connectedToNameNode) { (_, _, last) => last }
   }
+
+  private lazy val pluginConfig = PluginConfig.load(getConf, InfinityConfig.HadoopKeys: _*)
+
+  private lazy val authentication: AuthenticationService =
+    CosmosApiAuthenticationService.fromConfig(pluginConfig)
 }

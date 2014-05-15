@@ -16,21 +16,23 @@
 
 package es.tid.cosmos.infinity.server.plugin
 
+import scala.collection.JavaConversions._
+
+import com.typesafe.config.ConfigFactory
 import org.apache.commons.logging.LogFactory
 import org.apache.hadoop.conf.{Configurable, Configuration}
 import org.apache.hadoop.hdfs.server.namenode.NameNode
 import org.apache.hadoop.util.ServicePlugin
 
-import es.tid.cosmos.infinity.server.authentication.AuthenticationComponent
+import es.tid.cosmos.infinity.server.authentication.cosmosapi.CosmosApiAuthenticationService
 import es.tid.cosmos.infinity.server.config.MetadataServerConfig
 import es.tid.cosmos.infinity.server.finatra.MetadataServer
 import es.tid.cosmos.infinity.server.actions.hdfs.HdfsNameNode
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
+import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 
 /** Namenode plugin to serve Infinity metadata. */
 class MetadataPlugin extends ServicePlugin with Configurable {
-  
-  this: AuthenticationComponent =>
 
   private val log = LogFactory.getLog(classOf[MetadataPlugin])
   private var hadoopConfOpt: Option[Configuration] = None
@@ -50,7 +52,7 @@ class MetadataPlugin extends ServicePlugin with Configurable {
         Thread.sleep(1000)
       }
       log.info("Starting Infinity metadata server as a namenode plugin")
-      val config = new MetadataServerConfig(PluginConfig.load(getConf))
+      val config = new MetadataServerConfig(pluginConfig)
       val urlMapper = new InfinityUrlMapper(config)
       val server = new MetadataServer(
         nameNode = new HdfsNameNode(config, nameNode.getRpcServer, urlMapper),
@@ -73,4 +75,9 @@ class MetadataPlugin extends ServicePlugin with Configurable {
   }
 
   override def close(): Unit = stop()
+
+  private lazy val pluginConfig = PluginConfig.load(getConf)
+
+  private lazy val authentication: AuthenticationService =
+    CosmosApiAuthenticationService.fromConfig(pluginConfig)
 }

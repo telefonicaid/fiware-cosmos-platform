@@ -23,8 +23,8 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.infinity.common.fs.{FileMetadata, Path}
 import es.tid.cosmos.infinity.common.permissions.UserProfile
 import es.tid.cosmos.infinity.server.config.MetadataServerConfig
-import es.tid.cosmos.infinity.server.urls.UrlMapper
 import es.tid.cosmos.infinity.server.hadoop.MockNameNode
+import es.tid.cosmos.infinity.server.urls.UrlMapper
 
 trait MetadataActionFixture extends MockitoSugar {
   val on = Path.absolute("/to/file")

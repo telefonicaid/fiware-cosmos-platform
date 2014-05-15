@@ -16,11 +16,14 @@
 
 package es.tid.cosmos.infinity.server.unfiltered.response
 
-import java.io.{OutputStream, ByteArrayInputStream}
+import java.io.{InputStream, OutputStream, ByteArrayInputStream}
 
+import org.mockito.Mockito.{spy, inOrder}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
+
+import es.tid.cosmos.infinity.server.util.ToClose
 
 class ResponseInputStreamTest extends FlatSpec with MustMatchers with MockitoSugar {
 
@@ -40,10 +43,24 @@ class ResponseInputStreamTest extends FlatSpec with MustMatchers with MockitoSug
       ))
     }
 
+  it must "close the input stream and related resources after reading all the content" in
+    new Fixture{
+      val response = ResponseInputStream(
+        in,
+        maxChunkSize = 10)
+      response.stream(out)
+      out.chunks must be (Seq(ChunkWrites(content.getBytes ++ Seq[Byte](0), 0, 9)))
+      val order = inOrder(internalIn, otherResource)
+      order.verify(internalIn).close()
+      order.verify(otherResource).close()
+    }
+
   val content = "123456789"
 
   trait Fixture {
-    val in = new ByteArrayInputStream(content.getBytes)
+    val otherResource = mock[InputStream]
+    val internalIn = spy(new ByteArrayInputStream(content.getBytes))
+    val in = ToClose(internalIn, otherResource)
     val out = new MockOutputStream
   }
 

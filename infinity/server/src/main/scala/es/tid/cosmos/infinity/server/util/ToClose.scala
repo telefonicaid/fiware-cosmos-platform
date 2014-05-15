@@ -18,7 +18,7 @@ package es.tid.cosmos.infinity.server.util
 
 import java.io.Closeable
 
-case class ToClose[C <: Closeable](value :C, closeables: Closeable*) {
+case class ToClose[+C <: Closeable](value :C, closeables: Closeable*) {
   @volatile private var isClosed: Boolean = false
   def useAndClose[R](f: C => R): R = synchronized {
     require(!isClosed, "cannot use value because resources are already released")

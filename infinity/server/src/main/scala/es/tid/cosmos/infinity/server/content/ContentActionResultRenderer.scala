@@ -26,7 +26,7 @@ class ContentActionResultRenderer(chunkSize: Int) {
 
   def apply[T](result: ContentAction.Result): ResponseFunction[T] = result match {
     case Found(stream) =>
-      Ok ~> stream.useAndClose(ResponseInputStream(_, chunkSize))
+      Ok ~> ResponseInputStream(stream, chunkSize)
     case Appended(path) => ???
     case _ => ???
   }

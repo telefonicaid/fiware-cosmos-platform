@@ -22,21 +22,23 @@ import scala.annotation.tailrec
 
 import unfiltered.response.ResponseStreamer
 
- /** An HTTP response for Unfiltered that creates the response body in chunks reading it from
-   * the given input stream. <b>Note:</b> The response is not responsible for closing the given
-   * stream. Closing the stream is left to the client's discretion.
+import es.tid.cosmos.infinity.server.util.ToClose
+
+/** An HTTP response for Unfiltered that creates the response body in chunks reading it from
+   * the given input stream. <b>Note:</b> The response takes care of closing the given
+   * stream after it has read the content.
    *
-   * @param in           the stream from where to read the response body
+   * @param closeableIn  the auto-closeable stream from where to read the response body
    * @param maxChunkSize the maximum size of each chunk
    */
 case class ResponseInputStream(
-    in: InputStream,
+    closeableIn: ToClose[InputStream],
     maxChunkSize: Int) extends ResponseStreamer {
 
   import ResponseInputStream._
   lazy val mutableBuffer = new Array[Byte](maxChunkSize)
 
-  override def stream(out: OutputStream): Unit = {
+  override def stream(out: OutputStream): Unit = closeableIn.useAndClose { in =>
     // note: out is automatically closed by ResponseStreamer.respond
     @tailrec
     def transfer(): Unit = {

@@ -18,8 +18,8 @@ package es.tid.cosmos.infinity.server.errors
 
 import es.tid.cosmos.infinity.common.json.ErrorDescriptorFormatter
 import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
-import es.tid.cosmos.infinity.server.actions.NameNodeException
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
+import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 
 trait ExceptionRenderer[Response] {
   import ExceptionRenderer._

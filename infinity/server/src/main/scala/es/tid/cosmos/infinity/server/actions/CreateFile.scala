@@ -23,6 +23,7 @@ import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 import es.tid.cosmos.infinity.server.actions.Action.Context
 import es.tid.cosmos.infinity.server.actions.MetadataAction.Created
 import es.tid.cosmos.infinity.server.config.InfinityConfig
+import es.tid.cosmos.infinity.server.hadoop.NameNode
 
 case class CreateFile(
     config: InfinityConfig,

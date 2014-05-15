@@ -31,7 +31,7 @@ import unfiltered.request.{Authorization, HttpRequest}
 import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.ContentServerConfig
-import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
+import es.tid.cosmos.infinity.server.hadoop.{DataNode, DfsClientFactory}
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 import es.tid.cosmos.infinity.server.authorization._
 import es.tid.cosmos.infinity.server.errors.RequestParsingException
@@ -39,13 +39,13 @@ import es.tid.cosmos.infinity.server.errors.RequestParsingException
 class ContentRoutes(
       config: ContentServerConfig,
       authService: AuthenticationService,
-      clientFactory: DfsClientFactory,
+      dataNode: DataNode,
       urlMapper: UrlMapper) extends async.Plan {
 
   import ContentRoutes._
 
   //TODO: Extract common code between content and metadata plugin server and routes
-  private val actionValidator = new HttpContentActionValidator(config, clientFactory)
+  private val actionValidator = new HttpContentActionValidator(config, dataNode)
   private val renderResult = new ContentActionResultRenderer(config.chunkSize)
 
   override def intent: Intent = { case request =>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions
+package es.tid.cosmos.infinity.server.hadoop
 
 import scala.concurrent.Future
 

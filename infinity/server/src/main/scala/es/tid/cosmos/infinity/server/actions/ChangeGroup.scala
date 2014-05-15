@@ -21,6 +21,7 @@ import scala.concurrent._
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.Action.Context
 import es.tid.cosmos.infinity.server.actions.MetadataAction.GroupSet
+import es.tid.cosmos.infinity.server.hadoop.NameNode
 
 case class ChangeGroup(nameNode: NameNode, on: Path, group: String) extends MetadataAction {
   import ExecutionContext.Implicits.global

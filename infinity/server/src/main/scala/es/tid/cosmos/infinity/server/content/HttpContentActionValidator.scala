@@ -24,18 +24,17 @@ import unfiltered.request._
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions._
 import es.tid.cosmos.infinity.server.config.ContentServerConfig
-import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
+import es.tid.cosmos.infinity.server.hadoop.{DataNode, DfsClientFactory}
 import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 /** The validator for content actions.
   *
-  * @param config           the content server configuration
-  * @param dfsClientFactory the DFS client factory that will be used to access the underlying
-  *                         file system
+  * @param config   the content server configuration
+  * @param dataNode the DatNode API
   */
 class HttpContentActionValidator(
     config: ContentServerConfig,
-    dfsClientFactory: DfsClientFactory) {
+    dataNode: DataNode) { //TODO: Remove factory
   //TODO: Consider moving actions, renderers and validators to metadata and content packages
   import scalaz.Scalaz._
 
@@ -52,12 +51,14 @@ class HttpContentActionValidator(
     request match {
       case GET(Params(params)) => extractGetContentParams(params) match {
         case Success((offset, length)) =>
-          GetContent(dfsClientFactory, absolutePath, offset, length).success
+          GetContent(dataNode, absolutePath, offset, length).success
         case Failure(e) =>
           RequestParsingException.InvalidRequestParams(Seq("offset", "length"), e).failure
       }
       case POST(_) =>
-        AppendContent(dfsClientFactory, absolutePath, request.inputStream, config.bufferSize).success
+        AppendContent(dataNode, absolutePath, request.inputStream).success
+      case PUT(_) =>
+        OverwriteContent(dataNode, absolutePath, request.inputStream).success
     }
   }
 

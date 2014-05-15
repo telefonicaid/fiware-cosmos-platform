@@ -16,12 +16,13 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import java.io.{Closeable, InputStream}
+import java.io.InputStream
 import scala.concurrent.Future
 
 import es.tid.cosmos.infinity.common.fs.{Path, PathMetadata}
 import es.tid.cosmos.infinity.common.permissions.UserProfile
 import es.tid.cosmos.infinity.server.urls.UrlMapper
+import es.tid.cosmos.infinity.server.util.ToClose
 
 /** An action performed on a Infinity path. */
 sealed trait Action[Result <: Action.Result] {
@@ -76,9 +77,11 @@ object ContentAction {
   sealed trait Result extends Action.Result
 
   /** A file content response with the input stream to read from and the resources to release */
-  case class Found(
-      stream: InputStream, readUpTo: Long, closeables: Seq[Closeable]) extends Result
+  case class Found(stream: ToClose[InputStream]) extends Result
 
   /** A content was successfully appended to a file. */
   case class Appended(path: Path) extends Result
+
+  /** A file's content was successfully overwritten. */
+  case class Overwritten(path: Path) extends Result
 }

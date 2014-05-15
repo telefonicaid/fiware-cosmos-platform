@@ -23,6 +23,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 
 class ChangeOwnerTest extends FlatSpec with MustMatchers with FutureMatchers {
 
@@ -45,7 +46,7 @@ class ChangeOwnerTest extends FlatSpec with MustMatchers with FutureMatchers {
     changeOwner(context) must eventuallyFailWith[NameNodeException.IOError]
   }
 
-  trait Fixture extends ActionFixture {
+  trait Fixture extends MetadataActionFixture {
     val newOwner = "saruman"
     val changeOwner = ChangeOwner(nameNode, on, newOwner)
   }

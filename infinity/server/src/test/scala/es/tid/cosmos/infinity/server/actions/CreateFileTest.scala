@@ -25,6 +25,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 
 class CreateFileTest extends FlatSpec with MustMatchers with FutureMatchers {
 
@@ -50,7 +51,7 @@ class CreateFileTest extends FlatSpec with MustMatchers with FutureMatchers {
     createFile(context) must eventuallyFailWith[NameNodeException.IOError]
   }
 
-  trait Fixture extends ActionFixture {
+  trait Fixture extends MetadataActionFixture {
     val permissions = PermissionsMask.fromOctal("640")
     val replication: Option[Short] = Some(3)
     val blockSize = Some(65536l)

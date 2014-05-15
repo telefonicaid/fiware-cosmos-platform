@@ -16,39 +16,40 @@
 
 package es.tid.cosmos.infinity.server.unfiltered.response
 
-import java.io.{Closeable, OutputStream, InputStream}
+import java.io.{OutputStream, InputStream}
 import java.util
 import scala.annotation.tailrec
-import scala.math.min
 
 import unfiltered.response.ResponseStreamer
 
-import es.tid.cosmos.infinity.server.util.IoUtil
-
+ /** An HTTP response for Unfiltered that creates the response body in chunks reading it from
+   * the given input stream. <b>Note:</b> The response is not responsible for closing the given
+   * stream. Closing the stream is left to the client's discretion.
+   *
+   * @param in           the stream from where to read the response body
+   * @param maxChunkSize the maximum size of each chunk
+   */
 case class ResponseInputStream(
     in: InputStream,
-    maxChunkSize: Int,
-    length: Long,
-    closeables: Seq[Closeable]) extends ResponseStreamer {
+    maxChunkSize: Int) extends ResponseStreamer {
 
   import ResponseInputStream._
   lazy val mutableBuffer = new Array[Byte](maxChunkSize)
 
-  override def stream(out: OutputStream): Unit = IoUtil.withAutoClose((in +: closeables).distinct) {
+  override def stream(out: OutputStream): Unit = {
+    // note: out is automatically closed by ResponseStreamer.respond
     @tailrec
-    def transfer(leftToRead: Long): Unit = {
-      val chunkSize = min(maxChunkSize, leftToRead).toInt
+    def transfer(): Unit = {
       cleanBuffer()
-      val bytesRead: Int = in.read(mutableBuffer, NoOffset, chunkSize)
-      val nextLeftToRead = leftToRead - bytesRead
+      val bytesRead: Int = in.read(mutableBuffer, NoOffset, maxChunkSize)
       if (gotContentFromStream(bytesRead)) {
         out.write(mutableBuffer, NoOffset, bytesRead)
         out.flush()
-        if (moreLeftToRead(nextLeftToRead)) transfer(nextLeftToRead)
+        transfer()
       }
     }
 
-    transfer(length)
+    transfer()
   }
 
   private def cleanBuffer(): Unit = {
@@ -60,5 +61,4 @@ object ResponseInputStream {
   private val NoOffset = 0
   private val NullByte: Byte = 0
   private def gotContentFromStream(bytesRead: Int) = bytesRead > -1
-  private def moreLeftToRead(leftToRead: Long) = leftToRead > 0
 }

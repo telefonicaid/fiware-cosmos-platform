@@ -18,6 +18,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.fs.Path
+import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 
 class MovePathTest extends FlatSpec with MustMatchers with FutureMatchers {
 
@@ -40,7 +41,7 @@ class MovePathTest extends FlatSpec with MustMatchers with FutureMatchers {
     moveFile(context) must eventuallyFailWith[NameNodeException.IOError]
   }
 
-  trait Fixture extends ActionFixture {
+  trait Fixture extends MetadataActionFixture {
     val from = Path.absolute("/from/file")
     val metadataResult = MetadataAction.Moved(metadata)
     val moveFile = MovePath(config, nameNode, on, from)

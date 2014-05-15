@@ -21,6 +21,7 @@ import scala.concurrent._
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.Action.Context
 import es.tid.cosmos.infinity.server.actions.MetadataAction.OwnerSet
+import es.tid.cosmos.infinity.server.hadoop.NameNode
 
 case class ChangeOwner(nameNode: NameNode, on: Path, owner: String) extends MetadataAction {
 

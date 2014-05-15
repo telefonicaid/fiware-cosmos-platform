@@ -24,6 +24,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 
 class ChangePermissionsTest extends FlatSpec with MustMatchers with FutureMatchers {
 
@@ -46,7 +47,7 @@ class ChangePermissionsTest extends FlatSpec with MustMatchers with FutureMatche
     changePermissions(context) must eventuallyFailWith[NameNodeException.IOError]
   }
 
-  trait Fixture extends ActionFixture {
+  trait Fixture extends MetadataActionFixture {
     val newMask = PermissionsMask.fromOctal("640")
     val changePermissions = ChangePermissions(nameNode, on, newMask)
   }

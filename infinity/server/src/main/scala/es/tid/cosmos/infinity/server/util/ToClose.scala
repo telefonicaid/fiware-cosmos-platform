@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.content
+package es.tid.cosmos.infinity.server.util
 
-import unfiltered.response._
+import java.io.Closeable
 
-import es.tid.cosmos.infinity.server.actions.ContentAction
-import es.tid.cosmos.infinity.server.actions.ContentAction.{Appended, Found}
-import es.tid.cosmos.infinity.server.unfiltered.response.ResponseInputStream
-
-class ContentActionResultRenderer(chunkSize: Int) {
-
-  def apply[T](result: ContentAction.Result): ResponseFunction[T] = result match {
-    case Found(stream) =>
-      Ok ~> stream.useAndClose(ResponseInputStream(_, chunkSize))
-    case Appended(path) => ???
-    case _ => ???
+case class ToClose[C <: Closeable](value :C, closeables: Closeable*) {
+  @volatile private var isClosed: Boolean = false
+  def useAndClose[R](f: C => R): R = synchronized {
+    require(!isClosed, "cannot use value because resources are already released")
+    val result = IoUtil.withAutoClose((value +: closeables).distinct)(f(value))
+    isClosed = true
+    result
   }
 }

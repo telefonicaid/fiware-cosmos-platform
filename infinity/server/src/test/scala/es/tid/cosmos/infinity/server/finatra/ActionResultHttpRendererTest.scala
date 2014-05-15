@@ -41,7 +41,7 @@ class ActionResultHttpRendererTest extends FlatSpec with MustMatchers {
     size = 2048
   )
 
-  "Action resut HTTP renderer" must "render Action.Retrieved" in {
+  "Action resut HTTP renderer" must "render Retrieved" in {
     val rep = ActionResultHttpRenderer(Retrieved(metadata)).build
     rep.status must be (HttpResponseStatus.OK)
     rep.getContentString() must include ("/path/to/file")

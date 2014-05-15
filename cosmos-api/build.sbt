@@ -4,7 +4,8 @@ unmanagedClasspath in IntegrationTest <+= (classDirectory in Test) map { t => At
 
 compile in IntegrationTest <<= compile in IntegrationTest dependsOn (compile in Test)
 
-libraryDependencies ++= Dependencies.unfiltered ++ Seq(
+libraryDependencies ++= Dependencies.unfiltered.map(_ % "test, it") ++ Seq(
+  Dependencies.jettyWebapp % "it",
   Dependencies.scalaStm % "it",
   Dependencies.scalaz,
   "com.typesafe" %% "play-plugins-mailer" % "2.2.0",

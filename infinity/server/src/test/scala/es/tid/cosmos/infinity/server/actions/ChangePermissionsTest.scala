@@ -30,7 +30,7 @@ class ChangePermissionsTest extends FlatSpec with MustMatchers with FutureMatche
   "Change permissions action" must "return PermissionsSet upon successful permissions set" in new Fixture {
     doReturn(Future.successful(())).when(nameNode).setPermissions(on, newMask)
     doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
-    changePermissions(context) must eventually (be (Action.PermissionsSet(metadata)))
+    changePermissions(context) must eventually (be (MetadataAction.PermissionsSet(metadata)))
   }
 
   it must "fail if name node fails to set permissions" in new Fixture {

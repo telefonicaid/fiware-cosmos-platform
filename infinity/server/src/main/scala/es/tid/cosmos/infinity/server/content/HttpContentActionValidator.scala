@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.content
 
 import scala.util.{Try, Success, Failure}
 import scalaz.Validation
 
-import com.twitter.finagle.http.Request
-import org.jboss.netty.handler.codec.http.HttpMethod
+import unfiltered.request._
 
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.server.actions.{GetContent, Action}
+import es.tid.cosmos.infinity.server.actions._
 import es.tid.cosmos.infinity.server.config.ContentServerConfig
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
+import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 /** The validator for content actions.
   *
@@ -41,34 +41,37 @@ class HttpContentActionValidator(
 
   private val contentUriPrefix = s"""${config.localContentServerUrl.getPath}(/[^\\?]*)(\\?.*)?""".r
 
-  def apply(request: Request): Validation[RequestParsingException, Action] =
-    request.getUri() match {
+  def apply[T](request: HttpRequest[T]): Validation[RequestParsingException, ContentAction] =
+    request.uri match {
       case contentUriPrefix(path, _) => contentAction(path, request)
       case uri => RequestParsingException.InvalidResourcePath(uri).failure
     }
 
-  private def contentAction(path: String, request: Request) = {
+  private def contentAction[T](path: String, request: HttpRequest[T]) = {
     val absolutePath = Path.absolute(path)
-    request.method match {
-      case HttpMethod.GET => extractGetContentParams(request) match {
+    request match {
+      case GET(Params(params)) => extractGetContentParams(params) match {
         case Success((offset, length)) =>
           GetContent(dfsClientFactory, absolutePath, offset, length).success
         case Failure(e) =>
           RequestParsingException.InvalidRequestParams(Seq("offset", "length"), e).failure
       }
+      case POST(_) =>
+        AppendContent(dfsClientFactory, absolutePath, request.inputStream, config.bufferSize).success
     }
   }
 
-  private def extractGetContentParams(request: Request): Try[(Option[Long], Option[Long])] = Try {
+  private def extractGetContentParams(params: Map[String, Seq[String]]): Try[(Option[Long], Option[Long])] = Try {
     def toValidLong(s: String, condition: Long => Boolean, message: String): Long = {
       val n = s.toLong
       require(condition(n), s"$message. Found: $n")
       n
     }
+    // TODO: what happens when params passed are seqs? Test against it!
     val optionalOffset =
-      Option(request.getParam("offset")) map (toValidLong(_, _ >= 0, s"offset cannot be negative"))
+      params.get("offset") map (_.head) map (toValidLong(_, _ >= 0, s"offset cannot be negative"))
     val optionalLength =
-      Option(request.getParam("length")) map (toValidLong(_, _ > 0, s"length must be positive"))
+      params.get("length") map (_.head) map (toValidLong(_, _ > 0, s"length must be positive"))
 
     (optionalOffset, optionalLength)
   }

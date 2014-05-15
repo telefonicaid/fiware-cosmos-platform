@@ -24,11 +24,11 @@ import es.tid.cosmos.infinity.common.permissions.UserProfile
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 
 /** An action performed on a Infinity path. */
-trait Action {
+sealed trait Action[Result <: Action.Result] {
 
   val on: Path
 
-  def apply(context: Action.Context): Future[Action.Result]
+  def apply(context: Action.Context): Future[Result]
 }
 
 object Action {
@@ -41,6 +41,12 @@ object Action {
     * into a response according to the protocol used by Infinity Server (e.g., RESTful API).
     */
   sealed trait Result
+}
+
+trait MetadataAction extends Action[MetadataAction.Result]
+
+object MetadataAction {
+  sealed trait Result extends Action.Result
 
   /** A file or directory metadata was successfully retrieved. */
   case class Retrieved(metadata: PathMetadata) extends Result
@@ -62,11 +68,17 @@ object Action {
 
   /** A file or directory permissions were successfully set. */
   case class PermissionsSet(metadata: PathMetadata) extends Result
+}
 
-  /** Indicates that the action cannot be performed for that user on that path */
-  case class OperationNotAllowed(username: String, path: Path) extends Result
+trait ContentAction extends Action[ContentAction.Result]
+
+object ContentAction {
+  sealed trait Result extends Action.Result
 
   /** A file content response with the input stream to read from and the resources to release */
-  case class ContentFound(
+  case class Found(
       stream: InputStream, readUpTo: Long, closeables: Seq[Closeable]) extends Result
+
+  /** A content was successfully appended to a file. */
+  case class Appended(path: Path) extends Result
 }

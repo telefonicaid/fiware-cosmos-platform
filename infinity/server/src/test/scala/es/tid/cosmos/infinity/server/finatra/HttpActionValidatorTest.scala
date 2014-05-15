@@ -31,6 +31,7 @@ import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 import es.tid.cosmos.infinity.server.actions._
 import es.tid.cosmos.infinity.server.config.MetadataServerConfig
+import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside with MockitoSugar {
 

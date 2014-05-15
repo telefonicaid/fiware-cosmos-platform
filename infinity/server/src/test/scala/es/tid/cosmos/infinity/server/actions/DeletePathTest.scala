@@ -30,7 +30,7 @@ class DeletePathTest extends FlatSpec with MustMatchers with FutureMatchers {
   "Delete path action" must "return Deleted upon successful delete" in new Fixture {
     doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
     doReturn(Future.successful(())).when(nameNode).deletePath(on, isRecursive)
-    deletePath(context) must eventually (be (Action.Deleted(metadata)))
+    deletePath(context) must eventually (be (MetadataAction.Deleted(metadata)))
   }
 
   it must "fail if name node fails to delete the file" in new Fixture {

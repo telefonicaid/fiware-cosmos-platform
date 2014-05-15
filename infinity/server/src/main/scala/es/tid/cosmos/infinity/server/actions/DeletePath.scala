@@ -19,15 +19,17 @@ package es.tid.cosmos.infinity.server.actions
 import scala.concurrent._
 
 import es.tid.cosmos.infinity.common.fs.Path
+import es.tid.cosmos.infinity.server.actions.Action.Context
+import es.tid.cosmos.infinity.server.actions.MetadataAction.Deleted
 
-case class DeletePath(nameNode: NameNode, on: Path, recursive: Boolean) extends Action {
+case class DeletePath(nameNode: NameNode, on: Path, recursive: Boolean) extends MetadataAction {
 
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] = nameNode.as(context.user) {
+  override def apply(context: Context): Future[MetadataAction.Result] = nameNode.as(context.user) {
     for {
       meta <- nameNode.pathMetadata(on)
       _ <- nameNode.deletePath(on, recursive)
-    } yield Action.Deleted(meta)
+    } yield Deleted(meta)
   }
 }

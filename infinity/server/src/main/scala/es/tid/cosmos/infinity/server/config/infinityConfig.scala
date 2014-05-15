@@ -53,6 +53,7 @@ class MetadataServerConfig(config: Config) extends InfinityConfig(config) {
 
 class ContentServerConfig(config: Config) extends InfinityConfig(config) {
   val chunkSize = withDefault(config.getInt("content.chunkSize"), DefaultChunkSize)
+  val bufferSize = withDefault(config.getInt("content.bufferSize"), DefaultBufferSize)
 
   val nameNodeRPCUrl: URL = UriUtil.replaceScheme(
     new URI(config.getString(NameNodeHdfsAddressKey)), "http").toURL
@@ -69,6 +70,6 @@ object InfinityConfig {
   val DefaultBlockSize: Long = 64l * 1024l * 1024l
   val NameNodeHdfsAddressKey = "fs.defaultFS"
   // 4096 is taken from Hadoop IOUtils.copy
-  val DefaultChunkSize = 4096
+  val DefaultChunkSize, DefaultBufferSize = 4096
   val HadoopKeys = Seq(NameNodeHdfsAddressKey)
 }

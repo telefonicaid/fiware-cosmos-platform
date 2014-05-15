@@ -16,20 +16,32 @@
 
 package es.tid.cosmos.infinity.server.actions
 
+import java.io.InputStream
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
+
+import org.apache.hadoop.io.IOUtils
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.Action.Context
-import es.tid.cosmos.infinity.server.actions.MetadataAction.OwnerSet
+import es.tid.cosmos.infinity.server.actions.ContentAction.Appended
+import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 
-case class ChangeOwner(nameNode: NameNode, on: Path, owner: String) extends MetadataAction {
+case class AppendContent(
+    dfsClientFactory: DfsClientFactory,
+    on: Path,
+    in: InputStream,
+    bufferSize: Int) extends ContentAction {
+  import AppendContent._
 
-  import ExecutionContext.Implicits.global
-
-  override def apply(context: Context): Future[MetadataAction.Result] = nameNode.as(context.user) {
-    for {
-      _ <- nameNode.setOwner(on, owner)
-      metadata <- nameNode.pathMetadata(on)
-    } yield OwnerSet(metadata)
+  override def apply(context: Context): Future[ContentAction.Result] = future {
+    val client = dfsClientFactory.newClient
+    val out = client.append(on.toString, bufferSize, NoProgress, NoStatistics)
+    IOUtils.copyBytes(in, out, bufferSize)
+    Appended(on)
   }
+}
+
+object AppendContent {
+  private val NoProgress, NoStatistics = null
 }

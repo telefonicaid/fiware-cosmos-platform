@@ -19,17 +19,19 @@ package es.tid.cosmos.infinity.server.actions
 import scala.concurrent._
 
 import es.tid.cosmos.infinity.common.fs.Path
+import es.tid.cosmos.infinity.server.actions.Action.Context
+import es.tid.cosmos.infinity.server.actions.MetadataAction.Moved
 import es.tid.cosmos.infinity.server.config.InfinityConfig
 
 case class MovePath(
-    config: InfinityConfig, nameNode: NameNode, on: Path, from: Path) extends Action {
+    config: InfinityConfig, nameNode: NameNode, on: Path, from: Path) extends MetadataAction {
 
   import ExecutionContext.Implicits.global
 
-  override def apply(context: Action.Context): Future[Action.Result] = nameNode.as(context.user) {
+  override def apply(context: Context): Future[MetadataAction.Result] = nameNode.as(context.user) {
     for {
       _ <- nameNode.movePath(from, on)
       metadata <- nameNode.pathMetadata(on)
-    } yield Action.Moved(metadata)
+    } yield Moved(metadata)
   }
 }

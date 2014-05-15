@@ -19,10 +19,10 @@ package es.tid.cosmos.infinity.server
 import scala.concurrent.duration._
 
 import org.scalatest.Assertions
-import unfiltered.filter.Planify
-import unfiltered.jetty.Http
-import unfiltered.request._
-import unfiltered.response._
+import _root_.unfiltered.filter.Planify
+import _root_.unfiltered.jetty.Http
+import _root_.unfiltered.request._
+import _root_.unfiltered.response._
 
 import es.tid.cosmos.common.BearerToken
 import es.tid.cosmos.infinity.common.credentials.{ClusterCredentials, Credentials, UserCredentials}

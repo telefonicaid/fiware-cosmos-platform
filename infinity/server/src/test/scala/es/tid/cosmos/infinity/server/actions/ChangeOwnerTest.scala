@@ -29,7 +29,7 @@ class ChangeOwnerTest extends FlatSpec with MustMatchers with FutureMatchers {
   "Change owner action" must "return OwnerSet upon successful owner set" in new Fixture {
     doReturn(Future.successful(())).when(nameNode).setOwner(on, newOwner)
     doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
-    changeOwner(context) must eventually (be (Action.OwnerSet(metadata)))
+    changeOwner(context) must eventually (be (MetadataAction.OwnerSet(metadata)))
   }
 
   it must "fail if name node fails to set owner" in new Fixture {

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,23 +16,15 @@
 
 package es.tid.cosmos.infinity.server.finatra
 
-import com.twitter.finagle.stream.StreamResponse
 import com.twitter.finatra.ResponseBuilder
 
-import es.tid.cosmos.infinity.server.actions.Action
-import es.tid.cosmos.infinity.server.actions.Action.ContentFound
-import es.tid.cosmos.infinity.server.finagle.InputStreamResponse
+import es.tid.cosmos.infinity.server.errors.ExceptionRenderer
 
-class ActionResultStreamRenderer(chunkSize: Int) {
+object FinatraExceptionRenderer extends ExceptionRenderer[ResponseBuilder] {
+  override protected def withAuthHeader(
+      response: ResponseBuilder, headerContent: String): ResponseBuilder =
+    response.header("WWW-Authenticate", headerContent)
 
-  def apply(result: Action.Result): StreamResponse = result match {
-    case ContentFound(stream, readUpTo, closeables) =>
-      new InputStreamResponse(
-        stream,
-        chunkSize,
-        readUpTo,
-        closeables,
-        new ResponseBuilder().status(200).build
-      )
-  }
+  override protected def render(status: Int, jsonContent: String): ResponseBuilder =
+    new ResponseBuilder().status(status).json(jsonContent)
 }

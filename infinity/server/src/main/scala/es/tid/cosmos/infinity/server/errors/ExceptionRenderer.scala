@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
-
-import com.twitter.finatra.ResponseBuilder
+package es.tid.cosmos.infinity.server.errors
 
 import es.tid.cosmos.infinity.common.json.ErrorDescriptorFormatter
 import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
 import es.tid.cosmos.infinity.server.actions.NameNodeException
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
 
-object ExceptionRenderer {
+trait ExceptionRenderer[Response] {
+  import ExceptionRenderer._
 
   private val errorFormatter = new ErrorDescriptorFormatter()
 
-  def apply(exception: Throwable): ResponseBuilder = exception match {
+  def apply(exception: Throwable): Response = exception match {
     case e: RequestParsingException.MissingAuthorizationHeader =>
       renderWithAuth(401, ErrorCode(e), e)
     case e: RequestParsingException.UnsupportedAuthorizationHeader =>
@@ -54,13 +53,19 @@ object ExceptionRenderer {
       s"no rendering mechanism defined for ${exception.getClass.getCanonicalName}")
   }
 
-  private def render[E <: Throwable](status: Int, errorCode: ErrorCode[E], exception: Throwable) =
-    new ResponseBuilder()
-      .status(status)
-      .json(errorFormatter.format(ErrorDescriptor(errorCode.code, exception.getMessage)))
+  private def render[E <: Throwable](
+      status: Int, errorCode: ErrorCode[E], exception: Throwable): Response =
+    render(status, errorFormatter.format(ErrorDescriptor(errorCode.code, exception.getMessage)))
 
   private def renderWithAuth[E <: Throwable](
-    status: Int, errorCode: ErrorCode[E], exception: Throwable) =
-    render(status, errorCode, exception)
-      .header("WWW-Authenticate", """Basic realm="Infinity", Bearer realm="Infinity"""")
+      status: Int, errorCode: ErrorCode[E], exception: Throwable): Response =
+    withAuthHeader(render(status, errorCode, exception), AuthHeaderContent)
+
+  protected def withAuthHeader(response: Response, headerContent: String): Response
+
+  protected def render(status: Int, jsonContent: String): Response
+}
+
+private object ExceptionRenderer {
+  val AuthHeaderContent = """Basic realm="Infinity", Bearer realm="Infinity""""
 }

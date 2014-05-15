@@ -30,6 +30,7 @@ import es.tid.cosmos.infinity.common.permissions.UserProfile
 import es.tid.cosmos.infinity.server.actions.NameNode
 import es.tid.cosmos.infinity.server.authentication._
 import es.tid.cosmos.infinity.server.config.MetadataServerConfig
+import es.tid.cosmos.infinity.server.errors.ErrorCode
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
 class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar {

@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.authorization
 
 import java.net.InetAddress
 import scalaz.Validation
 
-import com.twitter.finagle.http.Request
 import org.apache.commons.codec.binary.{Base64, StringUtils}
 
 import es.tid.cosmos.infinity.common.credentials.{UserCredentials, Credentials, ClusterCredentials}
+import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 object HttpCredentialsValidator {
 
@@ -33,19 +33,17 @@ object HttpCredentialsValidator {
   private val basicPairPattern = "(.*):(.*)".r
   private val bearerLinePattern = "Bearer (.*)".r
 
-  def apply(
-      from: InetAddress, request: Request): Validation[RequestParsingException, Credentials] = {
-    request.headers().get("Authorization") match {
+  def apply(info: AuthInfo): Validation[RequestParsingException, Credentials] =
+    info.header match {
       case basicLinePattern(hash) =>
         userCredentials(hash)
       case bearerLinePattern(secret) =>
-        clusterCredentials(from, secret)
+        clusterCredentials(info.from, secret)
       case null =>
         RequestParsingException.MissingAuthorizationHeader().failure
       case headerValue =>
         RequestParsingException.UnsupportedAuthorizationHeader(headerValue).failure
     }
-  }
 
   private def userCredentials(hash: String) = {
     for {

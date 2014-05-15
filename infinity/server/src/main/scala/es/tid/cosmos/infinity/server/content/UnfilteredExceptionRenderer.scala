@@ -14,22 +14,17 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.actions
+package es.tid.cosmos.infinity.server.content
 
-import scala.concurrent._
+import unfiltered.response._
 
-import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.server.actions.Action.Context
-import es.tid.cosmos.infinity.server.actions.MetadataAction.OwnerSet
+import es.tid.cosmos.infinity.server.errors.ExceptionRenderer
 
-case class ChangeOwner(nameNode: NameNode, on: Path, owner: String) extends MetadataAction {
+class UnfilteredExceptionRenderer[T] extends ExceptionRenderer[ResponseFunction[T]] {
+  override protected def withAuthHeader(
+      response: ResponseFunction[T], headerContent: String): ResponseFunction[T] =
+    response ~> WWWAuthenticate(headerContent)
 
-  import ExecutionContext.Implicits.global
-
-  override def apply(context: Context): Future[MetadataAction.Result] = nameNode.as(context.user) {
-    for {
-      _ <- nameNode.setOwner(on, owner)
-      metadata <- nameNode.pathMetadata(on)
-    } yield OwnerSet(metadata)
-  }
+  override protected def render(status: Int, jsonContent: String): ResponseFunction[T] =
+    Status(status) ~> JsonContent ~> ResponseString(jsonContent)
 }

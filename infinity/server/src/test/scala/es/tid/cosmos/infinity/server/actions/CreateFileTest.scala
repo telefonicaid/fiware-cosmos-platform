@@ -32,7 +32,7 @@ class CreateFileTest extends FlatSpec with MustMatchers with FutureMatchers {
     doReturn(Future.successful(())).when(nameNode)
       .createFile(on, user.username, user.groups.head, permissions, replication, blockSize)
     doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
-    createFile(context) must eventually (be (Action.Created(metadata)))
+    createFile(context) must eventually (be (MetadataAction.Created(metadata)))
   }
 
   it must "fail if name node fails to create the file" in new Fixture {

@@ -26,6 +26,7 @@ import es.tid.cosmos.infinity.common.json.{ParseException, RequestMessageParser}
 import es.tid.cosmos.infinity.common.messages.{Request => RequestMessage}
 import es.tid.cosmos.infinity.server.actions._
 import es.tid.cosmos.infinity.server.config.InfinityConfig
+import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 /** An extractor object aimed to convert a Finagle HTTP request into a Infinity Server action. */
 class HttpActionValidator(config: InfinityConfig, nameNode: NameNode) {
@@ -35,7 +36,7 @@ class HttpActionValidator(config: InfinityConfig, nameNode: NameNode) {
   private val jsonParser = new RequestMessageParser()
   private val metadataUriPrefix = s"""${config.metadataBasePath}(/[^\\?]*)(\\?.*)?""".r
 
-  def apply(request: Request): Validation[RequestParsingException, Action] =
+  def apply(request: Request): Validation[RequestParsingException, MetadataAction] =
     request.getUri() match {
       case metadataUriPrefix(path, _) => metadataAction(path, request)
       case uri => RequestParsingException.InvalidResourcePath(uri).failure

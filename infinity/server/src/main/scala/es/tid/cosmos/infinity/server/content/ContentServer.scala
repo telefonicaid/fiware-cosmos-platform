@@ -14,56 +14,34 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finagle
+package es.tid.cosmos.infinity.server.content
 
-import java.net.InetSocketAddress
-
-import com.twitter.finagle.{Service, Filter}
-import com.twitter.finagle.builder.{Server, ServerBuilder}
-import com.twitter.finagle.http.{Request => FinagleRequest}
-import com.twitter.finagle.stream.{Stream, StreamResponse}
-import org.jboss.netty.handler.codec.http.HttpRequest
+import unfiltered.jetty.Http
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.ContentServerConfig
 import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
-/** Finagle-based content server that makes use of [[StreamResponse]] to allow serving content
-  * in streams via chunks, something not currently supported with Finatra.
+/** Unfiltered-based content server.
   *
   * @param clientFactory the DFSClient factory for accessing the underlying file system
   * @param config        the server configuration
   * @param authService   the authentication service
   */
-class ContentStreamServer(
+class ContentServer(
     clientFactory: DfsClientFactory,
     config: ContentServerConfig,
     authService: AuthenticationService) {
 
-  private var server: Option[Server] = None
+  private lazy val server = Http(config.localContentServerUrl.getPort).plan(contentRoutes)
 
   private val urlMapper = new InfinityUrlMapper(config)
 
-  private val nettyToFinagle =
-    Filter.mk[HttpRequest, StreamResponse, FinagleRequest, StreamResponse] { (req, service) =>
-      service(FinagleRequest(req))
-    }
+  private lazy val contentRoutes =
+    new ContentRoutes(config, authService, clientFactory, urlMapper)
 
-  private lazy val service: Service[HttpRequest, StreamResponse] = {
-    val contentService = new ContentStreamRoutes(config, authService, clientFactory, urlMapper)
-    nettyToFinagle andThen contentService
-  }
+  def start(): Unit = server.start()
 
-  def start(): Unit = {
-    server = Some(ServerBuilder()
-      .codec(Stream())
-      .bindTo(new InetSocketAddress(config.localContentServerUrl.getPort))
-      .name("infinity_content_server")
-      .build(service))
-  }
-
-  def stop(): Unit = {
-    server.map(_.close())
-  }
+  def stop(): Unit = server.stop()
 }

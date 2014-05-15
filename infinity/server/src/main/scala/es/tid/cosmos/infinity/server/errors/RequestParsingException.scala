@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.errors
 
 sealed abstract class RequestParsingException(msg: String, cause: Throwable = null) extends Exception(msg)
 

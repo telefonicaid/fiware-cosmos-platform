@@ -51,7 +51,8 @@ object Build extends sbt.Build {
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
     lazy val finatra = "com.twitter" %% "finatra" % "1.5.2" exclude(
       "org.scalatest", "scalatest_2.10")
-    lazy val finagleStream = "com.twitter" %% "finagle-stream" % "6.11.1"
+    lazy val jettyWebapp = "org.eclipse.jetty" % "jetty-webapp" % "7.0.0.v20091005" artifacts (
+                Artifact("jetty-webapp", "jar", "jar"))
     lazy val h2database = "com.h2database" % "h2" % "1.3.175"
     lazy val hadoopCommon = "org.apache.hadoop" % "hadoop-common" % Versions.hdp2Hadoop
     lazy val hadoopHdfs = "org.apache.hadoop" % "hadoop-hdfs" % Versions.hdp2Hadoop
@@ -68,14 +69,13 @@ object Build extends sbt.Build {
     lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
     lazy val typesafeConfig = "com.typesafe" % "config" % "1.2.0"
     lazy val unfiltered = Seq(
-      "net.databinder" %% "unfiltered-filter" % "0.6.8" % "test, it",
-      "net.databinder" %% "unfiltered-jetty" % "0.6.8" % "test, it",
-      "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "test, it" artifacts (
+      "net.databinder" %% "unfiltered-filter" % "0.6.8",
+      "net.databinder" %% "unfiltered-filter-async" % "0.6.8",
+      "net.databinder" %% "unfiltered-jetty" % "0.6.8",
+      "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" artifacts (
         Artifact("javax.servlet", "jar", "jar")),
-      "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "test, it" artifacts (
-        Artifact("javax.servlet", "jar", "jar")),
-      "org.eclipse.jetty" % "jetty-webapp" % "7.0.0.v20091005" % "it" artifacts (
-        Artifact("jetty-webapp", "jar", "jar"))
+      "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" artifacts (
+        Artifact("javax.servlet", "jar", "jar"))
     )
   }
 

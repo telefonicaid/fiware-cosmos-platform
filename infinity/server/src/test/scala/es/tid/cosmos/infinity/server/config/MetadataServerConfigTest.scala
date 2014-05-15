@@ -29,7 +29,7 @@ class MetadataServerConfigTest extends FlatSpec with MustMatchers {
     val config = configFor(
       "content.server.content01.example.com.protocol" -> "https",
       "content.server.content01.example.com.port" -> "1234",
-      "content.server.content01.example.com.basePath" -> "/inf/v1")
+      "content.server.content01.example.com.basePath" -> "/inf/v1/content")
     config.contentServerUrl("content01.example.com") must be (new URL(
       "https://content01.example.com:1234/inf/v1/content"))
   }
@@ -37,7 +37,7 @@ class MetadataServerConfigTest extends FlatSpec with MustMatchers {
   it must "retrieve content server URL when protocol is missing" in {
     val config = configFor(
       "content.server.content01.example.com.port" -> "1234",
-      "content.server.content01.example.com.basePath" -> "/inf/v1")
+      "content.server.content01.example.com.basePath" -> "/inf/v1/content")
     config.contentServerUrl("content01.example.com") must be (new URL(
       "https://content01.example.com:1234/inf/v1/content"))
   }

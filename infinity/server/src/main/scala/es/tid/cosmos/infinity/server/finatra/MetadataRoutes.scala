@@ -17,7 +17,7 @@ package es.tid.cosmos.infinity.server.finatra
 
 import java.net.InetAddress
 import scala.concurrent.ExecutionContext.Implicits.global
-import scalaz.Validation
+import scala.util.Try
 
 import com.twitter.finatra.{Controller, Request}
 
@@ -40,18 +40,25 @@ class MetadataRoutes(
   private val basePath = config.metadataBasePath
   private val actionValidator = new HttpActionValidator(config, nameNode)
 
-  get(s"$basePath/*") { request =>
+  private def processRequest(request: Request) = {
     val response = for {
       authInfo <- authorizationInfo(request.remoteAddress, request)
       credentials <- HttpCredentialsValidator(authInfo)
       action <- actionValidator(request)
-    } yield for {
-      profile <- authService.authenticate(credentials)
-      context = Action.Context(profile, urlMapper)
-      result <- action(context)
-    } yield ActionResultHttpRenderer(result)
-    response.fold(error => FinatraExceptionRenderer(error).toFuture, success => success.toTwitter)
+    } yield (for {
+        profile <- authService.authenticate(credentials)
+        context = Action.Context(profile, urlMapper)
+        result <- action(context)
+      } yield ActionResultHttpRenderer(result)).toTwitter
+    response.recover {
+      case error => FinatraExceptionRenderer(error).toFuture
+    }.get
   }
+
+  get(s"$basePath/*")(processRequest)
+  post(s"$basePath/*")(processRequest)
+  put(s"$basePath/*")(processRequest)
+  delete(s"$basePath/*")(processRequest)
 
   error { request => request.error match {
     case Some(e) => FinatraExceptionRenderer(e).toFuture
@@ -66,10 +73,9 @@ class MetadataRoutes(
 
 private object MetadataRoutes {
   def authorizationInfo(
-      from: InetAddress, request: Request): Validation[RequestParsingException, AuthInfo] = {
-    import scalaz.Scalaz._
+      from: InetAddress, request: Request): Try[AuthInfo] = Try {
     Option(request.headers().get("Authorization"))
-      .map(AuthInfo(from, _).success)
-      .getOrElse(RequestParsingException.MissingAuthorizationHeader().failure)
+      .map(AuthInfo(from, _))
+      .getOrElse(throw RequestParsingException.MissingAuthorizationHeader())
   }
 }

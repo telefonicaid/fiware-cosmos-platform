@@ -19,19 +19,19 @@ import scala.concurrent.Future
 
 import com.twitter.finatra.FinatraServer
 import com.twitter.finatra.test.SpecHelper
-import com.typesafe.config.ConfigFactory
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
+import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.UserProfile
+import es.tid.cosmos.infinity.server.actions.MetadataActionFixture
 import es.tid.cosmos.infinity.server.authentication._
-import es.tid.cosmos.infinity.server.config.MetadataServerConfig
 import es.tid.cosmos.infinity.server.errors.ErrorCode
+import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
-import es.tid.cosmos.infinity.server.hadoop.NameNode
 
 class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar {
 
@@ -74,10 +74,63 @@ class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar 
     }
   }
 
-  trait Fixture extends SpecHelper {
-    val config = new MetadataServerConfig(ConfigFactory.load())
-    val nameNode = mock[NameNode]
-    val urlMapper = new InfinityUrlMapper(config)
+  it should "return 404 on non-existent files" in new Fixture {
+    givenSuccessAuthentication {
+      doReturn(Future.failed(NameNodeException.NoSuchPath(Path.absolute("/"))))
+        .when(nameNode).pathMetadata(any())
+      get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
+        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
+      ))
+      response.code should equal(404)
+    }
+  }
+
+  it should "return 409 when the path already exists" in new Fixture {
+    givenSuccessAuthentication {
+      doReturn(Future.failed(NameNodeException.PathAlreadyExists(Path.absolute("/"))))
+        .when(nameNode).pathMetadata(any())
+      get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
+        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
+      ))
+      response.code should equal(409)
+    }
+  }
+
+  it should "return 400 when the body is invalid" in new Fixture {
+    givenSuccessAuthentication {
+      post("/infinityfs/v1/metadata/some/file.txt", headers = Map(
+        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
+      ))
+      response.code should equal(400)
+    }
+  }
+
+  ignore should "return 422 when the parent is not a directory" in new Fixture {
+    givenSuccessAuthentication {
+      doReturn(Future.failed(NameNodeException.ParentNotDirectory(Path.absolute("/"))))
+        .when(nameNode).createFile(any(), any(), any(), any(), any(), any())
+      post("/infinityfs/v1/metadata/some/file.txt", headers = Map(
+        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
+      ))
+      // TODO: Finagle doesn't provide a way to add a body to test requests.
+      // I'm leaving the test so we can reuse it once we move to unfiltered
+      response.code should equal(422)
+    }
+  }
+
+  it should "return 500 on IOErrors" in new Fixture {
+    givenSuccessAuthentication {
+      doReturn(Future.failed(NameNodeException.IOError()))
+        .when(nameNode).pathMetadata(any())
+      get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
+        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
+      ))
+      response.code should equal(500)
+    }
+  }
+
+  trait Fixture extends SpecHelper with MetadataActionFixture {
+    override val urlMapper = new InfinityUrlMapper(config)
     val authService = mock[AuthenticationService]
     override val server = new FinatraServer
     val app = new MetadataRoutes(config, authService, nameNode, urlMapper)

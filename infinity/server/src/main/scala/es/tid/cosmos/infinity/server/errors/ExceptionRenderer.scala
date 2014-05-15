@@ -37,6 +37,8 @@ trait ExceptionRenderer[Response] {
       renderWithAuth(401, ErrorCode(e), e)
     case e: RequestParsingException.InvalidResourcePath =>
       render(404, ErrorCode(e), e)
+    case e: RequestParsingException.InvalidRequestBody =>
+      render(400, ErrorCode(e), e)
     case e: AuthenticationException =>
       render(401, ErrorCode(e), e)
     case e: NameNodeException.IOError =>
@@ -49,8 +51,8 @@ trait ExceptionRenderer[Response] {
       render(422, ErrorCode(e), e)
     case e: NameNodeException.Unauthorized =>
       render(403, ErrorCode(e), e)
-    case _ => throw new IllegalArgumentException(
-      s"no rendering mechanism defined for ${exception.getClass.getCanonicalName}")
+    case e =>
+      render(500, ErrorCode.UnexpectedError, e)
   }
 
   private def render[E <: Throwable](

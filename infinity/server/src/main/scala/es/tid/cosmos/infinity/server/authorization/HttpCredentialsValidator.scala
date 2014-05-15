@@ -17,7 +17,7 @@
 package es.tid.cosmos.infinity.server.authorization
 
 import java.net.InetAddress
-import scalaz.Validation
+import scala.util.Try
 
 import org.apache.commons.codec.binary.{Base64, StringUtils}
 
@@ -25,49 +25,42 @@ import es.tid.cosmos.infinity.common.credentials.{UserCredentials, Credentials, 
 import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 object HttpCredentialsValidator {
-
-  import scalaz.Scalaz._
-
   private val base64 = new Base64()
   private val basicLinePattern = "Basic (.*)".r
   private val basicPairPattern = "(.*):(.*)".r
   private val bearerLinePattern = "Bearer (.*)".r
 
-  def apply(info: AuthInfo): Validation[RequestParsingException, Credentials] =
+  def apply(info: AuthInfo): Try[Credentials] = Try {
     info.header match {
       case basicLinePattern(hash) =>
         userCredentials(hash)
       case bearerLinePattern(secret) =>
         clusterCredentials(info.from, secret)
       case null =>
-        RequestParsingException.MissingAuthorizationHeader().failure
+        throw RequestParsingException.MissingAuthorizationHeader()
       case headerValue =>
-        RequestParsingException.UnsupportedAuthorizationHeader(headerValue).failure
+        throw RequestParsingException.UnsupportedAuthorizationHeader(headerValue)
     }
+  }
 
   private def userCredentials(hash: String) = {
-    for {
-      pair <- decodeBase64(hash)
-      splitted <- splitPair(pair)
-      (key, secret) = splitted
-    } yield UserCredentials(key, secret)
+    val pair = decodeBase64(hash)
+    val (key, secret) = splitPair(pair)
+    UserCredentials(key, secret)
   }
 
   private def decodeBase64(hash: String) = {
     val decoded = StringUtils.newStringUtf8(base64.decode(hash))
-    if (decoded.isEmpty) RequestParsingException.InvalidBasicHash(hash).failure
-    else decoded.success
+    if (decoded.isEmpty) throw RequestParsingException.InvalidBasicHash(hash)
+    else decoded
   }
 
   private def splitPair(pair: String) =
     pair match {
-      case basicPairPattern(key, secret) => (key, secret).success
-      case _ => RequestParsingException.MalformedKeySecretPair(pair).failure
+      case basicPairPattern(key, secret) => (key, secret)
+      case _ => throw RequestParsingException.MalformedKeySecretPair(pair)
     }
 
-  private def clusterCredentials(
-      from: InetAddress,
-      secret: String): Validation[RequestParsingException, ClusterCredentials] = {
-    ClusterCredentials(from, secret).success
-  }
+  private def clusterCredentials(from: InetAddress, secret: String): ClusterCredentials =
+    ClusterCredentials(from, secret)
 }

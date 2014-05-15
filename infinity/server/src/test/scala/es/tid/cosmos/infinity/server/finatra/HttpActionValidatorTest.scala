@@ -17,7 +17,7 @@
 package es.tid.cosmos.infinity.server.finatra
 
 import java.nio.charset.Charset
-import scalaz.{Failure, Success}
+import scala.util.{Success, Failure}
 
 import com.twitter.finagle.http.Request
 import com.typesafe.config.ConfigFactory

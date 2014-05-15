@@ -20,7 +20,7 @@ import java.net.InetAddress
 import javax.servlet.http.HttpServletResponse
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scalaz.Validation
+import scala.util.Try
 
 import unfiltered.Async
 import unfiltered.filter.async
@@ -59,9 +59,9 @@ class ContentRoutes(
         result <- action(context)
       } yield renderResult(result)
     val responder = Responder(request)
-    response.fold(
-      error => responder.respond(ExceptionRenderer(error)),
-      success => responder.respond(success)
+    response.transform(
+      success_> => Try(responder.respond(success_>)),
+      failure => Try(responder.respond(ExceptionRenderer(failure)))
     )
   }
 }
@@ -70,11 +70,10 @@ private object ContentRoutes {
   lazy val ExceptionRenderer = new UnfilteredExceptionRenderer[HttpServletResponse]
 
   private def authorizationInfo[T](
-      from: String, request: HttpRequest[T]): Validation[RequestParsingException, AuthInfo] = {
-    import scalaz.Scalaz._
+      from: String, request: HttpRequest[T]): Try[AuthInfo] = Try {
     request match {
-      case Authorization(header) => AuthInfo(InetAddress.getByName(from), header).success
-      case _ => RequestParsingException.MissingAuthorizationHeader().failure
+      case Authorization(header) => AuthInfo(InetAddress.getByName(from), header)
+      case _ => throw RequestParsingException.MissingAuthorizationHeader()
     }
   }
 

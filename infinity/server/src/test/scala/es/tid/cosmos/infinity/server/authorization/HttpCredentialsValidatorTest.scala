@@ -17,7 +17,7 @@
 package es.tid.cosmos.infinity.server.authorization
 
 import java.net.InetAddress
-import scalaz.{Success, Validation}
+import scala.util.{Success, Try}
 
 import org.scalatest.{FlatSpec, Inside}
 import org.scalatest.matchers.{MatchResult, Matcher, MustMatchers}
@@ -56,20 +56,22 @@ class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers with Insid
       be (Success(ClusterCredentials(from, "cluster-secret")))
   }
 
-  def failWith[T : Manifest] = new Matcher[Validation[RequestParsingException, Credentials]] {
+  def failWith[T : Manifest] = new Matcher[Try[Credentials]] {
 
-    override def apply(left: Validation[RequestParsingException, Credentials]): MatchResult = {
+    override def apply(left: Try[Credentials]): MatchResult = {
       val expectedError = implicitly[Manifest[T]].runtimeClass
-      left.fold(
-        error => MatchResult(
-          matches = error.getClass == expectedError,
-          failureMessage = s"failed with error ${error.getClass} rather than $expectedError",
-          negatedFailureMessage = s"failed with error $expectedError}"),
-        success => MatchResult(
+      if (left.isSuccess) {
+        MatchResult(
           matches = false,
           failureMessage = s"result is not error $expectedError",
           negatedFailureMessage = s"result is $expectedError")
-      )
+      } else {
+        val errorClass = left.failed.get.getClass
+        MatchResult(
+          matches = errorClass == expectedError,
+          failureMessage = s"failed with error $errorClass rather than $expectedError",
+          negatedFailureMessage = s"failed with error $expectedError}")
+      }
     }
   }
 }

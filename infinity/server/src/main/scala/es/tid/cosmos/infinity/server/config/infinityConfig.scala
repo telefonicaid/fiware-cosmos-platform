@@ -29,15 +29,15 @@ abstract class InfinityConfig(config: Config) {
   val metadataProtocol = withDefault(config.getString("metadata.protocol"), DefaultProtocol)
   val metadataHost = config.getString("metadata.host")
   val metadataPort = withDefault(config.getInt("metadata.port"), DefaultMetadataPort)
-  val metadataBasePath = withDefault(config.getString("metadata.basePath"), DefaultBasePath)
+  val metadataBasePath = withDefault(config.getString("metadata.basePath"), DefaultMetadataBasePath)
   val metadataBaseUrl = new URL(
-      s"$metadataProtocol://$metadataHost:$metadataPort/$metadataBasePath/metadata")
+      s"$metadataProtocol://$metadataHost:$metadataPort$metadataBasePath/")
 
   def contentServerUrl(hostname: String): URL = {
     val protocol = withDefault(config.getString(s"content.server.$hostname.protocol"), DefaultProtocol)
     val port = withDefault(config.getInt(s"content.server.$hostname.port"), DefaultContentPort)
-    val basePath = withDefault(config.getString(s"content.server.$hostname.basePath"), DefaultBasePath)
-    new URL(protocol, hostname, port, s"$basePath/content")
+    val basePath = withDefault(config.getString(s"content.server.$hostname.basePath"), DefaultContentBasePath)
+    new URL(protocol, hostname, port, s"$basePath")
   }
 
   protected def withDefault[T](block: => T, default: T): T = try {
@@ -68,7 +68,8 @@ object InfinityConfig {
   val DefaultProtocol: String = "https"
   val DefaultContentPort: Int = 51075
   val DefaultMetadataPort: Int = 51070
-  val DefaultBasePath: String = "/infinityfs/v1"
+  val DefaultMetadataBasePath: String = "/infinityfs/v1/metadata"
+  val DefaultContentBasePath: String = "/infinityfs/v1/content"
   val DefaultReplication: Short = 3
   val DefaultBlockSize: Long = 64l * 1024l * 1024l
   val NameNodeHdfsAddressKey = "fs.defaultFS"

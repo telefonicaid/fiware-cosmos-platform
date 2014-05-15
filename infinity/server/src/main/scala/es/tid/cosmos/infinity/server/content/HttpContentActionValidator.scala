@@ -17,7 +17,6 @@
 package es.tid.cosmos.infinity.server.content
 
 import scala.util.{Try, Success, Failure}
-import scalaz.Validation
 
 import unfiltered.request._
 
@@ -36,29 +35,29 @@ class HttpContentActionValidator(
     config: ContentServerConfig,
     dataNode: DataNode) {
   //TODO: Consider moving actions, renderers and validators to metadata and content packages
-  import scalaz.Scalaz._
 
   private val contentUriPrefix = s"""${config.localContentServerUrl.getPath}(/[^\\?]*)(\\?.*)?""".r
 
-  def apply[T](request: HttpRequest[T]): Validation[RequestParsingException, ContentAction] =
+  def apply[T](request: HttpRequest[T]): Try[ContentAction] = Try {
     request.uri match {
       case contentUriPrefix(path, _) => contentAction(path, request)
-      case uri => RequestParsingException.InvalidResourcePath(uri).failure
+      case uri => throw RequestParsingException.InvalidResourcePath(uri)
     }
+  }
 
   private def contentAction[T](path: String, request: HttpRequest[T]) = {
     val absolutePath = Path.absolute(path)
     request match {
       case GET(Params(params)) => extractGetContentParams(params) match {
         case Success((offset, length)) =>
-          GetContent(dataNode, absolutePath, offset, length).success
+          GetContent(dataNode, absolutePath, offset, length)
         case Failure(e) =>
-          RequestParsingException.InvalidRequestParams(Seq("offset", "length"), e).failure
+          throw RequestParsingException.InvalidRequestParams(Seq("offset", "length"), e)
       }
       case POST(_) =>
-        AppendContent(dataNode, absolutePath, request.inputStream).success
+        AppendContent(dataNode, absolutePath, request.inputStream)
       case PUT(_) =>
-        OverwriteContent(dataNode, absolutePath, request.inputStream).success
+        OverwriteContent(dataNode, absolutePath, request.inputStream)
     }
   }
 

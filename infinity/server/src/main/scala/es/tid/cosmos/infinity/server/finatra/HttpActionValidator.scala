@@ -16,7 +16,7 @@
 
 package es.tid.cosmos.infinity.server.finatra
 
-import scalaz.Validation
+import scala.util.Try
 
 import com.twitter.finagle.http.Request
 import org.jboss.netty.handler.codec.http.HttpMethod
@@ -32,50 +32,48 @@ import es.tid.cosmos.infinity.server.hadoop.NameNode
 /** An extractor object aimed to convert a Finagle HTTP request into a Infinity Server action. */
 class HttpActionValidator(config: InfinityConfig, nameNode: NameNode) {
 
-  import scalaz.Scalaz._
-
   private val jsonParser = new RequestMessageParser()
   private val metadataUriPrefix = s"""${config.metadataBasePath}(/[^\\?]*)(\\?.*)?""".r
 
-  def apply(request: Request): Validation[RequestParsingException, MetadataAction] =
+  def apply(request: Request): Try[MetadataAction] = Try {
     request.getUri() match {
       case metadataUriPrefix(path, _) => metadataAction(path, request)
-      case uri => RequestParsingException.InvalidResourcePath(uri).failure
+      case uri => throw RequestParsingException.InvalidResourcePath(uri)
     }
+  }
 
   private def metadataAction(path: String, request: Request) = {
     val absolutePath = Path.absolute(path)
     request.method match {
       case HttpMethod.GET =>
-        GetMetadata(nameNode, absolutePath).success
+        GetMetadata(nameNode, absolutePath)
       case HttpMethod.POST =>
-        postMetadataAction(path, request)
+        postMetadataAction(absolutePath, request)
       case HttpMethod.DELETE =>
-        DeletePath(nameNode, absolutePath, request.getBooleanParam("recursive")).success
+        DeletePath(nameNode, absolutePath, request.getBooleanParam("recursive"))
     }
   }
 
-  private def postMetadataAction(path: String, request: Request) = {
+  private def postMetadataAction(absolutePath: Path, request: Request) = {
     val content = request.getContentString()
-    val absolutePath = Path.absolute(path)
     try {
       jsonParser.parse(content) match {
         case RequestMessage.CreateFile(name, perms, rep, bsize) =>
-          CreateFile(config, nameNode, absolutePath / name, perms, rep, bsize).success
+          CreateFile(config, nameNode, absolutePath / name, perms, rep, bsize)
         case RequestMessage.CreateDirectory(name, perms) =>
-          CreateDirectory(nameNode, absolutePath / name, perms).success
+          CreateDirectory(nameNode, absolutePath / name, perms)
         case RequestMessage.ChangeOwner(owner) =>
-          ChangeOwner(nameNode, absolutePath, owner).success
+          ChangeOwner(nameNode, absolutePath, owner)
         case RequestMessage.ChangeGroup(group) =>
-          ChangeGroup(nameNode, absolutePath, group).success
+          ChangeGroup(nameNode, absolutePath, group)
         case RequestMessage.ChangePermissions(permissions) =>
-          ChangePermissions(nameNode, absolutePath, permissions).success
+          ChangePermissions(nameNode, absolutePath, permissions)
         case RequestMessage.Move(name, from) =>
-          MovePath(config, nameNode, Path.absolute(s"$path/$name"), from).success
+          MovePath(config, nameNode, absolutePath / name, from)
       }
     } catch {
       case e: ParseException =>
-        RequestParsingException.InvalidRequestBody(content, e).failure
+        throw RequestParsingException.InvalidRequestBody(content, e)
     }
   }
 }

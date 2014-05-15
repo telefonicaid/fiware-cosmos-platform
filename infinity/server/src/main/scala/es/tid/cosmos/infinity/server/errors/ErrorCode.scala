@@ -34,6 +34,8 @@ object ErrorCode {
     new ErrorCode[RequestParsingException.MalformedKeySecretPair]("REQ04")
   implicit val InvalidBasicHash =
     new ErrorCode[RequestParsingException.InvalidBasicHash]("REQ05")
+  implicit val InvalidRequestBody =
+    new ErrorCode[RequestParsingException.InvalidRequestBody]("REQ06")
 
   /* Security errors. */
   implicit val AuthenticationFailed =
@@ -52,6 +54,8 @@ object ErrorCode {
     new ErrorCode[NameNodeException.PathAlreadyExists]("CONST02")
   implicit val ParentNotDirectory =
     new ErrorCode[NameNodeException.ParentNotDirectory]("CONST03")
+
+  val UnexpectedError = new ErrorCode[Nothing]("BUG")
 
   def apply[E <: Throwable : ErrorCode](e: E): ErrorCode[E] = implicitly[ErrorCode[E]]
 }

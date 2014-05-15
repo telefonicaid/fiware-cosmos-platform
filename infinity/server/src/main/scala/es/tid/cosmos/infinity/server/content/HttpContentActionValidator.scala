@@ -30,11 +30,11 @@ import es.tid.cosmos.infinity.server.errors.RequestParsingException
 /** The validator for content actions.
   *
   * @param config   the content server configuration
-  * @param dataNode the DatNode API
+  * @param dataNode the DataNode API
   */
 class HttpContentActionValidator(
     config: ContentServerConfig,
-    dataNode: DataNode) { //TODO: Remove factory
+    dataNode: DataNode) {
   //TODO: Consider moving actions, renderers and validators to metadata and content packages
   import scalaz.Scalaz._
 

@@ -20,8 +20,8 @@ import java.net.URL
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DFSClient
-import org.apache.hadoop.hdfs.server.datanode.DataNode
+import org.apache.hadoop.hdfs.server.{datanode => hadoop}
 
-class DfsClientFactory(dataNode: DataNode, nameNodeRpcUrl: URL) {
+class DfsClientFactory(dataNode: hadoop.DataNode, nameNodeRpcUrl: URL) {
   def newClient: DFSClient = new DFSClient(nameNodeRpcUrl.toURI, new Configuration(dataNode.getConf))
 }

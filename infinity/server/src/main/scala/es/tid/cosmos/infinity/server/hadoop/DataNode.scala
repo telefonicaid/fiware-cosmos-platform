@@ -40,7 +40,11 @@ trait DataNode {
   /** Add content to the existing content of the file located at the given path.
     *
     * @param path          The path of the file where the content is to be added
-    * @param contentStream The stream from where to read the content to be added
+    * @param contentStream The stream from where to read the content to be added.
+    *                      <b>Note:</b> It is left to the client's discretion to close the stream.
+    *                      e.g. You can use
+    *                      [[es.tid.cosmos.infinity.server.util.IoUtil.withAutoClose]]
+    *                      to automatically release the stream.
     * @return              The future representing the completion of the append action.
     *                      It can fail with `java.io.IOException` if an error occurs when attempting
     *                      to obtain the content
@@ -50,7 +54,11 @@ trait DataNode {
   /** Overwrite the content of the file located at the given path.
     *
     * @param path          The path of the file where the content is to be written
-    * @param contentStream The stream from where to read to content that will ovewrite the file
+    * @param contentStream The stream from where to read to content that will ovewrite the file.
+    *                      <b>Note:</b> It is left to the client's discretion to close the stream.
+    *                      e.g. You can use
+    *                      [[es.tid.cosmos.infinity.server.util.IoUtil.withAutoClose]]
+    *                      to automatically release the stream.
     * @return              The future representing the completion of the overwrite action.
     *                      It can fail with `java.io.IOException` if an error occurs when attempting
     *                      to obtain the content

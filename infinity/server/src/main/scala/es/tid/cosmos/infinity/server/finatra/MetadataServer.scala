@@ -18,8 +18,8 @@ package es.tid.cosmos.infinity.server.finatra
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.MetadataServerConfig
-import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 import es.tid.cosmos.infinity.server.hadoop.NameNode
+import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
 class MetadataServer(
     nameNode: NameNode, config: MetadataServerConfig, authService: AuthenticationService) {

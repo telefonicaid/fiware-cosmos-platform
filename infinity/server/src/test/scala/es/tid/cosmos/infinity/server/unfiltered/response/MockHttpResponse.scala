@@ -21,7 +21,7 @@ import java.io.{OutputStream, ByteArrayOutputStream}
 import unfiltered.Cookie
 import unfiltered.response.HttpResponse
 
-class MockHttpResponse[T](underlying: T) extends HttpResponse[T](underlying) {
+class MockHttpResponse[R](underlying: R) extends HttpResponse[R](underlying) {
   var _status: Int = _
   var _headers: Map[String, String] = Map.empty
   val _out = new ByteArrayOutputStream()

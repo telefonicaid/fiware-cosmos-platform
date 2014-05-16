@@ -28,6 +28,7 @@ import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.ContentAction
 import es.tid.cosmos.infinity.server.unfiltered.response.MockHttpResponse
 import es.tid.cosmos.infinity.server.util.ToClose
+import es.tid.cosmos.infinity.server.unfiltered.response.MockHttpResponse
 
 class ContentActionResultRendererTest extends FlatSpec with MustMatchers with MockitoSugar {
   "Content result Renderer" must "render Found" in new Fixture {

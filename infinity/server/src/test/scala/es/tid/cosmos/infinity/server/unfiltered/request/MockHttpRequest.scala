@@ -27,16 +27,18 @@ case class MockHttpRequest[R](
     override val underlying: R = null,
     inputStream: InputStream = MockHttpRequest.mockStream,
     reader: Reader = MockHttpRequest.mockReader,
-    headerNames: Iterator[String] = Seq.empty.iterator,
     isSecure: Boolean = false,
     uri: String = "",
     remoteAddr: String = "",
-    method: String = "",
+    method: String = "GET",
     cookies: Seq[Cookie] = Seq.empty,
     protocol: String = "",
-    params: Map[String, Seq[String]] = Map.empty) extends HttpRequest[R](underlying) {
+    params: Map[String, Seq[String]] = Map.empty,
+    headerz: Map[String, Seq[String]] = Map.empty) extends HttpRequest[R](underlying) {
 
-  def headers(name: String): Iterator[String] = Seq.empty.iterator
+  def headers(name: String): Iterator[String] = headerz.getOrElse(name, Seq.empty[String]).iterator
+  val headerNames: Iterator[String] = headerz.keysIterator
+
   def parameterValues(param: String): Seq[String] = params(param)
   val parameterNames: Iterator[String] = params.keysIterator
 }

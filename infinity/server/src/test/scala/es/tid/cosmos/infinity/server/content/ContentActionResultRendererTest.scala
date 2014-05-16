@@ -36,7 +36,7 @@ class ContentActionResultRendererTest extends FlatSpec with MustMatchers with Mo
     val responseFunction = render(ContentAction.Found(ToClose(in)))
     responseFunction(baseResponse)
     baseResponse._status must be (Ok.code)
-    baseResponse._out.toString(Charset.defaultCharset().toString) must be ("1234")
+    baseResponse.body must be ("1234")
   }
 
   it must "render Appended" in new Fixture {

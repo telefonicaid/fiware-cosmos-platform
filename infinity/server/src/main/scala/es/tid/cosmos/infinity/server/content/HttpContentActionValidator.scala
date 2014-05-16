@@ -36,6 +36,7 @@ class HttpContentActionValidator(
     config: ContentServerConfig,
     dataNode: DataNode) {
   //TODO: Consider moving actions, renderers and validators to metadata and content packages
+  import HttpContentActionValidator._
 
   private val contentUriPrefix = s"""${config.localContentServerUrl.getPath}(/[^\\?]*)(\\?.*)?""".r
 
@@ -63,7 +64,7 @@ class HttpContentActionValidator(
   }
 
   private def extractGetContentParams(
-      params: Map[String, Seq[String]]): ValidationNel[String, (Option[Long], Option[Long])] = {
+      params: Map[String, Seq[String]]): ValidationNel[String, OffsetLengthParams] = {
     import scalaz.Scalaz._
 
     def toValidLong(key: String, condition: Long => Boolean) = {
@@ -73,11 +74,15 @@ class HttpContentActionValidator(
       else
         key.failureNel
     }
-    def isNatural(n: Long) = n >= 0
-    def isPositive(n: Long) = n > 0
 
     val offset = toValidLong("offset", isNatural)
     val length = toValidLong("length", isPositive)
-     (offset |@| length){(_, _)}
+    (offset |@| length){(_, _)}
   }
+}
+
+private object HttpContentActionValidator {
+  type OffsetLengthParams = (Option[Long], Option[Long])
+  def isNatural(n: Long) = n >= 0
+  def isPositive(n: Long) = n > 0
 }

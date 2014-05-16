@@ -45,7 +45,7 @@ class HttpContentActionValidatorTest extends FlatSpec with MustMatchers {
     tryAction must be (Success(GetContent(dataNode, somePath, offset = Some(10), length = Some(30))))
   }
 
-  it must "support offeset = 0 for GetContent" in new Fixture {
+  it must "support offset = 0 for GetContent" in new Fixture {
     val tryAction = validator(getRequest.copy(params = Map(
       "offset" -> Seq("0")
     )))
@@ -68,7 +68,7 @@ class HttpContentActionValidatorTest extends FlatSpec with MustMatchers {
       Seq("length"))))
   }
 
-  it must "report both invalid offset and length parans on GetContent" in new Fixture {
+  it must "report both invalid offset and length params on GetContent" in new Fixture {
     val tryAction = validator(getRequest.copy(params = Map(
       "offset" -> Seq("-1"),
       "length" -> Seq("-1")

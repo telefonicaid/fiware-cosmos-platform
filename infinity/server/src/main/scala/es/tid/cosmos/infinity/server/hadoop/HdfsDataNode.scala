@@ -22,25 +22,32 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.math.min
 
 import org.apache.commons.io.input.BoundedInputStream
+import org.apache.hadoop.io.IOUtils
 import org.apache.hadoop.hdfs.DFSClient
 import org.apache.hadoop.hdfs.client.HdfsDataInputStream
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.util.{IoUtil, ToClose}
-import org.apache.hadoop.io.IOUtils
+import es.tid.cosmos.infinity.server.hadoop.HdfsDataNode._
 
-class HdfsDataNode(clientFactory: DfsClientFactory, bufferSize: Int) extends DataNode {
-  import HdfsDataNode._
+/** Constructor exposing boundedStreamFactory for testability */
+class HdfsDataNode private[hadoop] (
+    clientFactory: DfsClientFactory,
+    bufferSize: Int,
+    boundedStreamFactory: BoundedStreamFactory) extends DataNode {
+
+  def this(clientFactory: DfsClientFactory, bufferSize: Int) =
+    this(clientFactory, bufferSize, defaultStreamFactory)
 
   override def open(
       path: Path, offset: Option[Long], length: Option[Long]): Future[ToClose[InputStream]] =
     future { withClient { client =>
       val actualOffset: Long = offset.getOrElse(NoOffset)
-      val actualLength: Long = length.getOrElse(UnlimitedLength)
       val in = new HdfsDataInputStream(client.open(path.toString))
       in.seek(actualOffset)
-      val readUpTo = min(actualLength, in.getVisibleLength - actualOffset)
-      ToClose(new BoundedInputStream(in, readUpTo), client)
+      val visibleFileLength = in.getVisibleLength - actualOffset
+      val readUpTo = length.map(l => min(l, visibleFileLength)).getOrElse(visibleFileLength)
+      ToClose(boundedStreamFactory(in, readUpTo), client)
     }}
 
 
@@ -70,9 +77,15 @@ class HdfsDataNode(clientFactory: DfsClientFactory, bufferSize: Int) extends Dat
   private def withClient[T](block: DFSClient => T): T = block(clientFactory.newClient)
 }
 
-private object HdfsDataNode {
-  private val NoOffset: Long = 0
-  private val UnlimitedLength: Long = -1 // unlimited length for BoundedInputStream
-  private val NoProgress, NoStatistics = null
-  private val DoOverwrite = true
+private[hadoop] object HdfsDataNode {
+  /** Factory signature for offering a stream with access to limited length */
+  type BoundedStreamFactory = (InputStream, Long) => InputStream
+  val DoOverwrite = true
+  val NoProgress, NoStatistics = null
+  val NoOffset: Long = 0
+
+  private def defaultStreamFactory(in: InputStream, length: Long) = {
+    require(length >= 0, s"Length [$length] must be a positive number")
+    new BoundedInputStream(in, length)
+  }
 }

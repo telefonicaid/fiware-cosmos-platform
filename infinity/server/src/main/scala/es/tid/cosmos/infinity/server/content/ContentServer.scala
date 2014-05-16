@@ -20,7 +20,7 @@ import unfiltered.jetty.Http
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.ContentServerConfig
-import es.tid.cosmos.infinity.server.hadoop.{HdfsDataNode, DataNode, DfsClientFactory}
+import es.tid.cosmos.infinity.server.hadoop.{HdfsDataNode, DfsClientFactory}
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
 /** Unfiltered-based content server.

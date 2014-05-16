@@ -24,8 +24,8 @@ import unfiltered.request._
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions._
 import es.tid.cosmos.infinity.server.config.ContentServerConfig
-import es.tid.cosmos.infinity.server.hadoop.DataNode
 import es.tid.cosmos.infinity.server.errors.RequestParsingException
+import es.tid.cosmos.infinity.server.hadoop.DataNode
 
 /** The validator for content actions.
   *

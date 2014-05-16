@@ -24,7 +24,7 @@ import org.apache.hadoop.util.ServicePlugin
 import es.tid.cosmos.infinity.server.authentication.cosmosapi.CosmosApiAuthenticationService
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.MetadataServerConfig
-import es.tid.cosmos.infinity.server.finatra.MetadataServer
+import es.tid.cosmos.infinity.server.metadata.MetadataServer
 import es.tid.cosmos.infinity.server.hadoop.HdfsNameNode
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 

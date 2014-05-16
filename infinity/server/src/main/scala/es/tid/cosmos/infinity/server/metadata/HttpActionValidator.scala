@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.metadata
 
 import scala.util.Try
 
-import com.twitter.finagle.http.Request
-import org.jboss.netty.handler.codec.http.HttpMethod
+import unfiltered.request._
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.json.{ParseException, RequestMessageParser}
@@ -35,27 +34,27 @@ class HttpActionValidator(config: InfinityConfig, nameNode: NameNode) {
   private val jsonParser = new RequestMessageParser()
   private val metadataUriPrefix = s"""${config.metadataBasePath}(/[^\\?]*)(\\?.*)?""".r
 
-  def apply(request: Request): Try[MetadataAction] = Try {
-    request.getUri() match {
+  def apply[T](request: HttpRequest[T]): Try[MetadataAction] = Try {
+    request.uri match {
       case metadataUriPrefix(path, _) => metadataAction(path, request)
       case uri => throw RequestParsingException.InvalidResourcePath(uri)
     }
   }
 
-  private def metadataAction(path: String, request: Request) = {
+  private def metadataAction[T](path: String, request: HttpRequest[T]) = {
     val absolutePath = Path.absolute(path)
-    request.method match {
-      case HttpMethod.GET =>
+    request match {
+      case GET(_) =>
         GetMetadata(nameNode, absolutePath)
-      case HttpMethod.POST =>
+      case POST(_) =>
         postMetadataAction(absolutePath, request)
-      case HttpMethod.DELETE =>
-        DeletePath(nameNode, absolutePath, request.getBooleanParam("recursive"))
+      case DELETE(Params(params)) =>
+        DeletePath(nameNode, absolutePath, params("recursive").headOption.exists(_.toBoolean))
     }
   }
 
-  private def postMetadataAction(absolutePath: Path, request: Request) = {
-    val content = request.getContentString()
+  private def postMetadataAction[T](absolutePath: Path, request: HttpRequest[T]) = {
+    val content = Body.string(request)
     try {
       jsonParser.parse(content) match {
         case RequestMessage.CreateFile(name, perms, rep, bsize) =>

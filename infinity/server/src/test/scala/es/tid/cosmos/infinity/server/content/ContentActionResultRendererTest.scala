@@ -16,17 +16,17 @@
 
 package es.tid.cosmos.infinity.server.content
 
-import java.io.{ByteArrayOutputStream, OutputStream, ByteArrayInputStream}
+import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
-import unfiltered.Cookie
-import unfiltered.response.{InternalServerError, NoContent, Ok, HttpResponse}
+import unfiltered.response.{InternalServerError, NoContent, Ok}
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.ContentAction
+import es.tid.cosmos.infinity.server.unfiltered.response.MockHttpResponse
 import es.tid.cosmos.infinity.server.util.ToClose
 
 class ContentActionResultRendererTest extends FlatSpec with MustMatchers with MockitoSugar {
@@ -59,23 +59,6 @@ class ContentActionResultRendererTest extends FlatSpec with MustMatchers with Mo
   trait Fixture {
     val render = new ContentActionResultRenderer(chunkSize = 4)
     val path = Path.absolute("/some/file")
-    val baseResponse = new MockResponse
-  }
-
-  class MockResponse extends HttpResponse[Any] {
-    var _status: Int = _
-    var _headers: Map[String, String] = Map.empty
-    val _out = new ByteArrayOutputStream()
-
-    override def status(statusCode: Int): Unit =
-      _status = statusCode
-
-    override def header(name: String, value: String): Unit =
-      _headers = _headers.updated(name, value)
-
-    override def outputStream: OutputStream = _out
-
-    override def redirect(url: String): Unit = ???
-    override def cookies(cookie: Seq[Cookie]): Unit = ???
+    val baseResponse = new MockHttpResponse
   }
 }

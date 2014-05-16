@@ -22,7 +22,7 @@ import org.scalatest.mock.MockitoSugar
 import unfiltered.Cookie
 import unfiltered.request.HttpRequest
 
-case class MockHttpRequest(
+case class MockHttpRequest[T](
     inputStream: InputStream = MockHttpRequest.mockStream,
     reader: Reader = MockHttpRequest.mockReader,
     headerNames: Iterator[String] = Seq.empty.iterator,
@@ -32,7 +32,8 @@ case class MockHttpRequest(
     method: String = "",
     cookies: Seq[Cookie] = Seq.empty,
     protocol: String = "",
-    params: Map[String, Seq[String]] = Map.empty) extends HttpRequest[Any] {
+    params: Map[String, Seq[String]] = Map.empty,
+    override val underlying: T = null) extends HttpRequest[T](underlying) {
 
   def headers(name: String): Iterator[String] = Seq.empty.iterator
   def parameterValues(param: String): Seq[String] = params(param)

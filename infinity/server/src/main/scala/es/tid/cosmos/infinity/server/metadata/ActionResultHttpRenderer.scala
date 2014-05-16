@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.metadata
 
-import com.twitter.finatra.ResponseBuilder
+import unfiltered.response.{Created => _, _}
 
 import es.tid.cosmos.infinity.server.actions.MetadataAction._
 import es.tid.cosmos.infinity.common.json.MetadataFormatter
@@ -26,20 +26,16 @@ object ActionResultHttpRenderer {
 
   private val metadataFormatter = new MetadataFormatter
 
-  def apply(result: Result): ResponseBuilder = result match {
-    case Retrieved(metadata) => new ResponseBuilder()
-      .status(200)
-      .json(metadataFormatter.format(metadata))
-    case Created(metadata) => new ResponseBuilder()
-      .status(201)
-      .json(metadataFormatter.format(metadata))
-    case Moved(metadata) => new ResponseBuilder()
-      .status(201)
-      .json(metadataFormatter.format(metadata))
+  def apply[T](result: Result): ResponseFunction[T] = result match {
+    case Retrieved(metadata) =>
+      Ok ~> JsonContent ~> ResponseString(metadataFormatter.format(metadata))
+    case Created(metadata) =>
+      unfiltered.response.Created ~> JsonContent ~> ResponseString(metadataFormatter.format(metadata))
+    case Moved(metadata) =>
+      unfiltered.response.Created ~> JsonContent ~> ResponseString(metadataFormatter.format(metadata))
     case Deleted(_) | OwnerSet(_) | GroupSet(_)  | PermissionsSet(_) =>
-      new ResponseBuilder().status(204)
-    case _ => new ResponseBuilder()
-      .status(500)
-      .body("No HTTP rendering method defined for action result")
+      NoContent
+    case _ =>
+      InternalServerError ~> ResponseString("No HTTP rendering method defined for action result")
   }
 }

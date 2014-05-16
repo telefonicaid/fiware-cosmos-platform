@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.metadata
 
+import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import scala.concurrent.Future
+import scala.util.Success
 
-import com.twitter.finatra.FinatraServer
-import com.twitter.finatra.test.SpecHelper
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
@@ -31,17 +31,21 @@ import es.tid.cosmos.infinity.server.actions.MetadataActionFixture
 import es.tid.cosmos.infinity.server.authentication._
 import es.tid.cosmos.infinity.server.errors.ErrorCode
 import es.tid.cosmos.infinity.server.hadoop.NameNodeException
+import es.tid.cosmos.infinity.server.unfiltered.MockRequestWithResponder
+import es.tid.cosmos.infinity.server.unfiltered.request.MockHttpRequest
+import es.tid.cosmos.infinity.server.unfiltered.response.MockHttpResponse
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
 class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar {
-
   "Get file metadata" should "return appropriate error on missing authorization header" in new Fixture {
-    get("/infinityfs/v1/metadata/some/file.txt")
-    response.code should be (401)
-    response.body should include (ErrorCode.MissingAuthorizationHeader.code)
+    app.intent.apply(requestResponder) should be (Success())
+    baseResponse._status should be (401)
+    baseResponse._out.toString should include (ErrorCode.MissingAuthorizationHeader.code)
   }
 
+  /*
   it should "return appropriate error on unsupported authorization header" in new Fixture {
+    app.intent.apply(requestResponder) should be (Success())
     get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
       "Authorization" -> "Digest dXNlcjpwYXNzd29yZA==" // user:password
     ))
@@ -127,14 +131,19 @@ class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar 
       ))
       response.code should equal(500)
     }
-  }
+  }*/
 
-  trait Fixture extends SpecHelper with MetadataActionFixture {
+  trait Fixture extends MetadataActionFixture {
     override val urlMapper = new InfinityUrlMapper(config)
     val authService = mock[AuthenticationService]
-    override val server = new FinatraServer
     val app = new MetadataRoutes(config, authService, nameNode, urlMapper)
-    server.register(app)
+    val _request = mock[HttpServletRequest]("servletRequest")
+    val _response = mock[HttpServletResponse]("servletResponse")
+    val someUri = "/infinityfs/v1/metadata/some/file.txt"
+    val somePath = Path.absolute("/some/file.txt")
+    val baseRequest = MockHttpRequest(underlying = _request, uri = someUri, method = "GET")
+    val baseResponse = new MockHttpResponse(_response)
+    val requestResponder = new MockRequestWithResponder(baseRequest, baseResponse)
 
     def givenSuccessAuthentication(action: => Unit) {
       when(authService.authenticate(anyObject())).thenReturn(Future.successful(UserProfile(
@@ -150,5 +159,4 @@ class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar 
       action
     }
   }
-
 }

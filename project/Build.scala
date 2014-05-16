@@ -29,7 +29,7 @@ object Build extends sbt.Build {
   object Versions {
     val akka = "2.3.0"
     val hdp2Hadoop = "2.2.0" /** HDP 2 has a patched 2.2.0 Hadoop stabilized by themselves */
-    val spray = "1.3.0"
+    val unfiltered = "0.6.8"
   }
 
   object JavaVersions {
@@ -69,11 +69,10 @@ object Build extends sbt.Build {
     lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
     lazy val typesafeConfig = "com.typesafe" % "config" % "1.2.0"
     lazy val unfiltered = Seq(
-      "net.databinder" %% "unfiltered-filter" % "0.6.8",
-      "net.databinder" %% "unfiltered-filter-async" % "0.6.8",
-      "net.databinder" %% "unfiltered-jetty" % "0.6.8",
-      "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" artifacts (
-        Artifact("javax.servlet", "jar", "jar")),
+      "net.databinder" %% "unfiltered-filter" % Versions.unfiltered,
+      "net.databinder" %% "unfiltered-filter-async" % Versions.unfiltered,
+      "net.databinder" %% "unfiltered-directives" % Versions.unfiltered,
+      "net.databinder" %% "unfiltered-jetty" % Versions.unfiltered,
       "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" artifacts (
         Artifact("javax.servlet", "jar", "jar"))
     )

@@ -16,14 +16,15 @@
 
 package es.tid.cosmos.infinity.server.content
 
-import scala.util.{Try, Success, Failure}
+import scala.util.Try
+import scalaz.ValidationNel
 
 import unfiltered.request._
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions._
 import es.tid.cosmos.infinity.server.config.ContentServerConfig
-import es.tid.cosmos.infinity.server.hadoop.{DataNode, DfsClientFactory}
+import es.tid.cosmos.infinity.server.hadoop.DataNode
 import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 /** The validator for content actions.
@@ -48,12 +49,12 @@ class HttpContentActionValidator(
   private def contentAction[T](path: String, request: HttpRequest[T]) = {
     val absolutePath = Path.absolute(path)
     request match {
-      case GET(Params(params)) => extractGetContentParams(params) match {
-        case Success((offset, length)) =>
-          GetContent(dataNode, absolutePath, offset, length)
-        case Failure(e) =>
-          throw RequestParsingException.InvalidRequestParams(Seq("offset", "length"), e)
-      }
+      case GET(Params(params)) => extractGetContentParams(params).fold(
+        succ = { case (offset, length) =>
+          GetContent(dataNode, absolutePath, offset, length) },
+        fail = failedParams =>
+          throw RequestParsingException.InvalidRequestParams(failedParams.list)
+      )
       case POST(_) =>
         AppendContent(dataNode, absolutePath, request.inputStream)
       case PUT(_) =>
@@ -61,18 +62,22 @@ class HttpContentActionValidator(
     }
   }
 
-  private def extractGetContentParams(params: Map[String, Seq[String]]): Try[(Option[Long], Option[Long])] = Try {
-    def toValidLong(s: String, condition: Long => Boolean, message: String): Long = {
-      val n = s.toLong
-      require(condition(n), s"$message. Found: $n")
-      n
-    }
-    // TODO: what happens when params passed are seqs? Test against it!
-    val optionalOffset =
-      params.get("offset") map (_.head) map (toValidLong(_, _ >= 0, s"offset cannot be negative"))
-    val optionalLength =
-      params.get("length") map (_.head) map (toValidLong(_, _ > 0, s"length must be positive"))
+  private def extractGetContentParams(
+      params: Map[String, Seq[String]]): ValidationNel[String, (Option[Long], Option[Long])] = {
+    import scalaz.Scalaz._
 
-    (optionalOffset, optionalLength)
+    def toValidLong(key: String, condition: Long => Boolean) = {
+      val maybeValue = params.get(key) map (_.head.toLong)
+      if (maybeValue.isEmpty || maybeValue.exists(condition))
+        maybeValue.successNel
+      else
+        key.failureNel
+    }
+    def isNatural(n: Long) = n >= 0
+    def isPositive(n: Long) = n > 0
+
+    val offset = toValidLong("offset", isNatural)
+    val length = toValidLong("length", isPositive)
+     (offset |@| length){(_, _)}
   }
 }

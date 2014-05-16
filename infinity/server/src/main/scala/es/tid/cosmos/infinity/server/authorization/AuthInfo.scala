@@ -17,6 +17,11 @@
 package es.tid.cosmos.infinity.server.authorization
 
 import java.net.InetAddress
+import scala.util.Try
+
+import unfiltered.request.{Authorization, RequestHeader, HttpRequest}
+
+import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 /** A request's authorization information.
   *
@@ -25,4 +30,14 @@ import java.net.InetAddress
   */
 case class AuthInfo(from: InetAddress, header: String) {
   require(!header.isEmpty, "Cannot have an empty authorization header")
+}
+
+object AuthInfo {
+  def apply[T](
+      from: String, request: HttpRequest[T]): Try[AuthInfo] = Try {
+    request match {
+      case Authorization(header) => AuthInfo(InetAddress.getByName(from), header)
+      case _ => throw RequestParsingException.MissingAuthorizationHeader()
+    }
+  }
 }

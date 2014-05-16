@@ -49,8 +49,6 @@ object Build extends sbt.Build {
     lazy val commonsIO = "org.apache.commons" % "commons-io" % "1.3.2"
     lazy val commonsLogging = "commons-logging" % "commons-logging" % "1.1.1"
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
-    lazy val finatra = "com.twitter" %% "finatra" % "1.5.2" exclude(
-      "org.scalatest", "scalatest_2.10")
     lazy val jettyWebapp = "org.eclipse.jetty" % "jetty-webapp" % "7.0.0.v20091005" artifacts (
                 Artifact("jetty-webapp", "jar", "jar"))
     lazy val h2database = "com.h2database" % "h2" % "1.3.175"

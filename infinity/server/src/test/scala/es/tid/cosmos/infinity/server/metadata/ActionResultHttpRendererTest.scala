@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.server.finatra
+package es.tid.cosmos.infinity.server.metadata
+
+import java.util.Date
+import java.net.URL
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
+import unfiltered.response.ResponseFunction
+
 import es.tid.cosmos.infinity.common.fs.{Path, FileMetadata}
-import java.net.URL
-import java.util.Date
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 import es.tid.cosmos.infinity.server.actions.MetadataAction._
-import org.jboss.netty.handler.codec.http.HttpResponseStatus
+import es.tid.cosmos.infinity.server.unfiltered.response.MockHttpResponse
 
 class ActionResultHttpRendererTest extends FlatSpec with MustMatchers {
-
   val metadata = FileMetadata(
     path = Path.absolute("/path/to/file"),
     content = Some(new URL("http://content.example.com/path/to/file")),
@@ -42,44 +44,54 @@ class ActionResultHttpRendererTest extends FlatSpec with MustMatchers {
   )
 
   "Action resut HTTP renderer" must "render Retrieved" in {
-    val rep = ActionResultHttpRenderer(Retrieved(metadata)).build
-    rep.status must be (HttpResponseStatus.OK)
-    rep.getContentString() must include ("/path/to/file")
+    val rep = ActionResultHttpRenderer(Retrieved(metadata))
+    val response = getResponse(rep)
+    response._status must be (200)
+    response._out.toString must include ("/path/to/file")
   }
 
   it must "render Created" in {
-    val rep = ActionResultHttpRenderer(Created(metadata)).build
-    rep.status must be (HttpResponseStatus.CREATED)
-    rep.getContentString() must include ("/path/to/file")
+    val rep = ActionResultHttpRenderer(Created(metadata))
+    val response = getResponse(rep)
+    response._status must be (201)
+    response._out.toString must include ("/path/to/file")
   }
 
   it must "render Moved" in {
-    val rep = ActionResultHttpRenderer(Moved(metadata)).build
-    rep.status must be (HttpResponseStatus.CREATED)
-    rep.getContentString() must include ("/path/to/file")
+    val rep = ActionResultHttpRenderer(Moved(metadata))
+    val response = getResponse(rep)
+    response._status must be (201)
+    response._out.toString must include ("/path/to/file")
   }
 
   it must "render Deleted" in {
-    val rep = ActionResultHttpRenderer(Deleted(metadata)).build
-    rep.status must be (HttpResponseStatus.NO_CONTENT)
-    rep.getContentString() must be ('empty)
+    val rep = ActionResultHttpRenderer(Deleted(metadata))
+    val response = getResponse(rep)
+    response._status must be (204)
+    response._out.toString must be ('empty)
   }
 
   it must "render OwnerSet" in {
-    val rep = ActionResultHttpRenderer(OwnerSet(metadata)).build
-    rep.status must be (HttpResponseStatus.NO_CONTENT)
-    rep.getContentString() must be ('empty)
+    val rep = ActionResultHttpRenderer(OwnerSet(metadata))
+    val response = getResponse(rep)
+    response._status must be (204)
+    response._out.toString must be ('empty)
   }
 
   it must "render GroupSet" in {
-    val rep = ActionResultHttpRenderer(GroupSet(metadata)).build
-    rep.status must be (HttpResponseStatus.NO_CONTENT)
-    rep.getContentString() must be ('empty)
+    val rep = ActionResultHttpRenderer(GroupSet(metadata))
+    val response = getResponse(rep)
+    response._status must be (204)
+    response._out.toString must be ('empty)
   }
 
   it must "render PermissionsSet" in {
-    val rep = ActionResultHttpRenderer(PermissionsSet(metadata)).build
-    rep.status must be (HttpResponseStatus.NO_CONTENT)
-    rep.getContentString() must be ('empty)
+    val rep = ActionResultHttpRenderer(PermissionsSet(metadata))
+    val response = getResponse(rep)
+    response._status must be (204)
+    response._out.toString must be ('empty)
   }
+
+  private def getResponse(res: ResponseFunction[Any]) =
+    res.apply(new MockHttpResponse[Any]).asInstanceOf[MockHttpResponse[Any]]
 }

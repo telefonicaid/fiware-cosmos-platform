@@ -21,7 +21,6 @@ libraryDependencies ++= Dependencies.unfiltered ++ Seq(
   Dependencies.anorm,
   Dependencies.commonsCodec,
   Dependencies.dispatch,
-  Dependencies.finatra,
   Dependencies.jettyWebapp % "it",
   Dependencies.h2database % "test",
   Dependencies.hadoopCommon % "provided",

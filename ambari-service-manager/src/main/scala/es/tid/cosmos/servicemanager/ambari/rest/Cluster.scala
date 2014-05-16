@@ -22,7 +22,6 @@ import com.ning.http.client.{RequestBuilder, Request}
 import dispatch.{Future => _, _}, Defaults._
 import net.liftweb.json._
 import net.liftweb.json.JsonAST.{JValue, JString, JArray}
-import net.liftweb.json.JsonDSL._
 import net.liftweb.json.Extraction._
 
 import es.tid.cosmos.servicemanager.ServiceError
@@ -65,12 +64,6 @@ private[ambari] class Cluster(clusterInfo: JValue, serverBaseUrl: Request)
   def addService(serviceName: String): Future[ServiceClient] =
     performRequest(baseUrl / "services" << s"""{"ServiceInfo": {"service_name": "$serviceName"}}""")
       .flatMap(_ => getService(serviceName))
-
-  def installAllServices(): Future[Unit] = {
-    val body = compact(render("ServiceInfo" -> ("state" -> "INSTALLED")))
-    performRequest((baseUrl / "services" <<? Map("ServiceInfo/state" -> "INIT")).PUT.setBody(body))
-      .map(_ => ())
-  }
 
   /**
    * Apply (which will also add) a configuration with the given type,

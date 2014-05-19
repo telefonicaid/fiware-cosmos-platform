@@ -17,7 +17,8 @@
 package es.tid.cosmos.infinity.server.plugin
 
 import java.net.InetSocketAddress
-import scalaz._
+import scala.annotation.tailrec
+import scala.concurrent.duration._
 
 import org.apache.commons.logging.LogFactory
 import org.apache.hadoop.conf.{Configuration, Configurable}
@@ -33,6 +34,8 @@ import es.tid.cosmos.infinity.server.hadoop.DfsClientFactory
 /** Datanode plugin to serve Infinity file content */
 class ContentPlugin extends ServicePlugin with Configurable {
 
+  import ContentPlugin._
+
   private val log = LogFactory.getLog(classOf[ContentPlugin])
   private var hadoopConfOpt: Option[Configuration] = None
   private var serverOpt: Option[ContentServer] = None
@@ -46,16 +49,14 @@ class ContentPlugin extends ServicePlugin with Configurable {
 
   override def start(service: Any): Unit = service match {
     case dataNode: DataNode =>
-      log.info("Starting Infinity content server as a datanode plugin")
       val config = new ContentServerConfig(pluginConfig)
-      checkDataNode(dataNode, config).fold(
-        succ = (checkedNode) => createServer(checkedNode, config),
-        fail = (errors) => illegalDataNodeState(errors.list)
-      )
+      waitForDataNode(dataNode, config)
+      log.info("Starting Infinity content server as a datanode plugin")
+      createServer(dataNode, config)
     case other =>
       log.error(
-        s"""Content plugin initialization failed: a NameNode was expected but ${service.getClass}
-            | was found. Make sure you have configured it as namenode plugin instead of datanode one.
+        s"""Content plugin initialization failed: a DataNode was expected but ${service.getClass}
+            | was found. Make sure you have configured it as datanode plugin instead of namenode one.
           """.stripMargin
       )
   }
@@ -77,27 +78,42 @@ class ContentPlugin extends ServicePlugin with Configurable {
     serverOpt = Some(server)
   }
 
-  private def illegalDataNodeState(errors: Seq[String]): Unit =
-    log.error(s"""Content plugin initialization failed:
-                  | Datanode not in appropriate state: ${errors.mkString(",")}""".stripMargin)
-
-  private def checkDataNode(
-      dataNode: DataNode, config: ContentServerConfig): ValidationNel[String, DataNode] = {
-    import scalaz.Scalaz._
-    def failOnFalse(c: Boolean, m: String) = if (c) dataNode.success else m.failureNel
-
-    val up = failOnFalse(dataNode.isDatanodeUp, "Datanode is not up")
-    val fullyStarted = failOnFalse(dataNode.isDatanodeFullyStarted, "Datanode is not fully started")
-    val connectedToNameNode = failOnFalse(
+  @tailrec
+  private def waitForDataNode(
+      dataNode: DataNode,
+      config: ContentServerConfig,
+      loggingActions: Stream[Option[Any=>Unit]] = loggingStream): Unit = {
+    if (dataNode.isDatanodeUp &&
+      dataNode.isDatanodeFullyStarted &&
       dataNode.isConnectedToNN(
-        new InetSocketAddress(config.nameNodeRPCUrl.getHost, config.nameNodeRPCUrl.getPort)),
-      s"Datanode is not connected to NameNode [${config.nameNodeRPCUrl}]")
-
-    (up |@| fullyStarted |@| connectedToNameNode) { (_, _, last) => last }
+        new InetSocketAddress(config.nameNodeRPCUrl.getHost, config.nameNodeRPCUrl.getPort)))
+      return
+    loggingActions.head.foreach(_("Waiting for datanode to be ready..."))
+    Thread.sleep(waitingPeriod.toMillis)
+    waitForDataNode(dataNode, config, loggingActions = loggingActions.tail)
   }
 
   private lazy val pluginConfig = PluginConfig.load(getConf, InfinityConfig.HadoopKeys: _*)
 
   private lazy val authentication: AuthenticationService =
     CosmosApiAuthenticationService.fromConfig(pluginConfig)
+
+
+  private val loggingStream: Stream[Option[Any => Unit]] = {
+    def logInfo(obj: Any) = log.info(obj)
+    def logWarn(obj: Any) = log.warn(obj)
+    Stream.fill(5)(Some(logInfo _)) ++
+      Stream.fill((warningThreshold / waitingPeriod).toInt)(None) ++
+      Stream.continually(
+        Stream.fill((warningFrequency / waitingPeriod).toInt - 1)(None) ++ Seq(Some(logWarn _))
+      ).flatten
+  }
+}
+
+object ContentPlugin {
+  import scala.language.postfixOps
+
+  private val warningThreshold = 15 minutes
+  private val warningFrequency = 1 minute
+  private val waitingPeriod = 1 second
 }

@@ -27,6 +27,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 import unfiltered.filter.async.Plan.Intent
+import unfiltered.response.{Unauthorized, NotFound}
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.credentials.UserCredentials
@@ -42,63 +43,71 @@ trait RoutesBehavior[HadoopApi] extends MustMatchers with FutureMatchers { this:
 
   /** Function allowing to enrich the test's default GET request  */
   type RequestFunction = MockHttpRequest[HttpServletRequest] => MockHttpRequest[HttpServletRequest]
+  /** Type for side effect functions that allow adding mock behavior to the hadoop API */
   type AddHadoopBehavior = HadoopApi => Unit
 
-  def newRoutes[HadoopApi]: Routes
+  def newRoutes[Api]: Routes
 
   def supportsAuthorization(requestTransformation: RequestFunction = identity): Unit = {
 
-    it must "return appropriate error on missing authorization header" in new Fixture(requestTransformation) {
-      routes.intent.apply(baseResponder) must be (Success())
-      baseResponse._status must be (401)
-      baseResponse.body must include (ErrorCode.MissingAuthorizationHeader.code)
-    }
+    it must "return appropriate error on missing authorization header" in
+      new Fixture(requestTransformation) {
+        routes.intent.apply(baseResponder) must be (Success())
+        baseResponse._status must be (Unauthorized.code)
+        baseResponse.body must include (ErrorCode.MissingAuthorizationHeader.code)
+      }
 
-    it must "return appropriate error on unsupported authorization header" in new Fixture(requestTransformation) {
-      val request = baseRequest.copy(
-        headerz = Map("Authorization" -> Seq("Digest dXNlcjpwYXNzd29yZA=="))) // user:password
-      val responder = baseResponder.copy(request = request)
-      routes.intent.apply(responder) must be (Success())
-      baseResponse._status must be (401)
-      baseResponse.body must include (ErrorCode.UnsupportedAuthorizationHeader.code)
-    }
+    it must "return appropriate error on unsupported authorization header" in
+      new Fixture(requestTransformation) {
+        val request = baseRequest.copy(
+          headerz = Map("Authorization" -> Seq("Digest dXNlcjpwYXNzd29yZA=="))) // user:password
+        val responder = baseResponder.copy(request = request)
+        routes.intent.apply(responder) must be (Success())
+        baseResponse._status must be (Unauthorized.code)
+        baseResponse.body must include (ErrorCode.UnsupportedAuthorizationHeader.code)
+      }
 
-    it must "return appropriate error on malformed key-secret pair" in new Fixture(requestTransformation) {
-      val request = baseRequest.copy(
-        headerz = Map("Authorization" -> Seq("Basic dXNlckBwYXNzd29yZA=="))) // user@password
-      val responder = baseResponder.copy(request = request)
-      routes.intent.apply(responder) must be (Success())
-      responder.response_> must runUnder(1 second)
-      baseResponse._status must be (401)
-      baseResponse.body must include (ErrorCode.MalformedKeySecretPair.code)
-    }
+    it must "return appropriate error on malformed key-secret pair" in
+      new Fixture(requestTransformation) {
+        val request = baseRequest.copy(
+          headerz = Map("Authorization" -> Seq("Basic dXNlckBwYXNzd29yZA=="))) // user@password
+        val responder = baseResponder.copy(request = request)
+        routes.intent.apply(responder) must be (Success())
+        responder.response_> must runUnder(1 second)
+        baseResponse._status must be (Unauthorized.code)
+        baseResponse.body must include (ErrorCode.MalformedKeySecretPair.code)
+      }
 
-    it must "return appropriate error on invalid basic hash" in new Fixture(requestTransformation) {
-      val request = baseRequest.copy(
-        headerz = Map("Authorization" -> Seq("Basic ,,,,,,,")))
-      val responder = baseResponder.copy(request = request)
-      routes.intent.apply(responder) must be (Success())
-      responder.response_> must runUnder(1 second)
-      baseResponse._status must be (401)
-      baseResponse.body must include (ErrorCode.InvalidBasicHash.code)
-    }
+    it must "return appropriate error on invalid basic hash" in
+      new Fixture(requestTransformation) {
+        val request = baseRequest.copy(
+          headerz = Map("Authorization" -> Seq("Basic ,,,,,,,")))
+        val responder = baseResponder.copy(request = request)
+        routes.intent.apply(responder) must be (Success())
+        responder.response_> must runUnder(1 second)
+        baseResponse._status must be (Unauthorized.code)
+        baseResponse.body must include (ErrorCode.InvalidBasicHash.code)
+      }
 
-    it must "return 401 on unauthenticated credentials" in new AuthenticationFailure(requestTransformation) {
-      routes.intent.apply(responder) must be (Success())
-      responder.response_> must runUnder(1 second)
-      baseResponse._status must equal(401)
-    }
+    it must "return 401 on unauthenticated credentials" in
+      new AuthenticationFailure(requestTransformation) {
+        routes.intent.apply(responder) must be (Success())
+        responder.response_> must runUnder(1 second)
+        baseResponse._status must equal(Unauthorized.code)
+      }
   }
 
   def canHandleNotFound(
       requestTransformation: RequestFunction = identity,
       hadoopBehavior: AddHadoopBehavior): Unit = {
-    it must "return 404 NotFound when the target file/directory does not exist" in new Authenticated(requestTransformation) {
-      hadoopBehavior(routes.hadoopApi)
-      routes.intent.apply(responder) must be (Success())
-      responder.response_> must runUnder(1 second)
-      baseResponse._status must equal(404)
-    }
+
+    it must "return 404 NotFound when the target file/directory does not exist" in
+      new Authenticated(requestTransformation) {
+        hadoopBehavior(routes.hadoopApi)
+        routes.intent.apply(responder) must be (Success())
+        responder.response_> must runUnder(1 second)
+        baseResponse._status must equal(NotFound.code)
+      }
   }
 
   trait Routes extends MockitoSugar {
@@ -120,7 +129,8 @@ trait RoutesBehavior[HadoopApi] extends MustMatchers with FutureMatchers { this:
     val baseResponder = new MockRequestWithResponder(baseRequest, baseResponse)
   }
 
-  abstract class Authenticated(requestTransformation: RequestFunction) extends Fixture(requestTransformation) {
+  abstract class Authenticated(requestTransformation: RequestFunction)
+      extends Fixture(requestTransformation) {
     val authHeader = "Authorization" -> Seq("Basic YXBpLWtleTphcGktc2VjcmV0")
     val credentials = UserCredentials("api-key", "api-secret")
     val profile = UserProfile("Tyrion", groups = Seq("Lannister"))

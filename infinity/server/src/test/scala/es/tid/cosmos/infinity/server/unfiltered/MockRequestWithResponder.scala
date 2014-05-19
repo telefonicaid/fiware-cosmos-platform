@@ -28,7 +28,7 @@ case class MockRequestWithResponder[Rq, Rp](
     response: HttpResponse[Rp]
   ) extends HttpRequest[Rq](request.underlying) with Async.Responder[Rp] {
 
-  private var responsePromise: Promise[Unit] = Promise[Unit]()
+  private val responsePromise: Promise[Unit] = Promise[Unit]()
 
   override def inputStream: InputStream = request.inputStream
   override def headerNames: Iterator[String] = request.headerNames

@@ -24,7 +24,7 @@ import java.nio.charset.Charset
 
 class MockHttpResponse[R](underlying: R) extends HttpResponse[R](underlying) {
   private val _out = new ByteArrayOutputStream()
-  var _status: Int = _
+  var _status: Int = -1
   var _headers: Map[String, String] = Map.empty
   lazy val body: String = _out.toString(Charset.defaultCharset().toString)
 

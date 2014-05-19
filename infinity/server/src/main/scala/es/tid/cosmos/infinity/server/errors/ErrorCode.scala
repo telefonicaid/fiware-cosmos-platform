@@ -17,7 +17,7 @@
 package es.tid.cosmos.infinity.server.errors
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
-import es.tid.cosmos.infinity.server.hadoop.NameNodeException
+import es.tid.cosmos.infinity.server.hadoop.{DataNodeException, NameNodeException}
 
 class ErrorCode[T <: Throwable](val code: String)
 
@@ -54,6 +54,8 @@ object ErrorCode {
     new ErrorCode[NameNodeException.PathAlreadyExists]("CONST02")
   implicit val ParentNotDirectory =
     new ErrorCode[NameNodeException.ParentNotDirectory]("CONST03")
+  implicit val ContentNotFound =
+    new ErrorCode[DataNodeException.ContentNotFound]("CONSTS04")
 
   val UnexpectedError = new ErrorCode[Nothing]("BUG")
 

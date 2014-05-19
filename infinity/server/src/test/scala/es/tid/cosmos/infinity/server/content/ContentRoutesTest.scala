@@ -16,10 +16,11 @@
 
 package es.tid.cosmos.infinity.server.content
 
-import java.io.ByteArrayInputStream
-import java.nio.charset.Charset
+import java.io.{InputStream, ByteArrayInputStream}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.language.postfixOps
 import scala.util.Success
 
 import com.typesafe.config.ConfigFactory
@@ -28,46 +29,81 @@ import org.mockito.Matchers.{any, eq => the}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
-import unfiltered.response.{Unauthorized, Ok}
+import unfiltered.response.{NoContent, NotFound, Unauthorized, Ok}
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.credentials.UserCredentials
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.ContentServerConfig
-import es.tid.cosmos.infinity.server.hadoop.DataNode
+import es.tid.cosmos.infinity.server.hadoop.{DataNodeException, DataNode}
 import es.tid.cosmos.infinity.server.unfiltered.MockRequestWithResponder
 import es.tid.cosmos.infinity.server.unfiltered.request.MockHttpRequest
 import es.tid.cosmos.infinity.server.unfiltered.response.MockHttpResponse
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 import es.tid.cosmos.infinity.common.permissions.UserProfile
 import es.tid.cosmos.infinity.server.util.ToClose
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 
-class ContentRoutesTest extends FlatSpec with MustMatchers {
-  "Content routes" must "correctly route an authorized and supported get content request" in
+class ContentRoutesTest extends FlatSpec with MustMatchers with FutureMatchers {
+  "Get Content" must "correctly route an authorized and supported request" in
     new Authorized {
-      routes.intent.apply(responder) must be (Success(()))
+      given(dataNode.open(the(somePath), any[Option[Long]], any[Option[Long]]))
+            .willReturn(Future.successful(ToClose(inputStream)))
+      routes.intent.apply(responder) must be (Success())
       baseResponse._status must be (Ok.code)
       baseResponse.body must be (body)
     }
 
-//  it must "return 404 NotFound on getting content of a file that does not exist" in new Authorized {
-//
-//  }
+  //TODO: test offset and length
+
+  it must "return 404 NotFound on a file that does not exist" in new Authorized {
+    given(dataNode.open(the(somePath), any[Option[Long]], any[Option[Long]]))
+          .willReturn(Future.failed(DataNodeException.ContentNotFound(somePath)))
+    routes.intent.apply(responder) must be (Success())
+    responder.response_> must runUnder(1 second)
+    baseResponse._status must be (NotFound.code)
+    baseResponse.body must be (
+      """{
+        |  "code":"CONSTS04",
+        |  "cause":"content for /some/uri not found"
+        |}""".stripMargin
+    )
+  }
+
+  "Append Content" must "correctly route an authorized request on existing file" in new Authorized {
+    given(dataNode.append(the(somePath), any[InputStream])).willReturn(Future.successful())
+    val putResponder = responder.copy(request = request.copy(method = "POST"))
+    routes.intent.apply(putResponder) must be (Success())
+    putResponder.response_> must runUnder(10 seconds)
+    baseResponse._status must be (NoContent.code)
+  }
+
+  "Overwrite Content" must "correctly route an authorized request on existing file" in new Authorized {
+    given(dataNode.overwrite(the(somePath), any[InputStream])).willReturn(Future.successful())
+    val putResponder = responder.copy(request = request.copy(method = "PUT"))
+    routes.intent.apply(putResponder) must be (Success())
+    putResponder.response_> must runUnder(10 seconds)
+    baseResponse._status must be (NoContent.code)
+  }
+
+  it must "return 403 Forbidden when user does not have permission to read file" in {
+    ???
+  }
 
   it must "return 401 Unauthorized on missing authorization header GET request" in new Fixture {
-    routes.intent.apply(baseResponder) must be (Success(()))
+    routes.intent.apply(baseResponder) must be (Success())
     baseResponse._status must be (Unauthorized.code)
   }
 
   it must "return 401 Unauthorized on missing authorization header POST request" in new Fixture {
     val responder = baseResponder.copy(request = baseRequest.copy(method = "POST"))
-    routes.intent.apply(responder) must be (Success(()))
+    routes.intent.apply(responder) must be (Success())
     baseResponse._status must be (Unauthorized.code)
   }
 
   it must "return 401 Unauthorized on missing authorization header PUT request" in new Fixture {
     val responder = baseResponder.copy(request = baseRequest.copy(method = "PUT"))
-    routes.intent.apply(responder) must be (Success(()))
+    routes.intent.apply(responder) must be (Success())
     baseResponse._status must be (Unauthorized.code)
   }
 
@@ -104,7 +140,5 @@ class ContentRoutesTest extends FlatSpec with MustMatchers {
     val responder = baseResponder.copy(request = this.request)
 
     given(authService.authenticate(credentials)).willReturn(Future.successful(profile))
-    given(dataNode.open(the(somePath), any[Option[Long]], any[Option[Long]]))
-      .willReturn(Future.successful(ToClose(inputStream)))
   }
 }

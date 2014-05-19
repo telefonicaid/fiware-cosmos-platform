@@ -84,6 +84,7 @@ class ServiceManagerTest extends FlatSpec with MustMatchers with FutureMatchers 
     override def clusterNodePoolCount: Int = ???
     override def terminateCluster(id: ClusterId): Future[Unit] = ???
     override def deployPersistentHdfsCluster(parameters: InfinityServerParameters): Future[Unit] = ???
+    override def updatePersistentHdfsServices(parameters: InfinityServerParameters): Future[Unit] = ???
     override def listUsers(clusterId: ClusterId): Option[Seq[ClusterUser]] = ???
     override val optionalServices: Set[Service] = Set.empty
 

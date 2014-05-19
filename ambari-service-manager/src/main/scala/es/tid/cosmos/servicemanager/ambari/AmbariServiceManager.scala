@@ -59,6 +59,9 @@ class AmbariServiceManager(
     master <- description.master
   } yield master.hostname)
 
+  protected[ambari] def persistentHdfsServices(infinityParameters: InfinityServerParameters):
+    Seq[AnyServiceInstance] = AmbariServiceManager.persistentHdfsServices(infinityParameters)
+
   override def clusterIds: Seq[ClusterId] = clusterDao.ids
 
   override def describeCluster(id: ClusterId): Option[ImmutableClusterDescription] =
@@ -203,6 +206,22 @@ class AmbariServiceManager(
       _ <- createCluster(clusterDescription, services)
     } yield ())
   } yield description
+
+  override def updatePersistentHdfsServices(parameters: InfinityServerParameters): Future[Unit] =
+    (for {
+      cluster <- clusterDao.getDescription(persistentHdfsId)
+    } yield {
+      cluster.withFailsafe {
+        val previousServices = cluster.services
+        val nextServices = persistentHdfsServices(parameters)
+        cluster.services = nextServices.map(_.service.name).toSet
+        val oldServices = nextServices.filter { s => previousServices.contains(s.service.name) }
+        for {
+          - <- clusterManager.updateClusterServices(cluster.view, nextServices,
+            oldServices, dynamicProperties)
+        } yield ()
+      }
+    }).getOrElse(Future.failed(new Error("PersistentHdfs cluster not found")))
 
   override def clusterNodePoolCount: Int =
     infrastructureProvider.machinePoolCount(_ == MachineProfile.G1Compute)

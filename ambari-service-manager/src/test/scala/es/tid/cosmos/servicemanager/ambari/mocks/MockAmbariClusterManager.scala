@@ -20,8 +20,9 @@ import scala.concurrent.Future
 
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.AmbariClusterManager
+import es.tid.cosmos.servicemanager.ambari.rest.ServiceClient
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceFactory
-import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClusterDescription}
+import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ClusterId, ImmutableClusterDescription}
 import es.tid.cosmos.servicemanager.configuration.{ConfigurationBundle, DynamicPropertiesFactory}
 
 class MockAmbariClusterManager extends AmbariClusterManager(
@@ -43,4 +44,15 @@ class MockAmbariClusterManager extends AmbariClusterManager(
     clusterDescription: ImmutableClusterDescription,
     dynamicProperties: DynamicPropertiesFactory,
     serviceDescription: AnyServiceInstance): Future[Unit] = Future.successful()
+
+  override def stopStartedServices(id: ClusterId):Future[Seq[ServiceClient]] =
+    Future.successful(Seq())
+
+  override def updateClusterServices(
+    clusterDescription: ImmutableClusterDescription,
+    newServiceInstances: Seq[AnyServiceInstance],
+    oldServiceInstances: Seq[AnyServiceInstance],
+    dynamicProperties: DynamicPropertiesFactory): Future[ConfigurationBundle] =
+   Future.successful(ConfigurationBundle.NoConfiguration)
+
 }

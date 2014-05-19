@@ -9,6 +9,7 @@ libraryDependencies ++= Seq(
   Dependencies.scalaMigrations,
   "mysql" % "mysql-connector-java" % "5.1.10",
   Dependencies.dispatch,
+  Dependencies.h2database % "test",
   Dependencies.liftJson,
   Dependencies.logbackClassic,
   Dependencies.scalaLogging,

@@ -18,7 +18,7 @@ package es.tid.cosmos.servicemanager
 
 import scala.concurrent.Future
 
-import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClusterDescription}
+import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ClusterId, ImmutableClusterDescription}
 import es.tid.cosmos.servicemanager.configuration.{ConfigurationBundle, DynamicPropertiesFactory}
 
 trait ClusterManager {
@@ -28,10 +28,17 @@ trait ClusterManager {
     services: Seq[AnyServiceInstance],
     dynamicProperties: DynamicPropertiesFactory): Future[ConfigurationBundle]
 
+  def updateClusterServices(
+   clusterDescription: ImmutableClusterDescription,
+   newServiceInstances: Seq[AnyServiceInstance],
+   oldServiceInstances: Seq[AnyServiceInstance],
+   dynamicProperties: DynamicPropertiesFactory): Future[ConfigurationBundle]
+
   def removeCluster(cluster: ClusterDescription): Future[Any]
 
   def changeServiceConfiguration(
     clusterDescription: ImmutableClusterDescription,
     dynamicProperties: DynamicPropertiesFactory,
     serviceDescription: AnyServiceInstance): Future[Any]
+
 }

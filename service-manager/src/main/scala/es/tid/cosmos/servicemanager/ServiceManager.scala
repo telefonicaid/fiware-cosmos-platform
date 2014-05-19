@@ -93,6 +93,9 @@ trait ServiceManager {
   /* Deploys the persistent HDFS cluster. */
   def deployPersistentHdfsCluster(parameters: InfinityServerParameters): Future[Unit]
 
+  /** Updates the persistent HDFS cluster with new services and/or its configuration */
+  def updatePersistentHdfsServices(parameters: InfinityServerParameters): Future[Unit]
+
   /** A convenience function to obtain information of the persistent HDFS cluster's state. */
   final def describePersistentHdfsCluster(): Option[ImmutableClusterDescription] =
     describeCluster(persistentHdfsId)

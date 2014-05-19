@@ -27,7 +27,8 @@ class cosmos::slave (
   $ct_key_pub,
   $ct_key_priv_file,
 ) inherits cosmos::params {
-  include ssh_keys, cosmos::base, cosmos::openvz::network, cosmos::openvz::images
+  include ssh_keys, cosmos::base, cosmos::openvz::network,
+    cosmos::openvz::images, ambari::params
 
   if member(hiera('slave_hosts'), $::hostname) == false {
     err("Host ${::hostname} is not listed in slave_hosts array in common.yaml.")
@@ -86,13 +87,39 @@ class cosmos::slave (
     onlyif  => 'vzctl status 101 | grep running',
   }
 
+  exec { 'Cleanup repos':
+    command => 'vzctl exec 101 "rm -f /etc/yum.repos.d/HDP.repo && rm -f /var/lib/rpm/__db.00* && rpm --rebuilddb && yum clean all && yum history new"',
+    path    => ['/usr/sbin/', '/bin/'],
+    onlyif  => 'vzctl status 101 | grep running',
+  }
+
+  if $ambari::params::enable_repo_mirroring {
+    exec { 'Disable cosmos-platform repo':
+      command => 'vzctl exec 101 "mv /etc/yum.repos.d/cosmos-platform.repo /etc/yum.repos.d/cosmos-plaform.repo.disabled || true"',
+      path    => ['/usr/sbin/', '/bin/'],
+      onlyif  => 'vzctl status 101 | grep running',
+    }
+    Exec['Update CT Ambari Agent']
+      -> Exec['Disable cosmos-platform repo']
+      -> Exec['Cleanup repos']
+  } else {
+    exec { 'Enable cosmos-platform repo':
+      command => 'vzctl exec 101 "mv /etc/yum.repos.d/cosmos-platform.repo.disabled /etc/yum.repos.d/cosmos-plaform.repo || true"',
+      path    => ['/usr/sbin/', '/bin/'],
+      onlyif  => 'vzctl status 101 | grep running',
+    }
+    Exec['Enable cosmos-platform repo']
+      -> Exec['Cleanup repos']
+      -> Exec['Update CT Ambari Agent']
+  }
+
   File['/etc/sysconfig/iptables-config', '/etc/sysconfig/iptables']
     ~> Service['iptables']
     -> Class['cosmos::openvz::service', 'cosmos::openvz::network']
     -> Exec['Update CT Ambari Agent']
 
   anchor {'cosmos::slave::begin': }
-    -> Class['cosmos::openvz::service', 'libvirt', 'cosmos::base']
+    -> Class['cosmos::openvz::service', 'libvirt', 'cosmos::base', 'ambari::params']
     -> Class['ssh_keys', 'cosmos::openvz::network', 'cosmos::openvz::images']
     -> anchor {'cosmos::slave::end': }
 }

@@ -52,6 +52,10 @@ class DefaultPersistentStorageCommandsTest extends FlatSpec with MustMatchers wi
       verify(sm).deployPersistentHdfsCluster(parameters)
     }
 
+    def verifyUpdateAttempt(): Unit = {
+      verify(sm).updatePersistentHdfsServices(parameters)
+    }
+
     def verifyNoDeploymentAttempt(): Unit = {
       verify(sm, never()).deployPersistentHdfsCluster(any[InfinityServerParameters])
     }
@@ -95,6 +99,9 @@ class DefaultPersistentStorageCommandsTest extends FlatSpec with MustMatchers wi
     def givenStorageState(state: ClusterState): Unit = given(sm.describePersistentHdfsCluster())
         .willReturn(Some(clusterDescription.copy(state = state)))
 
+    def givenUpdateWillSucceed(): Unit = given(sm.updatePersistentHdfsServices(parameters))
+      .willReturn(Future.successful())
+
     def givenTerminationWillSucceed(): Unit =
       given(sm.terminatePersistentHdfsCluster()).willReturn(Future.successful())
 
@@ -108,10 +115,12 @@ class DefaultPersistentStorageCommandsTest extends FlatSpec with MustMatchers wi
     verifyDeploymentAttempt()
   }
 
-  it must "not deploy the persistent storage if it has been found" in new WithStorage {
+  it must "update the persistent storage if it has been found" in new WithStorage {
     givenStorageState(Running)
+    givenUpdateWillSucceed()
     commands.setup() must be ('success)
     verifyNoDeploymentAttempt()
+    verifyUpdateAttempt()
   }
 
   it must "return false is the persistent storage deployment fails" in new WithMissingStorage {

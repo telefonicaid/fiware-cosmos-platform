@@ -33,19 +33,23 @@ private[storage] class DefaultPersistentStorageCommands(
 
   override def setup(): CommandResult = storageState(serviceManager) match {
     case Some(Running) =>
-      CommandResult.success("Infinity found. Not changing anything...")
+      println("Infinity found. Updating services...")
+      val update = serviceManager.updatePersistentHdfsServices(setupParameters)
+        .map(_ => CommandResult.success("Infinity successfully updated"))
+      CommandResult.await(update, ClusterTimeout)
     case Some(state) =>
       CommandResult.error(s"Infinity in $state state. Not changing anything...")
     case None =>
       println("Persistent Storage not found. Deploying...")
-      val parameters = InfinityServerParameters(
-        cosmosApiUrl = config.getString("application.baseurl"),
-        infinitySecret = config.getString("infinity.secret")
-      )
-      val deployment = serviceManager.deployPersistentHdfsCluster(parameters)
+      val deployment = serviceManager.deployPersistentHdfsCluster(setupParameters)
         .map(_ => CommandResult.success("Infinity successfully deployed"))
       CommandResult.await(deployment, ClusterTimeout)
   }
+
+  private def setupParameters = InfinityServerParameters(
+    cosmosApiUrl = config.getString("application.baseurl"),
+    infinitySecret = config.getString("infinity.secret")
+  )
 
   override def terminate(): CommandResult = storageState(serviceManager) match {
     case Some(Running) =>

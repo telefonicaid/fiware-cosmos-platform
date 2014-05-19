@@ -54,7 +54,7 @@ trait RoutesBehavior[HadoopApi] extends MustMatchers with FutureMatchers { this:
       baseResponse.body must include (ErrorCode.MissingAuthorizationHeader.code)
     }
 
-    it should "return appropriate error on unsupported authorization header" in new Fixture(requestTransformation) {
+    it must "return appropriate error on unsupported authorization header" in new Fixture(requestTransformation) {
       val request = baseRequest.copy(
         headerz = Map("Authorization" -> Seq("Digest dXNlcjpwYXNzd29yZA=="))) // user:password
       val responder = baseResponder.copy(request = request)
@@ -63,7 +63,7 @@ trait RoutesBehavior[HadoopApi] extends MustMatchers with FutureMatchers { this:
       baseResponse.body must include (ErrorCode.UnsupportedAuthorizationHeader.code)
     }
 
-    it should "return appropriate error on malformed key-secret pair" in new Fixture(requestTransformation) {
+    it must "return appropriate error on malformed key-secret pair" in new Fixture(requestTransformation) {
       val request = baseRequest.copy(
         headerz = Map("Authorization" -> Seq("Basic dXNlckBwYXNzd29yZA=="))) // user@password
       val responder = baseResponder.copy(request = request)
@@ -73,7 +73,7 @@ trait RoutesBehavior[HadoopApi] extends MustMatchers with FutureMatchers { this:
       baseResponse.body must include (ErrorCode.MalformedKeySecretPair.code)
     }
 
-    it should "return appropriate error on invalid basic hash" in new Fixture(requestTransformation) {
+    it must "return appropriate error on invalid basic hash" in new Fixture(requestTransformation) {
       val request = baseRequest.copy(
         headerz = Map("Authorization" -> Seq("Basic ,,,,,,,")))
       val responder = baseResponder.copy(request = request)
@@ -83,7 +83,7 @@ trait RoutesBehavior[HadoopApi] extends MustMatchers with FutureMatchers { this:
       baseResponse.body must include (ErrorCode.InvalidBasicHash.code)
     }
 
-    it should "return 401 on unauthenticated credentials" in new AuthenticationFailure(requestTransformation) {
+    it must "return 401 on unauthenticated credentials" in new AuthenticationFailure(requestTransformation) {
       routes.intent.apply(responder) must be (Success())
       responder.response_> must runUnder(1 second)
       baseResponse._status must equal(401)

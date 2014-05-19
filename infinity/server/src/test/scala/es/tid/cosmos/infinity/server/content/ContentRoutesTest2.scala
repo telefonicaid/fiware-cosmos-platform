@@ -16,41 +16,22 @@
 
 package es.tid.cosmos.infinity.server.content
 
+import com.typesafe.config.ConfigFactory
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
+import unfiltered.filter.async.Plan.Intent
+
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.fs.Path
-import unfiltered.filter.async.Plan.Intent
-import es.tid.cosmos.infinity.server.config.ContentServerConfig
-import com.typesafe.config.ConfigFactory
-import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
-import es.tid.cosmos.infinity.server.hadoop.DataNode
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
+import es.tid.cosmos.infinity.server.config.ContentServerConfig
+import es.tid.cosmos.infinity.server.hadoop.DataNode
 import es.tid.cosmos.infinity.server.routes.RoutesBehavior
-import es.tid.cosmos.infinity.server.unfiltered.request.MockHttpRequest
-import javax.servlet.http.HttpServletRequest
+import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
 class ContentRoutesTest2 extends FlatSpec with RoutesBehavior with MustMatchers with FutureMatchers {
 
-  "GetContent" must behave like {
-    supportsAuthorization(new ContentTest {
-      def request(default: MockHttpRequest[HttpServletRequest]) = default
-    })
-  }
-
-  "AppendContent" must behave like {
-    supportsAuthorization(new ContentTest {
-      def request(default: MockHttpRequest[HttpServletRequest]) = default.copy(method = "POST")
-    })
-  }
-
-  "OverwriteContent" must behave like {
-    supportsAuthorization(new ContentTest {
-      def request(default: MockHttpRequest[HttpServletRequest]) = default.copy(method = "PUT")
-    })
-  }
-
-  trait ContentTest extends Test {
+  def newRoutes: Routes = new Routes {
     val urlMapper = new InfinityUrlMapper(config)
     val config = new ContentServerConfig(ConfigFactory.load())
     val dataNode = mock[DataNode]("dataNode")
@@ -58,10 +39,22 @@ class ContentRoutesTest2 extends FlatSpec with RoutesBehavior with MustMatchers 
     val somePath = Path.absolute("/some/uri")
     val authService = mock[AuthenticationService]
     val intent: Intent = new ContentRoutes(
-          config,
-          authService,
-          dataNode,
-          urlMapper
-   ).intent
+      config,
+      authService,
+      dataNode,
+      urlMapper
+    ).intent
+  }
+
+  "GetContent" must behave like {
+    supportsAuthorization(request = identity)
+  }
+
+  "AppendContent" must behave like {
+    supportsAuthorization(request = _.copy(method = "POST"))
+  }
+
+  "OverwriteContent" must behave like {
+    supportsAuthorization(request = _.copy(method = "PUT"))
   }
 }

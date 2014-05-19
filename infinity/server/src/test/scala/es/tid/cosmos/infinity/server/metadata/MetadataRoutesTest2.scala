@@ -16,63 +16,57 @@
 
 package es.tid.cosmos.infinity.server.metadata
 
-import org.scalatest.FlatSpec
-import es.tid.cosmos.infinity.server.routes.RoutesBehavior
-import org.scalatest.matchers.MustMatchers
-import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
-import es.tid.cosmos.infinity.server.config.MetadataServerConfig
+import java.io.StringReader
+
 import com.typesafe.config.ConfigFactory
-import es.tid.cosmos.infinity.server.hadoop.NameNode
+import org.scalatest.FlatSpec
+import org.scalatest.matchers.MustMatchers
+import unfiltered.filter.async.Plan.Intent
+
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
-import unfiltered.filter.async.Plan._
-import es.tid.cosmos.infinity.server.unfiltered.request.MockHttpRequest
-import javax.servlet.http.HttpServletRequest
-import java.io.StringReader
+import es.tid.cosmos.infinity.server.config.MetadataServerConfig
+import es.tid.cosmos.infinity.server.hadoop.NameNode
+import es.tid.cosmos.infinity.server.routes.RoutesBehavior
+import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
 class MetadataRoutesTest2 extends FlatSpec with RoutesBehavior with MustMatchers with FutureMatchers {
 
   "GetMetadata" must behave like {
-    supportsAuthorization(new MetadataTest  {
-      def request(default: MockHttpRequest[HttpServletRequest]) = default
-    })
+    supportsAuthorization(request = identity)
   }
 
   "CreateFile" must behave like {
-    supportsAuthorization(new MetadataTest  {
-      def request(default: MockHttpRequest[HttpServletRequest]) = default.copy(
-        method = "POST",
-        reader = new StringReader(
-          """
-            |{
-            |  "action": "mkfile",
-            |  "name": "somefile.txt",
-            |  "permissions": "777",
-            |  "replication": 3
-            |}
-          """.stripMargin)
-      )
-    })
+    supportsAuthorization(request = _.copy(
+      method = "POST",
+      reader = new StringReader(
+        """
+          |{
+          |  "action": "mkfile",
+          |  "name": "somefile.txt",
+          |  "permissions": "777",
+          |  "replication": 3
+          |}
+        """.stripMargin)
+    ))
   }
 
   "MoveFile" must behave like {
-    supportsAuthorization(new MetadataTest  {
-      def request(default: MockHttpRequest[HttpServletRequest]) = default.copy(
-        method = "POST",
-        reader = new StringReader(
-          """
-            |{
-            |  "action": "move",
-            |  "name": "somefile.txt",
-            |  "from": "/some/other/place"
-            |}
-          """.stripMargin)
-      )
-    })
+    supportsAuthorization(request = _.copy(
+      method = "POST",
+      reader = new StringReader(
+        """
+          |{
+          |  "action": "move",
+          |  "name": "somefile.txt",
+          |  "from": "/some/other/place"
+          |}
+        """.stripMargin)
+    ))
   }
 
-  trait MetadataTest extends Test {
+  def newRoutes = new Routes {
     val urlMapper = new InfinityUrlMapper(config)
     val config = new MetadataServerConfig(ConfigFactory.load())
     val nameNode = mock[NameNode]("nameNode")

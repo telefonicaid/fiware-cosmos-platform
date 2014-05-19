@@ -16,7 +16,7 @@
 
 package es.tid.cosmos.infinity.server.unfiltered.request
 
-import java.io.{InputStream, Reader}
+import java.io.{StringReader, InputStream, Reader}
 
 import org.scalatest.mock.MockitoSugar
 import unfiltered.Cookie
@@ -26,7 +26,7 @@ import unfiltered.request.HttpRequest
 case class MockHttpRequest[R](
     override val underlying: R = null,
     inputStream: InputStream = MockHttpRequest.mockStream,
-    reader: Reader = MockHttpRequest.mockReader,
+    reader: Reader = new StringReader(""),
     isSecure: Boolean = false,
     uri: String = "",
     remoteAddr: String = "",
@@ -45,5 +45,4 @@ case class MockHttpRequest[R](
 
 object MockHttpRequest extends MockitoSugar {
   def mockStream = mock[InputStream]
-  def mockReader = mock[Reader]
 }

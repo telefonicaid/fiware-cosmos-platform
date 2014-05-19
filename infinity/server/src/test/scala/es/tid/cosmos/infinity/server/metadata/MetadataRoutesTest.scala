@@ -15,17 +15,23 @@
  */
 package es.tid.cosmos.infinity.server.metadata
 
+import java.io.StringReader
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.language.postfixOps
 import scala.util.Success
 
+import org.mockito.BDDMockito._
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.mock.MockitoSugar
 
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.fs.Path
+import es.tid.cosmos.infinity.common.credentials.UserCredentials
 import es.tid.cosmos.infinity.common.permissions.UserProfile
 import es.tid.cosmos.infinity.server.actions.MetadataActionFixture
 import es.tid.cosmos.infinity.server.authentication._
@@ -36,102 +42,99 @@ import es.tid.cosmos.infinity.server.unfiltered.request.MockHttpRequest
 import es.tid.cosmos.infinity.server.unfiltered.response.MockHttpResponse
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
-class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar {
+class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar with FutureMatchers {
   "Get file metadata" should "return appropriate error on missing authorization header" in new Fixture {
-    app.intent.apply(requestResponder) should be (Success())
+    app.intent.apply(baseResponder) should be (Success())
     baseResponse._status should be (401)
-    baseResponse._out.toString should include (ErrorCode.MissingAuthorizationHeader.code)
+    baseResponse.body should include (ErrorCode.MissingAuthorizationHeader.code)
   }
 
-  /*
   it should "return appropriate error on unsupported authorization header" in new Fixture {
-    app.intent.apply(requestResponder) should be (Success())
-    get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
-      "Authorization" -> "Digest dXNlcjpwYXNzd29yZA==" // user:password
-    ))
-    response.code should be (401)
-    response.body should include (ErrorCode.UnsupportedAuthorizationHeader.code)
+    val request = baseRequest.copy(
+      headerz = Map("Authorization" -> Seq("Digest dXNlcjpwYXNzd29yZA=="))) // user:password
+    val responder = baseResponder.copy(request = request)
+    app.intent.apply(responder) should be (Success())
+    baseResponse._status should be (401)
+    baseResponse.body should include (ErrorCode.UnsupportedAuthorizationHeader.code)
   }
 
   it should "return appropriate error on malformed key-secret pair" in new Fixture {
-    get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
-      "Authorization" -> "Basic dXNlckBwYXNzd29yZA==" // user@password
-    ))
-    response.code should be (401)
-    response.body should include (ErrorCode.MalformedKeySecretPair.code)
+    val request = baseRequest.copy(
+      headerz = Map("Authorization" -> Seq("Basic dXNlckBwYXNzd29yZA=="))) // user@password
+    val responder = baseResponder.copy(request = request)
+    app.intent.apply(responder) should be (Success())
+    responder.response_> should runUnder(1 second)
+    baseResponse._status should be (401)
+    baseResponse.body should include (ErrorCode.MalformedKeySecretPair.code)
   }
 
   it should "return appropriate error on invalid basic hash" in new Fixture {
-    get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
-      "Authorization" -> "Basic ,,,,,,,"
-    ))
-    response.code should be (401)
-    response.body should include (ErrorCode.InvalidBasicHash.code)
+    val request = baseRequest.copy(
+      headerz = Map("Authorization" -> Seq("Basic ,,,,,,,")))
+    val responder = baseResponder.copy(request = request)
+    app.intent.apply(responder) should be (Success())
+    responder.response_> should runUnder(1 second)
+    baseResponse._status should be (401)
+    baseResponse.body should include (ErrorCode.InvalidBasicHash.code)
   }
 
-  it should "return 401 on unauthenticated credentials" in new Fixture {
-    givenFailedAuthentication {
-      get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
-        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
-      ))
-      response.code should equal(401)
-    }
+  it should "return 401 on unauthenticated credentials" in new AuthenticationFailure {
+    app.intent.apply(responder) should be (Success())
+    responder.response_> should runUnder(1 second)
+    baseResponse._status should equal(401)
   }
 
-  it should "return 404 on non-existent files" in new Fixture {
-    givenSuccessAuthentication {
-      doReturn(Future.failed(NameNodeException.NoSuchPath(Path.absolute("/"))))
-        .when(nameNode).pathMetadata(any())
-      get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
-        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
-      ))
-      response.code should equal(404)
-    }
+  it should "return 404 on non-existent files" in new Authenticated {
+    doReturn(Future.failed(NameNodeException.NoSuchPath(Path.absolute("/"))))
+      .when(nameNode).pathMetadata(any())
+    app.intent.apply(responder) should be (Success())
+    responder.response_> should runUnder(1 second)
+    baseResponse._status should equal(404)
   }
 
-  it should "return 409 when the path already exists" in new Fixture {
-    givenSuccessAuthentication {
-      doReturn(Future.failed(NameNodeException.PathAlreadyExists(Path.absolute("/"))))
-        .when(nameNode).pathMetadata(any())
-      get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
-        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
-      ))
-      response.code should equal(409)
-    }
+  it should "return 409 when the path already exists" in new Authenticated {
+    doReturn(Future.failed(NameNodeException.PathAlreadyExists(Path.absolute("/"))))
+      .when(nameNode).pathMetadata(any())
+    app.intent.apply(responder) should be (Success())
+    responder.response_> should runUnder(1 second)
+    baseResponse._status should equal(409)
   }
 
-  it should "return 400 when the body is invalid" in new Fixture {
-    givenSuccessAuthentication {
-      post("/infinityfs/v1/metadata/some/file.txt", headers = Map(
-        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
-      ))
-      response.code should equal(400)
-    }
+  it should "return 400 when the body is invalid" in new Authenticated {
+    override lazy val request =  baseRequest.copy(headerz = Map(authHeader), method = "POST")
+    app.intent.apply(responder) should be (Success())
+    responder.response_> should runUnder(1 second)
+    baseResponse._status should equal(400)
   }
 
-  ignore should "return 422 when the parent is not a directory" in new Fixture {
-    givenSuccessAuthentication {
-      doReturn(Future.failed(NameNodeException.ParentNotDirectory(Path.absolute("/"))))
-        .when(nameNode).createFile(any(), any(), any(), any(), any(), any())
-      post("/infinityfs/v1/metadata/some/file.txt", headers = Map(
-        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
-      ))
-      // TODO: Finagle doesn't provide a way to add a body to test requests.
-      // I'm leaving the test so we can reuse it once we move to unfiltered
-      response.code should equal(422)
-    }
+  // TODO: Enable this once the test works
+  ignore should "return 422 when the parent is not a directory" in new Authenticated {
+    doReturn(Future.failed(NameNodeException.ParentNotDirectory(Path.absolute("/"))))
+      .when(nameNode).createFile(any(), any(), any(), any(), any(), any())
+    override lazy val request =  baseRequest.copy(
+      headerz = Map(authHeader),
+      method = "POST",
+      reader = new StringReader(
+        """
+          |{
+          |  "action": "mkfile",
+          |  "name": "somefile.txt",
+          |  "permissions": "777",
+          |  "replication": 3
+          |}
+        """.stripMargin))
+    app.intent.apply(responder) should be (Success())
+    responder.response_> should runUnder(1 second)
+    baseResponse._status should equal(422)
   }
 
-  it should "return 500 on IOErrors" in new Fixture {
-    givenSuccessAuthentication {
-      doReturn(Future.failed(NameNodeException.IOError()))
-        .when(nameNode).pathMetadata(any())
-      get("/infinityfs/v1/metadata/some/file.txt", headers = Map(
-        "Authorization" -> "Basic dXNlcjpwYXNzd29yZA=="
-      ))
-      response.code should equal(500)
-    }
-  }*/
+  it should "return 500 on IOErrors" in new Authenticated {
+    doReturn(Future.failed(NameNodeException.IOError()))
+      .when(nameNode).pathMetadata(any())
+    app.intent.apply(responder) should be (Success())
+    responder.response_> should runUnder(1 second)
+    baseResponse._status should equal(500)
+  }
 
   trait Fixture extends MetadataActionFixture {
     override val urlMapper = new InfinityUrlMapper(config)
@@ -143,20 +146,28 @@ class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar 
     val somePath = Path.absolute("/some/file.txt")
     val baseRequest = MockHttpRequest(underlying = _request, uri = someUri, method = "GET")
     val baseResponse = new MockHttpResponse(_response)
-    val requestResponder = new MockRequestWithResponder(baseRequest, baseResponse)
+    val baseResponder = new MockRequestWithResponder(baseRequest, baseResponse)
+  }
 
-    def givenSuccessAuthentication(action: => Unit) {
-      when(authService.authenticate(anyObject())).thenReturn(Future.successful(UserProfile(
-        username = "gandalf",
-        groups = Seq("istari")
-      )))
-      action
-    }
+  trait Authenticated extends Fixture {
+    val authHeader = "Authorization" -> Seq("Basic YXBpLWtleTphcGktc2VjcmV0")
+    val credentials = UserCredentials("api-key", "api-secret")
+    val profile = UserProfile("Tyrion", groups = Seq.empty)
 
-    def givenFailedAuthentication(action: => Unit) {
-      when(authService.authenticate(anyObject()))
-        .thenReturn(Future.failed(new AuthenticationException("failed")))
-      action
-    }
+    lazy val request = baseRequest.copy(headerz = Map(authHeader))
+    lazy val responder = baseResponder.copy(request = this.request)
+
+    given(authService.authenticate(credentials)).willReturn(Future.successful(profile))
+  }
+
+  trait AuthenticationFailure extends Fixture {
+    val authHeader = "Authorization" -> Seq("Basic YXBpLWtleTphcGktc2VjcmV0")
+    val credentials = UserCredentials("api-key", "api-secret")
+
+    val request = baseRequest.copy(headerz = Map(authHeader))
+    val responder = baseResponder.copy(request = this.request)
+
+    given(authService.authenticate(credentials)).willReturn(
+      Future.failed(new AuthenticationException("failed")))
   }
 }

@@ -31,14 +31,14 @@ import es.tid.cosmos.infinity.server.hadoop.NameNode
 import es.tid.cosmos.infinity.server.routes.RoutesBehavior
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
-class MetadataRoutesTest2 extends FlatSpec with RoutesBehavior with MustMatchers with FutureMatchers {
+class MetadataRoutesTest2 extends FlatSpec with RoutesBehavior[NameNode] with MustMatchers with FutureMatchers {
 
   "GetMetadata" must behave like {
-    supportsAuthorization(request = identity)
+    supportsAuthorization()
   }
 
   "CreateFile" must behave like {
-    supportsAuthorization(request = _.copy(
+    supportsAuthorization(requestTransformation = _.copy(
       method = "POST",
       reader = new StringReader(
         """
@@ -53,7 +53,7 @@ class MetadataRoutesTest2 extends FlatSpec with RoutesBehavior with MustMatchers
   }
 
   "MoveFile" must behave like {
-    supportsAuthorization(request = _.copy(
+    supportsAuthorization(requestTransformation = _.copy(
       method = "POST",
       reader = new StringReader(
         """
@@ -66,17 +66,17 @@ class MetadataRoutesTest2 extends FlatSpec with RoutesBehavior with MustMatchers
     ))
   }
 
-  def newRoutes = new Routes {
+  def newRoutes[HadoopApi] = new Routes {
     val urlMapper = new InfinityUrlMapper(config)
     val config = new MetadataServerConfig(ConfigFactory.load())
-    val nameNode = mock[NameNode]("nameNode")
+    val hadoopApi = mock[NameNode]("nameNode")
     val someUri = "/infinityfs/v1/metadata/some/uri"
     val somePath = Path.absolute("/some/uri")
     val authService = mock[AuthenticationService]
     val intent: Intent = new MetadataRoutes(
       config,
       authService,
-      nameNode,
+      hadoopApi,
       urlMapper
     ).intent
   }

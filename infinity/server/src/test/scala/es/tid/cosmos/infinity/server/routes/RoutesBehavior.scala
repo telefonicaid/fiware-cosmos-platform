@@ -38,22 +38,23 @@ import es.tid.cosmos.infinity.server.unfiltered.MockRequestWithResponder
 import es.tid.cosmos.infinity.server.unfiltered.request.MockHttpRequest
 import es.tid.cosmos.infinity.server.unfiltered.response.MockHttpResponse
 
-trait RoutesBehavior extends MustMatchers with FutureMatchers { this: FlatSpec =>
+trait RoutesBehavior[HadoopApi] extends MustMatchers with FutureMatchers { this: FlatSpec =>
 
   /** Function allowing to enrich the test's default GET request  */
   type RequestFunction = MockHttpRequest[HttpServletRequest] => MockHttpRequest[HttpServletRequest]
+  type AddHadoopBehavior = HadoopApi => Unit
 
-  def newRoutes: Routes
+  def newRoutes[HadoopApi]: Routes
 
-  def supportsAuthorization(request: RequestFunction): Unit = {
+  def supportsAuthorization(requestTransformation: RequestFunction = identity): Unit = {
 
-    it must "return appropriate error on missing authorization header" in new Fixture(request) {
+    it must "return appropriate error on missing authorization header" in new Fixture(requestTransformation) {
       routes.intent.apply(baseResponder) must be (Success())
       baseResponse._status must be (401)
       baseResponse.body must include (ErrorCode.MissingAuthorizationHeader.code)
     }
 
-    it should "return appropriate error on unsupported authorization header" in new Fixture(request) {
+    it should "return appropriate error on unsupported authorization header" in new Fixture(requestTransformation) {
       val request = baseRequest.copy(
         headerz = Map("Authorization" -> Seq("Digest dXNlcjpwYXNzd29yZA=="))) // user:password
       val responder = baseResponder.copy(request = request)
@@ -62,7 +63,7 @@ trait RoutesBehavior extends MustMatchers with FutureMatchers { this: FlatSpec =
       baseResponse.body must include (ErrorCode.UnsupportedAuthorizationHeader.code)
     }
 
-    it should "return appropriate error on malformed key-secret pair" in new Fixture(request) {
+    it should "return appropriate error on malformed key-secret pair" in new Fixture(requestTransformation) {
       val request = baseRequest.copy(
         headerz = Map("Authorization" -> Seq("Basic dXNlckBwYXNzd29yZA=="))) // user@password
       val responder = baseResponder.copy(request = request)
@@ -72,7 +73,7 @@ trait RoutesBehavior extends MustMatchers with FutureMatchers { this: FlatSpec =
       baseResponse.body must include (ErrorCode.MalformedKeySecretPair.code)
     }
 
-    it should "return appropriate error on invalid basic hash" in new Fixture(request) {
+    it should "return appropriate error on invalid basic hash" in new Fixture(requestTransformation) {
       val request = baseRequest.copy(
         headerz = Map("Authorization" -> Seq("Basic ,,,,,,,")))
       val responder = baseResponder.copy(request = request)
@@ -82,10 +83,21 @@ trait RoutesBehavior extends MustMatchers with FutureMatchers { this: FlatSpec =
       baseResponse.body must include (ErrorCode.InvalidBasicHash.code)
     }
 
-    it should "return 401 on unauthenticated credentials" in new AuthenticationFailure(request) {
+    it should "return 401 on unauthenticated credentials" in new AuthenticationFailure(requestTransformation) {
       routes.intent.apply(responder) must be (Success())
       responder.response_> must runUnder(1 second)
       baseResponse._status must equal(401)
+    }
+  }
+
+  def canHandleNotFound(
+      requestTransformation: RequestFunction = identity,
+      hadoopBehavior: AddHadoopBehavior): Unit = {
+    it must "return 404 NotFound when the target file/directory does not exist" in new Authenticated(requestTransformation) {
+      hadoopBehavior(routes.hadoopApi)
+      routes.intent.apply(responder) must be (Success())
+      responder.response_> must runUnder(1 second)
+      baseResponse._status must equal(404)
     }
   }
 
@@ -94,20 +106,21 @@ trait RoutesBehavior extends MustMatchers with FutureMatchers { this: FlatSpec =
     val someUri: String
     val somePath: Path
     val authService: AuthenticationService
+    val hadoopApi: HadoopApi
   }
 
-  abstract class Fixture(request: RequestFunction) extends MockitoSugar {
+  abstract class Fixture(requestTransformation: RequestFunction) extends MockitoSugar {
     val routes = newRoutes
     val _request = mock[HttpServletRequest]("servletRequest")
     val _response = mock[HttpServletResponse]("servletResponse")
-    val baseRequest = request(
+    val baseRequest = requestTransformation(
       MockHttpRequest(underlying = _request, uri = routes.someUri, method = "GET")
     )
     val baseResponse = new MockHttpResponse(_response)
     val baseResponder = new MockRequestWithResponder(baseRequest, baseResponse)
   }
 
-  abstract class Authenticated(test: RequestFunction) extends Fixture(test) {
+  abstract class Authenticated(requestTransformation: RequestFunction) extends Fixture(requestTransformation) {
     val authHeader = "Authorization" -> Seq("Basic YXBpLWtleTphcGktc2VjcmV0")
     val credentials = UserCredentials("api-key", "api-secret")
     val profile = UserProfile("Tyrion", groups = Seq("Lannister"))

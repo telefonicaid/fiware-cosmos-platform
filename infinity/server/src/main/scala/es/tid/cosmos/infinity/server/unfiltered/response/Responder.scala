@@ -16,13 +16,12 @@
 
 package es.tid.cosmos.infinity.server.unfiltered.response
 
-import javax.servlet.http.HttpServletResponse
+import  javax.servlet.http.HttpServletResponse
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import org.apache.commons.logging.LogFactory
 import unfiltered.Async
-import unfiltered.response.{InternalServerError, ResponseFunction}
+import unfiltered.response.ResponseFunction
 
 import es.tid.cosmos.infinity.server.content.UnfilteredExceptionRenderer
 

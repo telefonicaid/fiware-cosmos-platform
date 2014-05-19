@@ -20,7 +20,7 @@ import es.tid.cosmos.infinity.common.permissions.{PermissionsMask, UserProfile}
 import es.tid.cosmos.infinity.common.fs.{PathMetadata, Path}
 import scala.concurrent.Future
 
-class MockNameNode extends NameNode {
+class DummyNameNode extends NameNode {
 
   override def pathMetadata(path: Path): Future[PathMetadata] = ???
 

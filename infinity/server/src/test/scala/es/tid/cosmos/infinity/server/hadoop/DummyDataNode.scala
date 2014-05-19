@@ -16,14 +16,20 @@
 
 package es.tid.cosmos.infinity.server.hadoop
 
+import java.io.InputStream
+import scala.concurrent.Future
+
 import es.tid.cosmos.infinity.common.fs.Path
+import es.tid.cosmos.infinity.common.permissions.UserProfile
+import es.tid.cosmos.infinity.server.util.ToClose
 
-class DataNodeException(message: String, cause: Throwable) extends Exception(message, cause)
+class DummyDataNode extends DataNode {
+  override def open(
+    path: Path, offset: Option[Long], length: Option[Long]): Future[ToClose[InputStream]] = ???
 
-object DataNodeException {
-  case class FileNotFound(path: Path, cause: Throwable = null) extends DataNodeException(
-    s"content for $path not found", cause)
+  override def overwrite(path: Path, contentStream: InputStream): Future[Unit] = ???
 
-  case class ContentPathIsDirectory(path: Path, cause: Throwable = null) extends DataNodeException(
-    s"$path is a directory and cannot have a content", cause)
+  override def append(path: Path, contentStream: InputStream): Future[Unit] = ???
+
+  override def as[A](user: UserProfile)(body: => A): A = body
 }

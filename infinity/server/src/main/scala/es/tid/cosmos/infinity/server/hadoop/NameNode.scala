@@ -19,10 +19,10 @@ package es.tid.cosmos.infinity.server.hadoop
 import scala.concurrent.Future
 
 import es.tid.cosmos.infinity.common.fs.{Path, PathMetadata}
-import es.tid.cosmos.infinity.common.permissions.{UserProfile, PermissionsMask}
+import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 /** An abstraction for an HDFS name node service. */
-trait NameNode {
+trait NameNode extends UserPrivileges {
 
   /** Retrieve the file or directory metadata corresponding to the given path.
     *
@@ -162,12 +162,4 @@ trait NameNode {
     *         </ul>
     */
   def setPermissions(path: Path, permissions: PermissionsMask): Future[Unit]
-
-  /** Runs the body with the permissions of user
-    *
-    * @param user The user to impersonate
-    * @param body The actions to run
-    * @return Whatever body returns
-    */
-  def as[A](user: UserProfile)(body: => A): A
 }

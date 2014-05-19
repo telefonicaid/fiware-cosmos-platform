@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,7 +33,7 @@ import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.MetadataServerConfig
-import es.tid.cosmos.infinity.server.hadoop.{MockNameNode, NameNodeException, NameNode}
+import es.tid.cosmos.infinity.server.hadoop.{DummyNameNode, NameNodeException, NameNode}
 import es.tid.cosmos.infinity.server.routes.RoutesBehavior
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
@@ -43,7 +43,7 @@ class MetadataRoutesTest extends FlatSpec
   def newRoutes = new Routes {
     val config = new MetadataServerConfig(ConfigFactory.load())
     val urlMapper = new InfinityUrlMapper(config)
-    val hadoopApi = spy(new MockNameNode)
+    val hadoopApi = spy(new DummyNameNode)
     val someUri = "/infinityfs/v1/metadata/some/uri"
     val somePath = Path.absolute("/some/uri")
     val authService = mock[AuthenticationService]

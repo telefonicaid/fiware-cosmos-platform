@@ -23,7 +23,7 @@ import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.util.ToClose
 
 /** An abstraction for an HDFS Data node service. */
-trait DataNode {
+trait DataNode extends UserPrivileges {
   /** Retrieve the file contents corresponding to the given path.
     *
     * @param path   The path whose content is to be obtained

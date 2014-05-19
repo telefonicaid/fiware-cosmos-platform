@@ -55,7 +55,9 @@ object ErrorCode {
   implicit val ParentNotDirectory =
     new ErrorCode[NameNodeException.ParentNotDirectory]("CONST03")
   implicit val ContentNotFound =
-    new ErrorCode[DataNodeException.ContentNotFound]("CONSTS04")
+    new ErrorCode[DataNodeException.FileNotFound]("CONST04")
+  implicit val ContentPathIsDirectory =
+    new ErrorCode[DataNodeException.ContentPathIsDirectory]("CONST05")
 
   val UnexpectedError = new ErrorCode[Nothing]("BUG")
 

@@ -18,11 +18,12 @@ package es.tid.cosmos.infinity.server.actions
 
 import java.io.InputStream
 
+import org.mockito.Mockito.spy
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.UserProfile
-import es.tid.cosmos.infinity.server.hadoop.DataNode
+import es.tid.cosmos.infinity.server.hadoop.DummyDataNode
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 
 trait ContentActionFixture extends MockitoSugar {
@@ -30,6 +31,6 @@ trait ContentActionFixture extends MockitoSugar {
   val user = UserProfile("gandalf", Seq("istari"))
   val context = Action.Context(user, urlMapper)
   val on = Path.absolute("/to/file")
-  val dataNode = mock[DataNode]
+  val dataNode = spy(new DummyDataNode)
   val in = mock[InputStream]("internalStream")
 }

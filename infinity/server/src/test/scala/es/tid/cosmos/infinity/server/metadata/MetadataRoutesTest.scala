@@ -107,8 +107,7 @@ class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar 
     baseResponse._status should equal(400)
   }
 
-  // TODO: Enable this once the test works
-  ignore should "return 422 when the parent is not a directory" in new Authenticated {
+  it should "return 422 when the parent is not a directory" in new Authenticated {
     doReturn(Future.failed(NameNodeException.ParentNotDirectory(Path.absolute("/"))))
       .when(nameNode).createFile(any(), any(), any(), any(), any(), any())
     override lazy val request =  baseRequest.copy(
@@ -152,7 +151,7 @@ class MetadataRoutesTest extends FlatSpec with ShouldMatchers with MockitoSugar 
   trait Authenticated extends Fixture {
     val authHeader = "Authorization" -> Seq("Basic YXBpLWtleTphcGktc2VjcmV0")
     val credentials = UserCredentials("api-key", "api-secret")
-    val profile = UserProfile("Tyrion", groups = Seq.empty)
+    val profile = UserProfile("Tyrion", groups = Seq("Lannister"))
 
     lazy val request = baseRequest.copy(headerz = Map(authHeader))
     lazy val responder = baseResponder.copy(request = this.request)

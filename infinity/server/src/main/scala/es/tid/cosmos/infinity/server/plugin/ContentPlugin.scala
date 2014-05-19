@@ -17,7 +17,7 @@
 package es.tid.cosmos.infinity.server.plugin
 
 import java.net.InetSocketAddress
-import scalaz._
+import scala.annotation.tailrec
 
 import org.apache.commons.logging.LogFactory
 import org.apache.hadoop.conf.{Configuration, Configurable}
@@ -46,12 +46,10 @@ class ContentPlugin extends ServicePlugin with Configurable {
 
   override def start(service: Any): Unit = service match {
     case dataNode: DataNode =>
-      log.info("Starting Infinity content server as a datanode plugin")
       val config = new ContentServerConfig(pluginConfig)
-      checkDataNode(dataNode, config).fold(
-        succ = (checkedNode) => createServer(checkedNode, config),
-        fail = (errors) => illegalDataNodeState(errors.list)
-      )
+      waitForDataNode(dataNode, config)
+      log.info("Starting Infinity content server as a datanode plugin")
+      createServer(dataNode, config)
     case other =>
       log.error(
         s"""Content plugin initialization failed: a NameNode was expected but ${service.getClass}
@@ -77,23 +75,17 @@ class ContentPlugin extends ServicePlugin with Configurable {
     serverOpt = Some(server)
   }
 
-  private def illegalDataNodeState(errors: Seq[String]): Unit =
-    log.error(s"""Content plugin initialization failed:
-                  | Datanode not in appropriate state: ${errors.mkString(",")}""".stripMargin)
-
-  private def checkDataNode(
-      dataNode: DataNode, config: ContentServerConfig): ValidationNel[String, DataNode] = {
-    import scalaz.Scalaz._
-    def failOnFalse(c: Boolean, m: String) = if (c) dataNode.success else m.failureNel
-
-    val up = failOnFalse(dataNode.isDatanodeUp, "Datanode is not up")
-    val fullyStarted = failOnFalse(dataNode.isDatanodeFullyStarted, "Datanode is not fully started")
-    val connectedToNameNode = failOnFalse(
+  @tailrec
+  private def waitForDataNode(
+      dataNode: DataNode, config: ContentServerConfig): Unit = {
+    if (dataNode.isDatanodeUp &&
+      dataNode.isDatanodeFullyStarted &&
       dataNode.isConnectedToNN(
-        new InetSocketAddress(config.nameNodeRPCUrl.getHost, config.nameNodeRPCUrl.getPort)),
-      s"Datanode is not connected to NameNode [${config.nameNodeRPCUrl}]")
-
-    (up |@| fullyStarted |@| connectedToNameNode) { (_, _, last) => last }
+        new InetSocketAddress(config.nameNodeRPCUrl.getHost, config.nameNodeRPCUrl.getPort)))
+      return
+    log.info("Waiting for datanode to be ready")
+    Thread.sleep(1000)
+    waitForDataNode(dataNode, config)
   }
 
   private lazy val pluginConfig = PluginConfig.load(getConf, InfinityConfig.HadoopKeys: _*)

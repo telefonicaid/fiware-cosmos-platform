@@ -46,7 +46,7 @@ trait RoutesBehavior[HadoopApi] extends MustMatchers with FutureMatchers { this:
   /** Type for side effect functions that allow adding mock behavior to the hadoop API */
   type AddHadoopBehavior = HadoopApi => Unit
 
-  def newRoutes[Api]: Routes
+  def newRoutes: Routes
 
   def supportsAuthorization(requestTransformation: RequestFunction = identity): Unit = {
 

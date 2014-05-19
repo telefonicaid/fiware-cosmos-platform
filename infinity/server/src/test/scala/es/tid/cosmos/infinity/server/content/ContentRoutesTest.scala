@@ -42,7 +42,7 @@ import es.tid.cosmos.infinity.server.util.ToClose
 class ContentRoutesTest extends FlatSpec
     with RoutesBehavior[DataNode] with MustMatchers with FutureMatchers {
 
-  def newRoutes[HadoopApi]: Routes = new Routes {
+  def newRoutes: Routes = new Routes {
     val config = new ContentServerConfig(ConfigFactory.load())
     val urlMapper = new InfinityUrlMapper(config)
     val hadoopApi = mock[DataNode]("dataNode")

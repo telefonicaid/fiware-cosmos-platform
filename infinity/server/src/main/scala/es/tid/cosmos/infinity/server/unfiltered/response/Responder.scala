@@ -16,7 +16,7 @@
 
 package es.tid.cosmos.infinity.server.unfiltered.response
 
-import  javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpServletResponse
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 

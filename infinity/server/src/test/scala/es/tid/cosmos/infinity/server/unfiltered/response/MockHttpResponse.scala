@@ -16,11 +16,11 @@
 
 package es.tid.cosmos.infinity.server.unfiltered.response
 
+import java.nio.charset.Charset
 import java.io.{OutputStream, ByteArrayOutputStream}
 
 import unfiltered.Cookie
 import unfiltered.response.HttpResponse
-import java.nio.charset.Charset
 
 class MockHttpResponse[R](underlying: R) extends HttpResponse[R](underlying) {
   private val _out = new ByteArrayOutputStream()

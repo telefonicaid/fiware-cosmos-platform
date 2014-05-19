@@ -40,7 +40,7 @@ import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 class MetadataRoutesTest extends FlatSpec
     with RoutesBehavior[NameNode] with MustMatchers with FutureMatchers {
 
-  def newRoutes[HadoopApi] = new Routes {
+  def newRoutes = new Routes {
     val config = new MetadataServerConfig(ConfigFactory.load())
     val urlMapper = new InfinityUrlMapper(config)
     val hadoopApi = spy(new MockNameNode)

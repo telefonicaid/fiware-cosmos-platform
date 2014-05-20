@@ -15,8 +15,7 @@
 # limitations under the License.
 #
 import argparse
-import logging as log
-import os.path
+import dateutil.parser
 import time
 
 from cosmos.cli.config import load_config
@@ -86,14 +85,14 @@ def format_perms(perms, file_type):
     """Formats a permission number in unix style.
 
     File permissions start with '-':
-    >>> format_perms("640", "FILE")
+    >>> format_perms("640", "file")
     '-rw-r-----'
 
     While directory ones with 'd':
-    >>> format_perms("711", "DIRECTORY")
+    >>> format_perms("711", "directory")
     'drwx--x--x'
     """
-    if file_type == "DIRECTORY":
+    if file_type == "directory":
         prefix = "d"
     else:
         prefix = "-"
@@ -116,47 +115,55 @@ def format_size(num_bytes):
 
 def format_timestamp(timestamp):
     """Formats an UTC timestamp into a date string.
-    >>> format_timestamp(1320895981256)
-    'Thu, 10 Nov 2011 03:33:01'
+    >>> format_timestamp("2014-04-08T12:41:34+0100")
+    'Tue, 08 Apr 2014 12:41:34'
     """
-    t = time.gmtime(timestamp / 1000)
-    return time.strftime("%a, %d %b %Y %H:%M:%S", t)
+    import warnings
+    with warnings.catch_warnings():
+        # dateutils 2.2 has a known bug that emits UnicodeWarnings in Windows
+        # more info at https://bugs.launchpad.net/dateutil/+bug/1227221
+        warnings.filterwarnings("ignore", category=UnicodeWarning)
+        t = dateutil.parser.parse(timestamp).timetuple()
+        return time.strftime("%a, %d %b %Y %H:%M:%S", t)
 
 
 def format_statuses(statuses):
     """Format a list of file statuses in a human-readable table.
     >>> list(format_statuses([{ \
-          "accessTime"      : 1320171722771, \
-          "blockSize"       : 33554432, \
-          "group"           : "supergroup", \
-          "length"          : 24930, \
-          "modificationTime": 1320171722771, \
-          "owner"           : "webuser", \
-          "pathSuffix"      : "a.patch", \
-          "permission"      : "644", \
-          "replication"     : 1, \
-          "type"            : "FILE" \
-        }, { \
-          "accessTime"      : 0, \
-          "blockSize"       : 0, \
-          "group"           : "supergroup", \
-          "length"          : 0, \
-          "modificationTime": 1320895981256, \
-          "owner"           : "szetszwo", \
-          "pathSuffix"      : "bar", \
-          "permission"      : "711", \
-          "replication"     : 0, \
-          "type"            : "DIRECTORY" \
-       }]))
-    ['-rw-r--r--  webuser   supergroup  24K  Tue, 01 Nov 2011 18:22:02  a.patch', 'drwx--x--x  szetszwo  supergroup   0B  Thu, 10 Nov 2011 03:33:01  bar    ']
+          "path" : "/usr/gandalf/spells.txt", \
+          "type" : "file", \
+          "metadata" : "http://example.com/infinityfs/v1/metadata/usr/gandalf/spells.txt", \
+          "owner" : "gandalf", \
+          "group" : "istari", \
+          "permissions" : "600", \
+          "size" : 45566918656, \
+          "modificationTime" : "2014-04-08T12:41:34+0100", \
+          "accessTime" : "2014-04-08T12:54:32+0100", \
+          "blockSize" : 65536, \
+          "replication" : 3 \
+        }, \
+        { \
+          "path" : "/usr/gandalf/enemies", \
+          "type" : "directory", \
+          "metadata" : "http://example.com/infinityfs/v1/metadata/usr/gandalf/enemies", \
+          "owner" : "gandalf", \
+          "group" : "istari", \
+          "permissions" : "750", \
+          "size" : 0, \
+          "modificationTime" : "2014-04-08T12:55:45+0100", \
+          "accessTime" : "2014-04-08T13:01:22+0100", \
+          "blockSize" : 0, \
+          "replication" : 0 \
+        }]))
+    ['-rw-------  gandalf  istari  42G  Tue, 08 Apr 2014 12:41:34  spells.txt', 'drwxr-x---  gandalf  istari   0B  Tue, 08 Apr 2014 12:55:45  enemies   ']
     """
     return format_table([
-        [format_perms(status["permission"], status["type"]),
+        [format_perms(status["permissions"], status["type"]),
          status["owner"],
          status["group"],
-         format_size(status["length"]),
-         format_timestamp(int(status["modificationTime"])),
-         status["pathSuffix"]] for status in statuses],
+         format_size(status["size"]),
+         format_timestamp(status["modificationTime"]),
+         status["path"].split('/')[-1]] for status in statuses],
         alignments="lllrll", separator="  "
     )
 

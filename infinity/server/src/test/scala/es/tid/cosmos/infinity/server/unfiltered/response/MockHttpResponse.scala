@@ -16,15 +16,17 @@
 
 package es.tid.cosmos.infinity.server.unfiltered.response
 
+import java.nio.charset.Charset
 import java.io.{OutputStream, ByteArrayOutputStream}
 
 import unfiltered.Cookie
 import unfiltered.response.HttpResponse
 
-class MockHttpResponse[T](underlying: T) extends HttpResponse[T](underlying) {
-  var _status: Int = _
+class MockHttpResponse[R](underlying: R) extends HttpResponse[R](underlying) {
+  private val _out = new ByteArrayOutputStream()
+  var _status: Int = -1
   var _headers: Map[String, String] = Map.empty
-  val _out = new ByteArrayOutputStream()
+  lazy val body: String = _out.toString(Charset.defaultCharset().toString)
 
   override def status(statusCode: Int): Unit =
     _status = statusCode
@@ -36,4 +38,5 @@ class MockHttpResponse[T](underlying: T) extends HttpResponse[T](underlying) {
 
   override def redirect(url: String): Unit = ???
   override def cookies(cookie: Seq[Cookie]): Unit = ???
+
 }

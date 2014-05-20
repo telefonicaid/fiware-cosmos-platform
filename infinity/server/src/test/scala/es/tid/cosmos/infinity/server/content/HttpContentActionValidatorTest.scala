@@ -108,7 +108,7 @@ class HttpContentActionValidatorTest extends FlatSpec with MustMatchers {
     val validator = new HttpContentActionValidator(config, dataNode)
     val someUri = "/infinityfs/v1/content/some/uri"
     val somePath = Path.absolute("/some/uri")
-    val baseRequest = MockHttpRequest().copy(uri = someUri)
+    val baseRequest = MockHttpRequest(uri = someUri)
     val getRequest = baseRequest.copy(method = "GET")
     val postRequest = baseRequest.copy(method = "POST")
     val putRequest = baseRequest.copy(method = "PUT")

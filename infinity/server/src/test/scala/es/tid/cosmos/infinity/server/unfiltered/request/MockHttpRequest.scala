@@ -16,31 +16,33 @@
 
 package es.tid.cosmos.infinity.server.unfiltered.request
 
-import java.io.{InputStream, Reader}
+import java.io.{StringReader, InputStream, Reader}
 
 import org.scalatest.mock.MockitoSugar
 import unfiltered.Cookie
 import unfiltered.request.HttpRequest
 
-case class MockHttpRequest[T](
+
+case class MockHttpRequest[R](
+    override val underlying: R = null,
     inputStream: InputStream = MockHttpRequest.mockStream,
-    reader: Reader = MockHttpRequest.mockReader,
-    headerNames: Iterator[String] = Seq.empty.iterator,
+    reader: Reader = new StringReader(""),
     isSecure: Boolean = false,
     uri: String = "",
     remoteAddr: String = "",
-    method: String = "",
+    method: String = "GET",
     cookies: Seq[Cookie] = Seq.empty,
     protocol: String = "",
     params: Map[String, Seq[String]] = Map.empty,
-    override val underlying: T = null) extends HttpRequest[T](underlying) {
+    headerz: Map[String, Seq[String]] = Map.empty) extends HttpRequest[R](underlying) {
 
-  def headers(name: String): Iterator[String] = Seq.empty.iterator
+  def headers(name: String): Iterator[String] = headerz.getOrElse(name, Seq.empty[String]).iterator
+  val headerNames: Iterator[String] = headerz.keysIterator
+
   def parameterValues(param: String): Seq[String] = params(param)
   val parameterNames: Iterator[String] = params.keysIterator
 }
 
 object MockHttpRequest extends MockitoSugar {
   def mockStream = mock[InputStream]
-  def mockReader = mock[Reader]
 }

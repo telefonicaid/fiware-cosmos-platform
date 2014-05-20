@@ -17,6 +17,7 @@
 package es.tid.cosmos.infinity.server.unfiltered
 
 import java.io.{InputStream, Reader}
+import scala.concurrent.Promise
 
 import unfiltered.{Cookie, Async}
 import unfiltered.request.HttpRequest
@@ -25,7 +26,9 @@ import unfiltered.response.{HttpResponse, ResponseFunction}
 case class MockRequestWithResponder[Rq, Rp](
     request: HttpRequest[Rq],
     response: HttpResponse[Rp]
-  ) extends HttpRequest[Rq](request.underlying) with Async.Responder[Rp]{
+  ) extends HttpRequest[Rq](request.underlying) with Async.Responder[Rp] {
+
+  private val responsePromise: Promise[Unit] = Promise[Unit]()
 
   override def inputStream: InputStream = request.inputStream
   override def headerNames: Iterator[String] = request.headerNames
@@ -40,8 +43,13 @@ case class MockRequestWithResponder[Rq, Rp](
   override def parameterNames: Iterator[String] = request.parameterNames
   override def headers(name: String): Iterator[String] = request.headers(name)
 
-  override def respond(rf: ResponseFunction[Rp]): Unit =
+  override def respond(rf: ResponseFunction[Rp]): Unit = {
     _response = rf.apply(response)
+    responsePromise.success()
+  }
 
   var _response: HttpResponse[Rp] = _
+
+  val response_> = responsePromise.future
+
 }

@@ -47,49 +47,49 @@ class ActionResultHttpRendererTest extends FlatSpec with MustMatchers {
     val rep = ActionResultHttpRenderer(Retrieved(metadata))
     val response = getResponse(rep)
     response._status must be (200)
-    response._out.toString must include ("/path/to/file")
+    response.body must include ("/path/to/file")
   }
 
   it must "render Created" in {
     val rep = ActionResultHttpRenderer(Created(metadata))
     val response = getResponse(rep)
     response._status must be (201)
-    response._out.toString must include ("/path/to/file")
+    response.body must include ("/path/to/file")
   }
 
   it must "render Moved" in {
     val rep = ActionResultHttpRenderer(Moved(metadata))
     val response = getResponse(rep)
     response._status must be (201)
-    response._out.toString must include ("/path/to/file")
+    response.body must include ("/path/to/file")
   }
 
   it must "render Deleted" in {
     val rep = ActionResultHttpRenderer(Deleted(metadata))
     val response = getResponse(rep)
     response._status must be (204)
-    response._out.toString must be ('empty)
+    response.body must be ('empty)
   }
 
   it must "render OwnerSet" in {
     val rep = ActionResultHttpRenderer(OwnerSet(metadata))
     val response = getResponse(rep)
     response._status must be (204)
-    response._out.toString must be ('empty)
+    response.body must be ('empty)
   }
 
   it must "render GroupSet" in {
     val rep = ActionResultHttpRenderer(GroupSet(metadata))
     val response = getResponse(rep)
     response._status must be (204)
-    response._out.toString must be ('empty)
+    response.body must be ('empty)
   }
 
   it must "render PermissionsSet" in {
     val rep = ActionResultHttpRenderer(PermissionsSet(metadata))
     val response = getResponse(rep)
     response._status must be (204)
-    response._out.toString must be ('empty)
+    response.body must be ('empty)
   }
 
   private def getResponse(res: ResponseFunction[Any]) =

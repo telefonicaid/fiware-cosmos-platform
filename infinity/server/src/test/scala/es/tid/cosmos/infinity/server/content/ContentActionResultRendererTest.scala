@@ -17,7 +17,6 @@
 package es.tid.cosmos.infinity.server.content
 
 import java.io.ByteArrayInputStream
-import java.nio.charset.Charset
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -35,7 +34,7 @@ class ContentActionResultRendererTest extends FlatSpec with MustMatchers with Mo
     val responseFunction = render(ContentAction.Found(ToClose(in)))
     responseFunction(baseResponse)
     baseResponse._status must be (Ok.code)
-    baseResponse._out.toString(Charset.defaultCharset().toString) must be ("1234")
+    baseResponse.body must be ("1234")
   }
 
   it must "render Appended" in new Fixture {

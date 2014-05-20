@@ -19,7 +19,7 @@ package es.tid.cosmos.infinity.server.errors
 import es.tid.cosmos.infinity.common.json.ErrorDescriptorFormatter
 import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
-import es.tid.cosmos.infinity.server.hadoop.NameNodeException
+import es.tid.cosmos.infinity.server.hadoop.{DataNodeException, NameNodeException}
 
 trait ExceptionRenderer[Response] {
   import ExceptionRenderer._
@@ -44,6 +44,8 @@ trait ExceptionRenderer[Response] {
     case e: NameNodeException.IOError =>
       render(500, ErrorCode(e), e)
     case e: NameNodeException.NoSuchPath =>
+      render(404, ErrorCode(e), e)
+    case e: DataNodeException.ContentNotFound =>
       render(404, ErrorCode(e), e)
     case e: NameNodeException.PathAlreadyExists =>
       render(409, ErrorCode(e), e)

@@ -27,8 +27,11 @@ sealed trait Path {
     case _ => false
   }
 
-  /** Retrieve a child path with this as parent. */
+  /** A child path with this as parent. */
   def / (name: String): SubPath = new SubPath(parentPath = this, name)
+
+  /** Concatenate this path with other one. */
+  def / (subPath: Path): Path
 }
 
 /** The path corresponding to the root of Infinity filesystem. */
@@ -36,6 +39,7 @@ object RootPath extends Path {
 
   override val parent = None
   override val toString = "/"
+  override def /(subPath: Path): Path = subPath
 }
 
 /** A subpath that have a parent and an element name. */
@@ -48,6 +52,11 @@ case class SubPath(parentPath: Path, name: String) extends Path {
   override def toString: String =  parentPath match {
     case RootPath =>  s"$parentPath$name"
     case _ =>  s"$parentPath${Path.Separator}$name"
+  }
+
+  override def /(subPath: Path): Path = subPath match {
+    case RootPath => this
+    case SubPath(subParent, pathElement) => (this / subParent) / pathElement
   }
 }
 

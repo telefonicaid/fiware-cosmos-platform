@@ -77,4 +77,16 @@ class PathTest extends FlatSpec with MustMatchers {
   it must "be converted into string when root" in {
     RootPath.toString must be ("/")
   }
+
+  it must "have the root path as the identity element of path concatenation" in {
+    val path = RootPath / "user" / "apv"
+    path / RootPath must be (path)
+    RootPath / path must be (path)
+  }
+
+  it must "concatenate subpaths" in {
+    val path = RootPath / "user"
+    val subPath = RootPath / "apv"
+    path / subPath must be (RootPath / "user" / "apv")
+  }
 }

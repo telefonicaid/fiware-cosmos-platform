@@ -71,7 +71,7 @@ class ContentPlugin extends ServicePlugin with Configurable {
 
   private def createServer(dataNode: DataNode, config: ContentServerConfig) = {
     val server = new ContentServer(
-      clientFactory = new DfsClientFactory(dataNode, config.nameNodeRPCUrl),
+      clientFactory = new DfsClientFactory(dataNode, config.nameNodeRPCUri),
       config = config,
       authService = authentication)
     server.start()
@@ -86,7 +86,7 @@ class ContentPlugin extends ServicePlugin with Configurable {
     if (dataNode.isDatanodeUp &&
       dataNode.isDatanodeFullyStarted &&
       dataNode.isConnectedToNN(
-        new InetSocketAddress(config.nameNodeRPCUrl.getHost, config.nameNodeRPCUrl.getPort)))
+        new InetSocketAddress(config.nameNodeRPCUri.getHost, config.nameNodeRPCUri.getPort)))
       return
     loggingActions.head.foreach(_("Waiting for datanode to be ready..."))
     Thread.sleep(waitingPeriod.toMillis)
@@ -113,7 +113,7 @@ class ContentPlugin extends ServicePlugin with Configurable {
 object ContentPlugin {
   import scala.language.postfixOps
 
-  private val warningThreshold = 15 minutes
-  private val warningFrequency = 1 minute
-  private val waitingPeriod = 1 second
+  private val warningThreshold = 15.minutes
+  private val warningFrequency = 1.minute
+  private val waitingPeriod = 1.second
 }

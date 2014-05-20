@@ -81,10 +81,8 @@ class ContentServerConfig(config: Config) extends BaseInfinityConfig(config) {
   val chunkSize = withDefault(config.getInt("content.chunkSize"), DefaultChunkSize)
   val bufferSize = withDefault(config.getInt("content.bufferSize"), DefaultBufferSize)
 
-  val nameNodeRPCUrl: URL = UriUtil.replaceScheme(
-    new URI(
-      config.getString(s"${PluginConfig.HadoopKeyPrefix}.$NameNodeHdfsAddressKey")),
-      "http").toURL
+  val nameNodeRPCUri: URI =
+    new URI(config.getString(s"${PluginConfig.HadoopKeyPrefix}.$NameNodeHdfsAddressKey"))
 
   val localContentServerUrl: URL = contentServerUrl(InetAddress.getLocalHost.getHostName)
 }

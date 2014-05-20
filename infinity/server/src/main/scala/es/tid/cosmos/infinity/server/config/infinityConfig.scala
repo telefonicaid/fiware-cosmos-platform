@@ -24,20 +24,45 @@ import es.tid.cosmos.infinity.common.util.UriUtil
 import es.tid.cosmos.infinity.server.config.InfinityConfig._
 import es.tid.cosmos.infinity.server.plugin.PluginConfig
 
-abstract class InfinityConfig(config: Config) {
+trait InfinityConfig {
 
-  val metadataProtocol = withDefault(config.getString("metadata.protocol"), DefaultProtocol)
-  val metadataHost = config.getString("metadata.host")
-  val metadataPort = withDefault(config.getInt("metadata.port"), DefaultMetadataPort)
-  val metadataBasePath = withDefault(config.getString("metadata.basePath"), DefaultMetadataBasePath)
-  val metadataBaseUrl = new URL(
-      s"$metadataProtocol://$metadataHost:$metadataPort$metadataBasePath/")
+  /** Either http or https */
+  def metadataProtocol: String
 
-  def contentServerUrl(hostname: String): URL = {
-    val protocol = withDefault(config.getString(s"content.server.$hostname.protocol"), DefaultProtocol)
+  /** Hostname of the metadata server.
+    *
+    * @throws com.typesafe.config.ConfigException$Missing  As there is no default value for it
+    */
+  def metadataHost: String
+
+  def metadataPort: Int
+
+  def metadataBasePath: String
+
+  def metadataBaseUrl: URL
+
+  /** Builds the content server url from just the hostname. */
+  def contentServerUrl(hostname: String): URL
+}
+
+abstract class BaseInfinityConfig(config: Config) extends InfinityConfig {
+
+  override val metadataProtocol =
+    withDefault(config.getString("metadata.protocol"), DefaultProtocol)
+  override val metadataHost = config.getString("metadata.host")
+  override val metadataPort = withDefault(config.getInt("metadata.port"), DefaultMetadataPort)
+  override val metadataBasePath =
+    withDefault(config.getString("metadata.basePath"), DefaultMetadataBasePath)
+  override val metadataBaseUrl =
+    new URL(metadataProtocol, metadataHost, metadataPort, metadataBasePath.toString)
+
+  override def contentServerUrl(hostname: String): URL = {
+    val protocol =
+      withDefault(config.getString(s"content.server.$hostname.protocol"), DefaultProtocol)
     val port = withDefault(config.getInt(s"content.server.$hostname.port"), DefaultContentPort)
-    val basePath = withDefault(config.getString(s"content.server.$hostname.basePath"), DefaultContentBasePath)
-    new URL(protocol, hostname, port, s"$basePath")
+    val basePath =
+      withDefault(config.getString(s"content.server.$hostname.basePath"), DefaultContentBasePath)
+    new URL(protocol, hostname, port, basePath.toString)
   }
 
   protected def withDefault[T](block: => T, default: T): T = try {
@@ -47,12 +72,12 @@ abstract class InfinityConfig(config: Config) {
   }
 }
 
-class MetadataServerConfig(config: Config) extends InfinityConfig(config) {
+class MetadataServerConfig(config: Config) extends BaseInfinityConfig(config) {
   val replication = withDefault(config.getInt("metadata.replication").toShort, DefaultReplication)
   val blockSize = withDefault(config.getLong("metadata.blockSize"), DefaultBlockSize)
 }
 
-class ContentServerConfig(config: Config) extends InfinityConfig(config) {
+class ContentServerConfig(config: Config) extends BaseInfinityConfig(config) {
   val chunkSize = withDefault(config.getInt("content.chunkSize"), DefaultChunkSize)
   val bufferSize = withDefault(config.getInt("content.bufferSize"), DefaultBufferSize)
 

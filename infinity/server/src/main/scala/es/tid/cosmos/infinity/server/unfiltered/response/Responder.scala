@@ -16,32 +16,33 @@
 
 package es.tid.cosmos.infinity.server.unfiltered.response
 
-import javax.servlet.http.HttpServletResponse
-import scala.concurrent.ExecutionContext.Implicits.global
+import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import unfiltered.Async
+import unfiltered.request.HttpRequest
 import unfiltered.response.ResponseFunction
 
 import es.tid.cosmos.infinity.server.content.UnfilteredExceptionRenderer
 
 object Responder {
-  lazy val ExceptionRenderer = new UnfilteredExceptionRenderer[HttpServletResponse]
+
+  type Request = HttpRequest[HttpServletRequest] with Async.Responder[HttpServletResponse]
+
+  lazy val ExceptionRenderer = new UnfilteredExceptionRenderer[Request, HttpServletResponse]
 
   def respond(
-      request: Async.Responder[HttpServletResponse],
-      response_> : Future[ResponseFunction[HttpServletResponse]]): Unit = {
+      request: Request, response_> : Future[ResponseFunction[HttpServletResponse]]): Unit = {
     response_>.onSuccess { case response => request.respond(response) }
-    response_>.onFailure { case e => request.respond(ExceptionRenderer(e)) }
+    response_>.onFailure { case e => request.respond(ExceptionRenderer(request, e)) }
   }
 
-  def respond(
-      request: Async.Responder[HttpServletResponse],
-      response: ResponseFunction[HttpServletResponse]): Unit = {
+  def respond(request: Request, response: ResponseFunction[HttpServletResponse]): Unit = {
     request.respond(response)
   }
 
-  def respond(request: Async.Responder[HttpServletResponse], error: Throwable): Unit = {
-    respond(request, ExceptionRenderer(error))
+  def respond(request: Request, error: Throwable): Unit = {
+    respond(request, ExceptionRenderer(request, error))
   }
 }

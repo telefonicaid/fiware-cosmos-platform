@@ -16,19 +16,25 @@
 
 package es.tid.cosmos.infinity.server.metadata
 
-import java.util.Date
 import java.net.URL
+import java.util.Date
 
+import org.mockito.BDDMockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
+import org.scalatest.mock.MockitoSugar
+import unfiltered.request.HttpRequest
 import unfiltered.response.ResponseFunction
 
-import es.tid.cosmos.infinity.common.fs.{Path, FileMetadata}
+import es.tid.cosmos.infinity.common.fs.{FileMetadata, Path}
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 import es.tid.cosmos.infinity.server.actions.MetadataAction._
 import es.tid.cosmos.infinity.server.unfiltered.response.MockHttpResponse
 
-class ActionResultHttpRendererTest extends FlatSpec with MustMatchers {
+class ActionResultHttpRendererTest extends FlatSpec with MustMatchers with MockitoSugar {
+
+  val request = mockRequest
+
   val metadata = FileMetadata(
     path = Path.absolute("/path/to/file"),
     content = Some(new URL("http://content.example.com/path/to/file")),
@@ -44,49 +50,49 @@ class ActionResultHttpRendererTest extends FlatSpec with MustMatchers {
   )
 
   "Action resut HTTP renderer" must "render Retrieved" in {
-    val rep = ActionResultHttpRenderer(Retrieved(metadata))
+    val rep = ActionResultHttpRenderer(request, Retrieved(metadata))
     val response = getResponse(rep)
     response._status must be (200)
     response.body must include ("/path/to/file")
   }
 
   it must "render Created" in {
-    val rep = ActionResultHttpRenderer(Created(metadata))
+    val rep = ActionResultHttpRenderer(request, Created(metadata))
     val response = getResponse(rep)
     response._status must be (201)
     response.body must include ("/path/to/file")
   }
 
   it must "render Moved" in {
-    val rep = ActionResultHttpRenderer(Moved(metadata))
+    val rep = ActionResultHttpRenderer(request, Moved(metadata))
     val response = getResponse(rep)
     response._status must be (201)
     response.body must include ("/path/to/file")
   }
 
   it must "render Deleted" in {
-    val rep = ActionResultHttpRenderer(Deleted(metadata))
+    val rep = ActionResultHttpRenderer(request, Deleted(metadata))
     val response = getResponse(rep)
     response._status must be (204)
     response.body must be ('empty)
   }
 
   it must "render OwnerSet" in {
-    val rep = ActionResultHttpRenderer(OwnerSet(metadata))
+    val rep = ActionResultHttpRenderer(request, OwnerSet(metadata))
     val response = getResponse(rep)
     response._status must be (204)
     response.body must be ('empty)
   }
 
   it must "render GroupSet" in {
-    val rep = ActionResultHttpRenderer(GroupSet(metadata))
+    val rep = ActionResultHttpRenderer(request, GroupSet(metadata))
     val response = getResponse(rep)
     response._status must be (204)
     response.body must be ('empty)
   }
 
   it must "render PermissionsSet" in {
-    val rep = ActionResultHttpRenderer(PermissionsSet(metadata))
+    val rep = ActionResultHttpRenderer(request, PermissionsSet(metadata))
     val response = getResponse(rep)
     response._status must be (204)
     response.body must be ('empty)
@@ -94,4 +100,12 @@ class ActionResultHttpRendererTest extends FlatSpec with MustMatchers {
 
   private def getResponse(res: ResponseFunction[Any]) =
     res.apply(new MockHttpResponse[Any]).asInstanceOf[MockHttpResponse[Any]]
+
+  private def mockRequest: HttpRequest[_] = {
+    val req = mock[HttpRequest[_]]
+    given(req.method).willReturn("GET")
+    given(req.uri).willReturn("/path/to/resource")
+    given(req.headers("Authentication")).willReturn(Seq("Basic AAA:BBB").iterator)
+    req
+  }
 }

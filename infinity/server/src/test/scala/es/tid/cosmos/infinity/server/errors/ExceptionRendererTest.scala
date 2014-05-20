@@ -82,14 +82,14 @@ class ExceptionRendererTest extends FlatSpec with MustMatchers {
 
   case class givenException(e: Throwable) {
     def mustRenderTo(statusCode: Int, errorCode: String) = {
-      val rep = MockRenderer(e)
+      val rep = MockRenderer((), e)
       rep.status must be (statusCode)
       rep.content must include (errorCode)
     }
   }
   case class Response(status: Int, content: String)
-  object MockRenderer extends ExceptionRenderer[Response] {
+  object MockRenderer extends ExceptionRenderer[Unit, Response] {
     protected def withAuthHeader(response: Response, headerContent: String) = response
-    protected def render(status: Int, jsonContent: String)= Response(status, jsonContent)
+    protected def render(request: Unit, status: Int, jsonContent: String)= Response(status, jsonContent)
   }
 }

@@ -38,5 +38,4 @@ class MockHttpResponse[R](underlying: R) extends HttpResponse[R](underlying) {
 
   override def redirect(url: String): Unit = ???
   override def cookies(cookie: Seq[Cookie]): Unit = ???
-
 }

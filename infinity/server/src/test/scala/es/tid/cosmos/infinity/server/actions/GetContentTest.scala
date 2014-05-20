@@ -19,7 +19,7 @@ package es.tid.cosmos.infinity.server.actions
 import java.io.IOException
 import scala.concurrent.Future
 
-import org.mockito.BDDMockito.given
+import org.mockito.Mockito.doReturn
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
@@ -29,14 +29,13 @@ import es.tid.cosmos.infinity.server.util.ToClose
 class GetContentTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   "Get content action" must "return Found when content exists" in new Fixture {
-    given(dataNode.open(on, offset = None, length = None))
-      .willReturn(Future.successful(ToClose(in)))
+    doReturn(Future.successful(ToClose(in))).when(dataNode).open(on, offset = None, length = None)
     action(context) must eventually (be (ContentAction.Found(ToClose(in))))
   }
 
   it must "fail when there's an error in opening the file" in new Fixture {
-    given(dataNode.open(on, offset = None, length = None))
-      .willReturn(Future.failed(new IOException("oops")))
+    doReturn(Future.failed(new IOException("oops")))
+      .when(dataNode).open(on, offset = None, length = None)
     action(context) must eventuallyFailWith[IOException]
   }
 

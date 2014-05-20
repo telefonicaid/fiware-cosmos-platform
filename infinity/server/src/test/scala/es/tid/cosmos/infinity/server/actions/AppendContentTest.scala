@@ -19,7 +19,7 @@ package es.tid.cosmos.infinity.server.actions
 import java.io.IOException
 import scala.concurrent.Future
 
-import org.mockito.BDDMockito.given
+import org.mockito.Mockito.doReturn
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
@@ -28,12 +28,12 @@ import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 class AppendContentTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   "Append content action" must "return Appended when content was successfully added" in new Fixture {
-    given(dataNode.append(on, in)).willReturn(Future.successful())
+    doReturn(Future.successful()).when(dataNode).append(on, in)
     action(context) must eventually (be (ContentAction.Appended(on)))
   }
 
   it must "fail when there's an error in appending to the file" in new Fixture {
-    given(dataNode.append(on, in)).willReturn(Future.failed(new IOException("oops")))
+    doReturn(Future.failed(new IOException("oops"))).when(dataNode).append(on, in)
     action(context) must eventuallyFailWith[IOException]
   }
 

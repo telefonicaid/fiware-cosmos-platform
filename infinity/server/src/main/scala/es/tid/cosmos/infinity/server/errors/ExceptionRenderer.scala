@@ -45,7 +45,7 @@ trait ExceptionRenderer[Request, Response] {
       render(request, 500, ErrorCode(e), e)
     case e: NameNodeException.NoSuchPath =>
       render(request, 404, ErrorCode(e), e)
-    case e: DataNodeException.ContentNotFound =>
+    case e: DataNodeException.FileNotFound =>
       render(request, 404, ErrorCode(e), e)
     case e: NameNodeException.PathAlreadyExists =>
       render(request, 409, ErrorCode(e), e)
@@ -53,6 +53,8 @@ trait ExceptionRenderer[Request, Response] {
       render(request, 422, ErrorCode(e), e)
     case e: NameNodeException.Unauthorized =>
       render(request, 403, ErrorCode(e), e)
+    case e: DataNodeException.ContentPathIsDirectory =>
+      render(request, 400, ErrorCode(e), e)
     case e =>
       render(request, 500, ErrorCode.UnexpectedError, e)
   }

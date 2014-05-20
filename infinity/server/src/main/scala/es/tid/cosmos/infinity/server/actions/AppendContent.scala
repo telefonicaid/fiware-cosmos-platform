@@ -30,6 +30,7 @@ case class AppendContent(
     on: Path,
     in: InputStream) extends ContentAction {
 
-  override def apply(context: Context): Future[ContentAction.Result] =
+  override def apply(context: Context): Future[ContentAction.Result] = dataNode.as(context.user) {
     for (_ <- dataNode.append(on, in)) yield Appended(on)
+  }
 }

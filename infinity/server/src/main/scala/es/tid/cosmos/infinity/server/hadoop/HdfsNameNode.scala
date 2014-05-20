@@ -115,26 +115,6 @@ class HdfsNameNode(
     }
   }
 
-  override def as[A](user: UserProfile)(body: => A): A = {
-    val ugi = {
-      if (user.mask == PermissionsMask.fromOctal("777")) {
-        if (user.superuser && user.mask.owner == PermissionClass.fromOctal("7"))
-          UserGroupInformation.createProxyUser(user.username, UserGroupInformation.getCurrentUser)
-        else UserGroupInformation.createRemoteUser(user.username)
-      } else if (user.mask == PermissionsMask.fromOctal("077")) {
-        val artificialUser = UserGroupInformation.createRemoteUser(
-          ArtificialUsersGroupMapping.createUserFromGroups(user.groups))
-        UserGroupInformation.createProxyUser(user.username, artificialUser)
-      } else {
-        throw new UnsupportedOperationException(
-          "Masks different from 777 and 077 and not currently supported")
-      }
-    }
-    ugi.doAs(new PrivilegedAction[A] {
-      override def run(): A = body
-    })
-  }
-
   private def checkedFileInfo(path: Path): HdfsFileStatus = protocols.forPath(path) { p =>
     p.getFileInfo(path.toString)
   }

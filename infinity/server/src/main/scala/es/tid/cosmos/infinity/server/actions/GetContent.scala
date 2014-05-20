@@ -30,8 +30,7 @@ case class GetContent(
     offset: Option[Long],
     length: Option[Long]) extends ContentAction {
 
-  override def apply(context: Context): Future[ContentAction.Result] =
-    for (inputStream <- dataNode.open(on, offset, length)) yield {
-      Found(inputStream)
-    }
+  override def apply(context: Context): Future[ContentAction.Result] = dataNode.as(context.user) {
+    for (inputStream <- dataNode.open(on, offset, length)) yield Found(inputStream)
+  }
 }

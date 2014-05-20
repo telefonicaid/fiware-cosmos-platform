@@ -21,7 +21,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
-import es.tid.cosmos.infinity.server.hadoop.NameNodeException
+import es.tid.cosmos.infinity.server.hadoop.{DataNodeException, NameNodeException}
 
 class ExceptionRendererTest extends FlatSpec with MustMatchers {
 
@@ -78,6 +78,16 @@ class ExceptionRendererTest extends FlatSpec with MustMatchers {
   it must "render ParentNotDirectory" in {
     givenException(NameNodeException.ParentNotDirectory(Path.absolute("/path")))
       .mustRenderTo(422, "CONST03")
+  }
+
+  it must "render FileNotFound" in {
+    givenException(DataNodeException.FileNotFound(Path.absolute("/path")))
+      .mustRenderTo(404, "CONST04")
+  }
+
+  it must "render ContentPathIsDirectory" in {
+    givenException(DataNodeException.ContentPathIsDirectory(Path.absolute("/path")))
+      .mustRenderTo(400, "CONST05")
   }
 
   case class givenException(e: Throwable) {

@@ -19,7 +19,7 @@ package es.tid.cosmos.infinity.server.actions
 import java.io.IOException
 import scala.concurrent.Future
 
-import org.mockito.BDDMockito.given
+import org.mockito.Mockito.doReturn
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
@@ -29,12 +29,12 @@ class OverwriteContentTest extends FlatSpec with MustMatchers with FutureMatcher
 
   "Overwrite content action" must "return Overwritten when content was successfully written" in
     new Fixture {
-      given(dataNode.overwrite(on, in)).willReturn(Future.successful())
+      doReturn(Future.successful()).when(dataNode).overwrite(on, in)
       action(context) must eventually (be (ContentAction.Overwritten(on)))
     }
 
   it must "fail when there's an error in writing to the file" in new Fixture {
-    given(dataNode.overwrite(on, in)).willReturn(Future.failed(new IOException("oops")))
+    doReturn(Future.failed(new IOException("oops"))).when(dataNode).overwrite(on, in)
     action(context) must eventuallyFailWith[IOException]
   }
 

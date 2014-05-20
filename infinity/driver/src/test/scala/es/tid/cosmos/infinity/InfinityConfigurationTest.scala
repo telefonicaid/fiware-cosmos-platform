@@ -22,6 +22,8 @@ import org.apache.hadoop.conf.Configuration
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.infinity.common.credentials.{UserCredentials, ClusterCredentials}
+
 class InfinityConfigurationTest extends FlatSpec with MustMatchers {
 
   "An infinity configuration" must "provide a default authority" in {
@@ -57,6 +59,23 @@ class InfinityConfigurationTest extends FlatSpec with MustMatchers {
         configurationWithProperties("fs.infinity.timeout.millis" -> invalidMillis).timeoutDuration
       } must produce [IllegalArgumentException]
     }
+  }
+
+  it must "provide configured cluster credentials" in {
+    val config = configurationWithProperties("fs.infinity.clusterSecret" -> "secret")
+    config.credentials must be (Some(ClusterCredentials(null, "secret")))
+  }
+
+  it must "provide configured user credentials" in {
+    val config = configurationWithProperties(
+      "fs.infinity.apiKey" -> "key",
+      "fs.infinity.apiSecret" -> "secret"
+    )
+    config.credentials must be (Some(UserCredentials("key", "secret")))
+  }
+
+  it must "provide no credentials when not configured" in {
+    defaultConfiguration().credentials must be ('empty)
   }
 
   def defaultConfiguration() = configurationWithProperties()

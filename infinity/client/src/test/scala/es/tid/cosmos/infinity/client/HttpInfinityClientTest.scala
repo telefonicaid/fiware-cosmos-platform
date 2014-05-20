@@ -26,6 +26,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 import es.tid.cosmos.common.scalatest.RandomTcpPort
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.client.mock.MockInfinityServer
+import es.tid.cosmos.infinity.common.credentials.UserCredentials
 import es.tid.cosmos.infinity.common.fs.{Path, RootPath, SubPath}
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
@@ -275,7 +276,8 @@ class HttpInfinityClientTest extends FlatSpec
   trait Fixture {
     val infinity = new MockInfinityServer(metadataPort = RandomTcpPort.choose(), defaultDate = aDate)
     val dataFactory = infinity.TestDataFactory
-    val client = new HttpInfinityClient(infinity.metadataEndpoint)
+    val credentials = UserCredentials("key", "secret")
+    val client = new HttpInfinityClient(infinity.metadataEndpoint, credentials)
     val timeOut = 10.seconds
 
     def contentOf(reader_> : Future[InputStream]): String = {

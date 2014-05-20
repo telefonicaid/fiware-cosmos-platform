@@ -20,6 +20,8 @@ import scala.concurrent.duration._
 
 import org.apache.hadoop.conf.Configuration
 
+import es.tid.cosmos.infinity.common.credentials.{ClusterCredentials, Credentials, UserCredentials}
+
 private[infinity] class InfinityConfiguration(config: Configuration) {
 
   import InfinityConfiguration._
@@ -34,6 +36,16 @@ private[infinity] class InfinityConfiguration(config: Configuration) {
     require(duration > 0, s"Timeout must be strictly positive but was $duration ms")
     duration.millis
   }
+
+  def credentials: Option[Credentials] = clusterCredentials orElse userCredentials
+
+  private def clusterCredentials: Option[ClusterCredentials] =
+    Option(config.get(ClusterSecretProperty)).map(ClusterCredentials(null, _))
+
+  private def userCredentials: Option[UserCredentials] = for {
+    key <- Option(config.get(ApiKeyProperty))
+    secret <- Option(config.get(ApiSecretProperty))
+  } yield UserCredentials(key, secret)
 }
 
 object InfinityConfiguration {
@@ -42,6 +54,9 @@ object InfinityConfiguration {
   val DefaultUseSslValue = true
   val TimeoutProperty = property("timeout.millis")
   val DefaultTimeout = 3000
+  val ClusterSecretProperty = property("clusterSecret")
+  val ApiKeyProperty = property("apiKey")
+  val ApiSecretProperty = property("apiSecret")
 
   private def property(suffix: String) = s"fs.infinity.$suffix"
 }

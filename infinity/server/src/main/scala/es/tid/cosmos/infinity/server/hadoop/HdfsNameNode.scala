@@ -177,11 +177,10 @@ class HdfsNameNode(
   )
 
   private def directoryEntryOf(path: Path, fileStatus: HdfsFileStatus) = {
-    val subpath = SubPath(path, fileStatus.getLocalName)
     DirectoryEntry(
-      path = subpath,
+      path = path,
       `type` = if (fileStatus.isDir) PathType.Directory else PathType.File,
-      metadata = urlMapper.metadataUrl(subpath),
+      metadata = urlMapper.metadataUrl(path),
       owner = fileStatus.getOwner,
       group = fileStatus.getGroup,
       modificationTime = new Date(fileStatus.getModificationTime),

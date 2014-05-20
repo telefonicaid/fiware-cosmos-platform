@@ -16,15 +16,30 @@
 
 package es.tid.cosmos.infinity.server.content
 
+import org.apache.commons.logging.LogFactory
+import unfiltered.request.HttpRequest
 import unfiltered.response._
 
 import es.tid.cosmos.infinity.server.errors.ExceptionRenderer
 
-class UnfilteredExceptionRenderer[T] extends ExceptionRenderer[ResponseFunction[T]] {
+class UnfilteredExceptionRenderer[Request <: HttpRequest[_], Response]
+    extends ExceptionRenderer[Request, ResponseFunction[Response]] {
+
+  val log = LogFactory.getLog(classOf[UnfilteredExceptionRenderer[Request, Response]])
+
   override protected def withAuthHeader(
-      response: ResponseFunction[T], headerContent: String): ResponseFunction[T] =
+      response: ResponseFunction[Response], headerContent: String): ResponseFunction[Response] =
     response ~> WWWAuthenticate(headerContent)
 
-  override protected def render(status: Int, jsonContent: String): ResponseFunction[T] =
+  override protected def render(
+      request: Request, status: Int, jsonContent: String): ResponseFunction[Response] = {
+    log.warn(s"${requestLine(request)} => $status $jsonContent")
     Status(status) ~> JsonContent ~> ResponseString(jsonContent)
+  }
+
+  private def requestLine(request: Request) =
+    s"${request.method} ${request.uri} (auth: ${authentication(request)})"
+
+  private def authentication(request: Request): String =
+    request.headers("Authentication").mkString(",")
 }

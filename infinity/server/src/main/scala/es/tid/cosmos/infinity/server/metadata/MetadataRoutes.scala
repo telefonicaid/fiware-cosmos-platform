@@ -15,11 +15,14 @@
  */
 package es.tid.cosmos.infinity.server.metadata
 
+import javax.servlet.http.HttpServletRequest
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 
+import org.apache.commons.logging.LogFactory
 import unfiltered.filter.async
 import unfiltered.filter.async.Plan.Intent
+import unfiltered.request.HttpRequest
 
 import es.tid.cosmos.infinity.server.actions.Action
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
@@ -36,8 +39,10 @@ class MetadataRoutes(
     urlMapper: UrlMapper) extends async.Plan {
 
   private val actionValidator = new HttpActionValidator(config, nameNode)
+  private val log = LogFactory.getLog(classOf[MetadataRoutes])
 
   override def intent: Intent = { case request =>
+    doLog(request)
     val response = for {
       authInfo <- AuthInfo(request.remoteAddr, request)
       credentials <- HttpCredentialsValidator(authInfo)
@@ -46,10 +51,18 @@ class MetadataRoutes(
         profile <- authService.authenticate(credentials)
         context = Action.Context(profile, urlMapper)
         result <- action(context)
-      } yield ActionResultHttpRenderer(result)
+    } yield ActionResultHttpRenderer(request, result)
+
     response.transform(
       success_> => Try(Responder.respond(request, success_>)),
       failure => Try(Responder.respond(request, failure))
     )
+  }
+
+  private def doLog(request: HttpRequest[HttpServletRequest]): Unit = {
+    log.debug(
+      s"""Infinity Metadata Server receives ${request.method}
+         |on ${request.uri} from ${request.remoteAddr}
+         |with authentication ${request.headers("Authentication")}""".stripMargin)
   }
 }

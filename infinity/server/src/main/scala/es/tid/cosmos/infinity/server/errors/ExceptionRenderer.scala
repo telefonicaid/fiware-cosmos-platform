@@ -21,53 +21,54 @@ import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
 import es.tid.cosmos.infinity.server.hadoop.{DataNodeException, NameNodeException}
 
-trait ExceptionRenderer[Response] {
+trait ExceptionRenderer[Request, Response] {
   import ExceptionRenderer._
 
   private val errorFormatter = new ErrorDescriptorFormatter()
 
-  def apply(exception: Throwable): Response = exception match {
+  def apply(request: Request, exception: Throwable): Response = exception match {
     case e: RequestParsingException.MissingAuthorizationHeader =>
-      renderWithAuth(401, ErrorCode(e), e)
+      renderWithAuth(request, 401, ErrorCode(e), e)
     case e: RequestParsingException.UnsupportedAuthorizationHeader =>
-      renderWithAuth(401, ErrorCode(e), e)
+      renderWithAuth(request, 401, ErrorCode(e), e)
     case e: RequestParsingException.MalformedKeySecretPair =>
-      renderWithAuth(401, ErrorCode(e), e)
+      renderWithAuth(request, 401, ErrorCode(e), e)
     case e: RequestParsingException.InvalidBasicHash =>
-      renderWithAuth(401, ErrorCode(e), e)
+      renderWithAuth(request, 401, ErrorCode(e), e)
     case e: RequestParsingException.InvalidResourcePath =>
-      render(404, ErrorCode(e), e)
+      render(request, 404, ErrorCode(e), e)
     case e: RequestParsingException.InvalidRequestBody =>
-      render(400, ErrorCode(e), e)
+      render(request, 400, ErrorCode(e), e)
     case e: AuthenticationException =>
-      render(401, ErrorCode(e), e)
+      render(request, 401, ErrorCode(e), e)
     case e: NameNodeException.IOError =>
-      render(500, ErrorCode(e), e)
+      render(request, 500, ErrorCode(e), e)
     case e: NameNodeException.NoSuchPath =>
-      render(404, ErrorCode(e), e)
+      render(request, 404, ErrorCode(e), e)
     case e: DataNodeException.ContentNotFound =>
-      render(404, ErrorCode(e), e)
+      render(request, 404, ErrorCode(e), e)
     case e: NameNodeException.PathAlreadyExists =>
-      render(409, ErrorCode(e), e)
+      render(request, 409, ErrorCode(e), e)
     case e: NameNodeException.ParentNotDirectory =>
-      render(422, ErrorCode(e), e)
+      render(request, 422, ErrorCode(e), e)
     case e: NameNodeException.Unauthorized =>
-      render(403, ErrorCode(e), e)
+      render(request, 403, ErrorCode(e), e)
     case e =>
-      render(500, ErrorCode.UnexpectedError, e)
+      render(request, 500, ErrorCode.UnexpectedError, e)
   }
 
   private def render[E <: Throwable](
-      status: Int, errorCode: ErrorCode[E], exception: Throwable): Response =
-    render(status, errorFormatter.format(ErrorDescriptor(errorCode.code, exception.getMessage)))
+      request: Request, status: Int, errorCode: ErrorCode[E], exception: Throwable): Response =
+    render(request, status,
+      errorFormatter.format(ErrorDescriptor(errorCode.code, exception.getMessage)))
 
   private def renderWithAuth[E <: Throwable](
-      status: Int, errorCode: ErrorCode[E], exception: Throwable): Response =
-    withAuthHeader(render(status, errorCode, exception), AuthHeaderContent)
+      request: Request, status: Int, errorCode: ErrorCode[E], exception: Throwable): Response =
+    withAuthHeader(render(request, status, errorCode, exception), AuthHeaderContent)
 
   protected def withAuthHeader(response: Response, headerContent: String): Response
 
-  protected def render(status: Int, jsonContent: String): Response
+  protected def render(request: Request, status: Int, jsonContent: String): Response
 }
 
 private object ExceptionRenderer {

@@ -16,12 +16,12 @@
 
 package es.tid.cosmos.infinity.server.hadoop
 
-import java.net.URL
+import java.net.URI
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DFSClient
 import org.apache.hadoop.hdfs.server.{datanode => hadoop}
 
-class DfsClientFactory(dataNode: hadoop.DataNode, nameNodeRpcUrl: URL) {
-  def newClient: DFSClient = new DFSClient(nameNodeRpcUrl.toURI, new Configuration(dataNode.getConf))
+class DfsClientFactory(dataNode: hadoop.DataNode, nameNodeRpcUri: URI) {
+  def newClient: DFSClient = new DFSClient(nameNodeRpcUri, new Configuration(dataNode.getConf))
 }

@@ -38,7 +38,7 @@ class InfinityDriverIT extends ConfiguredServiceTest {
   }
 
   it must "have the default infinity's cluster configured" in {
-    contributedConfig.properties("fs.infinity.defaultAuthority") must be ("andromeda-infinity:50070")
+    contributedConfig.properties("fs.infinity.defaultAuthority").toString must include ("andromeda-infinity")
   }
 
   it must "configure the infinity HFS driver" in {

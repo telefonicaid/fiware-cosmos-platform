@@ -12,7 +12,7 @@ application.baseurl="https://<%=@master_hostname%><%=@domain%>"
 # Integration with Infinity
 # ~~~~~
 infinity.secret="<%= @infinity_secret %>"
-infinity.httpPort=51070
+infinity.httpPort=<%= scope.lookupvar('cosmos::params::infinity_server_port') %>
 
 # Secret key
 # ~~~~~

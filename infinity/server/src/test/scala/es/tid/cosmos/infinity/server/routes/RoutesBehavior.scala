@@ -48,7 +48,7 @@ trait RoutesBehavior[HadoopApi] extends MustMatchers with FutureMatchers { this:
 
   def newRoutes: Routes
 
-  def supportsAuthorization(requestTransformation: RequestFunction = identity): Unit = {
+  def routeSupportingAuthorization(requestTransformation: RequestFunction = identity): Unit = {
 
     it must "return appropriate error on missing authorization header" in
       new Fixture(requestTransformation) {
@@ -97,7 +97,7 @@ trait RoutesBehavior[HadoopApi] extends MustMatchers with FutureMatchers { this:
       }
   }
 
-  def canHandleNotFound(
+  def routeHandlingNotFound(
       requestTransformation: RequestFunction = identity,
       hadoopBehavior: AddHadoopBehavior): Unit = {
 

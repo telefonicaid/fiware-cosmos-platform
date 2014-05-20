@@ -56,8 +56,8 @@ class MetadataRoutesTest extends FlatSpec
   }
 
   "GetMetadata" must behave like {
-    supportsAuthorization()
-    canHandleNotFound(hadoopBehavior = pathNotFound)
+    routeSupportingAuthorization()
+    routeHandlingNotFound(hadoopBehavior = givenPathNotFound)
     //TODO: Cross cutting case?
     it should "return 500 on IOErrors" in new Authenticated(identity) {
       doReturn(Future.failed(NameNodeException.IOError()))
@@ -81,10 +81,10 @@ class MetadataRoutesTest extends FlatSpec
           |}
         """.stripMargin)
       )
-    supportsAuthorization(requestTransformation = toCreateFile)
-    canHandleNotFound(
+    routeSupportingAuthorization(requestTransformation = toCreateFile)
+    routeHandlingNotFound(
       requestTransformation = toCreateFile,
-      hadoopBehavior = parentDoesNotExist
+      hadoopBehavior = givenParentDoesNotExist
     )
 
     it must "return 409 when the path already exists" in new Authenticated(toCreateFile) {
@@ -122,10 +122,10 @@ class MetadataRoutesTest extends FlatSpec
           |}
         """.stripMargin)
     )
-    supportsAuthorization(requestTransformation = toMoveFile)
-    canHandleNotFound(
+    routeSupportingAuthorization(requestTransformation = toMoveFile)
+    routeHandlingNotFound(
       requestTransformation = toMoveFile,
-      hadoopBehavior = originNotFound
+      hadoopBehavior = givenOriginNotFound
     )
   }
 
@@ -140,10 +140,10 @@ class MetadataRoutesTest extends FlatSpec
           |}
         """.stripMargin)
     )
-    supportsAuthorization(requestTransformation = toChown)
-    canHandleNotFound(
+    routeSupportingAuthorization(requestTransformation = toChown)
+    routeHandlingNotFound(
       requestTransformation = toChown,
-      hadoopBehavior = ownedNotFound
+      hadoopBehavior = givenOwnedNotFound
     )
   }
 
@@ -158,10 +158,10 @@ class MetadataRoutesTest extends FlatSpec
           |}
         """.stripMargin)
     )
-    supportsAuthorization(requestTransformation = toChangeGroup)
-    canHandleNotFound(
+    routeSupportingAuthorization(requestTransformation = toChangeGroup)
+    routeHandlingNotFound(
       requestTransformation = toChangeGroup,
-      hadoopBehavior = notFoundForSetGroup
+      hadoopBehavior = givenNotFoundForSetGroup
     )
   }
 
@@ -176,33 +176,36 @@ class MetadataRoutesTest extends FlatSpec
           |}
         """.stripMargin)
     )
-    supportsAuthorization(requestTransformation = toChmod)
-    canHandleNotFound(
+    routeSupportingAuthorization(requestTransformation = toChmod)
+    routeHandlingNotFound(
       requestTransformation = toChmod,
-      hadoopBehavior = notFoundForSetPermissions
+      hadoopBehavior = givenNotFoundForSetPermissions
     )
   }
 
   "DeleteFile" must behave like {
-    supportsAuthorization(requestTransformation = _.copy(method = "DELETE"))
-    canHandleNotFound(hadoopBehavior = pathNotFound)
+    routeSupportingAuthorization(requestTransformation = _.copy(method = "DELETE"))
+    routeHandlingNotFound(hadoopBehavior = givenPathNotFound)
   }
 
-  def pathNotFound(nameNode: NameNode): Unit = notFoundWhen(nameNode).pathMetadata(any())
+  def givenPathNotFound(nameNode: NameNode): Unit = givenNotFoundWhen(nameNode).pathMetadata(any())
 
-  def parentDoesNotExist(nameNode: NameNode): Unit =
-    notFoundWhen(nameNode).createFile(any(), any(), any(), any(), any(), any())
+  def givenParentDoesNotExist(nameNode: NameNode): Unit =
+    givenNotFoundWhen(nameNode).createFile(any(), any(), any(), any(), any(), any())
 
-  def originNotFound(nameNode: NameNode): Unit = notFoundWhen(nameNode).movePath(any(), any())
+  def givenOriginNotFound(nameNode: NameNode): Unit =
+    givenNotFoundWhen(nameNode).movePath(any(), any())
 
-  def ownedNotFound(nameNode:NameNode): Unit = notFoundWhen(nameNode).setOwner(any(), any())
+  def givenOwnedNotFound(nameNode:NameNode): Unit =
+    givenNotFoundWhen(nameNode).setOwner(any(), any())
 
-  def notFoundForSetGroup(nameNode:NameNode): Unit = notFoundWhen(nameNode).setGroup(any(), any())
+  def givenNotFoundForSetGroup(nameNode:NameNode): Unit = 
+    givenNotFoundWhen(nameNode).setGroup(any(), any())
 
-  def notFoundForSetPermissions(nameNode:NameNode): Unit =
-    notFoundWhen(nameNode).setPermissions(any(), any())
+  def givenNotFoundForSetPermissions(nameNode:NameNode): Unit =
+    givenNotFoundWhen(nameNode).setPermissions(any(), any())
 
-  def notFoundWhen(nameNode: NameNode) =
+  def givenNotFoundWhen(nameNode: NameNode) =
     doReturn(Future.failed(NameNodeException.NoSuchPath(Path.absolute("/")))).when(nameNode)
 
 }

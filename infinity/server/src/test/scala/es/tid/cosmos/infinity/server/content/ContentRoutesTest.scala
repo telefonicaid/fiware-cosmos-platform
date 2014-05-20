@@ -58,8 +58,8 @@ class ContentRoutesTest extends FlatSpec
   }
 
   "GetContent" must behave like {
-    supportsAuthorization()
-    canHandleNotFound(hadoopBehavior = openFileNotFound)
+    routeSupportingAuthorization()
+    routeHandlingNotFound(hadoopBehavior = openFileNotFound)
 
     it must "correctly route an authorized and supported request" in new WithContent {
       doReturn(Future.successful(ToClose(inputStream)))
@@ -73,8 +73,8 @@ class ContentRoutesTest extends FlatSpec
 
   "AppendContent" must behave like {
     val toPost: RequestFunction = request => request.copy(method = "POST")
-    supportsAuthorization(requestTransformation = toPost)
-    canHandleNotFound(
+    routeSupportingAuthorization(requestTransformation = toPost)
+    routeHandlingNotFound(
       requestTransformation = toPost,
       hadoopBehavior = appendFileNotFound
     )
@@ -90,8 +90,8 @@ class ContentRoutesTest extends FlatSpec
 
   "OverwriteContent" must behave like {
     val toPut: RequestFunction = request => request.copy(method = "PUT")
-    supportsAuthorization(requestTransformation = toPut)
-    canHandleNotFound(
+    routeSupportingAuthorization(requestTransformation = toPut)
+    routeHandlingNotFound(
       requestTransformation = toPut,
       hadoopBehavior = overwriteFileNotFound
     )

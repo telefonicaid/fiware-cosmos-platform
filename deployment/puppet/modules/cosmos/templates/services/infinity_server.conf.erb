@@ -35,7 +35,7 @@ include "cluster-properties"
             "dfs.infinity.secret" = ${InfinitySecret}
             "dfs.infinity.supergroup" = "hdfs"
             "dfs.infinity.metadata.host" = ${MasterNode}
-            "dfs.infinity.metadata.port" = "51070"
+            "dfs.infinity.metadata.port" = "<%= scope.lookupvar('cosmos::params::infinity_server_port') %>"
         }
     },
     {

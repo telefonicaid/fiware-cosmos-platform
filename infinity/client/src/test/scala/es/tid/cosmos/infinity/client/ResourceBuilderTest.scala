@@ -50,7 +50,7 @@ class ResourceBuilderTest extends FlatSpec with MustMatchers {
   }
 
   it must "authenticate the resource with cluster credentials" in {
-    val credentials = ClusterCredentials(origin = null, clusterSecret = "secret")
+    val credentials = ClusterCredentials("secret")
     authHeader(builder(credentials).metadata(path).build()) must be (BearerToken("secret"))
     authHeader(builder(credentials).content(location).build()) must be (BearerToken("secret"))
   }

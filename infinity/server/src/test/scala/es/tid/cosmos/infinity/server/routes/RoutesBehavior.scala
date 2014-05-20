@@ -23,11 +23,12 @@ import scala.language.postfixOps
 import scala.util.Success
 
 import org.mockito.BDDMockito._
+import org.mockito.Matchers.{any, eq => the}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 import unfiltered.filter.async.Plan.Intent
-import unfiltered.response.{Unauthorized, NotFound}
+import unfiltered.response.{NotFound, Unauthorized}
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.credentials.UserCredentials
@@ -138,7 +139,8 @@ trait RoutesBehavior[HadoopApi] extends MustMatchers with FutureMatchers { this:
     lazy val request = baseRequest.copy(headerz = Map(authHeader))
     lazy val responder = baseResponder.copy(request = this.request)
 
-    given(routes.authService.authenticate(credentials)).willReturn(Future.successful(profile))
+    given(routes.authService.authenticate(any[String], the(credentials)))
+      .willReturn(Future.successful(profile))
   }
 
   abstract class AuthenticationFailure(test: RequestFunction) extends Fixture(test) {
@@ -148,7 +150,7 @@ trait RoutesBehavior[HadoopApi] extends MustMatchers with FutureMatchers { this:
     val request = baseRequest.copy(headerz = Map(authHeader))
     val responder = baseResponder.copy(request = this.request)
 
-    given(routes.authService.authenticate(credentials)).willReturn(
-      Future.failed(new AuthenticationException("failed")))
+    given(routes.authService.authenticate(any[String], the(credentials)))
+      .willReturn(Future.failed(new AuthenticationException("failed")))
   }
 }

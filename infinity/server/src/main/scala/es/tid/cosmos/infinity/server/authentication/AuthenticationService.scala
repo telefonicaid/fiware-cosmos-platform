@@ -25,8 +25,9 @@ trait AuthenticationService {
 
   /** Perform an authentication request.
     *
+    * @param origin       Source address of the request
     * @param credentials  Credentials to authenticate with
     * @return  The user profile when successful, an AuthenticationException when not.
     */
-  def authenticate(credentials: Credentials): Future[UserProfile]
+  def authenticate(origin: String, credentials: Credentials): Future[UserProfile]
 }

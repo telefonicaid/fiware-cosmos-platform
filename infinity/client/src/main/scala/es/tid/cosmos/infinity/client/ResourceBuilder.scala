@@ -40,6 +40,6 @@ class ResourceBuilder(metadataEndpoint: URL, credentials: Credentials) {
   private def withAuthHeader(builder: RequestBuilder): RequestBuilder =
     builder.setHeader("Authorization", credentials match {
       case UserCredentials(key, secret) => BasicAuth(key, secret)
-      case ClusterCredentials(_, token) => BearerToken(token)
+      case ClusterCredentials(token) => BearerToken(token)
     })
 }

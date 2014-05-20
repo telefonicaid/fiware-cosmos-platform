@@ -16,8 +16,6 @@
 
 package es.tid.cosmos.infinity.common.credentials
 
-import java.net.InetAddress
-
 /** The credentials used by a Infinity client to authenticate a request. */
 sealed trait Credentials
 
@@ -25,4 +23,4 @@ sealed trait Credentials
 case class UserCredentials(apiKey: String, apiSecret: String) extends Credentials
 
 /** The credentials used by clusters to authenticate their Infinity FS requests. */
-case class ClusterCredentials(origin: InetAddress, clusterSecret: String) extends Credentials
+case class ClusterCredentials(clusterSecret: String) extends Credentials

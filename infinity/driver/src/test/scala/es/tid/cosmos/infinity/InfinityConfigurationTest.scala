@@ -63,7 +63,7 @@ class InfinityConfigurationTest extends FlatSpec with MustMatchers {
 
   it must "provide configured cluster credentials" in {
     val config = configurationWithProperties("fs.infinity.clusterSecret" -> "secret")
-    config.credentials must be (Some(ClusterCredentials(null, "secret")))
+    config.credentials must be (Some(ClusterCredentials("secret")))
   }
 
   it must "provide configured user credentials" in {

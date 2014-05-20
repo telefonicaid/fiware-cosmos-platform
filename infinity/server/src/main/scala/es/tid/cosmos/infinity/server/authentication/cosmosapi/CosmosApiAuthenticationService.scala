@@ -16,6 +16,7 @@
 
 package es.tid.cosmos.infinity.server.authentication.cosmosapi
 
+import java.net.InetAddress
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.control.NonFatal
@@ -34,13 +35,14 @@ private[cosmosapi] class CosmosApiAuthenticationService(
 
   private def profileParser = new UserProfileParser(superGroup)
 
-  override def authenticate(credentials: Credentials): Future[UserProfile] = for {
-    response <- requestUserAuthentication(credentials)
-    profile = parseResponse(response)
-  } yield {
-    requireValidOrigin(credentials, profile)
-    profile
-  }
+  override def authenticate(origin: String, credentials: Credentials): Future[UserProfile] =
+    for {
+      response <- requestUserAuthentication(credentials)
+      profile = parseResponse(response)
+    } yield {
+      requireValidOrigin(InetAddress.getByName(origin), credentials, profile)
+      profile
+    }
 
   private def parseResponse(response: String): UserProfile =  try {
     profileParser.parse(response)
@@ -60,19 +62,17 @@ private[cosmosapi] class CosmosApiAuthenticationService(
 
   private def queryParameters(credentials: Credentials) = credentials match {
     case UserCredentials(key, secret) => Map("apiKey" -> key, "apiSecret" -> secret)
-    case ClusterCredentials(_, secret) => Map("clusterSecret" -> secret)
+    case ClusterCredentials(secret) => Map("clusterSecret" -> secret)
   }
 
   private def resource(): RequestBuilder = url(apiBase) / "infinity" / "v1" / "auth"
 
-  private def requireValidOrigin(credentials: Credentials, profile: UserProfile): Unit =
+  private def requireValidOrigin(origin: InetAddress, credentials: Credentials, profile: UserProfile): Unit =
     credentials match {
-      case ClusterCredentials(origin, _) =>
-        if (!profile.accessibleFrom(origin)) {
-          throw AuthenticationException.invalidOrigin(origin, profile)
-        }
-      case UserCredentials(_, _) =>
-        // Always allowed
+      case ClusterCredentials(_) if !profile.accessibleFrom(origin) =>
+        throw AuthenticationException.invalidOrigin(origin, profile)
+      case _ =>
+        // Otherwise allowed
     }
 }
 

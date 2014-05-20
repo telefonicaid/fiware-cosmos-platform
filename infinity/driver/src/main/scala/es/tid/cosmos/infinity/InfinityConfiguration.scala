@@ -40,7 +40,7 @@ private[infinity] class InfinityConfiguration(config: Configuration) {
   def credentials: Option[Credentials] = clusterCredentials orElse userCredentials
 
   private def clusterCredentials: Option[ClusterCredentials] =
-    Option(config.get(ClusterSecretProperty)).map(ClusterCredentials(null, _))
+    Option(config.get(ClusterSecretProperty)).map(ClusterCredentials.apply)
 
   private def userCredentials: Option[UserCredentials] = for {
     key <- Option(config.get(ApiKeyProperty))

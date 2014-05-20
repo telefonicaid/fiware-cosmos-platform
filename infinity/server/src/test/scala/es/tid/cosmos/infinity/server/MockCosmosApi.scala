@@ -50,7 +50,7 @@ class MockCosmosApi(port: Int) extends Assertions {
 
   private def profileKey(credentials: Credentials) = credentials match {
     case UserCredentials(key, secret) => (key, secret)
-    case ClusterCredentials(_, secret) => ("cluster", secret)
+    case ClusterCredentials(secret) => ("cluster", secret)
   }
 
   def givenUserGroups(handle: String, groups: Seq[String]): Unit = {

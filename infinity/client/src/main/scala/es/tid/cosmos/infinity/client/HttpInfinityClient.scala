@@ -87,7 +87,7 @@ class HttpInfinityClient(metadataEndpoint: URL, credentials: Credentials) extend
         length.map("length" -> _.toString)
       ).flatten.toMap
       val handler = new InputStreamHandler(path, bufferSize)
-      Http(resources.content(locationOf(metadata)) <<? params > handler)
+      Http(resources.content(contentLocationOf(metadata)) <<? params > handler)
       handler.future
     }
 
@@ -107,7 +107,7 @@ class HttpInfinityClient(metadataEndpoint: URL, credentials: Credentials) extend
        */
       val in = new PipedInputStream(bufferSize)
       val out = new PipedOutputStream(in)
-      val request = requestMethod(resources.content(locationOf(metadata))).setBody(
+      val request = requestMethod(resources.content(contentLocationOf(metadata))).setBody(
         new InputStreamBodyGenerator(in))
       /* While the request is async, ning blocks to acquire the request's body.
        * Since the body comes from an async input stream we need to wrap the request in another
@@ -130,7 +130,7 @@ class HttpInfinityClient(metadataEndpoint: URL, credentials: Credentials) extend
     case d: DirectoryMetadata => throw new IllegalArgumentException("Directory cannot have content")
   }
 
-  private def locationOf(file: FileMetadata): URL =
+  private def contentLocationOf(file: FileMetadata): URL =
     file.content.getOrElse(throw NotFoundException(file.path))
 
   private def createPath(path: SubPath, action: Request): Future[Unit] = {

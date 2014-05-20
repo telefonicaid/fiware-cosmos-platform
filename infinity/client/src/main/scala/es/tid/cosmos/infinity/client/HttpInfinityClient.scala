@@ -152,7 +152,7 @@ class HttpInfinityClient(metadataEndpoint: URL, credentials: Credentials) extend
     (handleCommonErrors _).andThen(handler)
 
   private def handleCommonErrors(response: Response): Response = response.getStatusCode match {
-    case 400 | 401 =>
+    case 400 | 401 | 500 =>
       val error = parseError(response)
       throw ProtocolMismatchException(error.cause, Some(error.code))
     case 403 =>

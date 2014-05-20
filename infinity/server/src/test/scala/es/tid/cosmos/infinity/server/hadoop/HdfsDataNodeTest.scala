@@ -66,12 +66,14 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers with FutureMatchers {
     dataNode.open(path, offset = None, length = None) must eventuallyFailWith[IOException]
   }
 
-  it must "fail to get content when file was not found" in new FileNotFoundCase {
+  it must "fail to get content when file was not found" in new Fixture {
+    givenFileWontBeFound()
     dataNode.open(path, offset = None, length = None) must
       eventuallyFailWith[DataNodeException.FileNotFound]
   }
 
-  it must "fail to get content when path points to directory" in new PathIsDirectoryCase {
+  it must "fail to get content when path points to directory" in new Fixture {
+    givenDirectoryPath()
     dataNode.append(path, in) must eventuallyFailWith[DataNodeException.ContentPathIsDirectory]
   }
 
@@ -95,11 +97,13 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers with FutureMatchers {
     dataNode.append(path, in) must eventuallyFailWith[IOException]
   }
 
-  it must "fail to append when file was not found" in new FileNotFoundCase {
+  it must "fail to append when file was not found" in new Fixture {
+    givenFileWontBeFound()
     dataNode.append(path, in) must eventuallyFailWith[DataNodeException.FileNotFound]
   }
 
-  it must "fail to append when path points to directory" in new PathIsDirectoryCase {
+  it must "fail to append when path points to directory" in new Fixture {
+    givenDirectoryPath()
     dataNode.append(path, in) must eventuallyFailWith[DataNodeException.ContentPathIsDirectory]
   }
 
@@ -118,11 +122,13 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers with FutureMatchers {
     dataNode.overwrite(path, in) must eventuallyFailWith[IOException]
   }
 
-  it must "fail to overwrite when file was not found" in new FileNotFoundCase {
+  it must "fail to overwrite when file was not found" in new Fixture {
+    givenFileWontBeFound()
     dataNode.overwrite(path, in) must eventuallyFailWith[DataNodeException.FileNotFound]
   }
 
-  it must "fail to overwrite when path points to directory" in new PathIsDirectoryCase {
+  it must "fail to overwrite when path points to directory" in new Fixture {
+    givenDirectoryPath()
     dataNode.overwrite(path, in) must eventuallyFailWith[DataNodeException.ContentPathIsDirectory]
   }
 
@@ -137,6 +143,31 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers with FutureMatchers {
     val boundedStreamFactory = mock[BoundedStreamFactory]
     val dataNode = new HdfsDataNode(clientFactory, bufferSize, boundedStreamFactory)
     val ioException = new IOException("oops")
+
+    def givenFileWontBeFound(): Unit = {
+      given(clientFactory.newClient).willReturn(dfsClient)
+      given(dfsClient.getFileInfo(path.toString)).willReturn(null)
+    }
+
+    def givenDirectoryPath(): Unit = {
+      val dummyDirInfo = new HdfsFileStatus(
+        1,    //length
+        true, //isDir
+        1,    //block_replication
+        1,    //blocksize
+        0,    //modification_time
+        0,    //access_time
+        null, //permission
+        "owner",
+        "group",
+        null, //symlink
+        null, //path
+        0,    //fileId
+        0     //childrenNum
+      )
+      given(clientFactory.newClient).willReturn(dfsClient)
+      given(dfsClient.getFileInfo(path.toString)).willReturn(dummyDirInfo)
+    }
   }
 
   trait OpenHappyCase extends Fixture {
@@ -173,30 +204,5 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers with FutureMatchers {
       the(HdfsDataNode.NoProgress),
       the(bufferSize))
     ).willReturn(_dfsOut)
-  }
-
-  trait FileNotFoundCase extends Fixture {
-    given(clientFactory.newClient).willReturn(dfsClient)
-    given(dfsClient.getFileInfo(path.toString)).willReturn(null)
-  }
-
-  trait PathIsDirectoryCase extends Fixture {
-    val dummyDirInfo = new HdfsFileStatus(
-      1,    //length
-      true, //isDir
-      1,    //block_replication
-      1,    //blocksize
-      0,    //modification_time
-      0,    //access_time
-      null, //permission
-      "owner",
-      "group",
-      null, //symlink
-      null, //path
-      0,    //fileId
-      0     //childrenNum
-    )
-    given(clientFactory.newClient).willReturn(dfsClient)
-    given(dfsClient.getFileInfo(path.toString)).willReturn(dummyDirInfo)
   }
 }

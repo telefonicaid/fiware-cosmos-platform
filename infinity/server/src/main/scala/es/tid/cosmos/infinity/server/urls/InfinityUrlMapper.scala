@@ -23,8 +23,13 @@ import es.tid.cosmos.infinity.server.config.InfinityConfig
 
 class InfinityUrlMapper(config: InfinityConfig) extends UrlMapper {
 
-  override def metadataUrl(path: Path): URL = new URL(s"${config.metadataBaseUrl}/$path")
+  override def metadataUrl(path: Path): URL = buildUrl(config.metadataBaseUrl, path)
 
   override def contentUrl(path: Path, contentHost: String): URL =
-    new URL(s"${config.contentServerUrl(contentHost)}/$path")
+    buildUrl(config.contentServerUrl(contentHost), path)
+
+  private def buildUrl(baseUrl: URL, subPath: Path): URL = {
+    val newPath = Path.absolute(baseUrl.getPath) / subPath
+    new URL(baseUrl.getProtocol, baseUrl.getHost, baseUrl.getPort, newPath.toString)
+  }
 }

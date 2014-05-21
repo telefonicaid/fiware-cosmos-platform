@@ -20,7 +20,6 @@ import java.util
 import java.io.FileNotFoundException
 import java.net.URL
 import java.util.Date
-import java.security.PrivilegedAction
 import scala.concurrent._
 import scala.util.Try
 
@@ -28,13 +27,12 @@ import org.apache.hadoop.fs.{CreateFlag, FileAlreadyExistsException, ParentNotDi
 import org.apache.hadoop.hdfs.protocol.{AlreadyBeingCreatedException, DirectoryListing, HdfsFileStatus}
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 import org.apache.hadoop.io.EnumSetWritable
-import org.apache.hadoop.security.{UserGroupInformation, AccessControlException}
+import org.apache.hadoop.security.AccessControlException
 
 import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
-import es.tid.cosmos.infinity.common.permissions.{PermissionClass, UserProfile, PermissionsMask}
+import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 import es.tid.cosmos.infinity.server.config.MetadataServerConfig
-import es.tid.cosmos.infinity.server.groups.ArtificialUsersGroupMapping
 import es.tid.cosmos.infinity.server.urls.UrlMapper
 
 class HdfsNameNode(
@@ -116,7 +114,7 @@ class HdfsNameNode(
   }
 
   private def checkedFileInfo(path: Path): HdfsFileStatus = protocols.forPath(path) { p =>
-    p.getFileInfo(path.toString)
+    Option(p.getFileInfo(path.toString)).getOrElse(throw NameNodeException.NoSuchPath(path))
   }
 
   private def directoryContents(path: Path, fileStatus: HdfsFileStatus) = {

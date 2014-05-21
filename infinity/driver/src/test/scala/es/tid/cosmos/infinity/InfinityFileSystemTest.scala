@@ -19,6 +19,7 @@ package es.tid.cosmos.infinity
 import java.io.{FileNotFoundException, IOException}
 import java.net.{URI, URL}
 import java.util.Date
+import scala.concurrent.duration._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -373,7 +374,7 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
       override def build(metadataEndpoint: URL, credentials: Credentials) = client.value
     }
     val conf = new Configuration(false)
-    conf.setInt(InfinityConfiguration.TimeoutProperty, 200)
+    conf.setLong(InfinityConfiguration.TimeoutProperty, 10.seconds.toMillis)
     conf.set(InfinityConfiguration.DefaultAuthorityProperty, "defaultAuthority")
     conf.set(InfinityConfiguration.ClusterSecretProperty, "secret")
     val fs = new InfinityFileSystem(ClientFactory)

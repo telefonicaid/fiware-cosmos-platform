@@ -32,6 +32,7 @@ import org.apache.hadoop.security.UserGroupInformation
 import org.apache.hadoop.util.Progressable
 
 import es.tid.cosmos.infinity.client.{HttpInfinityClient, InfinityClient}
+import es.tid.cosmos.infinity.common.credentials.Credentials
 import es.tid.cosmos.infinity.common.fs.{Path => InfinityPath, _}
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
@@ -70,7 +71,9 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   private def initializeClient(): Unit = {
     val scheme = if (infinityConfiguration.useSsl) "https" else "http"
     val metadataServerEndpoint = UriUtil.replaceScheme(UriUtil.replacePath(uri, ""), scheme)
-    client = clientFactory.build(metadataServerEndpoint.toURL)
+    val credentials = infinityConfiguration.credentials
+      .getOrElse(throw new IllegalArgumentException("No credentials were configured"))
+    client = clientFactory.build(metadataServerEndpoint.toURL, credentials)
   }
 
   /** If authority is missing, add the default one. */
@@ -248,8 +251,9 @@ object InfinityFileSystem {
 
   private val Log = LogFactory.getLog(classOf[InfinityFileSystem])
 
-  private object DefaultClientFactory extends InfinityClientFactory{
-    override def build(metadataEndpoint: URL) = new HttpInfinityClient(metadataEndpoint)
+  private object DefaultClientFactory extends InfinityClientFactory {
+    override def build(metadataEndpoint: URL, credentials: Credentials) =
+      new HttpInfinityClient(metadataEndpoint, credentials)
   }
 
   private val Ok = Future.successful(())

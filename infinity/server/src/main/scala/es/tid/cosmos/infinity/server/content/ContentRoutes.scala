@@ -42,14 +42,14 @@ class ContentRoutes(
 
   override def intent: Intent = { case request =>
     val response = for {
-      authInfo <- AuthInfo(request.remoteAddr, request)
+      authInfo <- AuthInfo(request)
       credentials <- HttpCredentialsValidator(authInfo)
       action <- actionValidator(request)
     } yield for {
-        profile <- authService.authenticate(credentials)
-        context = Action.Context(profile, urlMapper)
-        result <- action(context)
-      } yield renderResult(result)
+      profile <- authService.authenticate(request.remoteAddr, credentials)
+      context = Action.Context(profile, urlMapper)
+      result <- action(context)
+    } yield renderResult(result)
     response.transform(
       success_> => Try(Responder.respond(request, success_>)),
       failure => Try(Responder.respond(request, failure))

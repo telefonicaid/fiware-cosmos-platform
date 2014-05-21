@@ -19,9 +19,10 @@ package es.tid.cosmos.infinity
 import java.net.URL
 
 import es.tid.cosmos.infinity.client.InfinityClient
+import es.tid.cosmos.infinity.common.credentials.Credentials
 
 trait InfinityClientFactory {
 
   /** Creates an Infinity client for a given metadata server. */
-  def build(metadataEndpoint: URL): InfinityClient
+  def build(metadataEndpoint: URL, credentials: Credentials): InfinityClient
 }

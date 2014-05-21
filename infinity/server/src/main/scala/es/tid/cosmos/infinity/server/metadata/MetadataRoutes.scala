@@ -44,11 +44,11 @@ class MetadataRoutes(
   override def intent: Intent = { case request =>
     doLog(request)
     val response = for {
-      authInfo <- AuthInfo(request.remoteAddr, request)
+      authInfo <- AuthInfo(request)
       credentials <- HttpCredentialsValidator(authInfo)
       action <- actionValidator(request)
     } yield for {
-        profile <- authService.authenticate(credentials)
+        profile <- authService.authenticate(request.remoteAddr, credentials)
         context = Action.Context(profile, urlMapper)
         result <- action(context)
     } yield ActionResultHttpRenderer(request, result)

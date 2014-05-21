@@ -35,7 +35,7 @@ object HttpCredentialsValidator {
       case basicLinePattern(hash) =>
         userCredentials(hash)
       case bearerLinePattern(secret) =>
-        clusterCredentials(info.from, secret)
+        ClusterCredentials(secret)
       case null =>
         throw RequestParsingException.MissingAuthorizationHeader()
       case headerValue =>
@@ -60,7 +60,4 @@ object HttpCredentialsValidator {
       case basicPairPattern(key, secret) => (key, secret)
       case _ => throw RequestParsingException.MalformedKeySecretPair(pair)
     }
-
-  private def clusterCredentials(from: InetAddress, secret: String): ClusterCredentials =
-    ClusterCredentials(from, secret)
 }

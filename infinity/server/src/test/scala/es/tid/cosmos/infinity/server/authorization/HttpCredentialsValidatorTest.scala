@@ -16,7 +16,6 @@
 
 package es.tid.cosmos.infinity.server.authorization
 
-import java.net.InetAddress
 import scala.util.{Success, Try}
 
 import org.scalatest.{FlatSpec, Inside}
@@ -27,33 +26,31 @@ import es.tid.cosmos.infinity.server.errors.RequestParsingException
 
 class HttpCredentialsValidatorTest extends FlatSpec with MustMatchers with Inside {
 
-  val from = InetAddress.getLocalHost
-
   "HTTP credentials validator" must "fail to extract credentials on unsupported Authorization header" in {
     val auth = "Digest YXBpLWtleTphcGktc2VjcmV0" // "api-key:api-secret"
-    val info = AuthInfo(from, auth)
+    val info = AuthInfo(auth)
     HttpCredentialsValidator(info) must failWith[RequestParsingException.UnsupportedAuthorizationHeader]
   }
 
   it must "extract user credentials" in {
-    val info = AuthInfo(from, "Basic YXBpLWtleTphcGktc2VjcmV0")
+    val info = AuthInfo("Basic YXBpLWtleTphcGktc2VjcmV0")
     HttpCredentialsValidator(info) must be (Success(UserCredentials("api-key", "api-secret")))
   }
 
   it must "fail to extract user credentials from unexpected basic pair" in {
-    val info = AuthInfo(from, "Basic YXBpLWtleUBhcGktc2VjcmV0")
+    val info = AuthInfo("Basic YXBpLWtleUBhcGktc2VjcmV0")
     HttpCredentialsValidator(info) must failWith[RequestParsingException.MalformedKeySecretPair]
   }
 
   it must "fail to extract user credentials from invalid hash" in {
-    val info = AuthInfo(from, "Basic @@@@@@@@@")
+    val info = AuthInfo("Basic @@@@@@@@@")
     HttpCredentialsValidator(info) must failWith[RequestParsingException.InvalidBasicHash]
   }
 
   it must "extract cluster credentials" in {
-    val info = AuthInfo(from, "Bearer cluster-secret")
+    val info = AuthInfo("Bearer cluster-secret")
     HttpCredentialsValidator(info) must
-      be (Success(ClusterCredentials(from, "cluster-secret")))
+      be (Success(ClusterCredentials("cluster-secret")))
   }
 
   def failWith[T : Manifest] = new Matcher[Try[Credentials]] {

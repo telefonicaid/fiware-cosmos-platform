@@ -21,20 +21,22 @@ import com.ning.http.client.generators.InputStreamBodyGenerator
 import dispatch.{Future => _, _}
 
 import es.tid.cosmos.common.Wrapped
+import es.tid.cosmos.infinity.common.credentials.Credentials
 import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.common.json._
 import es.tid.cosmos.infinity.common.messages.{ErrorDescriptor, Request}
 import es.tid.cosmos.infinity.common.messages.Request._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
-class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
+class HttpInfinityClient(metadataEndpoint: URL, credentials: Credentials) extends InfinityClient {
 
+  private val resources = new ResourceBuilder(metadataEndpoint, credentials)
   private val metadataParser = new MetadataParser()
   private val errorParser = new ErrorDescriptorParser()
   private val actionFormatter = new RequestMessageFormatter()
 
   override def pathMetadata(path: Path): Future[Option[PathMetadata]] =
-    httpRequest(metadataResource(path)) { response =>
+    httpRequest(resources.metadata(path)) { response =>
       response.getStatusCode match {
         case 200 => Some(metadataParser.parse(response.getResponseBody))
         case 404 => None
@@ -53,7 +55,7 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
 
   override def move(originPath: SubPath, targetPath: Path): Future[Unit] = {
     val body = actionFormatter.format(Move(originPath.name, originPath.parentPath))
-    httpRequest(metadataResource(targetPath) << body) { response =>
+    httpRequest(resources.metadata(targetPath) << body) { response =>
       response.getStatusCode match {
         case 404 => throw NotFoundException(originPath)
         case 409 => throw AlreadyExistsException(targetPath / originPath.name)
@@ -73,19 +75,19 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
 
   override def delete(path: SubPath, isRecursive: Boolean = false): Future[Unit] = {
     val params = Map("recursive" -> isRecursive.toString)
-    requestWithNoContentResponse(path, (metadataResource(path) <<? params).DELETE)
+    requestWithNoContentResponse(path, (resources.metadata(path) <<? params).DELETE)
   }
 
   override def read(
       path: SubPath, offset: Option[Long], length: Option[Long], bufferSize: Int): Future[InputStream] =
     // read metadata first, get content url and then read content
-    existingMetaData(path) flatMap { metadata =>
+    existingFileMetaData(path) flatMap { metadata =>
       val params = List(
         offset.map("offset" -> _.toString),
         length.map("length" -> _.toString)
       ).flatten.toMap
       val handler = new InputStreamHandler(path, bufferSize)
-      Http(contentResource(metadata) <<? params > handler)
+      Http(resources.content(contentLocationOf(metadata)) <<? params > handler)
       handler.future
     }
 
@@ -99,13 +101,13 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
       path: Path,
       requestMethod: RequestBuilder => RequestBuilder,
       bufferSize: Int): Future[OutputStream] =
-    existingMetaData(path) map { metadata =>
+    existingFileMetaData(path) map { metadata =>
       /* Create a stream pipes to allow the caller to write on the output stream
        * while a separate thread is reading its input stream to form the HTTP request body
        */
       val in = new PipedInputStream(bufferSize)
       val out = new PipedOutputStream(in)
-      val request = requestMethod(contentResource(metadata)).setBody(
+      val request = requestMethod(resources.content(contentLocationOf(metadata))).setBody(
         new InputStreamBodyGenerator(in))
       /* While the request is async, ning blocks to acquire the request's body.
        * Since the body comes from an async input stream we need to wrap the request in another
@@ -123,9 +125,17 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
   private def existingMetaData(path: Path): Future[PathMetadata] =
     pathMetadata(path) map (_.getOrElse(throw NotFoundException(path)))
 
+  private def existingFileMetaData(path: Path): Future[FileMetadata] = existingMetaData(path).map {
+    case f: FileMetadata => f
+    case d: DirectoryMetadata => throw new IllegalArgumentException("Directory cannot have content")
+  }
+
+  private def contentLocationOf(file: FileMetadata): URL =
+    file.content.getOrElse(throw NotFoundException(file.path))
+
   private def createPath(path: SubPath, action: Request): Future[Unit] = {
     val body = actionFormatter.format(action)
-    httpRequest(metadataResource(path.parentPath) << body) { response =>
+    httpRequest(resources.metadata(path.parentPath) << body) { response =>
       response.getStatusCode match {
         case 404 => throw NotFoundException(path.parentPath)
         case 409 => throw AlreadyExistsException(path)
@@ -142,7 +152,7 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
     (handleCommonErrors _).andThen(handler)
 
   private def handleCommonErrors(response: Response): Response = response.getStatusCode match {
-    case 400 =>
+    case 400 | 401 | 500 =>
       val error = parseError(response)
       throw ProtocolMismatchException(error.cause, Some(error.code))
     case 403 =>
@@ -161,24 +171,9 @@ class HttpInfinityClient(metadataEndpoint: URL) extends InfinityClient {
   private def parseError(response: Response): ErrorDescriptor =
     errorParser.parse(response.getResponseBody)
 
-  private def metadataResource(path: Path): RequestBuilder = path match {
-    case RootPath => metadataRequestBuilder()
-    case SubPath(parentPath, name) => metadataResource(parentPath) / name
-  }
-
-  private def metadataRequestBuilder(): RequestBuilder =
-    url(metadataEndpoint.toString) / "infinityfs" / "v1" / "metadata"
-
-  private def contentResource(metadata: PathMetadata): RequestBuilder = metadata match {
-    case f: FileMetadata =>
-      val location = f.content.getOrElse(throw NotFoundException(metadata.path))
-      url(location.toString)
-    case d: DirectoryMetadata => throw new IllegalArgumentException("Directory cannot have content")
-  }
-
   private def actionWithNoContentResponse(path: Path, action: Request): Future[Unit] = {
     val body = actionFormatter.format(action)
-    requestWithNoContentResponse(path, metadataResource(path) << body)
+    requestWithNoContentResponse(path, resources.metadata(path) << body)
   }
 
   private def requestWithNoContentResponse(path: Path, request: RequestBuilder): Future[Unit] =

@@ -25,6 +25,7 @@ import org.scalatest.matchers.MustMatchers
 import es.tid.cosmos.common.scalatest.RandomTcpPort
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.client.mock.MockInfinityServer
+import es.tid.cosmos.infinity.common.credentials.UserCredentials
 
 trait HttpInfinityClientBehavior extends MustMatchers with FutureMatchers { this: FlatSpec =>
 
@@ -72,6 +73,7 @@ trait HttpInfinityClientBehavior extends MustMatchers with FutureMatchers { this
   trait Fixture {
     val aDate = new Date(1398420798000L)
     val infinity = new MockInfinityServer(metadataPort = RandomTcpPort.choose(), defaultDate = aDate)
-    val client = new HttpInfinityClient(infinity.metadataEndpoint)
+    val credentials = new UserCredentials("key", "secret")
+    val client = new HttpInfinityClient(infinity.metadataEndpoint, credentials)
   }
 }

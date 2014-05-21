@@ -20,7 +20,8 @@ include "cluster-properties"
     "properties" {
         "fs.infinity.impl" = "es.tid.cosmos.infinity.InfinityFileSystem",
         "fs.infinity.defaultAuthority" = ${InfinityMasterNode}":<%= scope.lookupvar('cosmos::params::infinity_server_port') %>",
-        "es.tid.cosmos.clustersecret" = ${ClusterSecret}
+        "fs.infinity.ssl.enabled" = "false",
+        "fs.infinity.clusterSecret" = ${ClusterSecret}
     }
 }
 

@@ -33,6 +33,7 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.infinity.common.fs.{DirectoryEntry, DirectoryMetadata, FileMetadata, RootPath}
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.common.credentials.Credentials
 
 class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSugar {
 
@@ -369,11 +370,12 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
   abstract class Fixture(uri: URI = URI.create("infinity://localhost:8888/")) {
     val client = new MockInfinityClient
     object ClientFactory extends InfinityClientFactory{
-      override def build(metadataEndpoint: URL) = client.value
+      override def build(metadataEndpoint: URL, credentials: Credentials) = client.value
     }
     val conf = new Configuration(false)
     conf.setInt(InfinityConfiguration.TimeoutProperty, 200)
     conf.set(InfinityConfiguration.DefaultAuthorityProperty, "defaultAuthority")
+    conf.set(InfinityConfiguration.ClusterSecretProperty, "secret")
     val fs = new InfinityFileSystem(ClientFactory)
     fs.setConf(conf)
     fs.initialize(uri, conf)

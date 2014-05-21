@@ -71,6 +71,10 @@ private[groups] class CosmosApiGroupMapping(
         log.error("Infinity secret was rejected. " +
           "Please check that infinity server and cosmos-api configurations match.")
         Seq.empty
+      case Wrapped(StatusCode(503)) =>
+        log.error("Infinity API is temporarily unavailable. " +
+          "Check if the service is running or starting.")
+        Seq.empty
       case Wrapped(ex @ StatusCode(_)) =>
         log.error(s"Unexpected Cosmos API response when mapping groups of $handle", ex)
         Seq.empty

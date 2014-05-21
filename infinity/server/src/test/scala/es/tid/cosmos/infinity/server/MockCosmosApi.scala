@@ -35,6 +35,7 @@ class MockCosmosApi(port: Int) extends Assertions {
   private var profileMapping: Map[(String, String), String] = Map.empty
   private var redirectTo: Option[String] = None
   private var processingDelay: FiniteDuration = 0.seconds
+  private var unavailable: Boolean = false
 
   def givenInfinitySecret(secret: String): Unit = {
     infinitySecret = secret
@@ -56,6 +57,10 @@ class MockCosmosApi(port: Int) extends Assertions {
   def givenUserGroups(handle: String, groups: Seq[String]): Unit = {
     val body = groups.mkString("{ \"groups\": [\"", "\", \"", "\"]}")
     groupMapping += handle -> body
+  }
+
+  def givenTemporarilyUnavailableService(): Unit = {
+    unavailable = true
   }
 
   def givenMalformedGroupMapping(handle: String): Unit = {
@@ -116,7 +121,8 @@ class MockCosmosApi(port: Int) extends Assertions {
   }
 
   private def action[T](authHeader: String)(block: => ResponseFunction[T]): ResponseFunction[T] =
-    authHeader match {
+    if (unavailable) ServiceUnavailable
+    else authHeader match {
       case BearerToken(token) if token == infinitySecret =>
         if (redirectTo.isDefined) Redirect(redirectTo.get)
         else {
@@ -127,9 +133,9 @@ class MockCosmosApi(port: Int) extends Assertions {
     }
 
   private def formatProfile(profile: UserProfile): String = {
-    val originsField = profile.accessFrom.map { origins =>
+    val originsField = profile.accessFrom.fold("") { origins =>
       """  "origins":""" + origins.mkString("[\"", "\", \"", "\"],")
-    }.getOrElse("")
+    }
     s"""
        |{
        |  "user": "${profile.username}",

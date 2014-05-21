@@ -20,7 +20,6 @@ import java.net.{URI, InetAddress, URL}
 
 import com.typesafe.config.{Config, ConfigException}
 
-import es.tid.cosmos.infinity.common.util.UriUtil
 import es.tid.cosmos.infinity.server.config.InfinityConfig._
 import es.tid.cosmos.infinity.server.plugin.PluginConfig
 
@@ -88,7 +87,7 @@ class ContentServerConfig(config: Config) extends BaseInfinityConfig(config) {
 }
 
 object InfinityConfig {
-  val DefaultProtocol: String = "https"
+  val DefaultProtocol: String = "http"
   val DefaultContentPort: Int = 51075
   val DefaultMetadataPort: Int = 51070
   val DefaultMetadataBasePath: String = "/infinityfs/v1/metadata"

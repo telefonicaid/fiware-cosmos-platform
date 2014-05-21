@@ -39,19 +39,19 @@ class MetadataServerConfigTest extends FlatSpec with MustMatchers {
       "content.server.content01.example.com.port" -> "1234",
       "content.server.content01.example.com.basePath" -> "/inf/v1/content")
     config.contentServerUrl("content01.example.com") must be (new URL(
-      "https://content01.example.com:1234/inf/v1/content"))
+      "http://content01.example.com:1234/inf/v1/content"))
   }
 
   it must "retrieve content server URL when base path is missing" in {
     val config = configFor("content.server.content01.example.com.port" -> "1234")
     config.contentServerUrl("content01.example.com") must be (new URL(
-      "https://content01.example.com:1234/infinityfs/v1/content"))
+      "http://content01.example.com:1234/infinityfs/v1/content"))
   }
 
   it must "retrieve content server URL when port is missing" in {
     val config = configFor()
     config.contentServerUrl("content01.example.com") must be (new URL(
-      "https://content01.example.com:51075/infinityfs/v1/content"))
+      "http://content01.example.com:51075/infinityfs/v1/content"))
   }
 
   def configFor(settings: (String, String)*): InfinityConfig = {

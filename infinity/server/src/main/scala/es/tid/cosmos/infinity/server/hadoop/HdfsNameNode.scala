@@ -25,8 +25,11 @@ import scala.util.Try
 
 import org.apache.hadoop.fs.{CreateFlag, FileAlreadyExistsException, ParentNotDirectoryException}
 import org.apache.hadoop.hdfs.protocol.{AlreadyBeingCreatedException, DirectoryListing, HdfsFileStatus}
+import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor
+import org.apache.hadoop.hdfs.server.namenode.{NameNode => HadoopNameNode}
 import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 import org.apache.hadoop.io.EnumSetWritable
+import org.apache.hadoop.net.NodeBase
 import org.apache.hadoop.security.AccessControlException
 
 import es.tid.cosmos.infinity.common.fs._
@@ -37,13 +40,13 @@ import es.tid.cosmos.infinity.server.urls.UrlMapper
 
 class HdfsNameNode(
     config: MetadataServerConfig,
-    protocols: HdfsNameNode.NamenodeProtocolsLoaner,
+    hadoopNameNode: HadoopNameNode,
     urlMapper: UrlMapper) extends NameNode {
 
   import ExecutionContext.Implicits.global
 
-  def this(config: MetadataServerConfig, protocols: NamenodeProtocols, urlMapper: UrlMapper) =
-    this(config, new HdfsNameNode.NamenodeProtocolsLoaner(protocols), urlMapper)
+  private val protocols = new HdfsNameNode.NamenodeProtocolsLoaner(hadoopNameNode.getRpcServer)
+  private val nameSystem = hadoopNameNode.getNamesystem
 
   override def pathMetadata(path: Path): Future[PathMetadata] = future {
     val fileStatus = checkedFileInfo(path)
@@ -169,15 +172,18 @@ class HdfsNameNode(
       size = fileStatus.getLen
     )
   }
-
-  private def pickContentServer(path: Path, fileStatus: HdfsFileStatus): Option[URL] =
+  /** Choose a content server at random by mapping a random datanode to its content server url.
+    * Since the content server uses a DFSClient under the covers, the eventual datanode will be
+    * picked according to Hadoop's proximity strategy.
+    */
+  private def pickContentServer(path: Path, fileStatus: HdfsFileStatus): URL =
     protocols.forPath(path) { p =>
-      val blocks = p.getBlockLocations(path.toString, 0, fileStatus.getLen)
-      if (blocks.locatedBlockCount() != 0) {
-        val locs = blocks.get(0).getLocations
-        if (locs.size != 0) Some(urlMapper.contentUrl(path, locs(0).getHostName)) else None
-      }
-      else None
+      val dataNodeManager = nameSystem.getBlockManager.getDatanodeManager
+      val randomDataNode = dataNodeManager
+        .getNetworkTopology
+        .chooseRandom(NodeBase.ROOT)
+        .asInstanceOf[DatanodeDescriptor]
+      urlMapper.contentUrl(path, randomDataNode.getHostName)
     }
 
   private def setOwnerAndGroup(path: Path, owner: String, group: String) = future {

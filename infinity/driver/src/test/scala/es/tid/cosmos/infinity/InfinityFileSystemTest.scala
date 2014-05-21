@@ -266,13 +266,6 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     } must produce [IOException]
   }
 
-  it must "throw IOException when opening a file without available content URL" in new Fixture {
-    client.givenExistingPath(someFileMetadata.copy(content = None))
-    evaluating {
-      fs.open(someFile)
-    } must produce [IOException]
-  }
-
   it must "append to an existing file" in new Fixture {
     client.givenFileCanBeAppendedTo(someFile.toInfinity)
     fs.append(someFile, 4096, null) must not be null
@@ -318,7 +311,7 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
   val someFileMetadata = FileMetadata(
     path = someFile.toInfinity,
     metadata = new URL("http://metadata/some/file"),
-    content = Some(new URL("http://content/some/file")),
+    content = new URL("http://content/some/file"),
     owner = "user",
     group = "cosmos",
     modificationTime = new Date(3600000L),

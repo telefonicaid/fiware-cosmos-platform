@@ -52,7 +52,7 @@ class MetadataPlugin extends ServicePlugin with Configurable {
       val config = new MetadataServerConfig(pluginConfig)
       val urlMapper = new InfinityUrlMapper(config)
       val server = new MetadataServer(
-        nameNode = new HdfsNameNode(config, nameNode.getRpcServer, urlMapper),
+        nameNode = new HdfsNameNode(config, nameNode, urlMapper),
         config = config,
         authService = authentication)
       server.start()

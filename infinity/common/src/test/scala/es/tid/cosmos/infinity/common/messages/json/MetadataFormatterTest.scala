@@ -38,7 +38,7 @@ class MetadataFormatterTest extends FlatSpec with MustMatchers {
     val metadata = FileMetadata(
       path = Path.absolute("/usr/gandalf/spells.txt"),
       metadata = new URL("http://example.com/infinityfs/v1/metadata/usr/gandalf/spells.txt"),
-      content = Some(new URL("http://example.com/infinityfs/v1/content/usr/gandalf/spells.txt")),
+      content = new URL("http://example.com/infinityfs/v1/content/usr/gandalf/spells.txt"),
       owner = "gandalf",
       group = "istari",
       permissions = PermissionsMask.fromOctal("600"),

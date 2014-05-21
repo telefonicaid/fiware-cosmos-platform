@@ -159,7 +159,6 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
 
   override def open(f: Path, bufferSize: Int) =
     awaitResult(existingFileMetadata(f).map { metadata =>
-      requireContentLocation(metadata)
       new FSDataInputStream(new InfinityInputStream(
         client, asSubPath(f), bufferSize, infinityConfiguration.timeoutDuration
       ))
@@ -180,9 +179,6 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     val fileCreation = client.createFile(asSubPath(f), perms.toInfinity, Some(replication), Some(blockSize))
     awaitResult(fileCreation.flatMap(_ => appendToFile(f, bufferSize, Option(progressOrNull))))
   }
-
-  private def requireContentLocation(metadata: FileMetadata): Unit = metadata.content.getOrElse(
-    throw new IOException(s"${metadata.path} has no known content location"))
 
   private def existingPathMetadata(f: Path): Future[PathMetadata] =
     client.pathMetadata(f.toInfinity).map(_.getOrElse(throw new FileNotFoundException(f.toString)))

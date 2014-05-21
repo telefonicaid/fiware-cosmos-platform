@@ -44,7 +44,7 @@ sealed trait PathMetadata extends AbstractMetadata
 case class FileMetadata(
     override val path: Path,
     override val metadata: URL,
-    content: Option[URL],
+    content: URL,
     override val owner: String,
     override val group: String,
     override val modificationTime: Date,
@@ -60,7 +60,7 @@ case class FileMetadata(
       path: String, metadata: String, content: String, owner: String, group: String,
       modificationTime: Date, accessTime: Date, permissions: String, replication: Short,
       blockSize: Long, size: Long) =
-    this(Path.absolute(path), new URL(metadata), Option(content).map(new URL(_)), owner, group,
+    this(Path.absolute(path), new URL(metadata), new URL(content), owner, group,
       modificationTime, accessTime, PermissionsMask.fromOctal(permissions), replication, blockSize,
       size)
 

@@ -72,7 +72,7 @@ class MockInfinityServer(metadataPort: Int, defaultDate: Date) extends Assertion
       FileMetadata(
         path,
         metadata = metadataUrl(path),
-        content = Some(contentUrl(path)),
+        content = contentUrl(path),
         owner = "hdfs",
         group = "hdfs",
         modificationTime = defaultDate,

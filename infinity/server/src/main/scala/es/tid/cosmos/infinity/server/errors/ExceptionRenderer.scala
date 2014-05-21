@@ -16,6 +16,8 @@
 
 package es.tid.cosmos.infinity.server.errors
 
+import org.apache.commons.logging.LogFactory
+
 import es.tid.cosmos.infinity.common.json.ErrorDescriptorFormatter
 import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
@@ -56,6 +58,7 @@ trait ExceptionRenderer[Request, Response] {
     case e: DataNodeException.ContentPathIsDirectory =>
       render(request, 400, ErrorCode(e), e)
     case e =>
+      Log.error("Unexpected error", e)
       render(request, 500, ErrorCode.UnexpectedError, e)
   }
 
@@ -74,5 +77,6 @@ trait ExceptionRenderer[Request, Response] {
 }
 
 private object ExceptionRenderer {
+  val Log = LogFactory.getLog(classOf[ExceptionRenderer[_, _]])
   val AuthHeaderContent = """Basic realm="Infinity", Bearer realm="Infinity""""
 }

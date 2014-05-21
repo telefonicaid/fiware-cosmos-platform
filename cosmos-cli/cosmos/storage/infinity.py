@@ -21,37 +21,33 @@ import re
 import requests
 
 from cosmos.common.exceptions import (OperationError, ResponseError)
+from cosmos.common.paths import PathTypes
 
 
 SUPPORTED_VERSIONS = [1]
-BUFFER_SIZE = 4096
-
+CHUNK_SIZE = 4096
+FILE_PERMISSIONS = '640'
 
 class DirectoryListing(object):
-    """Returned when an existing or non-existing directory is listed"""
-
-    def __init__(self, statuses=None, exists=True):
+    """Returned when an existing is listed"""
+    def __init__(self, statuses=None):
+        self.path_type = PathTypes.DIRECTORY
         if not statuses: statuses = []
         self.statuses = statuses
-        self.exists = exists
 
     def __iter__(self):
         return self.statuses.__iter__()
 
     def __str__(self):
-        if not self.exists:
-            return 'Listing(unexisting path)'
         size = len(self.statuses)
         return 'Listing(%d file%s)' % (size, '' if size == 1 else 's')
 
-    def path_type(self):
-        """Checks the type of the listed path returning either 'DIRECTORY',
-        'FILE' or 'NONE'."""
-        if not self.exists or len(self.statuses) == 0:
-            return 'NONE'
-        if len(self.statuses) == 1:
-            return self.statuses[0]["type"]
-        return 'DIRECTORY'
+class FileMetadata(object):
+    """Returned when listing a file path"""
+
+    def __init__(self, the_json):
+        self.path_type = PathTypes.FILE
+        self.metadata = the_json
 
 
 class InfinityClient(object):
@@ -69,7 +65,8 @@ class InfinityClient(object):
         (base_path, filename) = str(remote_path).rsplit('/', 1)
         create_file_body = json.dumps({
             "action": "mkfile",
-            "name": filename
+            "name": filename,
+            "permissions": FILE_PERMISSIONS
         })
         response = self.make_call(self.client.post, base_path, self.metadata,
                                   data=create_file_body)
@@ -92,33 +89,34 @@ class InfinityClient(object):
                                 response)
 
     def list_path(self, path):
-        """Lists a directory or check a file status. Returns an instance
-        of DirectoryListing."""
+        """Lists a directory or a file. Returns an instance
+        of DirectoryListing or FileMetadata."""
         r = self.make_call(self.client.get, path, self.metadata)
         if r.status_code == 200:
-            json = r.json()
-            return DirectoryListing(
-                statuses=json["content"])
+            the_json = r.json()
+            return InfinityClient._file_or_dir(the_json)
         elif r.status_code == 404:
-            return DirectoryListing(exists=False)
+            return None
         else:
-            raise ResponseError('Cannot list directory %s' % path, r)
+            raise ResponseError('Cannot list path %s' % path, r)
 
     def get_file(self, remote_path, out_file):
-        response = self.make_call(self.client.get, remote_path, self.content,
-                                  stream=True)
+        listing = self.list_path(remote_path)
+        if listing.path_type != PathTypes.FILE:
+            raise OperationError("Path %s is not a file" % remote_path)
+        content_url = listing.metadata['content']
+        response = self.client.get(
+            content_url, auth=(self.api_key, self.api_secret), stream=True)
         if response.status_code == 404:
             raise ResponseError('File %s does not exist' % remote_path,
                                 response)
         if response.status_code != 200:
             raise ResponseError('Cannot download file %s' % remote_path,
                                 response)
-        buf = response.raw.read(BUFFER_SIZE)
         written = 0
-        while len(buf) > 0:
-            written += len(buf)
-            out_file.write(buf)
-            buf = response.raw.read(BUFFER_SIZE)
+        for chunk in response.iter_content(CHUNK_SIZE):
+            out_file.write(chunk)
+            written += len(chunk)
         return written
 
     def chmod(self, remote_path, permissions):
@@ -151,4 +149,12 @@ class InfinityClient(object):
             '/infinityfs/v1/%s/user/%s/%s' % (type, self.username, rel_path))
         return method(processedPath,
                       auth=(self.api_key, self.api_secret), **kwargs)
+
+    @staticmethod
+    def _file_or_dir(the_json):
+        path_type = the_json['type']
+        return {
+            PathTypes.FILE: FileMetadata(the_json),
+            PathTypes.DIRECTORY: DirectoryListing(statuses=the_json['content'])
+        }[path_type]
 

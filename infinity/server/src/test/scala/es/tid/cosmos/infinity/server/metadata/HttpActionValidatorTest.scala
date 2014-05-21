@@ -24,7 +24,7 @@ import org.scalatest.{FlatSpec, Inside}
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.infinity.common.fs.Path
+import es.tid.cosmos.infinity.common.fs.{RootPath, Path}
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 import es.tid.cosmos.infinity.server.actions._
 import es.tid.cosmos.infinity.server.config.MetadataServerConfig
@@ -51,8 +51,14 @@ class HttpActionValidatorTest extends FlatSpec with MustMatchers with Inside wit
     }
   }
 
-  it must "extract a GetMetadata action" in {
+  it must "extract a GetMetadata action for a subpath" in {
     instance(getRequest) must be (Success(GetMetadata(nameNode, somePath)))
+  }
+
+  it must "extract a GetMetadata action for the root path" in {
+    val getRootPath = Success(GetMetadata(nameNode, RootPath))
+    instance(getRequest.copy(uri = "/infinityfs/v1/metadata/")) must be (getRootPath)
+    instance(getRequest.copy(uri = "/infinityfs/v1/metadata")) must be (getRootPath)
   }
 
   it must "extract a CreateFile action" in {

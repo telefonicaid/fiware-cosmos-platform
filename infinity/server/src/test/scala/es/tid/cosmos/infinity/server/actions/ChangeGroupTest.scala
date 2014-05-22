@@ -16,8 +16,6 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import scala.concurrent.Future
-
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -28,20 +26,20 @@ import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 class ChangeGroupTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   "Change group action" must "return GroupSet upon successful group set" in new Fixture {
-    doReturn(Future.successful(())).when(nameNode).setGroup(on, newGroup)
-    doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
+    doNothing().when(nameNode).setGroup(on, newGroup)
+    doReturn(metadata).when(nameNode).pathMetadata(on)
     changeGroup(context) must eventually (be (MetadataAction.GroupSet(metadata)))
   }
 
   it must "fail if name node fails to set group" in new Fixture {
-    doReturn(Future.failed(new NameNodeException.IOError(new Exception("cannot change group"))))
+    doThrow(new NameNodeException.IOError(new Exception("cannot change group")))
       .when(nameNode).setGroup(on, newGroup)
     changeGroup(context) must eventuallyFailWith[NameNodeException.IOError]
   }
 
   it must "fail if name node fails to retrieve new metadata" in new Fixture {
-    doReturn(Future.successful(())).when(nameNode).setGroup(on, newGroup)
-    doReturn(Future.failed(new NameNodeException.IOError(new Exception("cannot retrieve metadata"))))
+    doNothing().when(nameNode).setGroup(on, newGroup)
+    doThrow(new NameNodeException.IOError(new Exception("cannot retrieve metadata")))
       .when(nameNode).pathMetadata(on)
     changeGroup(context) must eventuallyFailWith[NameNodeException.IOError]
   }

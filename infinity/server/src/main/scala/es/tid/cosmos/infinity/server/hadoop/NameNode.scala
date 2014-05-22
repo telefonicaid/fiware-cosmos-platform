@@ -16,8 +16,6 @@
 
 package es.tid.cosmos.infinity.server.hadoop
 
-import scala.concurrent.Future
-
 import es.tid.cosmos.infinity.common.fs.{Path, PathMetadata}
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
@@ -27,17 +25,12 @@ trait NameNode extends UserPrivileges {
   /** Retrieve the file or directory metadata corresponding to the given path.
     *
     * @param path The path whose metadata is to be obtained.
-    * @return A future representing the requested action. If success, it will wraps a FileMetadata
-    *         if path contains a file, or DirectoryMetadata if it contains a directory. It can
-    *         fail with:
-    *         <ul>
-    *           <li>NameNodeException.NoSuchPath if there is no file or directory for the given path
-    *           <li>NameNodeException.Unauthorized if the current user is not authorized to do the
-    *           action
-    *           <li>NameNodeException.IOError if there is an unexpected IO error
-    *         </ul>
+    * @return a FileMetadata if path contains a file, or DirectoryMetadata if it contains a directory.
     */
-  def pathMetadata(path: Path): Future[PathMetadata]
+  @throws[NameNodeException.IOError]
+  @throws[NameNodeException.Unauthorized]
+  @throws[NameNodeException.NoSuchPath]
+  def pathMetadata(path: Path): PathMetadata
 
   /** Create a new file on the given path.
     *
@@ -47,24 +40,19 @@ trait NameNode extends UserPrivileges {
     * @param permissions The permissions for the new file
     * @param replication The replication factor for the new file
     * @param blockSize The block size for the new file
-    * @return The future representing the requested action. It can fail with:
-    *         <ul>
-    *           <li>NameNodeException.NoSuchPath if some of the parents in the path doesn't exist
-    *           <li>NameNodeException.PathAlreadyExists if there is already a file or directory on
-    *               the given path
-    *           <li>NameNodeException.ParentNotDirectory if the parent path is not a directory
-    *           <li>NameNodeException.Unauthorized if the current user is not authorized to do the
-    *           action
-    *           <li>NameNodeException.IOError if there is an unexpected IO error
-    *         </ul>
     */
+  @throws[NameNodeException.IOError]
+  @throws[NameNodeException.PathAlreadyExists]
+  @throws[NameNodeException.ParentNotDirectory]
+  @throws[NameNodeException.Unauthorized]
+  @throws[NameNodeException.NoSuchPath]
   def createFile(
     path: Path,
     owner: String,
     group: String,
     permissions: PermissionsMask,
     replication: Option[Short],
-    blockSize: Option[Long]): Future[Unit]
+    blockSize: Option[Long]): Unit
 
   /** Create a new directory on the given path.
     *
@@ -72,94 +60,76 @@ trait NameNode extends UserPrivileges {
     * @param owner The owner of the new directory
     * @param group The group of the new directory
     * @param permissions The permissions for the new directory
-    * @return The future representing the requested action. It can fail with:
-    *         <ul>
-    *           <li>NameNodeException.NoSuchPath if some of the parents in the path doesn't exist
-    *           <li>NameNodeException.PathAlreadyExists if there is already a file or directory on
-    *               the given path
-    *           <li>NameNodeException.ParentNotDirectory if the parent path is not a directory
-    *           <li>NameNodeException.Unauthorized if the current user is not authorized to do the
-    *           action
-    *           <li>NameNodeException.IOError if there is an unexpected IO error
-    *         </ul>
+    * @throws NameNodeException.NoSuchPath if some of the parents in the path doesn't exist
+    * @throws NameNodeException.PathAlreadyExists if there is already a file or directory on
+    *         the given path
+    * @throws NameNodeException.ParentNotDirectory if the parent path is not a directory
+    * @throws NameNodeException.Unauthorized if the current user is not authorized to do the
+    *         action
+    * @throws NameNodeException.IOError if there is an unexpected IO error
     */
   def createDirectory(
      path: Path,
      owner: String,
      group: String,
-     permissions: PermissionsMask): Future[Unit]
+     permissions: PermissionsMask): Unit
 
   /** Delete the file or directory on the given path.
     *
     * @param path The path of the file or directory to be removed.
     * @param recursive Indicates whether contents must be removed recursively in case of directory
     *                  (ignored for files).
-    * @return The future representing the requested action. It can fail with:
-    *         <ul>
-    *           <li>NameNodeException.NoSuchPath if there is no file or directory on the given path
-    *           <li>NameNodeException.Unauthorized if the current user is not authorized to do the
-    *           action
-    *           <li>NameNodeException.IOError if there is an unexpected IO error
-    *         </ul>
+    * @throws NameNodeException.NoSuchPath if there is no file or directory on the given path
+    * @throws NameNodeException.Unauthorized if the current user is not authorized to do the
+    *         action
+    * @throws NameNodeException.IOError if there is an unexpected IO error
     */
-  def deletePath(path: Path, recursive: Boolean): Future[Unit]
+  def deletePath(path: Path, recursive: Boolean): Unit
 
   /** Move the file or directory located in the given path to a new one.
     *
     * @param from The path of the file or directory to be moved.
     * @param to The path of the new location of the file or directory.
-    * @return The future representing the requested action. It can fail with:
-    *         <ul>
-    *           <li>NameNodeException.NoSuchPath if there is no file or directory on the path
-    *           indicated by `from` argument
-    *           <li>NameNodeException.PathAlreadyExists if there is already a file or directory
-    *           in the path indicated by `to` argument
-    *           <li>NameNodeException.Unauthorized if the current user is not authorized to do the
-    *           action
-    *           <li>NameNodeException.IOError if there is an unexpected IO error
-    *         </ul>
+    * @throws NameNodeException.NoSuchPath if there is no file or directory on the path
+    *         indicated by `from` argument
+    * @throws NameNodeException.PathAlreadyExists if there is already a file or directory
+    *         in the path indicated by `to` argument
+    * @throws NameNodeException.Unauthorized if the current user is not authorized to do the
+    *         action
+    * @throws NameNodeException.IOError if there is an unexpected IO error
     */
-  def movePath(from: Path, to: Path): Future[Unit]
+  def movePath(from: Path, to: Path): Unit
 
   /** Set the owner of a given file or directory.
     *
     * @param path The path to the file or directory whose owner is to be set
     * @param newOwner The new owner of the file or directory
-    * @return The future representing the requested action. It can fail with:
-    *         <ul>
-    *           <li>NameNodeException.NoSuchPath if there is no file or directory on the given path
-    *           <li>NameNodeException.Unauthorized if the current user is not authorized to do the
-    *           action
-    *           <li>NameNodeException.IOError if there is an unexpected IO error
-    *         </ul>
+    * @throws NameNodeException.NoSuchPath if there is no file or directory on the given path
+    * @throws NameNodeException.Unauthorized if the current user is not authorized to do the
+    *         action
+    * @throws NameNodeException.IOError if there is an unexpected IO error
     */
-  def setOwner(path: Path, newOwner: String): Future[Unit]
+  def setOwner(path: Path, newOwner: String): Unit
 
   /** Set the group of a given file or directory.
     *
     * @param path The path to the file or directory whose group is to be set
     * @param newGroup The new group of the file or directory
-    * @return The future representing the requested action. It can fail with:
-    *         <ul>
-    *           <li>NameNodeException.NoSuchPath if there is no file or directory on the given path
-    *           <li>NameNodeException.Unauthorized if the current user is not authorized to do the
-    *           action
-    *           <li>NameNodeException.IOError if there is an unexpected IO error
-    *         </ul>
+    * @throws NameNodeException.NoSuchPath if there is no file or directory on the given path
+    * @throws NameNodeException.Unauthorized if the current user is not authorized to do the
+    *         action
+    * @throws NameNodeException.IOError if there is an unexpected IO error
     */
-  def setGroup(path: Path, newGroup: String): Future[Unit]
+  def setGroup(path: Path, newGroup: String): Unit
 
   /** Set the permissions for a given file or directory.
     *
     * @param path The path to the file or directory whose group is to be set
     * @param permissions The new permissions of the file or directory
-    * @return The future representing the requested action. It can fail with:
-    *         <ul>
-    *           <li>NameNodeException.NoSuchPath if there is no file or directory on the given path
-    *           <li>NameNodeException.Unauthorized if the current user is not authorized to do the
+    * @throws NameNodeException.NoSuchPath if there is no file or directory on the given path
+    * @throws NameNodeException.Unauthorized if the current user is not authorized to do the
     *           action
-    *           <li>NameNodeException.IOError if there is an unexpected IO error
-    *         </ul>
+    * @throws NameNodeException.IOError if there is an unexpected IO error
     */
-  def setPermissions(path: Path, permissions: PermissionsMask): Future[Unit]
+  def setPermissions(path: Path, permissions: PermissionsMask): Unit
 }

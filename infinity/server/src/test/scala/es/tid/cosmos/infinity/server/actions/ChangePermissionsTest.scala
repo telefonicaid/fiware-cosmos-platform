@@ -16,8 +16,6 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import scala.concurrent.Future
-
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -29,20 +27,20 @@ import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 class ChangePermissionsTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   "Change permissions action" must "return PermissionsSet upon successful permissions set" in new Fixture {
-    doReturn(Future.successful(())).when(nameNode).setPermissions(on, newMask)
-    doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
+    doNothing().when(nameNode).setPermissions(on, newMask)
+    doReturn(metadata).when(nameNode).pathMetadata(on)
     changePermissions(context) must eventually (be (MetadataAction.PermissionsSet(metadata)))
   }
 
   it must "fail if name node fails to set permissions" in new Fixture {
-    doReturn(Future.failed(new NameNodeException.IOError(new Exception("cannot change permissions"))))
+    doThrow(new NameNodeException.IOError(new Exception("cannot change permissions")))
       .when(nameNode).setPermissions(on, newMask)
     changePermissions(context) must eventuallyFailWith[NameNodeException.IOError]
   }
 
   it must "fail if name node fails to retrieve new metadata" in new Fixture {
-    doReturn(Future.successful(())).when(nameNode).setPermissions(on, newMask)
-    doReturn(Future.failed(new NameNodeException.IOError(new Exception("cannot retrieve metadata"))))
+    doNothing().when(nameNode).setPermissions(on, newMask)
+    doThrow(new NameNodeException.IOError(new Exception("cannot retrieve metadata")))
       .when(nameNode).pathMetadata(on)
     changePermissions(context) must eventuallyFailWith[NameNodeException.IOError]
   }

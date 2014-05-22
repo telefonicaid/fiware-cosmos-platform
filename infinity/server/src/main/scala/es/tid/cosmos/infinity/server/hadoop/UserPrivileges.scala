@@ -28,6 +28,12 @@ trait UserPrivileges {
 
   /** Runs the body with the permissions of user.
     *
+    * This method affects the current thread's AccessControlContext, so the user permissions
+    * are only applied to the current thread. If the body is spawning new threads or running
+    * stuff in a different computation context, the user permissions will not apply and the default
+    * (superuser) permissions will be used. For more information, check the javadoc for
+    * javax.security.auth.Subject
+    *
     * @param user The user to impersonate
     * @param body The actions to run
     * @return     Whatever body returns

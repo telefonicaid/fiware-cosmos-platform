@@ -28,24 +28,23 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.hadoop.HdfsDataNode.BoundedStreamFactory
 import es.tid.cosmos.infinity.server.util.ToClose
 
-class HdfsDataNodeTest extends FlatSpec with MustMatchers with FutureMatchers {
+class HdfsDataNodeTest extends FlatSpec with MustMatchers {
 
   "The DataNode façade" must "open an existing file for reading its content" in new OpenHappyCase {
-    val stream_> = dataNode.open(path, offset = None, length = None)
-    stream_> must eventually (be (ToClose(in, dfsClient)))
+    val stream = dataNode.open(path, offset = None, length = None)
+    stream must be (ToClose(in, dfsClient))
     verify(_dfsIn).seek(HdfsDataNode.NoOffset)
     verify(boundedStreamFactory).apply(any[HdfsDataInputStream], the(fileLength))
   }
 
   it must "open an existing file on given offset and for given length" in new OpenHappyCase {
     val (offset, length) = (10L, 300L)
-    val stream_> = dataNode.open(path, Some(offset), Some(length))
-    stream_> must eventually (be (ToClose(in, dfsClient)))
+    val stream = dataNode.open(path, Some(offset), Some(length))
+    stream must be (ToClose(in, dfsClient))
     verify(_dfsIn).seek(offset)
     verify(boundedStreamFactory).apply(any[HdfsDataInputStream], the(length))
   }
@@ -53,8 +52,8 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers with FutureMatchers {
   it must "open an existing file up to its length even when given length exceeds it" in
     new OpenHappyCase {
       val length = fileLength + 1024
-      val stream_> = dataNode.open(path, offset = None, Some(length))
-      stream_> must eventually (be (ToClose(in, dfsClient)))
+      val stream = dataNode.open(path, offset = None, Some(length))
+      stream must be (ToClose(in, dfsClient))
       verify(_dfsIn).seek(HdfsDataNode.NoOffset)
       verify(boundedStreamFactory).apply(any[HdfsDataInputStream], the(fileLength))
     }
@@ -63,22 +62,22 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers with FutureMatchers {
     given(clientFactory.newClient).willReturn(dfsClient)
     given(dfsClient.getFileInfo(path.toString)).willReturn(mock[HdfsFileStatus])
     given(dfsClient.open(path.toString)).willThrow(ioException)
-    dataNode.open(path, offset = None, length = None) must eventuallyFailWith[IOException]
+    evaluating { dataNode.open(path, offset = None, length = None) } must produce[IOException]
   }
 
   it must "fail to get content when file was not found" in new Fixture {
     givenFileWontBeFound()
-    dataNode.open(path, offset = None, length = None) must
-      eventuallyFailWith[DataNodeException.FileNotFound]
+    evaluating {dataNode.open(path, offset = None, length = None) } must
+      produce[DataNodeException.FileNotFound]
   }
 
   it must "fail to get content when path points to directory" in new Fixture {
     givenDirectoryPath()
-    dataNode.append(path, in) must eventuallyFailWith[DataNodeException.ContentPathIsDirectory]
+    evaluating { dataNode.append(path, in) } must produce[DataNodeException.ContentPathIsDirectory]
   }
 
   it must "append the given contents to an existing file" in new AppendHappyCase {
-    dataNode.append(path, in) must eventuallySucceed
+    dataNode.append(path, in)
     val order = inOrder(in, _dfsOut)
     order.verify(_dfsOut).write("1234".getBytes, 0, 4)
     order.verify(in).close()
@@ -94,21 +93,21 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers with FutureMatchers {
       HdfsDataNode.NoProgress,
       HdfsDataNode.NoStatistics)
     ).willThrow(ioException)
-    dataNode.append(path, in) must eventuallyFailWith[IOException]
+    evaluating { dataNode.append(path, in) } must produce[IOException]
   }
 
   it must "fail to append when file was not found" in new Fixture {
     givenFileWontBeFound()
-    dataNode.append(path, in) must eventuallyFailWith[DataNodeException.FileNotFound]
+    evaluating { dataNode.append(path, in) } must produce[DataNodeException.FileNotFound]
   }
 
   it must "fail to append when path points to directory" in new Fixture {
     givenDirectoryPath()
-    dataNode.append(path, in) must eventuallyFailWith[DataNodeException.ContentPathIsDirectory]
+    evaluating { dataNode.append(path, in) } must produce[DataNodeException.ContentPathIsDirectory]
   }
 
   it must "overwrite an existing file with the given contents" in new OverwriteHappyCase {
-    dataNode.overwrite(path, in) must eventuallySucceed
+    dataNode.overwrite(path, in)
     val order = inOrder(in, _dfsOut)
     order.verify(_dfsOut).write("1234".getBytes, 0, 4)
     order.verify(in).close()
@@ -119,17 +118,17 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers with FutureMatchers {
     given(clientFactory.newClient).willReturn(dfsClient)
     given(dfsClient.getFileInfo(path.toString)).willReturn(mock[HdfsFileStatus])
     given(dfsClient.create(any(), any(), any(), any(), any(), any())).willThrow(ioException)
-    dataNode.overwrite(path, in) must eventuallyFailWith[IOException]
+    evaluating { dataNode.overwrite(path, in) } must produce[IOException]
   }
 
   it must "fail to overwrite when file was not found" in new Fixture {
     givenFileWontBeFound()
-    dataNode.overwrite(path, in) must eventuallyFailWith[DataNodeException.FileNotFound]
+    evaluating { dataNode.overwrite(path, in) } must produce[DataNodeException.FileNotFound]
   }
 
   it must "fail to overwrite when path points to directory" in new Fixture {
     givenDirectoryPath()
-    dataNode.overwrite(path, in) must eventuallyFailWith[DataNodeException.ContentPathIsDirectory]
+    evaluating { dataNode.overwrite(path, in) } must produce[DataNodeException.ContentPathIsDirectory]
   }
 
   trait Fixture extends MockitoSugar {

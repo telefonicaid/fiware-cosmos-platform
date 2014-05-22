@@ -17,6 +17,7 @@
 package es.tid.cosmos.infinity.server.actions
 
 import scala.concurrent._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.Action.Context
@@ -27,12 +28,10 @@ import es.tid.cosmos.infinity.server.hadoop.NameNode
 case class MovePath(
     config: InfinityConfig, nameNode: NameNode, on: Path, from: Path) extends MetadataAction {
 
-  import ExecutionContext.Implicits.global
-
-  override def apply(context: Context): Future[MetadataAction.Result] = nameNode.as(context.user) {
-    for {
-      _ <- nameNode.movePath(from, on)
-      metadata <- nameNode.pathMetadata(on)
-    } yield Moved(metadata)
+  override def apply(context: Context): Future[MetadataAction.Result] = future {
+    nameNode.as(context.user) {
+      nameNode.movePath(from, on)
+      Moved(nameNode.pathMetadata(on))
+    }
   }
 }

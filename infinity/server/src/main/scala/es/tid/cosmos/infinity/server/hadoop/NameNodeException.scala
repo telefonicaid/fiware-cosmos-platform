@@ -18,7 +18,7 @@ package es.tid.cosmos.infinity.server.hadoop
 
 import es.tid.cosmos.infinity.common.fs.Path
 
-class NameNodeException(message: String, cause: Throwable) extends Exception(message, cause)
+class NameNodeException(message: String, cause: Throwable) extends RuntimeException(message, cause)
 
 object NameNodeException {
 

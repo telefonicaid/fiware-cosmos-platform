@@ -16,8 +16,6 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import scala.concurrent.Future
-
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -28,20 +26,20 @@ import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 class ChangeOwnerTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   "Change owner action" must "return OwnerSet upon successful owner set" in new Fixture {
-    doReturn(Future.successful(())).when(nameNode).setOwner(on, newOwner)
-    doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
+    doNothing().when(nameNode).setOwner(on, newOwner)
+    doReturn(metadata).when(nameNode).pathMetadata(on)
     changeOwner(context) must eventually (be (MetadataAction.OwnerSet(metadata)))
   }
 
   it must "fail if name node fails to set owner" in new Fixture {
-    doReturn(Future.failed(new NameNodeException.IOError(new Exception("cannot change owner"))))
+    doThrow(new NameNodeException.IOError(new Exception("cannot change owner")))
       .when(nameNode).setOwner(on, newOwner)
     changeOwner(context) must eventuallyFailWith[NameNodeException.IOError]
   }
 
   it must "fail if name node fails to retrieve new metadata" in new Fixture {
-    doReturn(Future.successful(())).when(nameNode).setOwner(on, newOwner)
-    doReturn(Future.failed(new NameNodeException.IOError(new Exception("cannot retrieve metadata"))))
+    doNothing().when(nameNode).setOwner(on, newOwner)
+    doThrow(new NameNodeException.IOError(new Exception("cannot retrieve metadata")))
       .when(nameNode).pathMetadata(on)
     changeOwner(context) must eventuallyFailWith[NameNodeException.IOError]
   }

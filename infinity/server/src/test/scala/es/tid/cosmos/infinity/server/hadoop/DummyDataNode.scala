@@ -16,20 +16,22 @@
 
 package es.tid.cosmos.infinity.server.hadoop
 
-import java.io.InputStream
-import scala.concurrent.Future
+import java.io.{IOException, InputStream}
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.UserProfile
 import es.tid.cosmos.infinity.server.util.ToClose
 
 class DummyDataNode extends DataNode {
+  @throws[IOException]
   override def open(
-    path: Path, offset: Option[Long], length: Option[Long]): Future[ToClose[InputStream]] = ???
+    path: Path, offset: Option[Long], length: Option[Long]): ToClose[InputStream] = ???
 
-  override def overwrite(path: Path, contentStream: InputStream): Future[Unit] = ???
+  @throws[IOException]
+  override def overwrite(path: Path, contentStream: InputStream): Unit = ???
 
-  override def append(path: Path, contentStream: InputStream): Future[Unit] = ???
+  @throws[IOException]
+  override def append(path: Path, contentStream: InputStream): Unit = ???
 
   override def as[A](user: UserProfile)(body: => A): A = body
 }

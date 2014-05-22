@@ -17,7 +17,6 @@
 package es.tid.cosmos.infinity.server.actions
 
 import scala.Some
-import scala.concurrent.Future
 
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
@@ -30,23 +29,23 @@ import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 class CreateFileTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   "Create file action" must "return Created upon successful creation" in new Fixture {
-    doReturn(Future.successful(())).when(nameNode)
-      .createFile(on, user.username, user.groups.head, permissions, replication, blockSize)
-    doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
+    doNothing().when(nameNode).createFile(
+      on, user.username, user.groups.head, permissions, replication, blockSize)
+    doReturn(metadata).when(nameNode).pathMetadata(on)
     createFile(context) must eventually (be (MetadataAction.Created(metadata)))
   }
 
   it must "fail if name node fails to create the file" in new Fixture {
-    doReturn(Future.failed(new NameNodeException.IOError(new Exception("cannot create file"))))
+    doThrow(new NameNodeException.IOError(new Exception("cannot create file")))
       .when(nameNode)
       .createFile(on, user.username, user.groups.head, permissions, replication, blockSize)
     createFile(context) must eventuallyFailWith[NameNodeException.IOError]
   }
 
   it must "fail if name node fails to retrieve new metadata" in new Fixture {
-    doReturn(Future.successful(())).when(nameNode)
-      .createFile(on, user.username, user.groups.head, permissions, replication, blockSize)
-    doReturn(Future.failed(new NameNodeException.IOError(new Exception("cannot retrieve metadata"))))
+    doNothing().when(nameNode).createFile(
+      on, user.username, user.groups.head, permissions, replication, blockSize)
+    doThrow(new NameNodeException.IOError(new Exception("cannot retrieve metadata")))
       .when(nameNode).pathMetadata(on)
     createFile(context) must eventuallyFailWith[NameNodeException.IOError]
   }

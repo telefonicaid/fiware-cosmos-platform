@@ -16,8 +16,7 @@
 
 package es.tid.cosmos.infinity.server.hadoop
 
-import java.io.InputStream
-import scala.concurrent.Future
+import java.io.{IOException, InputStream}
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.util.ToClose
@@ -29,13 +28,12 @@ trait DataNode extends UserPrivileges {
     * @param path   The path whose content is to be obtained
     * @param offset The optional offset from where to start reading the content
     * @param length The optional length of content to read from the given offset
-    * @return       A future containing the content part as per offset and length.
+    * @return       The content part as per offset and length.
     *               The content is provided as an autocloseable stream.
     *               Use [[ToClose.useAndClose]] to safely read the content part.
-    *               It can fail with `java.io.IOException` if an error occurs when attempting to
-    *               obtain the content
     */
-  def open(path: Path, offset: Option[Long], length: Option[Long]): Future[ToClose[InputStream]]
+  @throws[IOException]
+  def open(path: Path, offset: Option[Long], length: Option[Long]): ToClose[InputStream]
 
   /** Add content to the existing content of the file located at the given path.
     *
@@ -45,11 +43,9 @@ trait DataNode extends UserPrivileges {
     *                      e.g. You can use
     *                      [[es.tid.cosmos.infinity.server.util.IoUtil.withAutoClose]]
     *                      to automatically release the stream.
-    * @return              The future representing the completion of the append action.
-    *                      It can fail with `java.io.IOException` if an error occurs when attempting
-    *                      to obtain the content
     */
-  def append(path: Path, contentStream: InputStream): Future[Unit]
+  @throws[IOException]
+  def append(path: Path, contentStream: InputStream): Unit
 
   /** Overwrite the content of the file located at the given path.
     *
@@ -59,9 +55,7 @@ trait DataNode extends UserPrivileges {
     *                      e.g. You can use
     *                      [[es.tid.cosmos.infinity.server.util.IoUtil.withAutoClose]]
     *                      to automatically release the stream.
-    * @return              The future representing the completion of the overwrite action.
-    *                      It can fail with `java.io.IOException` if an error occurs when attempting
-    *                      to obtain the content
     */
-  def overwrite(path: Path, contentStream: InputStream): Future[Unit]
+  @throws[IOException]
+  def overwrite(path: Path, contentStream: InputStream): Unit
 }

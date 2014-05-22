@@ -30,7 +30,10 @@ case class OverwriteContent(
     on: Path,
     in: InputStream) extends ContentAction {
 
-  override def apply(context: Context): Future[ContentAction.Result] = dataNode.as(context.user) {
-    for (_ <- dataNode.overwrite(on, in)) yield Overwritten(on)
+  override def apply(context: Context): Future[ContentAction.Result] = future {
+    dataNode.as(context.user) {
+      dataNode.overwrite(on, in)
+      Overwritten(on)
+    }
   }
 }

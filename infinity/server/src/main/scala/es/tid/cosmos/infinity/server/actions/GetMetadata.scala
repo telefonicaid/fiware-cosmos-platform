@@ -17,6 +17,7 @@
 package es.tid.cosmos.infinity.server.actions
 
 import scala.concurrent._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.server.actions.Action.Context
@@ -25,11 +26,9 @@ import es.tid.cosmos.infinity.server.hadoop.NameNode
 
 case class GetMetadata(nameNode: NameNode, on: Path) extends MetadataAction {
 
-  import ExecutionContext.Implicits.global
-
-  override def apply(context: Context): Future[MetadataAction.Result] = nameNode.as(context.user) {
-    for {
-      meta <- nameNode.pathMetadata(on)
-    } yield Retrieved(meta)
+  override def apply(context: Context): Future[MetadataAction.Result] = future {
+    nameNode.as(context.user) {
+      Retrieved(nameNode.pathMetadata(on))
+    }
   }
 }

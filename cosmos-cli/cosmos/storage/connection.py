@@ -18,6 +18,7 @@ import os
 
 from cosmos.common.cosmos_requests import CosmosRequests
 from cosmos.common.exceptions import OperationError, ResponseError
+from cosmos.common.paths import PathTypes
 from cosmos.common.routes import Routes
 from cosmos.common.version import assert_supported_version
 from cosmos.storage.infinity import InfinityClient
@@ -57,16 +58,34 @@ class StorageConnection(object):
         it will be uploaded and renamed at the same time.  The remote path of
         the upload is returned in any case.
         """
-        remote_type = self.__client.list_path(remote_path).path_type()
-        if remote_type == 'FILE':
-            raise OperationError("Path %s already exists" % remote_path)
-        if remote_path.endswith('/') or remote_type == 'DIRECTORY':
-            target_path = os.path.join(remote_path,
-                                       os.path.split(local_file.name)[-1])
-        else:
-            target_path = remote_path
+        target_path = self._upload_target_path(
+            remote_path, os.path.split(local_file.name)[-1])
         self.__client.put_file(local_file, target_path)
         return target_path
+
+    def _upload_target_path(self, remote_path, local_file_name):
+        path_listing = self.__client.list_path(remote_path)
+        if path_listing is None:
+            if remote_path.endswith('/'):
+                raise ResponseError("Directory %s does not exist" % remote_path)
+            else:
+                parent_path = os.path.dirname(remote_path)
+                parent_listing = self.__client.list_path(parent_path)
+                if parent_listing is None:
+                    raise ResponseError("Parent directory %s does not exist" % parent_path)
+                else:
+                    target_path = remote_path
+        else:
+            StorageConnection._require_directory(remote_path, path_listing)
+            target_path = os.path.join(remote_path, local_file_name)
+        return target_path
+
+    @staticmethod
+    def _require_directory(path, path_listing):
+        if path_listing.path_type == PathTypes.FILE:
+            raise OperationError("Path %s already exists" % path)
+        if path_listing.path_type != PathTypes.DIRECTORY:
+            raise OperationError("Path %s is not a directory" % path)
 
     def upload_filename(self, local_filename, remote_path):
         """Upload a local file given by path.

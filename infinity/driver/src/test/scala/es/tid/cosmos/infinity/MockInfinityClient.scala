@@ -62,7 +62,7 @@ class MockInfinityClient extends MockitoSugar {
     givenExistingPath(FileMetadata(
       path = path,
       metadata = defaultMetadataUrl,
-      content = Some(new URL(s"https://content$path")),
+      content = new URL(s"https://content$path"),
       owner = "user",
       group = "group",
       modificationTime = defaultTime,

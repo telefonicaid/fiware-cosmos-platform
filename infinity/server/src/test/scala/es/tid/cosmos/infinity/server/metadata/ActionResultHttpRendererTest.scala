@@ -37,7 +37,7 @@ class ActionResultHttpRendererTest extends FlatSpec with MustMatchers with Mocki
 
   val metadata = FileMetadata(
     path = Path.absolute("/path/to/file"),
-    content = Some(new URL("http://content.example.com/path/to/file")),
+    content = new URL("http://content.example.com/path/to/file"),
     owner = "gandalf",
     group = "istari",
     metadata = new URL("http://meta.example.com/path/to/file"),

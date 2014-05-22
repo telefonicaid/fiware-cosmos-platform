@@ -21,6 +21,7 @@ import time
 from cosmos.cli.config import load_config
 from cosmos.cli.tables import format_table
 from cosmos.cli.util import ExitWithError
+from cosmos.common.paths import PathTypes
 from cosmos.storage.connection import connect
 
 
@@ -171,8 +172,10 @@ def format_statuses(statuses):
 def ls_command(args, config, conn):
     """List directory files"""
     listing = conn.list_path(args.path)
-    if not listing.exists:
+    if listing is None:
         raise ExitWithError(404, "Directory %s not found" % args.path)
+    if listing.path_type != PathTypes.DIRECTORY:
+        raise ExitWithError(400, "%s is not a directory" % args.path)
     for line in format_statuses(listing.statuses):
         print line.rstrip()
     if not listing.statuses:

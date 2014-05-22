@@ -81,7 +81,7 @@ class InMemoryInfinityMetadata(
 
   private implicit class MetadataOps(metadata: PathMetadata) {
     def moved(to: SubPath): PathMetadata = metadata.transform(
-      onFile = _.copy(path = to, metadata = dataFactory.metadataUrl(to), content = Some(contentUrl(to))),
+      onFile = _.copy(path = to, metadata = dataFactory.metadataUrl(to), content = contentUrl(to)),
       onDir  = _.copy(path = to, metadata = dataFactory.metadataUrl(to))
     )
 

@@ -14,11 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from urlparse import urlparse, urljoin
-
 import json
+import os.path
 import re
 import requests
+from urlparse import urlparse, urljoin
 
 from cosmos.common.exceptions import (OperationError, ResponseError)
 
@@ -66,7 +66,8 @@ class InfinityClient(object):
         self.content = 'content'
 
     def put_file(self, local_file, remote_path):
-        (base_path, filename) = str(remote_path).rsplit('/', 1)
+        base_path = os.path.dirname(remote_path)
+        filename = os.path.basename(remote_path)
         create_file_body = json.dumps({
             "action": "mkfile",
             "name": filename

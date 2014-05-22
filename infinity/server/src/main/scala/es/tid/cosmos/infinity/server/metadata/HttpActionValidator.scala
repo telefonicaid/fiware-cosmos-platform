@@ -32,11 +32,14 @@ import es.tid.cosmos.infinity.server.hadoop.NameNode
 class HttpActionValidator(config: InfinityConfig, nameNode: NameNode) {
 
   private val jsonParser = new RequestMessageParser()
-  private val metadataUriPrefix = s"""${config.metadataBasePath}(/[^\\?]*)(\\?.*)?""".r
+  private val metadataUriPrefix = {
+    val base = config.metadataBasePath.replaceAll("/*$", "")
+    s"""$base(/[^\\?]*)?(\\?.*)?""".r
+  }
 
   def apply[T](request: HttpRequest[T]): Try[MetadataAction] = Try {
     request.uri match {
-      case metadataUriPrefix(path, _) => metadataAction(path, request)
+      case metadataUriPrefix(path, _) => metadataAction(Option(path).getOrElse("/"), request)
       case uri => throw RequestParsingException.InvalidResourcePath(uri)
     }
   }

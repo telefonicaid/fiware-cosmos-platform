@@ -18,28 +18,27 @@ package es.tid.cosmos.infinity.server.hadoop
 
 import es.tid.cosmos.infinity.common.permissions.{PermissionsMask, UserProfile}
 import es.tid.cosmos.infinity.common.fs.{PathMetadata, Path}
-import scala.concurrent.Future
 
 class DummyNameNode extends NameNode {
 
-  override def pathMetadata(path: Path): Future[PathMetadata] = ???
+  override def pathMetadata(path: Path): PathMetadata = ???
 
   override def createDirectory(
-    path: Path, owner: String, group: String, permissions: PermissionsMask): Future[Unit] = ???
+    path: Path, owner: String, group: String, permissions: PermissionsMask): Unit = ???
 
   override def createFile(
     path: Path, owner: String, group: String, permissions: PermissionsMask,
-    replication: Option[Short], blockSize: Option[Long]): Future[Unit] = ???
+    replication: Option[Short], blockSize: Option[Long]): Unit = ???
 
-  override def deletePath(path: Path, recursive: Boolean): Future[Unit] = ???
+  override def deletePath(path: Path, recursive: Boolean): Unit = ???
 
-  override def movePath(from: Path, to: Path): Future[Unit] = ???
+  override def movePath(from: Path, to: Path): Unit = ???
 
-  override def setPermissions(path: Path, permissions: PermissionsMask): Future[Unit] = ???
+  override def setPermissions(path: Path, permissions: PermissionsMask): Unit = ???
 
-  override def setGroup(path: Path, newGroup: String): Future[Unit] = ???
+  override def setGroup(path: Path, newGroup: String): Unit = ???
 
-  override def setOwner(path: Path, newOwner: String): Future[Unit] = ???
+  override def setOwner(path: Path, newOwner: String): Unit = ???
 
   override def as[A](user: UserProfile)(body: => A): A = body
 }

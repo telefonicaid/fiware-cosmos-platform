@@ -18,7 +18,7 @@ package es.tid.cosmos.infinity.server.hadoop
 
 import es.tid.cosmos.infinity.common.fs.Path
 
-class DataNodeException(message: String, cause: Throwable) extends Exception(message, cause)
+class DataNodeException(message: String, cause: Throwable) extends RuntimeException(message, cause)
 
 object DataNodeException {
   case class FileNotFound(path: Path, cause: Throwable = null) extends DataNodeException(

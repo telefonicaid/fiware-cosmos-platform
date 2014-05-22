@@ -18,7 +18,7 @@ package es.tid.cosmos.infinity.server.actions
 
 import java.io.InputStream
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{future, Future}
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.Action.Context
@@ -30,7 +30,10 @@ case class AppendContent(
     on: Path,
     in: InputStream) extends ContentAction {
 
-  override def apply(context: Context): Future[ContentAction.Result] = dataNode.as(context.user) {
-    for (_ <- dataNode.append(on, in)) yield Appended(on)
+  override def apply(context: Context): Future[ContentAction.Result] = future {
+    dataNode.as(context.user) {
+      dataNode.append(on, in)
+      Appended(on)
+    }
   }
 }

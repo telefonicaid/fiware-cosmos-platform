@@ -20,7 +20,6 @@ import java.util
 import java.io.FileNotFoundException
 import java.net.URL
 import java.util.Date
-import scala.concurrent._
 import scala.util.Try
 
 import org.apache.hadoop.fs.{CreateFlag, FileAlreadyExistsException, ParentNotDirectoryException}
@@ -43,12 +42,10 @@ class HdfsNameNode(
     hadoopNameNode: HadoopNameNode,
     urlMapper: UrlMapper) extends NameNode {
 
-  import ExecutionContext.Implicits.global
-
   private val protocols = new HdfsNameNode.NamenodeProtocolsLoaner(hadoopNameNode.getRpcServer)
   private val nameSystem = hadoopNameNode.getNamesystem
 
-  override def pathMetadata(path: Path): Future[PathMetadata] = future {
+  override def pathMetadata(path: Path): PathMetadata = {
     val fileStatus = checkedFileInfo(path)
     if (fileStatus.isDir) dirMetadataOf(path, fileStatus, directoryContents(path, fileStatus))
     else fileMetadataOf(path, fileStatus)
@@ -60,41 +57,36 @@ class HdfsNameNode(
       group: String,
       permissions: PermissionsMask,
       replication: Option[Short],
-      blockSize: Option[Long]): Future[Unit] = future {
-    protocols.forPath(path) { p =>
-      p.create(
-        path.toString, // src
-        permissions.toHadoop,
-        "hdfs", // TODO: determine what this parameter is used for
-        new EnumSetWritable(util.EnumSet.of(CreateFlag.CREATE)),
-        false, //createParent
-        replication.getOrElse(config.replication),
-        blockSize.getOrElse(config.blockSize))
-    }
+      blockSize: Option[Long]): Unit =  protocols.forPath(path) { p =>
+    p.create(
+      path.toString, // src
+      permissions.toHadoop,
+      "hdfs", // TODO: determine what this parameter is used for
+      new EnumSetWritable(util.EnumSet.of(CreateFlag.CREATE)),
+      false, //createParent
+      replication.getOrElse(config.replication),
+      blockSize.getOrElse(config.blockSize))
   }
 
   override def createDirectory(
       path: Path,
       owner: String,
       group: String,
-      permissions: PermissionsMask): Future[Unit] = future {
-    protocols.forPath(path) { p =>
-      p.mkdirs(
-        path.toString, // src
-        permissions.toHadoop,
-        false) // createParent
-    }
+      permissions: PermissionsMask): Unit =  protocols.forPath(path) { p =>
+    p.mkdirs(
+      path.toString, // src
+      permissions.toHadoop,
+      false) // createParent
   }
 
-  override def deletePath(path: Path, recursive: Boolean): Future[Unit] = future {
+  override def deletePath(path: Path, recursive: Boolean): Unit =
     protocols.forPath(path) { p =>
       if (!p.delete(path.toString, recursive)) {
         throw new IllegalStateException("unexpected return value from NameNode.delete()")
       }
     }
-  }
 
-  override def movePath(from: Path, to: Path): Future[Unit] = future {
+  override def movePath(from: Path, to: Path): Unit = {
     requirePathExists(from)
     requirePathNotExists(to)
     protocols.forPath(from) { p =>
@@ -104,17 +96,16 @@ class HdfsNameNode(
     }
   }
 
-  override def setOwner(path: Path, newOwner: String): Future[Unit] =
+  override def setOwner(path: Path, newOwner: String): Unit =
     setOwnerAndGroup(path, newOwner, HdfsNameNode.UseSameGroup)
 
-  override def setGroup(path: Path, newGroup: String): Future[Unit] =
+  override def setGroup(path: Path, newGroup: String): Unit =
     setOwnerAndGroup(path, HdfsNameNode.UseSameUser, newGroup)
 
-  override def setPermissions(path: Path, permissions: PermissionsMask): Future[Unit] = future {
+  override def setPermissions(path: Path, permissions: PermissionsMask): Unit =
     protocols.forPath(path) { p =>
       p.setPermission(path.toString, permissions.toHadoop)
     }
-  }
 
   private def checkedFileInfo(path: Path): HdfsFileStatus = protocols.forPath(path) { p =>
     Option(p.getFileInfo(path.toString)).getOrElse(throw NameNodeException.NoSuchPath(path))
@@ -188,9 +179,8 @@ class HdfsNameNode(
       urlMapper.contentUrl(path, randomDataNode.getHostName)
     }
 
-  private def setOwnerAndGroup(path: Path, owner: String, group: String) = future {
+  private def setOwnerAndGroup(path: Path, owner: String, group: String) =
     protocols.forPath(path) { p => p.setOwner(path.toString, owner, group) }
-  }
 
   /** Check whether given path exists, throwing NoSuchPath if not. */
   private def requirePathExists(path: Path): Unit = checkedFileInfo(path)

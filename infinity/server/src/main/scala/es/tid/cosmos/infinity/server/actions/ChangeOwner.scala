@@ -17,6 +17,7 @@
 package es.tid.cosmos.infinity.server.actions
 
 import scala.concurrent._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.actions.Action.Context
@@ -25,12 +26,10 @@ import es.tid.cosmos.infinity.server.hadoop.NameNode
 
 case class ChangeOwner(nameNode: NameNode, on: Path, owner: String) extends MetadataAction {
 
-  import ExecutionContext.Implicits.global
-
-  override def apply(context: Context): Future[MetadataAction.Result] = nameNode.as(context.user) {
-    for {
-      _ <- nameNode.setOwner(on, owner)
-      metadata <- nameNode.pathMetadata(on)
-    } yield OwnerSet(metadata)
+  override def apply(context: Context): Future[MetadataAction.Result] = future {
+    nameNode.as(context.user) {
+      nameNode.setOwner(on, owner)
+      OwnerSet(nameNode.pathMetadata(on))
+    }
   }
 }

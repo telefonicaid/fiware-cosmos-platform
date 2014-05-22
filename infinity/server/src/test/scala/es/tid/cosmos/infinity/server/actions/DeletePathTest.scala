@@ -16,8 +16,6 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import scala.concurrent.Future
-
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -29,20 +27,20 @@ import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 class DeletePathTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   "Delete path action" must "return Deleted upon successful delete" in new Fixture {
-    doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
-    doReturn(Future.successful(())).when(nameNode).deletePath(on, isRecursive)
+    doReturn(metadata).when(nameNode).pathMetadata(on)
+    doNothing().when(nameNode).deletePath(on, isRecursive)
     deletePath(context) must eventually (be (MetadataAction.Deleted(metadata)))
   }
 
   it must "fail if name node fails to delete the file" in new Fixture {
-    doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
-    doReturn(Future.failed(new NameNodeException.IOError(new Exception("cannot delete"))))
+    doReturn(metadata).when(nameNode).pathMetadata(on)
+    doThrow(new NameNodeException.IOError(new Exception("cannot delete")))
       .when(nameNode).deletePath(on, isRecursive)
     deletePath(context) must eventuallyFailWith[NameNodeException.IOError]
   }
 
   it must "fail if name node fails to retrieve old metadata" in new Fixture {
-    doReturn(Future.failed(new NameNodeException.IOError(new Exception("cannot retrieve metadata"))))
+    doThrow(new NameNodeException.IOError(new Exception("cannot retrieve metadata")))
       .when(nameNode).pathMetadata(on)
     deletePath(context) must eventuallyFailWith[NameNodeException.IOError]
   }

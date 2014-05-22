@@ -16,7 +16,7 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import scala.concurrent.Future
+import scala.concurrent.{future, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.infinity.common.fs.Path
@@ -30,7 +30,10 @@ case class GetContent(
     offset: Option[Long],
     length: Option[Long]) extends ContentAction {
 
-  override def apply(context: Context): Future[ContentAction.Result] = dataNode.as(context.user) {
-    for (inputStream <- dataNode.open(on, offset, length)) yield Found(inputStream)
+  override def apply(context: Context): Future[ContentAction.Result] = future {
+    dataNode.as(context.user) {
+      val inputStream = dataNode.open(on, offset, length)
+      Found(inputStream)
+    }
   }
 }

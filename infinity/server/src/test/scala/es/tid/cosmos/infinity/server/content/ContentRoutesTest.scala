@@ -17,14 +17,13 @@
 package es.tid.cosmos.infinity.server.content
 
 import java.io.{ByteArrayInputStream, InputStream}
-import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Success
 
 import com.typesafe.config.ConfigFactory
 import org.mockito.Matchers.{any, eq =>the}
-import org.mockito.Mockito.{doReturn, spy}
+import org.mockito.Mockito.{doThrow, doNothing, doReturn, spy}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import unfiltered.filter.async.Plan.Intent
@@ -62,7 +61,7 @@ class ContentRoutesTest extends FlatSpec
     routeHandlingNotFound(hadoopBehavior = openFileNotFound)
 
     it must "correctly route an authorized and supported request" in new WithContent {
-      doReturn(Future.successful(ToClose(inputStream)))
+      doReturn(ToClose(inputStream))
         .when(routes.hadoopApi).open(the(routes.somePath), any[Option[Long]], any[Option[Long]])
       routes.intent.apply(responder) must be (Success())
       responder.response_> must runUnder(1 second)
@@ -80,8 +79,7 @@ class ContentRoutesTest extends FlatSpec
     )
 
     it must "correctly route an authorized request on existing file" in new WithContent(toPost) {
-      doReturn(Future.successful())
-        .when(routes.hadoopApi).append(the(routes.somePath), any[InputStream])
+      doNothing().when(routes.hadoopApi).append(the(routes.somePath), any[InputStream])
       routes.intent.apply(responder) must be (Success())
       responder.response_> must runUnder(1 second)
       baseResponse._status must be (NoContent.code)
@@ -97,8 +95,7 @@ class ContentRoutesTest extends FlatSpec
     )
 
     it must "correctly route an authorized request on existing file" in new WithContent(toPut) {
-      doReturn(Future.successful())
-        .when(routes.hadoopApi).overwrite(the(routes.somePath), any[InputStream])
+      doNothing().when(routes.hadoopApi).overwrite(the(routes.somePath), any[InputStream])
       routes.intent.apply(responder) must be (Success())
       responder.response_> must runUnder(1 second)
       baseResponse._status must be (NoContent.code)
@@ -106,17 +103,17 @@ class ContentRoutesTest extends FlatSpec
   }
 
   def openFileNotFound(dataNode: DataNode): Unit = {
-    doReturn(Future.failed(DataNodeException.FileNotFound(Path.absolute("/"))))
+    doThrow(DataNodeException.FileNotFound(Path.absolute("/")))
       .when(dataNode).open(any[Path], any[Option[Long]], any[Option[Long]])
   }
 
   def appendFileNotFound(dataNode: DataNode): Unit = {
-    doReturn(Future.failed(DataNodeException.FileNotFound(Path.absolute("/"))))
+    doThrow(DataNodeException.FileNotFound(Path.absolute("/")))
       .when(dataNode).append(any[Path], any[InputStream])
   }
 
   def overwriteFileNotFound(dataNode: DataNode): Unit = {
-    doReturn(Future.failed(DataNodeException.FileNotFound(Path.absolute("/"))))
+    doThrow(DataNodeException.FileNotFound(Path.absolute("/")))
       .when(dataNode).overwrite(any[Path], any[InputStream])
   }
 

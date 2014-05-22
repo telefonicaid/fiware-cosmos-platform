@@ -16,7 +16,8 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Future, future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
@@ -27,12 +28,10 @@ import es.tid.cosmos.infinity.server.hadoop.NameNode
 case class CreateDirectory(
     nameNode: NameNode, on: Path, permissions: PermissionsMask) extends MetadataAction {
 
-  import ExecutionContext.Implicits.global
-
-  override def apply(context: Context): Future[MetadataAction.Result] = nameNode.as(context.user) {
-    for {
-      _ <- nameNode.createDirectory(on, context.user.username, context.user.groups.head, permissions)
-      metadata <- nameNode.pathMetadata(on)
-    } yield Created(metadata)
+  override def apply(context: Context): Future[MetadataAction.Result] = future {
+    nameNode.as(context.user) {
+      nameNode.createDirectory(on, context.user.username, context.user.groups.head, permissions)
+      Created(nameNode.pathMetadata(on))
+    }
   }
 }

@@ -17,7 +17,6 @@
 package es.tid.cosmos.infinity.server.metadata
 
 import java.io.StringReader
-import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.Success
@@ -60,7 +59,7 @@ class MetadataRoutesTest extends FlatSpec
     routeHandlingNotFound(hadoopBehavior = givenPathNotFound)
     //TODO: Cross cutting case?
     it should "return 500 on IOErrors" in new Authenticated(identity) {
-      doReturn(Future.failed(NameNodeException.IOError()))
+      doThrow(NameNodeException.IOError())
         .when(routes.hadoopApi).pathMetadata(any())
       routes.intent.apply(responder) must be (Success())
       responder.response_> must runUnder(1 second)
@@ -88,7 +87,7 @@ class MetadataRoutesTest extends FlatSpec
     )
 
     it must "return 409 when the path already exists" in new Authenticated(toCreateFile) {
-      doReturn(Future.failed(NameNodeException.PathAlreadyExists(Path.absolute("/"))))
+      doThrow(NameNodeException.PathAlreadyExists(Path.absolute("/")))
         .when(routes.hadoopApi).createFile(any(), any(), any(), any(), any(), any())
       routes.intent.apply(responder) must be (Success())
       responder.response_> must runUnder(1 second)
@@ -102,7 +101,7 @@ class MetadataRoutesTest extends FlatSpec
     }
 
     it must "return 422 when the parent is not a directory" in new Authenticated(toCreateFile) {
-      doReturn(Future.failed(NameNodeException.ParentNotDirectory(Path.absolute("/"))))
+      doThrow(NameNodeException.ParentNotDirectory(Path.absolute("/")))
         .when(routes.hadoopApi).createFile(any(), any(), any(), any(), any(), any())
       routes.intent.apply(responder) must be (Success())
       responder.response_> must runUnder(1 second)
@@ -206,6 +205,6 @@ class MetadataRoutesTest extends FlatSpec
     givenNotFoundWhen(nameNode).setPermissions(any(), any())
 
   def givenNotFoundWhen(nameNode: NameNode) =
-    doReturn(Future.failed(NameNodeException.NoSuchPath(Path.absolute("/")))).when(nameNode)
+    doThrow(NameNodeException.NoSuchPath(Path.absolute("/"))).when(nameNode)
 
 }

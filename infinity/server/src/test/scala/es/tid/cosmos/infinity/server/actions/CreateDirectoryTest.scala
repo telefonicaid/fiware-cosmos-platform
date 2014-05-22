@@ -16,8 +16,6 @@
 
 package es.tid.cosmos.infinity.server.actions
 
-import scala.concurrent.Future
-
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -29,22 +27,20 @@ import es.tid.cosmos.infinity.server.hadoop.NameNodeException
 class CreateDirectoryTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   "Create directory action" must "return Created upon successful creation" in new Fixture {
-    doReturn(Future.successful(())).when(nameNode)
-      .createDirectory(on, user.username, user.groups.head, permissions)
-    doReturn(Future.successful(metadata)).when(nameNode).pathMetadata(on)
+    doNothing().when(nameNode).createDirectory(on, user.username, user.groups.head, permissions)
+    doReturn(metadata).when(nameNode).pathMetadata(on)
     createDirectory(context) must eventually (be (MetadataAction.Created(metadata)))
   }
 
   it must "fail if name node fails to create the directory" in new Fixture {
-    doReturn(Future.failed(new NameNodeException.IOError(new Exception("cannot change permissions"))))
+    doThrow(new NameNodeException.IOError(new Exception("cannot change permissions")))
       .when(nameNode).createDirectory(on, user.username, user.groups.head, permissions)
     createDirectory(context) must eventuallyFailWith[NameNodeException.IOError]
   }
 
   it must "fail if name node fails to retrieve new metadata" in new Fixture {
-    doReturn(Future.successful(())).when(nameNode)
-      .createDirectory(on, user.username, user.groups.head, permissions)
-    doReturn(Future.failed(new NameNodeException.IOError(new Exception("cannot create directory"))))
+    doNothing().when(nameNode).createDirectory(on, user.username, user.groups.head, permissions)
+    doThrow(new NameNodeException.IOError(new Exception("cannot create directory")))
       .when(nameNode).pathMetadata(on)
     createDirectory(context) must eventuallyFailWith[NameNodeException.IOError]
   }

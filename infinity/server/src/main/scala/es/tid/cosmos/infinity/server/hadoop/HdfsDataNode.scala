@@ -17,8 +17,6 @@
 package es.tid.cosmos.infinity.server.hadoop
 
 import java.io.InputStream
-import scala.concurrent._
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.math.min
 
 import org.apache.commons.io.input.BoundedInputStream
@@ -41,8 +39,8 @@ class HdfsDataNode private[hadoop] (
     this(clientFactory, bufferSize, defaultStreamFactory)
 
   override def open(
-      path: Path, offset: Option[Long], length: Option[Long]): Future[ToClose[InputStream]] =
-    future { withClient { client =>
+      path: Path, offset: Option[Long], length: Option[Long]): ToClose[InputStream] =
+    withClient { client =>
       checkAndGetValidFileInfo(path, client)
       val actualOffset: Long = offset.getOrElse(NoOffset)
       val in = new HdfsDataInputStream(client.open(path.toString))
@@ -50,20 +48,20 @@ class HdfsDataNode private[hadoop] (
       val visibleFileLength = in.getVisibleLength - actualOffset
       val readUpTo = length.map(l => min(l, visibleFileLength)).getOrElse(visibleFileLength)
       ToClose(boundedStreamFactory(in, readUpTo), client)
-    }}
+    }
 
 
-  override def append(path: Path, contentStream: InputStream): Future[Unit] =
-    future { withClient { client =>
+  override def append(path: Path, contentStream: InputStream): Unit =
+    withClient { client =>
       checkAndGetValidFileInfo(path, client)
       val out = client.append(path.toString, bufferSize, NoProgress, NoStatistics)
       IoUtil.withAutoClose(Seq(contentStream, out)) {
         IOUtils.copyBytes(contentStream, out, bufferSize)
       }
-    }}
+    }
 
-  override def overwrite(path: Path, contentStream: InputStream): Future[Unit] =
-    future { withClient { client =>
+  override def overwrite(path: Path, contentStream: InputStream): Unit =
+    withClient { client =>
       val info = checkAndGetValidFileInfo(path, client)
       val out = client.create(
         path.toString,
@@ -75,7 +73,7 @@ class HdfsDataNode private[hadoop] (
       IoUtil.withAutoClose(Seq(contentStream, out)) {
         IOUtils.copyBytes(contentStream, out, bufferSize)
       }
-    }}
+    }
 
   private def withClient[T](block: DFSClient => T): T = block(clientFactory.newClient)
 

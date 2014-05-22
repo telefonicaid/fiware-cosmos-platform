@@ -17,6 +17,7 @@
 package es.tid.cosmos.infinity.server.actions
 
 import scala.concurrent._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
@@ -33,13 +34,11 @@ case class CreateFile(
     replication: Option[Short],
     blockSize: Option[Long]) extends MetadataAction {
 
-  import ExecutionContext.Implicits.global
-
-  override def apply(context: Context): Future[MetadataAction.Result] = nameNode.as(context.user) {
-    for {
-      _ <- nameNode.createFile(
+  override def apply(context: Context): Future[MetadataAction.Result] = future{
+    nameNode.as(context.user) {
+      nameNode.createFile(
         on, context.user.username, context.user.groups.head, permissions, replication, blockSize)
-      metadata <- nameNode.pathMetadata(on)
-    } yield Created(metadata)
+      Created(nameNode.pathMetadata(on))
+    }
   }
 }

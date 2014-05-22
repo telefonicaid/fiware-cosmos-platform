@@ -75,7 +75,7 @@ class HadoopConversionsTest extends FlatSpec with MustMatchers {
     FileMetadata(
       path = Path.absolute("/some/file"),
       metadata = new URL("http://metadata/some/file"),
-      content =  new URL("http://content/some/file"),
+      content = new URL("http://content/some/file"),
       owner = "owner",
       group = "group",
       modificationTime = new Date(42),

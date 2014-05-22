@@ -29,7 +29,7 @@ CHUNK_SIZE = 4096
 FILE_PERMISSIONS = '640'
 
 class DirectoryListing(object):
-    """Returned when an existing is listed"""
+    """Returned when an existing directory is listed"""
     def __init__(self, statuses=None):
         self.path_type = PathTypes.DIRECTORY
         if not statuses: statuses = []
@@ -43,8 +43,7 @@ class DirectoryListing(object):
         return 'Listing(%d file%s)' % (size, '' if size == 1 else 's')
 
 class FileMetadata(object):
-    """Returned when listing a file path"""
-
+    """Returned when listing an existing file path"""
     def __init__(self, the_json):
         self.path_type = PathTypes.FILE
         self.metadata = the_json
@@ -90,11 +89,12 @@ class InfinityClient(object):
 
     def list_path(self, path):
         """Lists a directory or a file. Returns an instance
-        of DirectoryListing or FileMetadata."""
+        of DirectoryListing for existing directories,
+         FileMetadata for existing files or
+         None when path does not exist."""
         r = self.make_call(self.client.get, path, self.metadata)
         if r.status_code == 200:
-            the_json = r.json()
-            return InfinityClient._file_or_dir(the_json)
+            return InfinityClient._file_or_dir(r.json())
         elif r.status_code == 404:
             return None
         else:
@@ -153,8 +153,10 @@ class InfinityClient(object):
     @staticmethod
     def _file_or_dir(the_json):
         path_type = the_json['type']
-        return {
-            PathTypes.FILE: FileMetadata(the_json),
-            PathTypes.DIRECTORY: DirectoryListing(statuses=the_json['content'])
-        }[path_type]
+        if path_type == PathTypes.FILE:
+            return FileMetadata(the_json)
+        elif path_type == PathTypes.DIRECTORY:
+            return DirectoryListing(statuses=the_json['content'])
+        else:
+            raise OperationError("Unknown resource type: %s" % path_type)
 

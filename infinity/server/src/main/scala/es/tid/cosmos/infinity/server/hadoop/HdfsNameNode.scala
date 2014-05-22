@@ -173,8 +173,10 @@ class HdfsNameNode(
     )
   }
   /** Choose a content server at random by mapping a random datanode to its content server url.
-    * Since the content server uses a DFSClient under the covers, the eventual datanode will be
-    * picked according to Hadoop's proximity strategy.
+    * The content server uses a DFSClient under the covers. The eventual datanode will be
+    * picked according to Hadoop's proximity strategy which should resolve to the same datanode
+    * if that node contains the required blocks or one close-by to it that does.
+    * This does not offer any proximity strategy with regards to the user.
     */
   private def pickContentServer(path: Path, fileStatus: HdfsFileStatus): URL =
     protocols.forPath(path) { p =>

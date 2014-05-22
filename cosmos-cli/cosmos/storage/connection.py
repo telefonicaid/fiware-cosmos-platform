@@ -87,7 +87,6 @@ class StorageConnection(object):
         if path_listing.path_type != PathTypes.DIRECTORY:
             raise OperationError("Path %s is not a directory" % path)
 
-
     def upload_filename(self, local_filename, remote_path):
         """Upload a local file given by path.
 

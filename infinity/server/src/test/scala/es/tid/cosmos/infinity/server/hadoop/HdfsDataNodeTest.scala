@@ -62,7 +62,8 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers {
   it must "fail when underlying client fails to open file" in new Fixture {
     given(dfsClient.getFileInfo(path.toString)).willReturn(mock[HdfsFileStatus])
     given(dfsClient.open(path.toString)).willThrow(ioException)
-    evaluating { dataNode.open(path, offset = None, length = None) } must produce[IOException]
+    evaluating { dataNode.open(path, offset = None, length = None) } must
+      produce[HdfsException.IOError]
     verifyResourcesReleasedInOrder(dfsClient)
   }
 
@@ -103,7 +104,7 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers {
       HdfsDataNode.NoProgress,
       HdfsDataNode.NoStatistics)
     ).willThrow(ioException)
-    evaluating { dataNode.append(path, in) } must produce[IOException]
+    evaluating { dataNode.append(path, in) } must produce[HdfsException.IOError]
     verifyResourcesReleasedInOrder(in, dfsClient)
   }
 
@@ -129,7 +130,7 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers {
   it must "fail to overwrite when client fails" in new Fixture {
     given(dfsClient.getFileInfo(path.toString)).willReturn(mock[HdfsFileStatus])
     given(dfsClient.create(any(), any(), any(), any(), any(), any())).willThrow(ioException)
-    evaluating { dataNode.overwrite(path, in) } must produce[IOException]
+    evaluating { dataNode.overwrite(path, in) } must produce[HdfsException.IOError]
     verifyResourcesReleasedInOrder(in, dfsClient)
   }
 

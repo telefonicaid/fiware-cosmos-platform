@@ -24,6 +24,7 @@ import org.apache.hadoop.io.IOUtils
 import org.apache.hadoop.hdfs.DFSClient
 import org.apache.hadoop.hdfs.client.HdfsDataInputStream
 import org.apache.hadoop.hdfs.protocol.HdfsFileStatus
+import org.apache.hadoop.security.AccessControlException
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.hadoop.HdfsDataNode._
@@ -32,15 +33,17 @@ import es.tid.cosmos.infinity.server.util.IoUtil._
 
 /** Constructor exposing boundedStreamFactory for testability */
 class HdfsDataNode private[hadoop] (
-    clientFactory: DfsClientFactory,
+    dfsClientFactory: DfsClientFactory,
     bufferSize: Int,
     boundedStreamFactory: BoundedStreamFactory) extends DataNode {
 
   def this(clientFactory: DfsClientFactory, bufferSize: Int) =
     this(clientFactory, bufferSize, defaultStreamFactory)
 
+  private val clientFactory = new DfsClientLoaner(dfsClientFactory)
+
   override def open(path: Path, offset: Option[Long], length: Option[Long]): ToClose[InputStream] =
-    clientFactory.withFailsafeClient { client =>
+    clientFactory.forPath(path) { client =>
       checkAndGetValidFileInfo(path, client)
       val actualOffset: Long = offset.getOrElse(NoOffset)
       val in = new HdfsDataInputStream(client.open(path.toString))
@@ -53,7 +56,7 @@ class HdfsDataNode private[hadoop] (
     }
 
   override def append(path: Path, contentStream: InputStream): Unit =
-    clientFactory.withFailsafeClient { client =>
+    clientFactory.forPath(path) { client =>
       withAutoClose(contentStream, client) {
         checkAndGetValidFileInfo(path, client)
         val out = client.append(path.toString, bufferSize, NoProgress, NoStatistics)
@@ -64,7 +67,7 @@ class HdfsDataNode private[hadoop] (
     }
 
   override def overwrite(path: Path, contentStream: InputStream): Unit =
-    clientFactory.withFailsafeClient { client =>
+    clientFactory.forPath(path) { client =>
       withAutoClose(contentStream, client) {
         val info = checkAndGetValidFileInfo(path, client)
         val out = client.create(
@@ -98,5 +101,16 @@ private[hadoop] object HdfsDataNode {
   private def defaultStreamFactory(in: InputStream, length: Long) = {
     require(length >= 0, s"Length [$length] must be a positive number")
     new BoundedInputStream(in, length)
+  }
+
+  private class DfsClientLoaner(factory: DfsClientFactory) {
+    def forPath[T](path: Path)(block: DFSClient => T): T = try {
+      factory.withFailsafeClient(block)
+    } catch {
+      case e: AccessControlException => throw HdfsException.Unauthorized(path, e)
+      case e: DataNodeException => throw e
+      case e: HdfsException => throw e
+      case e: Throwable => throw HdfsException.IOError(e)
+    }
   }
 }

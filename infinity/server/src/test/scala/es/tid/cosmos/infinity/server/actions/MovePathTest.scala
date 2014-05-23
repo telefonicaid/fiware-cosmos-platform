@@ -16,7 +16,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.server.hadoop.NameNodeException
+import es.tid.cosmos.infinity.server.hadoop.HdfsException
 
 class MovePathTest extends FlatSpec with MustMatchers with FutureMatchers {
 
@@ -27,16 +27,16 @@ class MovePathTest extends FlatSpec with MustMatchers with FutureMatchers {
   }
 
   it must "fail if name node fails to move" in new Fixture {
-    doThrow(new NameNodeException.IOError(new Exception("cannot move")))
+    doThrow(new HdfsException.IOError(new Exception("cannot move")))
       .when(nameNode).movePath(from, on)
-    moveFile(context) must eventuallyFailWith[NameNodeException.IOError]
+    moveFile(context) must eventuallyFailWith[HdfsException.IOError]
   }
 
   it must "fail if name node fails to retrieve new metadata" in new Fixture {
     doNothing().when(nameNode).movePath(from, on)
-    doThrow(new NameNodeException.IOError(new Exception("cannot retrieve metadata")))
+    doThrow(new HdfsException.IOError(new Exception("cannot retrieve metadata")))
       .when(nameNode).pathMetadata(on)
-    moveFile(context) must eventuallyFailWith[NameNodeException.IOError]
+    moveFile(context) must eventuallyFailWith[HdfsException.IOError]
   }
 
   trait Fixture extends MetadataActionFixture {

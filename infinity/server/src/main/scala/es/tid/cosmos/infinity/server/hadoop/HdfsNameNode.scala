@@ -227,13 +227,14 @@ object HdfsNameNode {
     def forPath[T](path: Path)(block: NameNodeApis => T): T = try {
       block(apis)
     } catch {
-      case e: AccessControlException => throw NameNodeException.Unauthorized(path, e)
+      case e: AccessControlException => throw HdfsException.Unauthorized(path, e)
       case e: AlreadyBeingCreatedException => throw NameNodeException.PathAlreadyExists(path, e)
       case e: FileNotFoundException => throw NameNodeException.NoSuchPath(path, e)
       case e: FileAlreadyExistsException => throw NameNodeException.PathAlreadyExists(path, e)
       case e: ParentNotDirectoryException => throw NameNodeException.ParentNotDirectory(path, e)
       case e: NameNodeException => throw e
-      case e: Throwable => throw NameNodeException.IOError(e)
+      case e: HdfsException => throw e
+      case e: Throwable => throw HdfsException.IOError(e)
     }
   }
 }

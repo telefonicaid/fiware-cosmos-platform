@@ -27,8 +27,8 @@ trait NameNode extends UserPrivileges {
     * @param path The path whose metadata is to be obtained.
     * @return a FileMetadata if path contains a file, or DirectoryMetadata if it contains a directory.
     */
-  @throws[NameNodeException.IOError]
-  @throws[NameNodeException.Unauthorized]
+  @throws[HdfsException.IOError]
+  @throws[HdfsException.Unauthorized]
   @throws[NameNodeException.NoSuchPath]
   def pathMetadata(path: Path): PathMetadata
 
@@ -41,10 +41,10 @@ trait NameNode extends UserPrivileges {
     * @param replication The replication factor for the new file
     * @param blockSize The block size for the new file
     */
-  @throws[NameNodeException.IOError]
+  @throws[HdfsException.IOError]
   @throws[NameNodeException.PathAlreadyExists]
   @throws[NameNodeException.ParentNotDirectory]
-  @throws[NameNodeException.Unauthorized]
+  @throws[HdfsException.Unauthorized]
   @throws[NameNodeException.NoSuchPath]
   def createFile(
     path: Path,

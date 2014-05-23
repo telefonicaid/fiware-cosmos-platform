@@ -21,7 +21,7 @@ import org.apache.commons.logging.LogFactory
 import es.tid.cosmos.infinity.common.json.ErrorDescriptorFormatter
 import es.tid.cosmos.infinity.common.messages.ErrorDescriptor
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
-import es.tid.cosmos.infinity.server.hadoop.{DataNodeException, NameNodeException}
+import es.tid.cosmos.infinity.server.hadoop.{HdfsException, DataNodeException, NameNodeException}
 
 trait ExceptionRenderer[Request, Response] {
   import ExceptionRenderer._
@@ -43,7 +43,7 @@ trait ExceptionRenderer[Request, Response] {
       render(request, 400, ErrorCode(e), e)
     case e: AuthenticationException =>
       render(request, 401, ErrorCode(e), e)
-    case e: NameNodeException.IOError =>
+    case e: HdfsException.IOError =>
       render(request, 500, ErrorCode(e), e)
     case e: NameNodeException.NoSuchPath =>
       render(request, 404, ErrorCode(e), e)
@@ -53,7 +53,7 @@ trait ExceptionRenderer[Request, Response] {
       render(request, 409, ErrorCode(e), e)
     case e: NameNodeException.ParentNotDirectory =>
       render(request, 422, ErrorCode(e), e)
-    case e: NameNodeException.Unauthorized =>
+    case e: HdfsException.Unauthorized =>
       render(request, 403, ErrorCode(e), e)
     case e: DataNodeException.ContentPathIsDirectory =>
       render(request, 400, ErrorCode(e), e)

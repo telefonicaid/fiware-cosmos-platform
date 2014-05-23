@@ -21,7 +21,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.infinity.server.hadoop.NameNodeException
+import es.tid.cosmos.infinity.server.hadoop.HdfsException
 
 class ChangeOwnerTest extends FlatSpec with MustMatchers with FutureMatchers {
 
@@ -32,16 +32,16 @@ class ChangeOwnerTest extends FlatSpec with MustMatchers with FutureMatchers {
   }
 
   it must "fail if name node fails to set owner" in new Fixture {
-    doThrow(new NameNodeException.IOError(new Exception("cannot change owner")))
+    doThrow(new HdfsException.IOError(new Exception("cannot change owner")))
       .when(nameNode).setOwner(on, newOwner)
-    changeOwner(context) must eventuallyFailWith[NameNodeException.IOError]
+    changeOwner(context) must eventuallyFailWith[HdfsException.IOError]
   }
 
   it must "fail if name node fails to retrieve new metadata" in new Fixture {
     doNothing().when(nameNode).setOwner(on, newOwner)
-    doThrow(new NameNodeException.IOError(new Exception("cannot retrieve metadata")))
+    doThrow(new HdfsException.IOError(new Exception("cannot retrieve metadata")))
       .when(nameNode).pathMetadata(on)
-    changeOwner(context) must eventuallyFailWith[NameNodeException.IOError]
+    changeOwner(context) must eventuallyFailWith[HdfsException.IOError]
   }
 
   trait Fixture extends MetadataActionFixture {

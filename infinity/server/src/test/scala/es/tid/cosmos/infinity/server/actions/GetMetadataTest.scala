@@ -21,7 +21,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.infinity.server.hadoop.NameNodeException
+import es.tid.cosmos.infinity.server.hadoop.HdfsException
 
 class GetMetadataTest extends FlatSpec with MustMatchers with FutureMatchers {
 
@@ -31,9 +31,9 @@ class GetMetadataTest extends FlatSpec with MustMatchers with FutureMatchers {
   }
 
   it must "fail if name node fails to retrieve old metadata" in new Fixture {
-    doThrow(new NameNodeException.IOError(new Exception("cannot retrieve metadata")))
+    doThrow(new HdfsException.IOError(new Exception("cannot retrieve metadata")))
       .when(nameNode).pathMetadata(on)
-    getMetadata(context) must eventuallyFailWith[NameNodeException.IOError]
+    getMetadata(context) must eventuallyFailWith[HdfsException.IOError]
   }
 
   trait Fixture extends MetadataActionFixture {

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,16 +18,14 @@ package es.tid.cosmos.infinity.server.hadoop
 
 import es.tid.cosmos.infinity.common.fs.Path
 
-class NameNodeException(message: String, cause: Throwable) extends RuntimeException(message, cause)
+class HdfsException(message: String, cause: Throwable) extends RuntimeException(message, cause)
 
-object NameNodeException {
+/** Common errors between namenode and datanode */
+object HdfsException {
 
-  case class NoSuchPath(path: Path, cause: Throwable = null) extends NameNodeException(
-    s"no such path $path", cause)
+  case class IOError(cause: Throwable = null) extends HdfsException(
+      s"an unexpected IO error has occurred", cause)
 
-  case class PathAlreadyExists(path: Path, cause: Throwable = null) extends NameNodeException(
-    s"path $path already exists", cause)
-
-  case class ParentNotDirectory(path: Path, cause: Throwable = null) extends NameNodeException(
-    s"the parent of resource in $path is not a directory", cause)
+  case class Unauthorized(path: Path, cause: Throwable = null) extends HdfsException(
+      s"unauthorized to perform the requested operation on $path", cause)
 }

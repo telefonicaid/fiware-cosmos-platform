@@ -107,6 +107,9 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   override def mkdirs(f: Path, permission: FsPermission): Boolean =
     awaitAction(makeRecursiveDirectory(f.toInfinity, permission.toInfinity))
 
+  override protected def canonicalizeUri(uri: URI): URI =
+    new URI(uri.getScheme, null, uri.getPath, uri.getQuery, uri.getFragment)
+
   private def makeRecursiveDirectory(path: InfinityPath, mask: PermissionsMask): Future[Unit] =
     path match {
       case RootPath => Ok

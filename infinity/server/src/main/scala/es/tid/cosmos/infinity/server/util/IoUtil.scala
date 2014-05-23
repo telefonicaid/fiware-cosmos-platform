@@ -17,6 +17,7 @@
 package es.tid.cosmos.infinity.server.util
 
 import java.io.Closeable
+import scala.util.control.NonFatal
 
 /** Utility for dealing with data resources such as releasing them after being used. */
 object IoUtil {
@@ -44,7 +45,7 @@ object IoUtil {
     */
   def withAutoCloseOnFail[T](closeables: Closeable*)(block: => T): T =
     try { block } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         closeables foreach (_.close())
         throw e
     }

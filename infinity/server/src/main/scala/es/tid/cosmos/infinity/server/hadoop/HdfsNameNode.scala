@@ -25,7 +25,8 @@ import scala.util.Try
 import org.apache.hadoop.fs.{CreateFlag, FileAlreadyExistsException, ParentNotDirectoryException}
 import org.apache.hadoop.hdfs.protocol.{AlreadyBeingCreatedException, DirectoryListing, HdfsFileStatus}
 import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor
-import org.apache.hadoop.hdfs.server.namenode.{NameNode => HadoopNameNode}
+import org.apache.hadoop.hdfs.server.namenode.FSNamesystem
+import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols
 import org.apache.hadoop.net.NodeBase
 import org.apache.hadoop.security.AccessControlException
 
@@ -37,14 +38,12 @@ import es.tid.cosmos.infinity.server.urls.UrlMapper
 
 class HdfsNameNode(
     config: MetadataServerConfig,
-    hadoopNameNode: HadoopNameNode,
-    dfsClientFactory: DfsClientFactory,
+    nameNodeApis: HdfsNameNode.NameNodeApis,
     urlMapper: UrlMapper) extends NameNode {
 
   import HdfsNameNode._
 
-  private val protocols = hadoopNameNode.getRpcServer
-  private val nameSystem = hadoopNameNode.getNamesystem
+  private val apis = new NameNodeLoaner(nameNodeApis)
 
   override def pathMetadata(path: Path): PathMetadata = {
     val fileStatus = checkedFileInfo(path)
@@ -58,40 +57,40 @@ class HdfsNameNode(
       group: String,
       permissions: PermissionsMask,
       replication: Option[Short],
-      blockSize: Option[Long]): Unit = forPath(path) {
-      dfsClientFactory.withFailsafeClient { client =>
-        val out = client.create(
-          path.toString,
-          permissions.toHadoop,
-          util.EnumSet.of(CreateFlag.CREATE),
-          DontCreateParent,
-          replication.getOrElse(config.replication),
-          blockSize.getOrElse(config.blockSize),
-          NoProgress,
-          DummyBufferSize,
-          NoChecksumOptions
-        )
-        // It's a zero content creation, so nothing to write.
-        out.close()
-        client.close()
-      }
+      blockSize: Option[Long]): Unit = apis.forPath(path) { a =>
+    a.clientFactory.withFailsafeClient { client =>
+      val out = client.create(
+        path.toString,
+        permissions.toHadoop,
+        util.EnumSet.of(CreateFlag.CREATE),
+        DontCreateParent,
+        replication.getOrElse(config.replication),
+        blockSize.getOrElse(config.blockSize),
+        NoProgress,
+        DummyBufferSize,
+        NoChecksumOptions
+      )
+      // It's a zero content creation, so nothing to write.
+      out.close()
+      client.close()
     }
+  }
 
   override def createDirectory(
       path: Path,
       owner: String,
       group: String,
       permissions: PermissionsMask): Unit =
-    forPath(path) {
-      protocols.mkdirs(
+    apis.forPath(path) { a =>
+      a.protocols.mkdirs(
         path.toString,
         permissions.toHadoop,
         DontCreateParent)
     }
 
   override def deletePath(path: Path, recursive: Boolean): Unit =
-    forPath(path) {
-      if (!protocols.delete(path.toString, recursive)) {
+    apis.forPath(path) { a =>
+      if (!a.protocols.delete(path.toString, recursive)) {
         throw new IllegalStateException("unexpected return value from NameNode.delete()")
       }
     }
@@ -99,8 +98,8 @@ class HdfsNameNode(
   override def movePath(from: Path, to: Path): Unit = {
     requirePathExists(from)
     requirePathNotExists(to)
-    forPath(from) {
-      if (!protocols.rename(from.toString, to.toString)) {
+    apis.forPath(from) { a =>
+      if (!a.protocols.rename(from.toString, to.toString)) {
         throw new IllegalStateException("unexpected return value from NameNode.rename()")
       }
     }
@@ -113,17 +112,18 @@ class HdfsNameNode(
     setOwnerAndGroup(path, UseSameUser, newGroup)
 
   override def setPermissions(path: Path, permissions: PermissionsMask): Unit =
-    forPath(path) {
-      protocols.setPermission(path.toString, permissions.toHadoop)
+    apis.forPath(path) { a =>
+      a.protocols.setPermission(path.toString, permissions.toHadoop)
     }
 
-  private def checkedFileInfo(path: Path): HdfsFileStatus = forPath(path) {
-    Option(protocols.getFileInfo(path.toString)).getOrElse(throw NameNodeException.NoSuchPath(path))
+  private def checkedFileInfo(path: Path): HdfsFileStatus = apis.forPath(path) { a =>
+    Option(a.protocols.getFileInfo(path.toString))
+      .getOrElse(throw NameNodeException.NoSuchPath(path))
   }
 
   private def directoryContents(path: Path, fileStatus: HdfsFileStatus) = {
-    def getListing(start: Array[Byte]) = forPath(path) {
-      protocols.getListing(path.toString, start, false)
+    def getListing(start: Array[Byte]) = apis.forPath(path) { a =>
+      a.protocols.getListing(path.toString, start, false)
     }
     lazy val directoryListings: Stream[DirectoryListing] = getListing(HdfsFileStatus.EMPTY_NAME) #::
       directoryListings.takeWhile(_.hasMore).map(prev => getListing(prev.getLastName))
@@ -180,8 +180,8 @@ class HdfsNameNode(
     * This does not offer any proximity strategy with regards to the user.
     */
   private def pickContentServer(path: Path, fileStatus: HdfsFileStatus): URL =
-    forPath(path) {
-      val dataNodeManager = nameSystem.getBlockManager.getDatanodeManager
+    apis.forPath(path) { a =>
+      val dataNodeManager = a.nameSystem.getBlockManager.getDatanodeManager
       val randomDataNode = dataNodeManager
         .getNetworkTopology
         .chooseRandom(NodeBase.ROOT)
@@ -189,8 +189,8 @@ class HdfsNameNode(
       urlMapper.contentUrl(path, randomDataNode.getHostName)
     }
 
-  private def setOwnerAndGroup(path: Path, owner: String, group: String) = forPath(path) {
-    protocols.setOwner(path.toString, owner, group)
+  private def setOwnerAndGroup(path: Path, owner: String, group: String) = apis.forPath(path) { a =>
+    a.protocols.setOwner(path.toString, owner, group)
   }
 
   /** Check whether given path exists, throwing NoSuchPath if not. */
@@ -204,29 +204,36 @@ class HdfsNameNode(
 
 object HdfsNameNode {
 
+  case class NameNodeApis(
+      protocols: NamenodeProtocols,
+      nameSystem: FSNamesystem,
+      clientFactory: DfsClientFactory
+  )
+
   private val UseSameUser, UseSameGroup, NoProgress, NoChecksumOptions = null
   private val DontCreateParent = false
   /** Used for file creation where no content will be written */
   private val DummyBufferSize = 0
 
-
-  /** Use this to run a block of code related to a path and automatically deal with
-    * common exceptions wrapping them in the appropriate [[NameNodeException]].
-    *
-    * @param path  the path
-    * @param block the block of code to execute
-    * @tparam T    the type of result the block will return
-    * @return      the block's result
-    */
-  private def forPath[T](path: Path)(block: => T): T = try {
-    block
-  } catch {
-    case e: AccessControlException => throw NameNodeException.Unauthorized(path, e)
-    case e: AlreadyBeingCreatedException => throw NameNodeException.PathAlreadyExists(path, e)
-    case e: FileNotFoundException => throw NameNodeException.NoSuchPath(path, e)
-    case e: FileAlreadyExistsException => throw NameNodeException.PathAlreadyExists(path, e)
-    case e: ParentNotDirectoryException => throw NameNodeException.ParentNotDirectory(path, e)
-    case e: NameNodeException => throw e
-    case e: Throwable => throw NameNodeException.IOError(e)
+  private class NameNodeLoaner(apis: NameNodeApis) {
+    /** Use this to run a block of code related to a path and automatically deal with
+      * common exceptions wrapping them in the appropriate [[NameNodeException]].
+      *
+      * @param path  the path
+      * @param block the block of code to execute
+      * @tparam T    the type of result the block will return
+      * @return      the block's result
+      */
+    def forPath[T](path: Path)(block: NameNodeApis => T): T = try {
+      block(apis)
+    } catch {
+      case e: AccessControlException => throw NameNodeException.Unauthorized(path, e)
+      case e: AlreadyBeingCreatedException => throw NameNodeException.PathAlreadyExists(path, e)
+      case e: FileNotFoundException => throw NameNodeException.NoSuchPath(path, e)
+      case e: FileAlreadyExistsException => throw NameNodeException.PathAlreadyExists(path, e)
+      case e: ParentNotDirectoryException => throw NameNodeException.ParentNotDirectory(path, e)
+      case e: NameNodeException => throw e
+      case e: Throwable => throw NameNodeException.IOError(e)
+    }
   }
 }

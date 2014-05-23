@@ -53,8 +53,13 @@ class MetadataPlugin extends ServicePlugin with Configurable {
       val dfsClientFactory = new DfsClientFactory(
         getConf, NameNode.getUri(nameNode.getServiceRpcAddress))
       val urlMapper = new InfinityUrlMapper(config)
+      val apis = HdfsNameNode.NameNodeApis(
+        protocols = nameNode.getRpcServer,
+        nameSystem = nameNode.getNamesystem,
+        dfsClientFactory
+      )
       val server = new MetadataServer(
-        nameNode = new HdfsNameNode(config, nameNode, dfsClientFactory, urlMapper),
+        nameNode = new HdfsNameNode(config, apis, urlMapper),
         config = config,
         authService = authentication)
       server.start()

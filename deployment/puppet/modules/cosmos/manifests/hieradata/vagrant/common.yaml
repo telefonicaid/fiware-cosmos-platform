@@ -64,6 +64,7 @@ cosmos::params::ambari_yarn_container_min_memory: 10
 cosmos::params::ambari_yarn_virtual_physical_memory_ratio: 2.1
 cosmos::params::infinity_secret: 'inf1nity_secret'
 cosmos::params::infinity_server_port: 51070
+cosmos::params::infinity_replication: 1
 cosmos::params::infinity_proxy_ssl_cert_source: "cosmos/environments/%{environment}/certs/infinity-proxy_cer.pem.erb"
 cosmos::params::infinity_proxy_ssl_key_source: "cosmos/environments/%{environment}/certs/infinity-proxy_key.pem.erb"
 cosmos::openvz::images::source_image_file_dir: '/vagrant/target'

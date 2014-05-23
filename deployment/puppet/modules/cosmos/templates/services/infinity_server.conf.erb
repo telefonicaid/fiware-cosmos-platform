@@ -36,6 +36,7 @@ include "cluster-properties"
             "dfs.infinity.supergroup" = "hdfs"
             "dfs.infinity.metadata.host" = ${MasterNode}
             "dfs.infinity.metadata.port" = "<%= scope.lookupvar('cosmos::params::infinity_server_port') %>"
+            "dfs.infinity.metadata.replication" = "<%= scope.lookupvar('cosmos::params::infinity_replication') %>"
         }
     },
     {

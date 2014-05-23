@@ -22,7 +22,7 @@ case class ToClose[+C <: Closeable](value :C, closeables: Closeable*) {
   @volatile private var isClosed: Boolean = false
   def useAndClose[R](f: C => R): R = synchronized {
     require(!isClosed, "cannot use value because resources are already released")
-    val result = IoUtil.withAutoClose((value +: closeables).distinct)(f(value))
+    val result = IoUtil.withAutoClose((value +: closeables).distinct: _*)(f(value))
     isClosed = true
     result
   }

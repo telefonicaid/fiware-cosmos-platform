@@ -17,6 +17,7 @@
 package es.tid.cosmos.infinity.server.util
 
 import java.io.Closeable
+import scala.util.control.NonFatal
 
 /** Utility for dealing with data resources such as releasing them after being used. */
 object IoUtil {
@@ -30,6 +31,22 @@ object IoUtil {
     * @tparam T         the type of the block's result
     * @return           the block's result ensuring that all closeables have been closed.
     */
-  def withAutoClose[T](closeables: Seq[Closeable])(block: => T): T =
+  def withAutoClose[T](closeables: Closeable*)(block: => T): T =
     try { block } finally { closeables foreach (_.close()) }
+
+  /** Perform a `block` of code ensuring that the given closeables will be released <b>only</b>
+    * if there is an exception. The exception will then be thrown again
+    * after releasing the resources.
+    *
+    * @param closeables the closeables to be released after the block has been executed
+    * @param block      the block to be executed that can safely use any of the closeables
+    * @tparam T         the type of the block's result
+    * @return           the block's result ensuring that all closeables have been closed.
+    */
+  def withAutoCloseOnFail[T](closeables: Closeable*)(block: => T): T =
+    try { block } catch {
+      case NonFatal(e) =>
+        closeables foreach (_.close())
+        throw e
+    }
 }

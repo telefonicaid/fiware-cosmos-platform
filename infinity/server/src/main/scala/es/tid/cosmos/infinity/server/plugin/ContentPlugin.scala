@@ -71,7 +71,7 @@ class ContentPlugin extends ServicePlugin with Configurable {
 
   private def createServer(dataNode: DataNode, config: ContentServerConfig) = {
     val server = new ContentServer(
-      clientFactory = new DfsClientFactory(dataNode, config.nameNodeRPCUri),
+      clientFactory = new DfsClientFactory(dataNode.getConf, config.nameNodeRPCUri),
       config = config,
       authService = authentication)
     server.start()

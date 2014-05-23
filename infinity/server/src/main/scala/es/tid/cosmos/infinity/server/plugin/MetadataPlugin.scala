@@ -25,7 +25,7 @@ import es.tid.cosmos.infinity.server.authentication.cosmosapi.CosmosApiAuthentic
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.MetadataServerConfig
 import es.tid.cosmos.infinity.server.metadata.MetadataServer
-import es.tid.cosmos.infinity.server.hadoop.HdfsNameNode
+import es.tid.cosmos.infinity.server.hadoop.{DfsClientFactory, HdfsNameNode}
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
 /** Namenode plugin to serve Infinity metadata. */
@@ -50,9 +50,16 @@ class MetadataPlugin extends ServicePlugin with Configurable {
       }
       log.info("Starting Infinity metadata server as a namenode plugin")
       val config = new MetadataServerConfig(pluginConfig)
+      val dfsClientFactory = new DfsClientFactory(
+        getConf, NameNode.getUri(nameNode.getServiceRpcAddress))
       val urlMapper = new InfinityUrlMapper(config)
+      val apis = HdfsNameNode.NameNodeApis(
+        protocols = nameNode.getRpcServer,
+        nameSystem = nameNode.getNamesystem,
+        dfsClientFactory
+      )
       val server = new MetadataServer(
-        nameNode = new HdfsNameNode(config, nameNode, urlMapper),
+        nameNode = new HdfsNameNode(config, apis, urlMapper),
         config = config,
         authService = authentication)
       server.start()

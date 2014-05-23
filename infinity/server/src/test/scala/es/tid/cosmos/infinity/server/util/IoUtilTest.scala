@@ -18,7 +18,7 @@ package es.tid.cosmos.infinity.server.util
 
 import java.io.Closeable
 
-import org.mockito.Mockito.inOrder
+import org.mockito.Mockito.{inOrder, never}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
@@ -27,7 +27,7 @@ import scala.util.{Failure, Try}
 class IoUtilTest extends FlatSpec with MustMatchers with MockitoSugar {
 
   "Auto Close" must "execute the block and close the closeables in sequence" in new Fixture {
-    val result = IoUtil.withAutoClose(Seq(c1, c2)) {
+    val result = IoUtil.withAutoClose(c1, c2) {
       c1.toString + c2.toString
     }
     result must not be 'empty
@@ -37,12 +37,31 @@ class IoUtilTest extends FlatSpec with MustMatchers with MockitoSugar {
 
   it must "close the closeables in sequence when block fails" in new Fixture {
     val exception = new RuntimeException("Oops!")
-    val result = Try(IoUtil.withAutoClose(Seq(c1, c2)) {
+    val result = Try(IoUtil.withAutoClose(c1, c2) {
       throw exception
     })
     result must be (Failure(exception))
     order.verify(c1).close()
     order.verify(c2).close()
+  }
+
+  "Auto Close On Fail" must "close the closeables in sequence when block fails" in new Fixture {
+    val exception = new RuntimeException("Oops!")
+    val result = Try(IoUtil.withAutoCloseOnFail(c1, c2) {
+      throw exception
+    })
+    result must be (Failure(exception))
+    order.verify(c1).close()
+    order.verify(c2).close()
+  }
+
+  it must "not close any closeables if the block executes without exceptions" in new Fixture {
+    val result = IoUtil.withAutoCloseOnFail(c1, c2) {
+      c1.toString + c2.toString
+    }
+    result must not be 'empty
+    order.verify(c1, never).close()
+    order.verify(c2, never).close()
   }
 
   trait Fixture {

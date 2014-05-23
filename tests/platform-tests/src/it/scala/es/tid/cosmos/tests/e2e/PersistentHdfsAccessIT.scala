@@ -35,25 +35,25 @@ class PersistentHdfsAccessIT extends E2ETestBase {
     lazy val infinity = new PersistentHdfs(user)
 
     feature("Users can use Infinity to persist important data") {
-      ignore("Initially, the user's directory must be empty") {
+      scenario("Initially, the user's directory must be empty") {
         infinity.ls() must be ('empty)
       }
 
-      ignore("The user can upload a file to Infinity through the CLI") {
+      scenario("The user can upload a file to Infinity through the CLI") {
         infinity.put(source, target)
         infinity.ls().map(_.name) must be (Seq(target))
       }
 
-      ignore("The user can change a file's permissions thorugh the CLI") {
+      scenario("The user can change a file's permissions thorugh the CLI") {
         infinity.chmod("720", target)
         infinity.ls().map(_.permissions) must be (Seq("-rwx-w----"))
       }
 
-      ignore("The user can get the file that was uploaded") {
+      scenario("The user can get the file that was uploaded") {
         infinity.get(target, localCopy).exists must be (true)
       }
 
-      ignore("The user can remove the file from Infinity") {
+      scenario("The user can remove the file from Infinity") {
         infinity.rm(target)
         infinity.ls() must be ('empty)
       }

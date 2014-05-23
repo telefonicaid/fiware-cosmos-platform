@@ -24,7 +24,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
-import es.tid.cosmos.infinity.server.hadoop.NameNodeException
+import es.tid.cosmos.infinity.server.hadoop.HdfsException
 
 class CreateFileTest extends FlatSpec with MustMatchers with FutureMatchers {
 
@@ -36,18 +36,18 @@ class CreateFileTest extends FlatSpec with MustMatchers with FutureMatchers {
   }
 
   it must "fail if name node fails to create the file" in new Fixture {
-    doThrow(new NameNodeException.IOError(new Exception("cannot create file")))
+    doThrow(new HdfsException.IOError(new Exception("cannot create file")))
       .when(nameNode)
       .createFile(on, user.username, user.groups.head, permissions, replication, blockSize)
-    createFile(context) must eventuallyFailWith[NameNodeException.IOError]
+    createFile(context) must eventuallyFailWith[HdfsException.IOError]
   }
 
   it must "fail if name node fails to retrieve new metadata" in new Fixture {
     doNothing().when(nameNode).createFile(
       on, user.username, user.groups.head, permissions, replication, blockSize)
-    doThrow(new NameNodeException.IOError(new Exception("cannot retrieve metadata")))
+    doThrow(new HdfsException.IOError(new Exception("cannot retrieve metadata")))
       .when(nameNode).pathMetadata(on)
-    createFile(context) must eventuallyFailWith[NameNodeException.IOError]
+    createFile(context) must eventuallyFailWith[HdfsException.IOError]
   }
 
   trait Fixture extends MetadataActionFixture {

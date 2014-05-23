@@ -22,7 +22,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
-import es.tid.cosmos.infinity.server.hadoop.NameNodeException
+import es.tid.cosmos.infinity.server.hadoop.HdfsException
 
 class ChangePermissionsTest extends FlatSpec with MustMatchers with FutureMatchers {
 
@@ -33,16 +33,16 @@ class ChangePermissionsTest extends FlatSpec with MustMatchers with FutureMatche
   }
 
   it must "fail if name node fails to set permissions" in new Fixture {
-    doThrow(new NameNodeException.IOError(new Exception("cannot change permissions")))
+    doThrow(new HdfsException.IOError(new Exception("cannot change permissions")))
       .when(nameNode).setPermissions(on, newMask)
-    changePermissions(context) must eventuallyFailWith[NameNodeException.IOError]
+    changePermissions(context) must eventuallyFailWith[HdfsException.IOError]
   }
 
   it must "fail if name node fails to retrieve new metadata" in new Fixture {
     doNothing().when(nameNode).setPermissions(on, newMask)
-    doThrow(new NameNodeException.IOError(new Exception("cannot retrieve metadata")))
+    doThrow(new HdfsException.IOError(new Exception("cannot retrieve metadata")))
       .when(nameNode).pathMetadata(on)
-    changePermissions(context) must eventuallyFailWith[NameNodeException.IOError]
+    changePermissions(context) must eventuallyFailWith[HdfsException.IOError]
   }
 
   trait Fixture extends MetadataActionFixture {

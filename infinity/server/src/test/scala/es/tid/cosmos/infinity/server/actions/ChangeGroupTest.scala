@@ -21,7 +21,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.infinity.server.hadoop.NameNodeException
+import es.tid.cosmos.infinity.server.hadoop.HdfsException
 
 class ChangeGroupTest extends FlatSpec with MustMatchers with FutureMatchers {
 
@@ -32,16 +32,16 @@ class ChangeGroupTest extends FlatSpec with MustMatchers with FutureMatchers {
   }
 
   it must "fail if name node fails to set group" in new Fixture {
-    doThrow(new NameNodeException.IOError(new Exception("cannot change group")))
+    doThrow(new HdfsException.IOError(new Exception("cannot change group")))
       .when(nameNode).setGroup(on, newGroup)
-    changeGroup(context) must eventuallyFailWith[NameNodeException.IOError]
+    changeGroup(context) must eventuallyFailWith[HdfsException.IOError]
   }
 
   it must "fail if name node fails to retrieve new metadata" in new Fixture {
     doNothing().when(nameNode).setGroup(on, newGroup)
-    doThrow(new NameNodeException.IOError(new Exception("cannot retrieve metadata")))
+    doThrow(new HdfsException.IOError(new Exception("cannot retrieve metadata")))
       .when(nameNode).pathMetadata(on)
-    changeGroup(context) must eventuallyFailWith[NameNodeException.IOError]
+    changeGroup(context) must eventuallyFailWith[HdfsException.IOError]
   }
 
   trait Fixture extends MetadataActionFixture {

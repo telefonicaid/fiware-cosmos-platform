@@ -21,7 +21,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
-import es.tid.cosmos.infinity.server.hadoop.{DataNodeException, NameNodeException}
+import es.tid.cosmos.infinity.server.hadoop.{HdfsException, DataNodeException, NameNodeException}
 
 class ExceptionRendererTest extends FlatSpec with MustMatchers {
 
@@ -56,12 +56,12 @@ class ExceptionRendererTest extends FlatSpec with MustMatchers {
   }
 
   it must "render Unauthorized" in {
-    givenException(NameNodeException.Unauthorized(Path.absolute("/path")))
+    givenException(HdfsException.Unauthorized(Path.absolute("/path")))
       .mustRenderTo(403, "SEC02")
   }
 
   it must "render IOError" in {
-    givenException(NameNodeException.IOError(null))
+    givenException(HdfsException.IOError(null))
       .mustRenderTo(500, "SRV01")
   }
 

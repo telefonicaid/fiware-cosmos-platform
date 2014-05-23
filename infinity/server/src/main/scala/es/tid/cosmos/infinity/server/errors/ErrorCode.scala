@@ -17,7 +17,7 @@
 package es.tid.cosmos.infinity.server.errors
 
 import es.tid.cosmos.infinity.server.authentication.AuthenticationException
-import es.tid.cosmos.infinity.server.hadoop.{DataNodeException, NameNodeException}
+import es.tid.cosmos.infinity.server.hadoop.{HdfsException, DataNodeException, NameNodeException}
 
 class ErrorCode[T <: Throwable](val code: String)
 
@@ -41,11 +41,11 @@ object ErrorCode {
   implicit val AuthenticationFailed =
     new ErrorCode[AuthenticationException]("SEC01")
   implicit val Unauthorized =
-    new ErrorCode[NameNodeException.Unauthorized]("SEC02")
+    new ErrorCode[HdfsException.Unauthorized]("SEC02")
 
   /* Server errors. */
   implicit val IOError =
-    new ErrorCode[NameNodeException.IOError]("SRV01")
+    new ErrorCode[HdfsException.IOError]("SRV01")
 
   /* Constraint errors. */
   implicit val NoSuchPath =

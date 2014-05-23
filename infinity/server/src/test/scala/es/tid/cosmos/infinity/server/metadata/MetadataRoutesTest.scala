@@ -32,7 +32,7 @@ import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.authentication.AuthenticationService
 import es.tid.cosmos.infinity.server.config.MetadataServerConfig
-import es.tid.cosmos.infinity.server.hadoop.{DummyNameNode, NameNodeException, NameNode}
+import es.tid.cosmos.infinity.server.hadoop._
 import es.tid.cosmos.infinity.server.routes.RoutesBehavior
 import es.tid.cosmos.infinity.server.urls.InfinityUrlMapper
 
@@ -59,7 +59,7 @@ class MetadataRoutesTest extends FlatSpec
     routeHandlingNotFound(hadoopBehavior = givenPathNotFound)
     //TODO: Cross cutting case?
     it should "return 500 on IOErrors" in new Authenticated(identity) {
-      doThrow(NameNodeException.IOError())
+      doThrow(HdfsException.IOError())
         .when(routes.hadoopApi).pathMetadata(any())
       routes.intent.apply(responder) must be (Success())
       responder.response_> must runUnder(1 second)

@@ -20,8 +20,12 @@ import java.net.URI
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DFSClient
-import org.apache.hadoop.hdfs.server.{datanode => hadoop}
 
-class DfsClientFactory(dataNode: hadoop.DataNode, nameNodeRpcUri: URI) {
-  def newClient: DFSClient = new DFSClient(nameNodeRpcUri, new Configuration(dataNode.getConf))
+import es.tid.cosmos.infinity.server.util.IoUtil._
+
+class DfsClientFactory(conf: Configuration, nameNodeRpcUri: URI) {
+  def withFailsafeClient[T](block: DFSClient => T): T = {
+    val client = new DFSClient(nameNodeRpcUri, new Configuration(conf))
+    withAutoCloseOnFail(client)(block(client))
+  }
 }

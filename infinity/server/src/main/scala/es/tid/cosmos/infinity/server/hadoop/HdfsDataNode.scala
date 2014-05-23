@@ -26,8 +26,9 @@ import org.apache.hadoop.hdfs.client.HdfsDataInputStream
 import org.apache.hadoop.hdfs.protocol.HdfsFileStatus
 
 import es.tid.cosmos.infinity.common.fs.Path
-import es.tid.cosmos.infinity.server.util.{IoUtil, ToClose}
 import es.tid.cosmos.infinity.server.hadoop.HdfsDataNode._
+import es.tid.cosmos.infinity.server.util.ToClose
+import es.tid.cosmos.infinity.server.util.IoUtil._
 
 /** Constructor exposing boundedStreamFactory for testability */
 class HdfsDataNode private[hadoop] (
@@ -38,44 +39,46 @@ class HdfsDataNode private[hadoop] (
   def this(clientFactory: DfsClientFactory, bufferSize: Int) =
     this(clientFactory, bufferSize, defaultStreamFactory)
 
-  override def open(
-      path: Path, offset: Option[Long], length: Option[Long]): ToClose[InputStream] =
-    withClient { client =>
+  override def open(path: Path, offset: Option[Long], length: Option[Long]): ToClose[InputStream] =
+    clientFactory.withFailsafeClient { client =>
       checkAndGetValidFileInfo(path, client)
       val actualOffset: Long = offset.getOrElse(NoOffset)
       val in = new HdfsDataInputStream(client.open(path.toString))
-      in.seek(actualOffset)
-      val visibleFileLength = in.getVisibleLength - actualOffset
-      val readUpTo = length.map(l => min(l, visibleFileLength)).getOrElse(visibleFileLength)
-      ToClose(boundedStreamFactory(in, readUpTo), client)
+      withAutoCloseOnFail(in) {
+        in.seek(actualOffset)
+        val visibleFileLength = in.getVisibleLength - actualOffset
+        val readUpTo = length.map(l => min(l, visibleFileLength)).getOrElse(visibleFileLength)
+        ToClose(boundedStreamFactory(in, readUpTo), client)
+      }
     }
 
-
   override def append(path: Path, contentStream: InputStream): Unit =
-    withClient { client =>
-      checkAndGetValidFileInfo(path, client)
-      val out = client.append(path.toString, bufferSize, NoProgress, NoStatistics)
-      IoUtil.withAutoClose(Seq(contentStream, out)) {
-        IOUtils.copyBytes(contentStream, out, bufferSize)
+    clientFactory.withFailsafeClient { client =>
+      withAutoClose(contentStream, client) {
+        checkAndGetValidFileInfo(path, client)
+        val out = client.append(path.toString, bufferSize, NoProgress, NoStatistics)
+        withAutoClose(out) {
+          IOUtils.copyBytes(contentStream, out, bufferSize)
+        }
       }
     }
 
   override def overwrite(path: Path, contentStream: InputStream): Unit =
-    withClient { client =>
-      val info = checkAndGetValidFileInfo(path, client)
-      val out = client.create(
-        path.toString,
-        DoOverwrite,
-        info.getReplication,
-        info.getBlockSize,
-        NoProgress,
-        bufferSize)
-      IoUtil.withAutoClose(Seq(contentStream, out)) {
-        IOUtils.copyBytes(contentStream, out, bufferSize)
+    clientFactory.withFailsafeClient { client =>
+      withAutoClose(contentStream, client) {
+        val info = checkAndGetValidFileInfo(path, client)
+        val out = client.create(
+          path.toString,
+          DoOverwrite,
+          info.getReplication,
+          info.getBlockSize,
+          NoProgress,
+          bufferSize)
+        withAutoClose(out) {
+          IOUtils.copyBytes(contentStream, out, bufferSize)
+        }
       }
     }
-
-  private def withClient[T](block: DFSClient => T): T = block(clientFactory.newClient)
 
   private def checkAndGetValidFileInfo(path: Path, client: DFSClient): HdfsFileStatus = {
     val info = Option(client.getFileInfo(path.toString))

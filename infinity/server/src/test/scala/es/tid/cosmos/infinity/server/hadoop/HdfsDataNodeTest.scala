@@ -16,21 +16,22 @@
 
 package es.tid.cosmos.infinity.server.hadoop
 
-import java.io.{OutputStream, ByteArrayInputStream, IOException, InputStream}
+import java.io._
 
 import org.apache.hadoop.hdfs.{DFSInputStream, DFSClient}
 import org.apache.hadoop.hdfs.client.{HdfsDataOutputStream, HdfsDataInputStream}
 import org.apache.hadoop.hdfs.protocol.HdfsFileStatus
 import org.mockito.BDDMockito.given
+import org.mockito.InOrder
 import org.mockito.Matchers.{any, eq => the}
-import org.mockito.Mockito.{inOrder, spy, verify}
+import org.mockito.Mockito.{inOrder, spy, verify, atLeastOnce}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.infinity.common.fs.Path
 import es.tid.cosmos.infinity.server.hadoop.HdfsDataNode.BoundedStreamFactory
-import es.tid.cosmos.infinity.server.util.ToClose
+import es.tid.cosmos.infinity.server.util.{IoUtil, ToClose}
 
 class HdfsDataNodeTest extends FlatSpec with MustMatchers {
 
@@ -59,33 +60,42 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers {
     }
 
   it must "fail when underlying client fails to open file" in new Fixture {
-    given(clientFactory.newClient).willReturn(dfsClient)
     given(dfsClient.getFileInfo(path.toString)).willReturn(mock[HdfsFileStatus])
     given(dfsClient.open(path.toString)).willThrow(ioException)
     evaluating { dataNode.open(path, offset = None, length = None) } must produce[IOException]
+    verifyResourcesReleasedInOrder(dfsClient)
   }
 
   it must "fail to get content when file was not found" in new Fixture {
     givenFileWontBeFound()
     evaluating {dataNode.open(path, offset = None, length = None) } must
       produce[DataNodeException.FileNotFound]
+    verifyResourcesReleasedInOrder(dfsClient)
+  }
+
+  it must "fail to get content when reading file stream fails" in new Fixture {
+    given(dfsClient.open(path.toString)).willReturn(_dfsIn)
+    given(dfsClient.getFileInfo(path.toString)).willReturn(mock[HdfsFileStatus])
+    given(_dfsIn.getFileLength).willThrow(new RuntimeException("oops"))
+    evaluating { dataNode.open(path, offset = None, length = None) } must
+      produce[RuntimeException]
+    verifyResourcesReleasedInOrder(_dfsIn, dfsClient)
   }
 
   it must "fail to get content when path points to directory" in new Fixture {
     givenDirectoryPath()
     evaluating { dataNode.append(path, in) } must produce[DataNodeException.ContentPathIsDirectory]
+    verifyResourcesReleasedInOrder(in, dfsClient)
   }
 
   it must "append the given contents to an existing file" in new AppendHappyCase {
     dataNode.append(path, in)
-    val order = inOrder(in, _dfsOut)
+    val order = inOrder(in, _dfsOut, dfsClient)
     order.verify(_dfsOut).write("1234".getBytes, 0, 4)
-    order.verify(in).close()
-    order.verify(_dfsOut).close()
+    verifyResourcesReleasedInOrder(order, _dfsOut, in, dfsClient)
   }
 
   it must "fail to append when client fails" in new Fixture {
-    given(clientFactory.newClient).willReturn(dfsClient)
     given(dfsClient.getFileInfo(path.toString)).willReturn(mock[HdfsFileStatus])
     given(dfsClient.append(
       path.toString,
@@ -94,48 +104,52 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers {
       HdfsDataNode.NoStatistics)
     ).willThrow(ioException)
     evaluating { dataNode.append(path, in) } must produce[IOException]
+    verifyResourcesReleasedInOrder(in, dfsClient)
   }
 
   it must "fail to append when file was not found" in new Fixture {
     givenFileWontBeFound()
     evaluating { dataNode.append(path, in) } must produce[DataNodeException.FileNotFound]
+    verifyResourcesReleasedInOrder(in, dfsClient)
   }
 
   it must "fail to append when path points to directory" in new Fixture {
     givenDirectoryPath()
     evaluating { dataNode.append(path, in) } must produce[DataNodeException.ContentPathIsDirectory]
+    verifyResourcesReleasedInOrder(in, dfsClient)
   }
 
   it must "overwrite an existing file with the given contents" in new OverwriteHappyCase {
     dataNode.overwrite(path, in)
-    val order = inOrder(in, _dfsOut)
+    val order = inOrder(in, _dfsOut, dfsClient)
     order.verify(_dfsOut).write("1234".getBytes, 0, 4)
-    order.verify(in).close()
-    order.verify(_dfsOut).close()
+    verifyResourcesReleasedInOrder(order, _dfsOut, in, dfsClient)
   }
 
   it must "fail to overwrite when client fails" in new Fixture {
-    given(clientFactory.newClient).willReturn(dfsClient)
     given(dfsClient.getFileInfo(path.toString)).willReturn(mock[HdfsFileStatus])
     given(dfsClient.create(any(), any(), any(), any(), any(), any())).willThrow(ioException)
     evaluating { dataNode.overwrite(path, in) } must produce[IOException]
+    verifyResourcesReleasedInOrder(in, dfsClient)
   }
 
   it must "fail to overwrite when file was not found" in new Fixture {
     givenFileWontBeFound()
     evaluating { dataNode.overwrite(path, in) } must produce[DataNodeException.FileNotFound]
+    verifyResourcesReleasedInOrder(in, dfsClient)
   }
 
   it must "fail to overwrite when path points to directory" in new Fixture {
     givenDirectoryPath()
     evaluating { dataNode.overwrite(path, in) } must produce[DataNodeException.ContentPathIsDirectory]
+    verifyResourcesReleasedInOrder(in, dfsClient)
   }
 
   trait Fixture extends MockitoSugar {
     val path = Path.absolute("/to/file")
     val fileLength = 1048576L // 1MB
-    val clientFactory = mock[DfsClientFactory]("clientFactory")
     val dfsClient = mock[DFSClient]("dfsClient")
+    val clientFactory = new MockDfsClientFactory(dfsClient)
     val _dfsIn = mock[DFSInputStream]("dfsInputStream")
     val in = mock[InputStream]("resultStream")
     val bufferSize = 4
@@ -144,7 +158,6 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers {
     val ioException = new IOException("oops")
 
     def givenFileWontBeFound(): Unit = {
-      given(clientFactory.newClient).willReturn(dfsClient)
       given(dfsClient.getFileInfo(path.toString)).willReturn(null)
     }
 
@@ -164,13 +177,20 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers {
         0,    //fileId
         0     //childrenNum
       )
-      given(clientFactory.newClient).willReturn(dfsClient)
       given(dfsClient.getFileInfo(path.toString)).willReturn(dummyDirInfo)
+    }
+
+    def verifyResourcesReleasedInOrder(resources: Closeable*): Unit = {
+      val order = inOrder(resources:_*)
+      verifyResourcesReleasedInOrder(order, resources:_*)
+    }
+
+    def verifyResourcesReleasedInOrder(order: InOrder, resources: Closeable*): Unit = {
+      resources.foreach(r => order.verify(r, atLeastOnce).close())
     }
   }
 
   trait OpenHappyCase extends Fixture {
-    given(clientFactory.newClient).willReturn(dfsClient)
     given(dfsClient.open(path.toString)).willReturn(_dfsIn)
     given(dfsClient.getFileInfo(path.toString)).willReturn(mock[HdfsFileStatus])
     given(_dfsIn.getFileLength).willReturn(fileLength)
@@ -180,7 +200,6 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers {
   trait AppendHappyCase extends Fixture {
     override val in = spy(new ByteArrayInputStream("1234".getBytes))
     val _dfsOut = mock[HdfsDataOutputStream]("dfsOutputStream")
-    given(clientFactory.newClient).willReturn(dfsClient)
     given(dfsClient.getFileInfo(path.toString)).willReturn(mock[HdfsFileStatus])
     given(dfsClient.append(
       path.toString,
@@ -193,7 +212,6 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers {
   trait OverwriteHappyCase extends Fixture {
     override val in = spy(new ByteArrayInputStream("1234".getBytes))
     val _dfsOut = mock[OutputStream]("dfsOutputStream")
-    given(clientFactory.newClient).willReturn(dfsClient)
     given(dfsClient.getFileInfo(path.toString)).willReturn(mock[HdfsFileStatus])
     given(dfsClient.create(
       the(path.toString),
@@ -203,5 +221,10 @@ class HdfsDataNodeTest extends FlatSpec with MustMatchers {
       the(HdfsDataNode.NoProgress),
       the(bufferSize))
     ).willReturn(_dfsOut)
+  }
+
+  class MockDfsClientFactory(clientMock: DFSClient) extends DfsClientFactory(null, null) {
+    override def withFailsafeClient[T](block: DFSClient => T): T =
+      IoUtil.withAutoCloseOnFail(clientMock)(block(clientMock))
   }
 }

@@ -93,7 +93,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
 
   override def getHomeDirectory: Path = makeQualified(new Path(homeDirectory()))
 
-  private def homeDirectory(): String = s"/user/${ugi.getUserName}"
+  private def homeDirectory(): String = s"/${ugi.getUserName}"
 
   override def setTimes(p: Path, mtime: Long, atime: Long): Unit = {
     Log.warn("#setTimes has no effect")
@@ -105,7 +105,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   }
 
   override def mkdirs(f: Path, permission: FsPermission): Boolean =
-    awaitAction(makeRecursiveDirectory(f.toInfinity, permission.toInfinity))
+    awaitAction(makeRecursiveDirectory(absolutePath(f), permission.toInfinity))
 
   override protected def canonicalizeUri(uri: URI): URI =
     new URI(uri.getScheme, null, uri.getPath, uri.getQuery, uri.getFragment)
@@ -124,7 +124,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   }
 
   override def getFileStatus(f: Path): FileStatus =
-    awaitResult(existingPathMetadata(f).map(_.toHadoop))
+    awaitResult(existingPathMetadata(f).map(transformBack(_).toHadoop))
 
   /** List the status for a path.
     *
@@ -135,35 +135,44 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     */
   override def listStatus(f: Path): Array[FileStatus] =
     awaitResult(existingPathMetadata(f).map {
-      case metadata: FileMetadata => Array(metadata.toHadoop)
-      case metadata: DirectoryMetadata => metadata.content.map(_.toHadoop).toArray
+      case metadata: FileMetadata => Array(transformBack(metadata).toHadoop)
+      case metadata: DirectoryMetadata => metadata.content.map(transformBack(_).toHadoop).toArray
     })
 
+  private def transformBack(metadata: PathMetadata): PathMetadata = metadata match {
+    case file: FileMetadata => file.copy(path = UserPathMapper.userPath(file.path))
+    case dir: DirectoryMetadata => dir.copy(
+      path = UserPathMapper.userPath(dir.path),
+      content = dir.content.map(transformBack)
+    )
+  }
+
+  private def transformBack(entry: DirectoryEntry): DirectoryEntry =
+    entry.copy(path = UserPathMapper.userPath(entry.path))
+
   override def delete(f: Path, recursive: Boolean): Boolean =
-    awaitAction(client.delete(asSubPath(f), recursive))
+    if (f.isRoot) false else awaitAction(client.delete(absolutePath(f), recursive))
 
   override def rename(source: Path, target: Path): Boolean =
-    (source.toInfinity, target.toInfinity) match {
-      case (from: SubPath, to: SubPath) => awaitAction(client.move(from, to))
-      case _ =>
-        Log.error(s"Cannot move from/to the root path (Moving $source to $target)")
-        false
-    }
+    if (source.isRoot || target.isRoot) {
+      Log.error(s"Cannot move from/to the root path (Moving $source to $target)")
+      false
+    } else awaitAction(client.move(absolutePath(source), absolutePath(target)))
 
   override def setOwner(f: Path, ownerOrNull: String, groupOrNull: String): Unit = {
-    val path = f.toInfinity
+    val path = absolutePath(f)
     def ownerChange = whenNotNull(ownerOrNull)(client.changeOwner(path, _))
     def groupChange = whenNotNull(groupOrNull)(client.changeGroup(path, _))
     awaitResult(ownerChange.flatMap(_ => groupChange))
   }
 
   override def setPermission(f: Path, perms: FsPermission): Unit =
-    awaitResult(client.changePermissions(f.toInfinity, perms.toInfinity))
+    awaitResult(client.changePermissions(absolutePath(f), perms.toInfinity))
 
   override def open(f: Path, bufferSize: Int) =
     awaitResult(existingFileMetadata(f).map { metadata =>
       new FSDataInputStream(new InfinityInputStream(
-        client, asSubPath(f), bufferSize, infinityConfiguration.timeoutDuration
+        client, absolutePath(f), bufferSize, infinityConfiguration.timeoutDuration
       ))
     })
 
@@ -173,30 +182,30 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   private def appendToFile(f: Path, bufferSize: Int, progress: Option[Progressable]): Future[FSDataOutputStream] =
     for {
       metadata <- existingFileMetadata(f)
-      stream <- client.append(asSubPath(f), bufferSize)
+      stream <- client.append(absolutePath(f), bufferSize)
     } yield new FSDataOutputStream(new InfinityOutputStream(stream, progress), statistics)
 
   override def create(
       f: Path, perms: FsPermission, overwrite: Boolean, bufferSize: Int, replication: Short,
-      blockSize: Long, progressOrNull: Progressable): FSDataOutputStream = {
-    val fileCreation = client.createFile(asSubPath(f), perms.toInfinity, Some(replication), Some(blockSize))
-    awaitResult(fileCreation.flatMap(_ => appendToFile(f, bufferSize, Option(progressOrNull))))
-  }
+      blockSize: Long, progressOrNull: Progressable): FSDataOutputStream =
+    if (f.isRoot) throw new IOException("Cannot create the root directory")
+    else {
+      val fileCreation =
+        client.createFile(absolutePath(f), perms.toInfinity, Some(replication), Some(blockSize))
+      awaitResult(fileCreation.flatMap(_ => appendToFile(f, bufferSize, Option(progressOrNull))))
+    }
 
   private def existingPathMetadata(f: Path): Future[PathMetadata] =
-    client.pathMetadata(f.toInfinity).map(_.getOrElse(throw new FileNotFoundException(f.toString)))
+    client.pathMetadata(absolutePath(f)).map(_.getOrElse(throw new FileNotFoundException(f.toString)))
 
   private def existingFileMetadata(f: Path): Future[FileMetadata] = existingPathMetadata(f).map {
     case _: DirectoryMetadata => throw new IOException(s"$f expected to be a file but was a directory")
     case metadata: FileMetadata => metadata
   }
 
-  private def asSubPath(f: Path): SubPath = f.toInfinity match {
-    case RootPath => throw new IOException(s"Cannot perform action on the root path")
-    case subPath: SubPath => subPath
-  }
+  private def absolutePath(f: Path): SubPath = UserPathMapper.absolutePath(f.toInfinity)
 
-  private def unless(condition: Future[Boolean])(body: Future[Unit]): Future[Unit] =
+  private def unless(condition: Future[Boolean])(body: => Future[Unit]): Future[Unit] =
     condition.flatMap(if (_) Ok else body)
 
   private def whenNotNull[T](valueOrNull: T)(body: T => Future[Unit]): Future[Unit] =

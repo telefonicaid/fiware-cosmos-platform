@@ -67,12 +67,12 @@ class StorageConnection(object):
         path_listing = self.__client.list_path(remote_path)
         if path_listing is None:
             if remote_path.endswith('/'):
-                raise ResponseError("Directory %s does not exist" % remote_path)
+                raise OperationError("Directory %s does not exist" % remote_path)
             else:
                 parent_path = os.path.dirname(remote_path)
                 parent_listing = self.__client.list_path(parent_path)
                 if parent_listing is None:
-                    raise ResponseError("Parent directory %s does not exist" % parent_path)
+                    raise OperationError("Parent directory %s does not exist" % parent_path)
                 else:
                     target_path = remote_path
         else:

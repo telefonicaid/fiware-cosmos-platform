@@ -18,12 +18,13 @@ import unittest
 from StringIO import StringIO
 
 import json
+import os
 import requests
 from mock import MagicMock, patch
 from testfixtures import TempDirectory
 
 import cosmos.storage.infinity as webhdfs
-from cosmos.storage.infinity import DirectoryListing
+from cosmos.storage.infinity import DirectoryListing, FileMetadata
 from cosmos.common.exceptions import OperationError
 from cosmos.common.exceptions import ResponseError
 from cosmos.common.tests.util import mock_response
@@ -31,7 +32,6 @@ from cosmos.common.tests.util import mock_response
 
 class DirectoryListingTest(unittest.TestCase):
     def setUp(self):
-        self.unexisting_dir_listing = DirectoryListing(exists=False)
         self.empty_dir_listing = DirectoryListing()
         file1 = {
             "path" : "/usr/gandalf/spells.txt",
@@ -62,19 +62,11 @@ class DirectoryListingTest(unittest.TestCase):
         self.one_file_listing = DirectoryListing(statuses=[file1])
         self.two_files_listing = DirectoryListing(statuses=[file1, file2])
 
-    def test_listing_keep_track_of_directory_existence(self):
-        self.assertFalse(self.unexisting_dir_listing.exists)
-        self.assertTrue(self.empty_dir_listing.exists)
-        self.assertTrue(self.two_files_listing.exists)
-
     def test_listing_is_iterable(self):
-        self.assert_iterable_length(self.unexisting_dir_listing, 0)
         self.assert_iterable_length(self.empty_dir_listing, 0)
         self.assert_iterable_length(self.two_files_listing, 2)
 
     def test_listing_has_readable_str(self):
-        self.assertEquals(str(self.unexisting_dir_listing),
-                          'Listing(unexisting path)')
         self.assertEquals(str(self.empty_dir_listing),
                           'Listing(0 files)')
         self.assertEquals(str(self.one_file_listing),
@@ -83,11 +75,11 @@ class DirectoryListingTest(unittest.TestCase):
                           'Listing(2 files)')
 
     def test_path_type(self):
-        self.assertEquals(self.unexisting_dir_listing.path_type(), 'NONE')
-        self.assertEquals(DirectoryListing(statuses=None).path_type(), 'NONE')
+        self.assertEquals(DirectoryListing(statuses=None).path_type, 'directory')
         self.assertEquals(DirectoryListing(
-            statuses=[{"type": "FILE", "pathSuffix": ""}]).path_type(), 'FILE')
-        self.assertEquals(self.two_files_listing.path_type(), 'DIRECTORY')
+            statuses=[{"type": "FILE", "pathSuffix": ""}]).path_type, 'directory')
+        self.assertEquals(self.two_files_listing.path_type, 'directory')
+        self.assertEquals(FileMetadata(the_json=None).path_type, 'file')
 
     def assert_iterable_length(self, iterable, expected_length):
         self.assertEquals(sum(1 for _ in iterable), expected_length)
@@ -110,18 +102,18 @@ class InfinityClientTest(unittest.TestCase):
     def test_file_upload(self):
         with TempDirectory() as local_dir:
             file_created_json = {
-                "path" : "/user/user1/remote/path",
-                "metadata" : "%s/remote/path" % self.namenode_base,
-                "content" : "%s/remote/path" % self.datanode_base,
-                "type" : "file",
-                "owner" : "user1",
-                "group" : "users",
-                "permissions" : "640",
-                "size" : 0,
-                "modificationTime" : "2014-04-08T12:31:45+0100",
-                "accessTime" : "2014-04-08T12:45:22+0100",
-                "blockSize" : 67108864,
-                "replication" : 3
+                "path": "/user/user1/remote/path",
+                "metadata": "%s/remote/path" % self.namenode_base,
+                "content": "%s/remote/path" % self.datanode_base,
+                "type": "file",
+                "owner": "user1",
+                "group": "users",
+                "permissions": "640",
+                "size": 0,
+                "modificationTime": "2014-04-08T12:31:45+0100",
+                "accessTime": "2014-04-08T12:45:22+0100",
+                "blockSize": 67108864,
+                "replication": 3
             }
             file_creation = mock_response(status_code=201, json=file_created_json)
             data_saved = requests.Response()
@@ -140,7 +132,8 @@ class InfinityClientTest(unittest.TestCase):
                 auth=self.auth,
                 data=json.dumps({
                     "action": "mkfile",
-                    "name": "path"
+                    "name": "path",
+                    "permissions": "640"
                 })
             )
             self.client.put.assert_any_call(
@@ -155,6 +148,7 @@ class InfinityClientTest(unittest.TestCase):
             {"path": "b.txt"}
         ]
         self.client.get.return_value = mock_response(json={
+            "type": "directory",
             "content": statuses
         })
         self.assertEquals(self.instance.list_path('/some/path').statuses,
@@ -166,7 +160,7 @@ class InfinityClientTest(unittest.TestCase):
     def test_list_nonexistent_path(self):
         self.client.get.return_value = mock_response(status_code=404)
         listing = self.instance.list_path('/some/path')
-        self.assertFalse(listing.exists)
+        self.assertIsNone(listing)
 
     def test_invalid_permissions_chmod(self):
         self.assertRaises(OperationError, self.instance.chmod, '/some/path', '1111')
@@ -183,7 +177,7 @@ class InfinityClientTest(unittest.TestCase):
         )
 
     def test_get_file(self):
-        self.client.get.return_value = mock_response(raw=StringIO("hello"))
+        self.client.get.side_effect = self._file_list_and_content("file.txt", "hello")
         out_file = StringIO("")
         size = self.instance.get_file('/remote/file.txt', out_file)
         self.assertEquals(5, size)
@@ -194,7 +188,7 @@ class InfinityClientTest(unittest.TestCase):
         self.client.get.return_value = mock_response(status_code=404)
         out_file = StringIO("")
         self.assertRaisesRegexp(
-            ResponseError, 'File /file.txt does not exist',
+            OperationError, 'File /file.txt does not exist',
             self.instance.get_file, '/file.txt', out_file)
         out_file.close()
 
@@ -219,4 +213,20 @@ class InfinityClientTest(unittest.TestCase):
             self.namenode_base + '/remote/file.txt',
             params={'recursive': 'true'},
             auth=self.auth)
+
+    # Utilities
+    def _file_list_and_content(self, file_name, content):
+        max_chunk_size = 2
+        def side_effect(*args, **kwargs):
+            if "metadata" in args[0]:
+                return mock_response(json={
+                    "type": "file",
+                    "content": "%s/%s" % (self.datanode_base, os.path.basename(file_name))
+                })
+            if "content" in args[0]:
+                content_length, chunk_size = len(content), len(content)/max_chunk_size
+                chunks = [content[i:i+chunk_size] for i in range(0, content_length, chunk_size)]
+                return mock_response(chunks=chunks)
+        return side_effect
+
 

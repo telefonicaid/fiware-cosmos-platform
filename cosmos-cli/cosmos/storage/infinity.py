@@ -103,6 +103,8 @@ class InfinityClient(object):
 
     def get_file(self, remote_path, out_file):
         listing = self.list_path(remote_path)
+        if listing is None:
+            raise OperationError('File %s does not exist' % remote_path)
         if listing.path_type != PathTypes.FILE:
             raise OperationError("Path %s is not a file" % remote_path)
         content_url = listing.metadata['content']

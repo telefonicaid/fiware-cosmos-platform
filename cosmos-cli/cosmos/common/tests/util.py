@@ -22,7 +22,7 @@ import sys
 import mock
 
 
-def mock_response(status_code=200, json=None, raw=None, text=None):
+def mock_response(status_code=200, json=None, chunks=None, text=None):
     response = mock.MagicMock()
     response.status_code = status_code
     if json is None:
@@ -31,8 +31,8 @@ def mock_response(status_code=200, json=None, raw=None, text=None):
         response.json = json
     else:
         response.json.return_value = json
-    if raw is not None:
-        response.raw = raw
+    if chunks is not None:
+        response.iter_content.return_value = chunks
     if text is not None:
         response.text = text
     return response

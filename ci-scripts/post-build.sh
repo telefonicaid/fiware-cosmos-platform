@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+set -e
 SCRIPTS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "==== Executing POST Build Scripts ===="
 $SCRIPTS_DIR/executor.sh $SCRIPTS_DIR/post-build

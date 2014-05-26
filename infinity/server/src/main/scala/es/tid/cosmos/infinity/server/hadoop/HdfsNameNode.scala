@@ -137,12 +137,17 @@ class HdfsNameNode(
     owner = fileStatus.getOwner,
     group = fileStatus.getGroup,
     modificationTime = new Date(fileStatus.getModificationTime),
-    accessTime = new Date(fileStatus.getAccessTime),
+    accessTime = accessTimeOf(fileStatus),
     permissions = fileStatus.getPermission.toInfinity,
     replication = fileStatus.getReplication,
     blockSize = fileStatus.getBlockSize,
     size = fileStatus.getLen
   )
+
+  private def accessTimeOf(fileStatus: HdfsFileStatus): Option[Date] = {
+    val atime = fileStatus.getAccessTime
+    if (atime > 0) Some(new Date(atime)) else None
+  }
 
   private def dirMetadataOf(
       path: Path,
@@ -153,7 +158,6 @@ class HdfsNameNode(
     owner = fileStatus.getOwner,
     group = fileStatus.getGroup,
     modificationTime = new Date(fileStatus.getModificationTime),
-    accessTime = new Date(fileStatus.getAccessTime),
     permissions = fileStatus.getPermission.toInfinity,
     content = contents.map(c => directoryEntryOf(c._1, c._2))
   )
@@ -166,7 +170,7 @@ class HdfsNameNode(
       owner = fileStatus.getOwner,
       group = fileStatus.getGroup,
       modificationTime = new Date(fileStatus.getModificationTime),
-      accessTime = new Date(fileStatus.getAccessTime),
+      accessTime = accessTimeOf(fileStatus),
       permissions = fileStatus.getPermission.toInfinity,
       replication = fileStatus.getReplication,
       blockSize = fileStatus.getBlockSize,

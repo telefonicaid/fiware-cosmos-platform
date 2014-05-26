@@ -56,7 +56,7 @@ class MetadataParserTest extends FlatSpec with MustMatchers {
       permissions = PermissionsMask.fromOctal("600"),
       size = 45566918656L,
       modificationTime = Rfc822DateFormat.parse("2014-04-08T12:31:45+0100"),
-      accessTime = Rfc822DateFormat.parse("2014-04-08T12:45:22+0100"),
+      accessTime = Some(Rfc822DateFormat.parse("2014-04-08T12:45:22+0100")),
       blockSize = 65536,
       replication = 3
     ))
@@ -74,7 +74,6 @@ class MetadataParserTest extends FlatSpec with MustMatchers {
         |  "permissions" : "755",
         |  "size" : 0,
         |  "modificationTime" : "2014-04-08T12:31:45+0100",
-        |  "accessTime" : "2014-04-08T12:45:22+0100",
         |  "content" : [
         |    {
         |      "path" : "/usr/gandalf/spells.txt",
@@ -98,7 +97,6 @@ class MetadataParserTest extends FlatSpec with MustMatchers {
         |      "permissions" : "750",
         |      "size" : 0,
         |      "modificationTime" : "2014-04-08T12:55:45+0100",
-        |      "accessTime" : "2014-04-08T13:01:22+0100",
         |      "replication" : 0,
         |      "blockSize" : 0
         |    }
@@ -111,7 +109,6 @@ class MetadataParserTest extends FlatSpec with MustMatchers {
       group = "istari",
       permissions = PermissionsMask.fromOctal("755"),
       modificationTime = Rfc822DateFormat.parse("2014-04-08T12:31:45+0100"),
-      accessTime = Rfc822DateFormat.parse("2014-04-08T12:45:22+0100"),
       content = Seq(
         DirectoryEntry.file(
           path = Path.absolute("/usr/gandalf/spells.txt"),
@@ -131,7 +128,6 @@ class MetadataParserTest extends FlatSpec with MustMatchers {
           owner = "gandalf",
           group = "istari",
           modificationTime = Rfc822DateFormat.parse("2014-04-08T12:55:45+0100"),
-          accessTime = Rfc822DateFormat.parse("2014-04-08T13:01:22+0100"),
           permissions = PermissionsMask.fromOctal("750")
         )
       )

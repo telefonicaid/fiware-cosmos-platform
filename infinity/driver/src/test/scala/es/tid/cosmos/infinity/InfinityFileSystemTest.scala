@@ -316,7 +316,7 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     owner = "user",
     group = "cosmos",
     modificationTime = new Date(3600000L),
-    accessTime = new Date(3600000L),
+    accessTime = Some(new Date(3600000L)),
     permissions = PermissionsMask.fromOctal("640"),
     replication = 2,
     blockSize = 1024,
@@ -345,14 +345,12 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
         owner = "user",
         group = "cosmos",
         modificationTime = someTime,
-        accessTime = someTime,
         permissions = PermissionsMask.fromOctal("1777")
       )
     ),
     owner = "user",
     group = "cosmos",
     modificationTime = someTime,
-    accessTime = someTime,
     permissions = PermissionsMask.fromOctal("640")
   )
   val bufferSize = 2048

@@ -16,6 +16,7 @@
 #
 
 : ${WORKSPACE:?'Need to set $WORKSPACE variable to the Jenkins job workspace dir'}
+set -e
 
 if [ $# -ne 1 ]; then
     echo "Please indicate the scripts folder e.g. pre-build"

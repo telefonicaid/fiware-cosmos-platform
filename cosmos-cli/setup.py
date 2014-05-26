@@ -38,7 +38,7 @@ setup(name='cosmos',
       entry_points={
           'console_scripts': ['cosmos=cosmos.cli.main:run']},
       install_requires=[
-          'python-dateutil',
+          'iso8601',
           'pyyaml',
           'pymlconf',
           'requests',

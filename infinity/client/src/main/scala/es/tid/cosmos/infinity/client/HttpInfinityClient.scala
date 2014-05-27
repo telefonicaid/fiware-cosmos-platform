@@ -53,9 +53,9 @@ class HttpInfinityClient(metadataEndpoint: URL, credentials: Credentials) extend
   override def createDirectory(path: SubPath, permissions: PermissionsMask): Future[Unit] =
     createPath(path, CreateDirectory(path.name, permissions))
 
-  override def move(originPath: SubPath, targetPath: Path): Future[Unit] = {
-    val body = actionFormatter.format(Move(originPath.name, originPath.parentPath))
-    httpRequest(resources.metadata(targetPath) << body) { response =>
+  override def move(originPath: SubPath, targetPath: SubPath): Future[Unit] = {
+    val body = actionFormatter.format(Move(targetPath.name, originPath))
+    httpRequest(resources.metadata(targetPath.parentPath) << body) { response =>
       response.getStatusCode match {
         case 404 => throw NotFoundException(originPath)
         case 409 => throw AlreadyExistsException(targetPath / originPath.name)

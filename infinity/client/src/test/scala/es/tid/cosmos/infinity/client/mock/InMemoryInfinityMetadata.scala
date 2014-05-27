@@ -49,7 +49,7 @@ class InMemoryInfinityMetadata(
     paths() = paths() + (path -> metadata)
   }
 
-  def move(from: SubPath, to: SubPath): Unit = atomic { implicit tx =>
+  def move(from: Path, to: Path): Unit = atomic { implicit tx =>
     val metadata = paths().apply(from)
     paths() = (paths() - from) + (to -> metadata.moved(to))
   }
@@ -80,7 +80,7 @@ class InMemoryInfinityMetadata(
     }
 
   private implicit class MetadataOps(metadata: PathMetadata) {
-    def moved(to: SubPath): PathMetadata = metadata.transform(
+    def moved(to: Path): PathMetadata = metadata.transform(
       onFile = _.copy(path = to, metadata = dataFactory.metadataUrl(to), content = contentUrl(to)),
       onDir  = _.copy(path = to, metadata = dataFactory.metadataUrl(to))
     )

@@ -105,9 +105,9 @@ class HttpInfinityClientTest extends FlatSpec
       val file = dataFactory.fileMetadata(aFile, permissions)
       infinity.givenExistingPaths(origin, destination, file)
       infinity.withServer {
-        client.move(aFile, destination.path) must eventuallySucceed
-        client.pathMetadata(destination.path / "aFile") must eventually (be (
-          Some(dataFactory.fileMetadata(destination.path / "aFile", permissions))))
+        client.move(aFile, destination.path / "otherFile") must eventuallySucceed
+        client.pathMetadata(destination.path / "otherFile") must eventually (be (
+          Some(dataFactory.fileMetadata(destination.path / "otherFile", permissions))))
       }
     }
 
@@ -117,9 +117,9 @@ class HttpInfinityClientTest extends FlatSpec
       val directory = dataFactory.dirMetadata(aDir, permissions)
       infinity.givenExistingPaths(origin, destination, directory)
       infinity.withServer {
-        client.move(aDir, destination.path) must eventuallySucceed
-        client.pathMetadata(destination.path / "aDir") must eventually (be (
-          Some(dataFactory.dirMetadata(destination.path / "aDir", permissions))))
+        client.move(aDir, destination.path / "newDir") must eventuallySucceed
+        client.pathMetadata(destination.path / "newDir") must eventually (be (
+          Some(dataFactory.dirMetadata(destination.path / "newDir", permissions))))
       }
     }
   }

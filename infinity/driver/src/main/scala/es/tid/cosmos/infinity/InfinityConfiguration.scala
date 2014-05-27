@@ -19,6 +19,7 @@ package es.tid.cosmos.infinity
 import scala.concurrent.duration._
 
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.permission.FsPermission
 
 import es.tid.cosmos.infinity.common.credentials.{ClusterCredentials, Credentials, UserCredentials}
 
@@ -38,6 +39,8 @@ private[infinity] class InfinityConfiguration(config: Configuration) {
   }
 
   def credentials: Option[Credentials] = clusterCredentials orElse userCredentials
+
+  def umask = FsPermission.getUMask(config)
 
   private def clusterCredentials: Option[ClusterCredentials] =
     Option(config.get(ClusterSecretProperty)).map(ClusterCredentials.apply)

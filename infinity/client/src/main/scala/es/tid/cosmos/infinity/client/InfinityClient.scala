@@ -81,11 +81,11 @@ trait InfinityClient {
     * The movement should not create a loop (i.e. moving a directory to a subdirectory).
     *
     * @param originPath  Path to move
-    * @param targetPath  Destination path that should exist as a directory
+    * @param targetPath  Destination path. Parent should exist as a directory
     * @return            A successful future if the path is moved. Otherwise the common exceptions
     *                    or AlreadyExistsException when the target path already exists
     */
-  def move(originPath: SubPath, targetPath: Path): Future[Unit]
+  def move(originPath: SubPath, targetPath: SubPath): Future[Unit]
 
   /** Change path owner.
     *

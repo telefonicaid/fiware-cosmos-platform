@@ -54,7 +54,7 @@ object NormalBehavior extends Behavior with Formatters with Assertions {
           }
 
         case Move(name, from) =>
-          metadata.move(from / name, path / name)
+          metadata.move(from, path / name)
           Created
 
         case ChangeOwner(owner) =>

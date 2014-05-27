@@ -177,7 +177,6 @@ HTTP/1.1 200 OK
   "permissions" : "755",
   "size" : 0,
   "modificationTime" : "2014-04-08T12:31:45+0100",
-  "accessTime" : "2014-04-08T12:45:22+0100",
   "content" : [
     {
       "path" : "/usr/gandalf/spells.txt",
@@ -201,7 +200,6 @@ HTTP/1.1 200 OK
       "permissions" : "750",
       "size" : 0,
       "modificationTime" : "2014-04-08T12:55:45+0100",
-      "accessTime" : "2014-04-08T13:01:22+0100",
       "blockSize" : 0,
       "replication" : 0
     }
@@ -222,10 +220,10 @@ following fields.
  * `size`, which is always zero
  * `modificationTime`, which indicates the last time when the directory was
    modified
- * `accessTime`, which indicates the last time when the directory was accessed
  * `content`, which provides an array of abstract metadata objects, one per
-   directory entry. These objects *do not have* a `content` field. See [data
-   type specification](Infinity-rest-protocol.md#data-type-specification) for
+   directory entry. These objects *do not have* a `content` field, and `accessTime`
+   is only present in case of files. See
+   [data type specification](Infinity-rest-protocol.md#data-type-specification) for
    further details.
 
 ### Create a new file
@@ -780,7 +778,7 @@ attributes for file and directory metadata. It has the following form.
   "owner" : <string>,
   "group" : <string>,
   "modificationTime" : <datetime>,
-  "accessTime" : <datetime>,
+  "accessTime" : <datetime> (optional),
   "permissions" : <permissions>,
   "size" : <natural>
 }
@@ -820,7 +818,6 @@ A directory metadata object is a JSON document with the following contents.
   "owner" : <string>,
   "group" : <string>,
   "modificationTime" : <datetime>,
-  "accessTime" : <datetime>,
   "permissions" : <permissions>,
   "size" : 0
 }
@@ -839,7 +836,7 @@ directory and lack a `content` attribute to avoid be arbitrarily nested.
   "owner" : <string>,
   "group" : <string>,
   "modificationTime" : <datetime>,
-  "accessTime" : <datetime>,
+  "accessTime" : <datetime> (optional),
   "replication" : <positive>,
   "blockSize" : <positive>,
   "permissions" : <permissions>,

@@ -19,6 +19,7 @@ package es.tid.cosmos.infinity
 import scala.concurrent.duration._
 
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.permission.FsPermission
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
@@ -76,6 +77,15 @@ class InfinityConfigurationTest extends FlatSpec with MustMatchers {
 
   it must "provide no credentials when not configured" in {
     defaultConfiguration().credentials must be ('empty)
+  }
+
+  it must "provide the default umask 022 when not configured" in {
+    defaultConfiguration().umask must be (new FsPermission("022"))
+  }
+
+  it must "provide the configured umask" in {
+    val config = configurationWithProperties("fs.permissions.umask-mode" -> "077")
+    config.umask must be (new FsPermission("077"))
   }
 
   def defaultConfiguration() = configurationWithProperties()

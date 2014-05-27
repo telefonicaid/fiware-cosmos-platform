@@ -104,6 +104,8 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     true
   }
 
+  override def mkdirs(f: Path): Boolean = mkdirs(f, defaultDirectoryPermissions)
+
   override def mkdirs(f: Path, permission: FsPermission): Boolean =
     awaitAction(makeRecursiveDirectory(absolutePath(f), permission.toInfinity))
 
@@ -199,13 +201,14 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     else {
       val absPath = absolutePath(f)
       val fileWriteFunction = if (overwrite) overwriteFile else appendToFile
-      val fileCreation = for {
+      val fileWriteStream_> = for {
+        _ <- makeRecursiveDirectory(absolutePath(f.getParent), defaultDirectoryPermissions.toInfinity)
         _ <- client.createFile(absPath, perms.toInfinity, Some(replication), Some(blockSize)).recover {
-              case _: AlreadyExistsException if overwrite => ()
-            }
+          case _: AlreadyExistsException if overwrite => ()
+        }
         stream <- fileWriteFunction(f, bufferSize, Option(progressOrNull))
       } yield stream
-      awaitResult(fileCreation)
+      awaitResult(fileWriteStream_>)
     }
 
   private def existingPathMetadata(f: Path): Future[PathMetadata] =
@@ -263,6 +266,9 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   } catch {
     case ex: TimeoutException => Failure(ex)
   }
+
+  private def defaultDirectoryPermissions: FsPermission =
+    FsPermission.getDirDefault.applyUMask(infinityConfiguration.umask)
 
   override val getScheme = Scheme
 }

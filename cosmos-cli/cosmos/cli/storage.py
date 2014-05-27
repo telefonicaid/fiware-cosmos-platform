@@ -119,10 +119,8 @@ def format_timestamp(timestamp):
     >>> format_timestamp("2014-04-08T12:41:34+0100")
     'Tue, 08 Apr 2014 12:41:34'
     """
-    import warnings
-    with warnings.catch_warnings():
-        t = iso8601.parse_date(timestamp).timetuple()
-        return time.strftime("%a, %d %b %Y %H:%M:%S", t)
+    t = iso8601.parse_date(timestamp).timetuple()
+    return time.strftime("%a, %d %b %Y %H:%M:%S", t)
 
 
 def format_statuses(statuses):

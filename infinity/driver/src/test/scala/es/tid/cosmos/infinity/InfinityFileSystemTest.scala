@@ -112,6 +112,17 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     client.verifyDirectoryCreation(mappedToUserPath(path), perms.toInfinity)
   }
 
+  it must "create directories with default permissions and the configured umask" in new Fixture {
+    FsPermission.setUMask(conf, new FsPermission("077"))
+    val path = new Path("/grandparent/parent/newdir")
+    client.givenDirectory(mappedToUserPath(path.getParent.getParent))
+    client.givenDirectoryCanBeCreated(mappedToUserPath(path.getParent))
+    client.givenDirectoryCanBeCreated(mappedToUserPath(path))
+
+    fs.mkdirs(path) must be (true)
+    client.verifyDirectoryCreation(mappedToUserPath(path), new FsPermission("700").toInfinity)
+  }
+
   it must "get the file status of an existing file" in new Fixture {
     client.givenExistingPath(someFileMetadata)
     fs.getFileStatus(someFile) must be (someFileMetadata.copy(path = someFile.toInfinity).toHadoop)
@@ -284,7 +295,9 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     } must produce [IOException]
   }
 
-  it must "create a new file" in new Fixture {
+  it must "create a new file and it's directory hierarchy if non existing" in new Fixture {
+    client.givenDirectory(someMappedFile.parent.flatMap(_.parent).get)
+    client.givenDirectoryCanBeCreated(someMappedFile.parent.get)
     client.givenFileCanBeCreated(someMappedFile)
     client.givenFileCanBeAppendedTo(someMappedFile)
     val mask = PermissionsMask.fromOctal("640")
@@ -297,6 +310,8 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
 
   it must "create a new file with overwrite when the file previously existed" in new Fixture {
     client.givenCreationWillFailWith(someMappedFile, AlreadyExistsException(someMappedFile))
+    client.givenDirectory(someMappedFile.parent.flatMap(_.parent).get)
+    client.givenDirectoryCanBeCreated(someMappedFile.parent.get)
     client.givenFileCanBeOverwritten(someMappedFile)
     val mask = PermissionsMask.fromOctal("640")
     val overwrite = true
@@ -307,6 +322,8 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
   }
 
   it must "create a new file with overwrite when the file did not exist" in new Fixture {
+    client.givenDirectory(someMappedFile.parent.flatMap(_.parent).get)
+    client.givenDirectoryCanBeCreated(someMappedFile.parent.get)
     client.givenFileCanBeCreated(someMappedFile)
     client.givenFileCanBeOverwritten(someMappedFile)
     val mask = PermissionsMask.fromOctal("640")
@@ -319,6 +336,8 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
 
   it must "fail to create a new file with overwrite when the previous file cannot be deleted" in new Fixture {
     client.givenCreationWillFailWith(someMappedFile, ForbiddenException("Access denied", None))
+    client.givenDirectory(someMappedFile.parent.flatMap(_.parent).get)
+    client.givenDirectoryCanBeCreated(someMappedFile.parent.get)
     client.givenFileCanBeCreated(someMappedFile)
     client.givenFileCanBeAppendedTo(someMappedFile)
     val mask = PermissionsMask.fromOctal("640")

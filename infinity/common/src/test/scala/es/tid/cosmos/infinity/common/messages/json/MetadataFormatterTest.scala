@@ -44,7 +44,7 @@ class MetadataFormatterTest extends FlatSpec with MustMatchers {
       permissions = PermissionsMask.fromOctal("600"),
       size = 45566918656L,
       modificationTime = modificationTime,
-      accessTime = accessTime,
+      accessTime = Some(accessTime),
       blockSize = 65536,
       replication = 3
     )
@@ -73,7 +73,6 @@ class MetadataFormatterTest extends FlatSpec with MustMatchers {
       group = "istari",
       permissions = PermissionsMask.fromOctal("755"),
       modificationTime = modificationTime,
-      accessTime = accessTime,
       content = Seq(
         DirectoryEntry.file(
           path = Path.absolute("/usr/gandalf/spells.txt"),
@@ -93,7 +92,6 @@ class MetadataFormatterTest extends FlatSpec with MustMatchers {
           owner = "gandalf",
           group = "istari",
           modificationTime = modificationTime,
-          accessTime = accessTime,
           permissions = PermissionsMask.fromOctal("750")
         )
       )
@@ -120,7 +118,6 @@ class MetadataFormatterTest extends FlatSpec with MustMatchers {
             ("owner" -> "gandalf") ~
             ("group" -> "istari") ~
             ("modificationTime" -> Rfc822DateFormat.format(modificationTime)) ~
-            ("accessTime" -> Rfc822DateFormat.format(accessTime)) ~
             ("permissions" -> "750") ~
             ("replication" -> 0) ~
             ("blockSize" -> 0) ~
@@ -129,7 +126,6 @@ class MetadataFormatterTest extends FlatSpec with MustMatchers {
         ("owner" -> "gandalf") ~
         ("group" -> "istari") ~
         ("modificationTime" -> Rfc822DateFormat.format(modificationTime)) ~
-        ("accessTime" -> Rfc822DateFormat.format(accessTime)) ~
         ("permissions" -> "755") ~
         ("type" -> "directory") ~
         ("size" -> 0)

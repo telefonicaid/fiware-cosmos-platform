@@ -53,7 +53,6 @@ class MockInfinityClient extends MockitoSugar {
       owner = "user",
       group = "group",
       modificationTime = defaultTime,
-      accessTime = defaultTime,
       permissions = defaultMask
     ))
   }
@@ -66,7 +65,7 @@ class MockInfinityClient extends MockitoSugar {
       owner = "user",
       group = "group",
       modificationTime = defaultTime,
-      accessTime = defaultTime,
+      accessTime = Some(defaultTime),
       permissions = defaultMask,
       replication = 3,
       blockSize = 2048,

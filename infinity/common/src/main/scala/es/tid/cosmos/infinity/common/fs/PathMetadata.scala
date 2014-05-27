@@ -29,7 +29,7 @@ sealed trait AbstractMetadata {
   val owner: String
   val group: String
   val modificationTime: Date
-  val accessTime: Date
+  val accessTime: Option[Date]
   val permissions: PermissionsMask
   val replication: Short
   val blockSize: Long
@@ -48,7 +48,7 @@ case class FileMetadata(
     override val owner: String,
     override val group: String,
     override val modificationTime: Date,
-    override val accessTime: Date,
+    override val accessTime: Option[Date],
     override val permissions: PermissionsMask,
     override val replication: Short,
     override val blockSize: Long,
@@ -61,7 +61,7 @@ case class FileMetadata(
       modificationTime: Date, accessTime: Date, permissions: String, replication: Short,
       blockSize: Long, size: Long) =
     this(Path.absolute(path), new URL(metadata), new URL(content), owner, group,
-      modificationTime, accessTime, PermissionsMask.fromOctal(permissions), replication, blockSize,
+      modificationTime, Some(accessTime), PermissionsMask.fromOctal(permissions), replication, blockSize,
       size)
 
   require(replication >= 0, s"Replication must be non-negative but was $replication")
@@ -77,18 +77,18 @@ case class DirectoryMetadata(
     override val owner: String,
     override val group: String,
     override val modificationTime: Date,
-    override val accessTime: Date,
     override val permissions: PermissionsMask) extends PathMetadata {
 
   override val `type` = PathType.Directory
+  override val accessTime = None
   override val replication = DirectoryMetadata.Replication
   override val blockSize = DirectoryMetadata.BlockSize
   override val size = DirectoryMetadata.Size
 
   def this(path: String, metadata: String, content: Seq[DirectoryEntry],
-    owner: String, group: String, modificationTime: Date, accessTime: Date,
+    owner: String, group: String, modificationTime: Date,
     permissions: String) = this(Path.absolute(path), new URL(metadata), content, owner, group,
-    modificationTime, accessTime, PermissionsMask.fromOctal(permissions))
+    modificationTime, PermissionsMask.fromOctal(permissions))
 }
 
 object DirectoryMetadata {
@@ -105,7 +105,7 @@ case class DirectoryEntry (
     override val owner: String,
     override val group: String,
     override val modificationTime: Date,
-    override val accessTime: Date,
+    override val accessTime: Option[Date],
     override val permissions: PermissionsMask,
     override val replication: Short,
     override val blockSize: Long,
@@ -114,8 +114,8 @@ case class DirectoryEntry (
   require(size >= 0, s"File size must be non-negative but was $size")
 
   def this(path: String, `type`: String, metadata: String, owner: String, group: String,
-           modificationTime: Date, accessTime: Date, permissions: String, replication: Short,
-           blockSize: Long, size: Long) =
+           modificationTime: Date, accessTime: Option[Date], permissions: String,
+           replication: Short, blockSize: Long, size: Long) =
     this(Path.absolute(path), PathType.valueOf(`type`), new URL(metadata), owner, group,
       modificationTime, accessTime, PermissionsMask.fromOctal(permissions), replication, blockSize,
       size)
@@ -126,11 +126,11 @@ object DirectoryEntry {
   def file(path: Path, metadata: URL, owner: String, group: String,
            modificationTime: Date, accessTime: Date, permissions: PermissionsMask,
            replication: Short, blockSize: Long, size: Long) = DirectoryEntry(
-    path, PathType.File, metadata, owner, group, modificationTime, accessTime, permissions,
+    path, PathType.File, metadata, owner, group, modificationTime, Some(accessTime), permissions,
     replication, blockSize, size)
 
   def directory(path: Path, metadata: URL, owner: String, group: String, modificationTime: Date,
-                accessTime: Date, permissions: PermissionsMask) = DirectoryEntry(
-    path, PathType.Directory, metadata, owner, group, modificationTime, accessTime, permissions,
+                permissions: PermissionsMask) = DirectoryEntry(
+    path, PathType.Directory, metadata, owner, group, modificationTime, None, permissions,
     DirectoryMetadata.Replication, DirectoryMetadata.BlockSize, DirectoryMetadata.Size)
 }

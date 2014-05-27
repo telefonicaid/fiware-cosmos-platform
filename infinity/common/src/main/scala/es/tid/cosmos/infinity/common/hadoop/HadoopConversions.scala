@@ -48,7 +48,7 @@ object HadoopConversions {
       metadata.replication,
       metadata.blockSize,
       metadata.modificationTime.getTime,
-      metadata.accessTime.getTime,
+      metadata.accessTime.fold(0l)(_.getTime),
       metadata.permissions.toHadoop,
       metadata.owner,
       metadata.group,

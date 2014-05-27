@@ -76,7 +76,7 @@ class MockInfinityServer(metadataPort: Int, defaultDate: Date) extends Assertion
         owner = "hdfs",
         group = "hdfs",
         modificationTime = defaultDate,
-        accessTime = defaultDate,
+        accessTime = Some(defaultDate),
         permissions,
         replication = replication.getOrElse(3),
         blockSize = blockSize.getOrElse(2048),
@@ -91,7 +91,6 @@ class MockInfinityServer(metadataPort: Int, defaultDate: Date) extends Assertion
         owner = "hdfs",
         group = "hdfs",
         modificationTime = defaultDate,
-        accessTime = defaultDate,
         permissions
       )
 

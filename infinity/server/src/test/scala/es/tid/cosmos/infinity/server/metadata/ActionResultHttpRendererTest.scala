@@ -42,7 +42,7 @@ class ActionResultHttpRendererTest extends FlatSpec with MustMatchers with Mocki
     group = "istari",
     metadata = new URL("http://meta.example.com/path/to/file"),
     modificationTime = new Date(10000),
-    accessTime = new Date(10001),
+    accessTime = Some(new Date(10001)),
     permissions = PermissionsMask.fromOctal("755"),
     replication = 3,
     blockSize = 512,

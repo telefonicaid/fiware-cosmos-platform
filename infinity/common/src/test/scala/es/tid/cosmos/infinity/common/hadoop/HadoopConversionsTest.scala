@@ -79,7 +79,7 @@ class HadoopConversionsTest extends FlatSpec with MustMatchers {
       owner = "owner",
       group = "group",
       modificationTime = new Date(42),
-      accessTime = new Date(43),
+      accessTime = Some(new Date(43)),
       permissions = mask,
       replication = 3,
       blockSize = 32,
@@ -97,7 +97,6 @@ class HadoopConversionsTest extends FlatSpec with MustMatchers {
       owner = "owner",
       group = "group",
       modificationTime = new Date(42),
-      accessTime = new Date(43),
       permissions = mask
     ).toHadoop must be (new FileStatus(0, true, 0, 32, 42, 43, mask.toHadoop, "owner", "group",
       new HadoopPath("/")))

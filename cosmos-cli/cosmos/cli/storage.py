@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 import argparse
-import dateutil.parser
+import iso8601
 import time
 
 from cosmos.cli.config import load_config
@@ -121,10 +121,7 @@ def format_timestamp(timestamp):
     """
     import warnings
     with warnings.catch_warnings():
-        # dateutils 2.2 has a known bug that emits UnicodeWarnings in Windows
-        # more info at https://bugs.launchpad.net/dateutil/+bug/1227221
-        warnings.filterwarnings("ignore", category=UnicodeWarning)
-        t = dateutil.parser.parse(timestamp).timetuple()
+        t = iso8601.parse_date(timestamp).timetuple()
         return time.strftime("%a, %d %b %Y %H:%M:%S", t)
 
 

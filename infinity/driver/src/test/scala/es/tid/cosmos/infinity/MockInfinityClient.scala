@@ -79,9 +79,12 @@ class MockInfinityClient extends MockitoSugar {
 
   def givenFileCanBeCreated(path: Path): Unit = {
     givenFile(path)
-    willSucceed(given(value.createFile(the(asSubPath(path)), any[PermissionsMask],
-      any[Option[Short]], any[Option[Long]])))
+    willSucceed(givenFileCreation(path))
   }
+  def givenCreationWillFailWith(path: Path, e: Throwable): Unit =
+    willFailWith(givenFileCreation(path), e)
+  private def givenFileCreation(path: Path) = given(value.createFile(
+    the(asSubPath(path)), any[PermissionsMask], any[Option[Short]], any[Option[Long]]))
   def verifyFileCreation(
       path: Path, perms: PermissionsMask, replication: Option[Short], blockSize: Option[Long]): Unit = {
     verify(value).createFile(asSubPath(path), perms, replication, blockSize)
@@ -147,6 +150,12 @@ class MockInfinityClient extends MockitoSugar {
     given(value.append(the(asSubPath(path)), anyInt)).willReturn(Future.successful(output))
   }
 
+  def givenFileCanBeOverwritten(path: Path): Unit = {
+    givenFile(path)
+    val output = new ByteArrayOutputStream()
+    given(value.overwrite(the(asSubPath(path)), anyInt)).willReturn(Future.successful(output))
+  }
+
   def givenFileWithContent(path: SubPath, content: String): Unit = {
     val byteArray = content.getBytes
     givenFileRead(path).willAnswer(
@@ -168,7 +177,10 @@ class MockInfinityClient extends MockitoSugar {
     call.willReturn(Future.successful(()))
 
   private def willFail[T](call: BDDMyOngoingStubbing[Future[T]]): Unit =
-    call.willReturn(Future.failed(defaultFailure))
+    willFailWith(call, defaultFailure)
+
+  private def willFailWith[T](call: BDDMyOngoingStubbing[Future[T]], e: Throwable): Unit =
+    call.willReturn(Future.failed(e))
 
   private def wontFinish[T](call: BDDMyOngoingStubbing[Future[T]]): Unit =
     call.willReturn(Promise[T]().future)

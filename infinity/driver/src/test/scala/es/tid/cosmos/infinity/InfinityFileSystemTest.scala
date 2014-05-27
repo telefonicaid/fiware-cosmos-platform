@@ -31,10 +31,11 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
+import es.tid.cosmos.infinity.client.{AlreadyExistsException, ForbiddenException, NotFoundException}
+import es.tid.cosmos.infinity.common.credentials.Credentials
 import es.tid.cosmos.infinity.common.fs.{DirectoryEntry, DirectoryMetadata, FileMetadata, RootPath}
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
-import es.tid.cosmos.infinity.common.credentials.Credentials
 
 class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSugar {
 
@@ -292,6 +293,40 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
       blockSize, progressable)
     outputStream must not be null
     client.verifyFileCreation(someMappedFile, mask, Some(replication), Some(blockSize))
+  }
+
+  it must "create a new file with overwrite when the file previously existed" in new Fixture {
+    client.givenCreationWillFailWith(someMappedFile, AlreadyExistsException(someMappedFile))
+    client.givenFileCanBeOverwritten(someMappedFile)
+    val mask = PermissionsMask.fromOctal("640")
+    val overwrite = true
+    val outputStream = fs.create(someFile, mask.toHadoop, overwrite, bufferSize, replication,
+      blockSize, progressable)
+    outputStream must not be null
+    client.verifyFileCreation(someMappedFile, mask, Some(replication), Some(blockSize))
+  }
+
+  it must "create a new file with overwrite when the file did not exist" in new Fixture {
+    client.givenFileCanBeCreated(someMappedFile)
+    client.givenFileCanBeOverwritten(someMappedFile)
+    val mask = PermissionsMask.fromOctal("640")
+    val overwrite = true
+    val outputStream = fs.create(someFile, mask.toHadoop, overwrite, bufferSize, replication,
+      blockSize, progressable)
+    outputStream must not be null
+    client.verifyFileCreation(someMappedFile, mask, Some(replication), Some(blockSize))
+  }
+
+  it must "fail to create a new file with overwrite when the previous file cannot be deleted" in new Fixture {
+    client.givenCreationWillFailWith(someMappedFile, ForbiddenException("Access denied", None))
+    client.givenFileCanBeCreated(someMappedFile)
+    client.givenFileCanBeAppendedTo(someMappedFile)
+    val mask = PermissionsMask.fromOctal("640")
+    val overwrite = true
+    evaluating {
+      fs.create(someFile, mask.toHadoop, overwrite, bufferSize, replication,
+        blockSize, progressable)
+    } must produce [IOException]
   }
 
   it must "reject creating the root directory" in new Fixture {

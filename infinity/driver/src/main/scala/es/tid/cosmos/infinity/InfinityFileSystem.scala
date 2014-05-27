@@ -31,7 +31,7 @@ import org.apache.hadoop.fs.permission.FsPermission
 import org.apache.hadoop.security.UserGroupInformation
 import org.apache.hadoop.util.Progressable
 
-import es.tid.cosmos.infinity.client.{HttpInfinityClient, InfinityClient}
+import es.tid.cosmos.infinity.client.{AlreadyExistsException, HttpInfinityClient, InfinityClient}
 import es.tid.cosmos.infinity.common.credentials.Credentials
 import es.tid.cosmos.infinity.common.fs.{Path => InfinityPath, _}
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
@@ -179,20 +179,33 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   override def append(f: Path, bufferSize: Int, progressOrNull: Progressable): FSDataOutputStream =
     awaitResult(appendToFile(f, bufferSize, Option(progressOrNull)))
 
-  private def appendToFile(f: Path, bufferSize: Int, progress: Option[Progressable]): Future[FSDataOutputStream] =
+  private def changeFileContent(changeFileFunction: (SubPath, Int) => Future[OutputStream])(
+      f: Path,
+      bufferSize: Int,
+      progress: Option[Progressable]): Future[FSDataOutputStream] =
     for {
       metadata <- existingFileMetadata(f)
-      stream <- client.append(absolutePath(f), bufferSize)
+      stream <- changeFileFunction(absolutePath(f), bufferSize)
     } yield new FSDataOutputStream(new InfinityOutputStream(stream, progress), statistics)
+
+  private def overwriteFile = changeFileContent(client.overwrite) _
+
+  private def appendToFile = changeFileContent(client.append) _
 
   override def create(
       f: Path, perms: FsPermission, overwrite: Boolean, bufferSize: Int, replication: Short,
       blockSize: Long, progressOrNull: Progressable): FSDataOutputStream =
     if (f.isRoot) throw new IOException("Cannot create the root directory")
     else {
-      val fileCreation =
-        client.createFile(absolutePath(f), perms.toInfinity, Some(replication), Some(blockSize))
-      awaitResult(fileCreation.flatMap(_ => appendToFile(f, bufferSize, Option(progressOrNull))))
+      val absPath = absolutePath(f)
+      val fileWriteFunction = if (overwrite) overwriteFile else appendToFile
+      val fileCreation = for {
+        _ <- client.createFile(absPath, perms.toInfinity, Some(replication), Some(blockSize)).recover {
+              case _: AlreadyExistsException if overwrite => ()
+            }
+        stream <- fileWriteFunction(f, bufferSize, Option(progressOrNull))
+      } yield stream
+      awaitResult(fileCreation)
     }
 
   private def existingPathMetadata(f: Path): Future[PathMetadata] =

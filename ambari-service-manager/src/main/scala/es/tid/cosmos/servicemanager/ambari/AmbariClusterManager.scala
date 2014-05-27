@@ -39,23 +39,55 @@ private[ambari] class AmbariClusterManager(
       clusterDescription: ImmutableClusterDescription,
       serviceInstances: Seq[AnyServiceInstance],
       dynamicProperties: DynamicPropertiesFactory): Future[ConfigurationBundle] = {
-    val services: Seq[AmbariService] = serviceInstances.map(_.service).map(serviceLookup)
     for {
       cluster <- initCluster(clusterDescription)
-      master = clusterDescription.master.get
-      slaves = clusterDescription.slaves
       hosts <- cluster.addHosts(clusterDescription.machines.map(_.hostname))
-      masterHost = hosts.find(_.name == master.hostname).get
-      slaveHosts = hosts.filter(host => slaves.exists(_.hostname == host.name))
+      configuration <- updateClusterServices(clusterDescription,
+        serviceInstances, oldServiceInstances = Seq.empty, dynamicProperties, cluster, hosts)
+    } yield configuration
+  }
+
+  override def updateClusterServices(
+      clusterDescription: ImmutableClusterDescription,
+      nextServiceInstances: Seq[AnyServiceInstance],
+      oldServiceInstances: Seq[AnyServiceInstance],
+      dynamicProperties: DynamicPropertiesFactory): Future[ConfigurationBundle] = {
+    for {
+      cluster <- ambariServer.getCluster(clusterDescription.id.toString)
+      hosts <- cluster.getHosts
+      _ <- stopStartedServices(clusterDescription.id)
+      configuration <- updateClusterServices(clusterDescription,
+        nextServiceInstances, oldServiceInstances, dynamicProperties, cluster, hosts)
+    } yield configuration
+  }
+
+  private def updateClusterServices(
+     clusterDescription: ImmutableClusterDescription,
+     nextServiceInstances: Seq[AnyServiceInstance],
+     oldServiceInstances: Seq[AnyServiceInstance],
+     dynamicProperties: DynamicPropertiesFactory,
+     cluster: Cluster,
+     hosts: Seq[Host]): Future[ConfigurationBundle] = {
+    val nextServices: Seq[AmbariService] = nextServiceInstances.map(_.service).map(serviceLookup)
+    val oldServices: Seq[AmbariService] = oldServiceInstances.map(_.service).map(serviceLookup)
+    val master = clusterDescription.master.get
+    val slaves = clusterDescription.slaves
+    val masterHost = hosts.find(_.name == master.hostname).get
+    val slaveHosts = hosts.filter(host => slaves.exists(_.hostname == host.name))
+    for {
       configuration <- Configurator.applyConfiguration(
         cluster,
         properties = dynamicProperties.forCluster(masterHost.name, slaveHosts.map(_.name)),
-        contributors = configuratorContributors(serviceInstances)
+        contributors = configuratorContributors(nextServiceInstances)
       )
-      serviceClients <- Future.traverse(services) { srv =>
-        createService(srv, cluster, masterHost, slaveHosts)
+      serviceClients <- Future.traverse(nextServices) { srv =>
+        if (oldServices.exists(s => s.service.name == srv.service.name)) {
+          cluster.getService(srv.service.name)
+        } else {
+          createService(srv, cluster, masterHost, slaveHosts)
+        }
       }
-      deployedServices <- installInOrder(serviceClients)
+      _ <- installInOrder(serviceClients)
     } yield configuration
   }
 
@@ -156,7 +188,7 @@ private[ambari] class AmbariClusterManager(
       } else
         Future.successful())
 
-  private def stopStartedServices(id: ClusterId) = for {
+  def stopStartedServices(id: ClusterId) = for {
     cluster <- ambariServer.getCluster(id.toString)
     services <- Future.traverse(cluster.serviceNames)(cluster.getService)
     startedServices = services.filter(_.state == "STARTED")

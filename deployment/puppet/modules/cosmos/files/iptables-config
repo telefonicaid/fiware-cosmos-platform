@@ -11,7 +11,7 @@ IPTABLES_MODULES="ip_conntrack ipt_LOG ipt_conntrack ipt_state ipt_comment xt_st
 # This option has to be 'yes' to get to a sane state for a firewall
 # restart or stop. Only set to 'no' if there are problems unloading netfilter
 # modules.
-IPTABLES_MODULES_UNLOAD="yes"
+IPTABLES_MODULES_UNLOAD="no"
 
 # Save current firewall rules on stop.
 #   Value: yes|no,  default: no

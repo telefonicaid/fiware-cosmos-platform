@@ -232,6 +232,9 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
      initialState: Option[ClusterState] = None,
      services: Seq[String] = Seq("HDFS", "MAPREDUCE")): FakeCluster =
     defineCluster(ClusterProperties(id, name, size, users, initialState, services))
+
+  /** Updates the persistent HDFS cluster with new services and/or its configuration */
+  override def updatePersistentHdfsServices(parameters: InfinityServerParameters): Future[Unit] = ???
 }
 
 object MockedServiceManager {

@@ -134,6 +134,7 @@ object RpmSettings {
       name in Rpm := "infinity-server",
       packageSummary := "Infinity Server",
       packageDescription in Rpm := "Server for infinity:// scheme.",
+      rpmRequirements := Seq("hadoop-hdfs"),
       linuxPackageMappings in Rpm := Seq(
         packageMapping(assembly.value -> s"$InfinityServerPath/infinity-server.jar")
           withUser "root" withGroup "root" withPerms "0755"

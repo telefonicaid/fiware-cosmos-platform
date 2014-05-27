@@ -287,7 +287,8 @@ class AmbariServiceManagerTest
     description.get.services must be (expectedServices.map(_.name))
   }
 
-  it must "be able to deploy the persistent hdfs" in new MockIalComponent with WithServiceManager {
+  private trait FixtureReadyForPersistentHDFS extends MockIalComponent with WithServiceManager {
+
     val nameNode = MachineState(
       new Id(s"NN"), s"TheNameNode",
       MachineProfile.HdfsMaster, MachineStatus.Running,
@@ -303,12 +304,52 @@ class AmbariServiceManagerTest
       .willReturn(Future.successful(Seq(nameNode)))
     given(infrastructureProvider.createMachines(any(), the(MachineProfile.HdfsSlave), any(), any()))
       .willReturn(Future.successful(Seq(dataNode)))
+  }
+
+  it must "be able to deploy the persistent hdfs" in new FixtureReadyForPersistentHDFS {
     instance.describePersistentHdfsCluster() must be (None)
     val parameters = InfinityServerParameters("http://api-base/", "infinitySecret")
     val hdfsDeployment = instance.deployPersistentHdfsCluster(parameters)
     hdfsDeployment must eventuallySucceed
     val description = instance.describePersistentHdfsCluster().get
     val expectedServices = AmbariServiceManager.persistentHdfsServices(parameters)
+    description.services must be (expectedServices.map(_.service.name).toSet)
+  }
+
+  it must "be able to update the persistent hdfs" in new FixtureReadyForPersistentHDFS {
+
+    val dao = new InMemoryClusterDao
+
+    val initInstance = new AmbariServiceManager(
+        clusterManager, infrastructureProvider, ClusterId("HDFS"),
+        exclusiveMasterSizeCutoff, TestHadoopConfig, dao) {
+      override def persistentHdfsServices(infinityParameters: InfinityServerParameters): Seq[AnyServiceInstance] =
+        Seq(
+          Zookeeper.defaultInstance,
+          Hdfs.defaultInstance,
+          CosmosUserService.defaultInstance
+        ).flatten
+    }
+
+    val parameters = InfinityServerParameters("http://api-base/", "infinitySecret")
+    val hdfsDeployment = initInstance.deployPersistentHdfsCluster(parameters)
+    hdfsDeployment must eventuallySucceed
+
+    val updateInstance = new AmbariServiceManager(
+      clusterManager, infrastructureProvider, ClusterId("HDFS"),
+      exclusiveMasterSizeCutoff, TestHadoopConfig, dao) {
+      override def persistentHdfsServices(infinityParameters: InfinityServerParameters): Seq[AnyServiceInstance] =
+        InfinityServer.instance(infinityParameters) +: Seq(
+          Zookeeper.defaultInstance,
+          Hdfs.defaultInstance,
+          CosmosUserService.defaultInstance
+        ).flatten
+    }
+
+    val hdfsUpdate = updateInstance.updatePersistentHdfsServices(parameters)
+    hdfsUpdate must eventuallySucceed
+    val description = updateInstance.describePersistentHdfsCluster().get
+    val expectedServices = updateInstance.persistentHdfsServices(parameters)
     description.services must be (expectedServices.map(_.service.name).toSet)
   }
 

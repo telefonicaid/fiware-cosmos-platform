@@ -21,9 +21,15 @@ class cosmos::master_db inherits cosmos::params {
 
   mysql::server::config { 'basic_config':
     settings => {
+      'client' => {
+        'default-character-set'  => 'utf8'
+      },
       'mysqld' => {
-        'bind-address' => '127.0.0.1',
-        'default-storage-engine' => 'INNODB'
+        'bind-address'           => '127.0.0.1',
+        'default-storage-engine' => 'INNODB',
+        'collation-server'       => 'utf8_unicode_ci',
+        'init-connect'           => "'SET NAMES utf8'",
+        'character-set-server'   => 'utf8'
       }
     },
   }

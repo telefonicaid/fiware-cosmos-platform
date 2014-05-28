@@ -32,6 +32,9 @@ class ResourceBuilder(metadataEndpoint: URL, credentials: Credentials) {
     case SubPath(parentPath, name) => metadata(parentPath) / name
   })
 
+  def jsonMetadata(path: Path): RequestBuilder =
+    metadata(path).setHeader("Content-Type", "application/json")
+
   private def metadataRequestBuilder(): RequestBuilder =
     url(metadataEndpoint.toString) / "infinityfs" / "v1" / "metadata"
 

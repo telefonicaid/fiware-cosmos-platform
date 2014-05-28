@@ -55,7 +55,7 @@ class HttpInfinityClient(metadataEndpoint: URL, credentials: Credentials) extend
 
   override def move(originPath: SubPath, targetPath: SubPath): Future[Unit] = {
     val body = actionFormatter.format(Move(targetPath.name, originPath))
-    httpRequest(resources.metadata(targetPath.parentPath) << body) { response =>
+    httpRequest(resources.jsonMetadata(targetPath.parentPath) << body) { response =>
       response.getStatusCode match {
         case 404 => throw NotFoundException(originPath)
         case 409 => throw AlreadyExistsException(targetPath / originPath.name)
@@ -132,7 +132,7 @@ class HttpInfinityClient(metadataEndpoint: URL, credentials: Credentials) extend
 
   private def createPath(path: SubPath, action: Request): Future[Unit] = {
     val body = actionFormatter.format(action)
-    httpRequest(resources.metadata(path.parentPath) << body) { response =>
+    httpRequest(resources.jsonMetadata(path.parentPath) << body) { response =>
       response.getStatusCode match {
         case 404 => throw NotFoundException(path.parentPath)
         case 409 => throw AlreadyExistsException(path)
@@ -170,7 +170,7 @@ class HttpInfinityClient(metadataEndpoint: URL, credentials: Credentials) extend
 
   private def actionWithNoContentResponse(path: Path, action: Request): Future[Unit] = {
     val body = actionFormatter.format(action)
-    requestWithNoContentResponse(path, resources.metadata(path) << body)
+    requestWithNoContentResponse(path, resources.jsonMetadata(path) << body)
   }
 
   private def requestWithNoContentResponse(path: Path, request: RequestBuilder): Future[Unit] =

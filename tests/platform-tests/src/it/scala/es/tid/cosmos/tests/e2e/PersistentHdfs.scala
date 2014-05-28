@@ -32,7 +32,7 @@ class PersistentHdfs(user: User)(implicit info: Informer) extends MustVerb with 
     .lines(ProcessLogger(info(_)))
     .filterNot(_ == "No directory entries")
     .map(line => {
-      val chunks = line.split("  ", 5)
+      val chunks = line.split("  ", 6)
       FileEntry(chunks(5), chunks(0), chunks(1), chunks(2))
     }).force
 

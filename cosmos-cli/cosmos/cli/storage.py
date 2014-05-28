@@ -64,7 +64,7 @@ def put_file(args, config, conn):
 
 def add_put_command(subparsers):
     put_parser = subparsers.add_parser('put', help='upload file')
-    put_parser.add_argument('local_file', type=argparse.FileType('r'),
+    put_parser.add_argument('local_file', type=argparse.FileType('rb'),
                             help='local file to upload')
     put_parser.add_argument('remote_path', help='target remote path')
     put_parser.set_defaults(func=StorageCommand(put_file))

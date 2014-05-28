@@ -66,8 +66,8 @@ class HadoopConversionsTest extends FlatSpec with MustMatchers {
   }
 
   "An infinity path" must "be converted to a Hadoop one" in {
-    RootPath.toHadoop must be (new HadoopPath("/"))
-    Path.absolute("/foo/bar").toHadoop must be (new HadoopPath("/foo/bar"))
+    RootPath.toHadoop must be (new HadoopPath("infinity:///"))
+    Path.absolute("/foo/bar").toHadoop must be (new HadoopPath("infinity:/foo/bar"))
   }
 
   "A FileMetadata" must "be converted to a FileStatus" in {
@@ -85,7 +85,7 @@ class HadoopConversionsTest extends FlatSpec with MustMatchers {
       blockSize = 32,
       size = 1024
     ).toHadoop must be (new FileStatus(1024, false, 3, 32, 42, 43, mask.toHadoop, "owner", "group",
-      new HadoopPath("/some/file")))
+      new HadoopPath("infinity:/some/file")))
   }
 
   "A DirectoryMetadata" must "be converted to a FileStatus" in {
@@ -99,6 +99,6 @@ class HadoopConversionsTest extends FlatSpec with MustMatchers {
       modificationTime = new Date(42),
       permissions = mask
     ).toHadoop must be (new FileStatus(0, true, 0, 32, 42, 43, mask.toHadoop, "owner", "group",
-      new HadoopPath("/")))
+      new HadoopPath("infinity:/")))
   }
 }

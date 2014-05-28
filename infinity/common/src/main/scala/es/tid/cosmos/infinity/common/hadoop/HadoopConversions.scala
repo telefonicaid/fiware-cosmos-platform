@@ -38,7 +38,7 @@ object HadoopConversions {
   }
 
   implicit class PathConversion(val path: Path) extends AnyVal {
-    def toHadoop: HadoopPath = new HadoopPath(path.toString)
+    def toHadoop: HadoopPath = new HadoopPath(s"infinity:${path.toString}")
   }
 
   implicit class AbstractMetadataConversion(val metadata: AbstractMetadata) extends AnyVal {

@@ -22,9 +22,9 @@ import scala.sys.process._
 
 class InfinityServerIT extends E2ETestBase {
   withNewUsers(3) { users =>
-    var user1 = users(0)
-    var user2 = users(1)
-    var user3 = users(2)
+    val user1 = users(0)
+    val user2 = users(1)
+    val user3 = users(2)
 
     ignore("Setup") {
 

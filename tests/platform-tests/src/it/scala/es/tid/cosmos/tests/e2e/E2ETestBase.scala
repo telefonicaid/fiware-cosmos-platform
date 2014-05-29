@@ -42,10 +42,7 @@ abstract class E2ETestBase extends FeatureSpec with MustMatchers with Patience
   private var clustersToDelete = List.empty[LazyVal[Cluster]]
 
   def withNewUser(body: LazyVal[User] => Unit) {
-    val user = new LazyVal(new User())
-    val executionResult = Try(body(user))
-    usersToDelete = user :: usersToDelete
-    executionResult.get
+    withNewUsers(1)(users => body(users.head))
   }
 
   def withNewUsers(numberOfUsers: Int)(body: Seq[LazyVal[User]] => Unit) {

@@ -19,7 +19,7 @@ set -e
 echo "Test file" > test.txt
 hdfs dfs -put test.txt infinity:///${USER}/test.txt
 hdfs dfs -chmod 700 infinity:///${USER}/test.txt
-hdfs def -get infinity:///${USER}/test.txt test2.txt
+hdfs dfs -get infinity:///${USER}/test.txt test2.txt
 diff test.txt test2.txt
 hdfs dfs -ls infinity:///${USER}/
 hdfs dfs -ls infinity:///${USER}/test.txt

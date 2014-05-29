@@ -16,12 +16,15 @@
 
 package es.tid.cosmos.infinity.server.groups
 
+import java.util.regex.Pattern
+
 object ArtificialUsersGroupMapping {
-  val artificialUserMarker = "@"
+  val artificialUserMarker = "$"
+  val escapedUserMarker = Pattern.quote(artificialUserMarker)
 
   def getGroups(username: String): Seq[String] = {
     ensureValidUsername(username)
-    username.split(artificialUserMarker).tail
+    username.split(escapedUserMarker).tail
   }
 
   def createUserFromGroups(groups: Seq[String]) =

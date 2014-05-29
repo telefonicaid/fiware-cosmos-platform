@@ -26,7 +26,7 @@ class InfinityServerIT extends E2ETestBase {
     var user2 = users(1)
     var user3 = users(2)
 
-    ignore("Setup") {
+    scenario("Setup") {
 
       forceUserCreation(users)
 
@@ -57,14 +57,14 @@ class InfinityServerIT extends E2ETestBase {
     }
 
     withNewCluster(1, user1) { cluster =>
-      ignore("Users can manage their own files") {
+      scenario("Users can manage their own files") {
         cluster.scp(resource("/infinity-server-unshared-cluster.sh"))
         cluster.sshCommand("bash ./infinity-server-unshared-cluster.sh")
       }
     }
 
     withNewCluster(1, user1, shared = true) { cluster =>
-      ignore("Users can manage their group files in a shared cluster") {
+      scenario("Users can manage their group files in a shared cluster") {
         cluster.scp(resource("/infinity-server-shared-cluster.sh"))
         cluster.sshCommand("bash ./infinity-server-shared-cluster.sh")
         cluster.scp(resource("/infinity-server-shared-cluster.sh"), executedBy = user2)
@@ -73,7 +73,7 @@ class InfinityServerIT extends E2ETestBase {
     }
 
     withNewCluster(1, user3, shared = true) { cluster =>
-      ignore("Users can only access files with 'other' permissions if they don't own and aren't part of the group") {
+      scenario("Users can only access files with 'other' permissions if they don't own and aren't part of the group") {
         cluster.scp(resource("/infinity-server-unrelated-user.sh"))
         cluster.sshCommand(s"TARGET_USER=${user1.handle}; bash ./infinity-server-shared-test.sh")
       }

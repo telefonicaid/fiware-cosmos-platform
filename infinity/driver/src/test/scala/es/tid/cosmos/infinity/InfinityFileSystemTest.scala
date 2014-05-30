@@ -31,7 +31,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.infinity.client.{AlreadyExistsException, ForbiddenException, NotFoundException}
+import es.tid.cosmos.infinity.client.{AlreadyExistsException, ForbiddenException}
 import es.tid.cosmos.infinity.common.credentials.Credentials
 import es.tid.cosmos.infinity.common.fs.{DirectoryEntry, DirectoryMetadata, FileMetadata, RootPath}
 import es.tid.cosmos.infinity.common.hadoop.HadoopConversions._
@@ -418,7 +418,8 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
   abstract class Fixture(uri: URI = URI.create("infinity://localhost:8888/")) {
     val client = new MockInfinityClient
     object ClientFactory extends InfinityClientFactory{
-      override def build(metadataEndpoint: URL, credentials: Credentials) = client.value
+      override def build(metadataEndpoint: URL, credentials: Credentials, timeOut: FiniteDuration) =
+        client.value
     }
     val conf = new Configuration(false)
     conf.setLong(InfinityConfiguration.TimeoutProperty, 10.seconds.toMillis)

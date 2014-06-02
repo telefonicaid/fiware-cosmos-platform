@@ -47,7 +47,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   @volatile
   private var workingDirectory: Path = _
   private var client: InfinityClient = _
-  private var timeBound: TimeBound = _
+  private var shortTimeBound: TimeBound = _
 
   def this() = this(InfinityFileSystem.DefaultClientFactory)
 
@@ -61,7 +61,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     require(name.getScheme == Scheme, s"Invalid scheme in $name")
     setConf(conf)
     uri = setDefaultAuthority(name)
-    timeBound = new TimeBound(infinityConfiguration.timeoutDuration)
+    shortTimeBound = new TimeBound(infinityConfiguration.shortOperationTimeout)
     initializeClient()
     ugi = UserGroupInformation.getCurrentUser
     workingDirectory = makeQualified(new Path(homeDirectory()))
@@ -76,7 +76,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     client = clientFactory.build(
       metadataServerEndpoint.toURL,
       credentials,
-      infinityConfiguration.timeoutDuration)
+      infinityConfiguration.longOperationTimeout)
   }
 
   /** If authority is missing, add the default one. */
@@ -110,7 +110,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   override def mkdirs(f: Path): Boolean = mkdirs(f, defaultDirectoryPermissions)
 
   override def mkdirs(f: Path, permission: FsPermission): Boolean =
-    timeBound.awaitAction(makeRecursiveDirectory(absolutePath(f), permission.toInfinity))
+    shortTimeBound.awaitAction(makeRecursiveDirectory(absolutePath(f), permission.toInfinity))
 
   override protected def canonicalizeUri(uri: URI): URI =
     new URI(uri.getScheme, null, uri.getPath, uri.getQuery, uri.getFragment)
@@ -129,7 +129,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
   }
 
   override def getFileStatus(f: Path): FileStatus =
-    timeBound.awaitResult(existingPathMetadata(f).map(transformBack(_).toHadoop))
+    shortTimeBound.awaitResult(existingPathMetadata(f).map(transformBack(_).toHadoop))
 
   /** List the status for a path.
     *
@@ -139,7 +139,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     * @throws FileNotFoundException  if path doesn't exist
     */
   override def listStatus(f: Path): Array[FileStatus] =
-    timeBound.awaitResult(existingPathMetadata(f).map {
+    shortTimeBound.awaitResult(existingPathMetadata(f).map {
       case metadata: FileMetadata => Array(transformBack(metadata).toHadoop)
       case metadata: DirectoryMetadata => metadata.content.map(transformBack(_).toHadoop).toArray
     })
@@ -156,33 +156,33 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
     entry.copy(path = UserPathMapper.userPath(entry.path))
 
   override def delete(f: Path, recursive: Boolean): Boolean =
-    if (f.isRoot) false else timeBound.awaitAction(client.delete(absolutePath(f), recursive))
+    if (f.isRoot) false else shortTimeBound.awaitAction(client.delete(absolutePath(f), recursive))
 
   override def rename(source: Path, target: Path): Boolean =
     if (source.isRoot || target.isRoot) {
       Log.error(s"Cannot move from/to the root path (Moving $source to $target)")
       false
-    } else timeBound.awaitAction(client.move(absolutePath(source), absolutePath(target)))
+    } else shortTimeBound.awaitAction(client.move(absolutePath(source), absolutePath(target)))
 
   override def setOwner(f: Path, ownerOrNull: String, groupOrNull: String): Unit = {
     val path = absolutePath(f)
     def ownerChange = whenNotNull(ownerOrNull)(client.changeOwner(path, _))
     def groupChange = whenNotNull(groupOrNull)(client.changeGroup(path, _))
-    timeBound.awaitResult(ownerChange.flatMap(_ => groupChange))
+    shortTimeBound.awaitResult(ownerChange.flatMap(_ => groupChange))
   }
 
   override def setPermission(f: Path, perms: FsPermission): Unit =
-    timeBound.awaitResult(client.changePermissions(absolutePath(f), perms.toInfinity))
+    shortTimeBound.awaitResult(client.changePermissions(absolutePath(f), perms.toInfinity))
 
   override def open(f: Path, bufferSize: Int) =
-    timeBound.awaitResult(existingFileMetadata(f).map { metadata =>
+    shortTimeBound.awaitResult(existingFileMetadata(f).map { metadata =>
       new FSDataInputStream(new InfinityInputStream(
-        client, absolutePath(f), bufferSize, infinityConfiguration.timeoutDuration
+        client, absolutePath(f), bufferSize, infinityConfiguration.shortOperationTimeout
       ))
     })
 
   override def append(f: Path, bufferSize: Int, progressOrNull: Progressable): FSDataOutputStream =
-    timeBound.awaitResult(appendToFile(f, bufferSize, Option(progressOrNull)))
+    shortTimeBound.awaitResult(appendToFile(f, bufferSize, Option(progressOrNull)))
 
   private def changeFileContent(changeFileFunction: (SubPath, Int) => Future[OutputStream])(
       f: Path,
@@ -211,7 +211,7 @@ class InfinityFileSystem(clientFactory: InfinityClientFactory) extends FileSyste
         }
         stream <- fileWriteFunction(f, bufferSize, Option(progressOrNull))
       } yield stream
-      timeBound.awaitResult(fileWriteStream_>)
+      shortTimeBound.awaitResult(fileWriteStream_>)
     }
 
   private def existingPathMetadata(f: Path): Future[PathMetadata] =
@@ -242,8 +242,9 @@ object InfinityFileSystem {
   private val Log = LogFactory.getLog(classOf[InfinityFileSystem])
 
   private object DefaultClientFactory extends InfinityClientFactory {
-    override def build(metadataEndpoint: URL, credentials: Credentials, timeOut: FiniteDuration) =
-      new HttpInfinityClient(metadataEndpoint, credentials, timeOut)
+    override def build(
+        metadataEndpoint: URL, credentials: Credentials, longOperationTimeout: FiniteDuration) =
+      new HttpInfinityClient(metadataEndpoint, credentials, longOperationTimeout)
   }
 
   private val Ok = Future.successful(())

@@ -33,7 +33,7 @@ import es.tid.cosmos.infinity.common.streams.FutureBoundOutputStream
 class HttpInfinityClient(
     metadataEndpoint: URL,
     credentials: Credentials,
-    timeOut: FiniteDuration) extends InfinityClient {
+    longOperationTimeout: FiniteDuration) extends InfinityClient {
 
   private val resources = new ResourceBuilder(metadataEndpoint, credentials)
   private val metadataParser = new MetadataParser()
@@ -124,7 +124,7 @@ class HttpInfinityClient(
           case 204 => ()
         }
       }}}.flatMap(identity)
-      new FutureBoundOutputStream(out, request_>, timeOut)
+      new FutureBoundOutputStream(out, request_>, longOperationTimeout)
     }
 
   private def existingMetaData(path: Path): Future[PathMetadata] =

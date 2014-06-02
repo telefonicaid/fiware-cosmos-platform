@@ -422,7 +422,8 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
         client.value
     }
     val conf = new Configuration(false)
-    conf.setLong(InfinityConfiguration.TimeoutProperty, 10.seconds.toMillis)
+    conf.setLong(InfinityConfiguration.ShortOperationTimeoutProperty, 10.seconds.toMillis)
+    conf.setLong(InfinityConfiguration.LongOperationTimeoutProperty, 20.minutes.toMillis)
     conf.set(InfinityConfiguration.DefaultAuthorityProperty, "defaultAuthority")
     conf.set(InfinityConfiguration.ClusterSecretProperty, "secret")
     val fs = new InfinityFileSystem(ClientFactory)

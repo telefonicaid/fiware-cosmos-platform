@@ -32,9 +32,15 @@ private[infinity] class InfinityConfiguration(config: Configuration) {
 
   def useSsl: Boolean = config.getBoolean(UseSslProperty, DefaultUseSslValue)
 
-  def timeoutDuration: FiniteDuration = {
-    val duration = config.getLong(TimeoutProperty, DefaultTimeout)
-    require(duration > 0, s"Timeout must be strictly positive but was $duration ms")
+  def shortOperationTimeout: FiniteDuration = {
+    val duration = config.getLong(ShortOperationTimeoutProperty, DefaultShortTimeout)
+    requireValidTimeout(duration)
+    duration.millis
+  }
+
+  def longOperationTimeout: FiniteDuration = {
+    val duration = config.getLong(LongOperationTimeoutProperty, DefaultLongTimeout)
+    requireValidTimeout(duration)
     duration.millis
   }
 
@@ -49,14 +55,19 @@ private[infinity] class InfinityConfiguration(config: Configuration) {
     key <- Option(config.get(ApiKeyProperty))
     secret <- Option(config.get(ApiSecretProperty))
   } yield UserCredentials(key, secret)
+
+  private def requireValidTimeout(value: Long) =
+    require(value > 0, s"Timeout must be strictly positive but was $value ms")
 }
 
 object InfinityConfiguration {
   val DefaultAuthorityProperty = property("defaultAuthority")
   val UseSslProperty = property("ssl.enabled")
   val DefaultUseSslValue = true
-  val TimeoutProperty = property("timeout.millis")
-  val DefaultTimeout = 3000
+  val ShortOperationTimeoutProperty = property("timeout.shortOperation.millis")
+  val LongOperationTimeoutProperty = property("timeout.longOperation.millis")
+  val DefaultShortTimeout = 3.seconds.toMillis
+  val DefaultLongTimeout = 15.minutes.toMillis
   val ClusterSecretProperty = property("clusterSecret")
   val ApiKeyProperty = property("apiKey")
   val ApiSecretProperty = property("apiSecret")

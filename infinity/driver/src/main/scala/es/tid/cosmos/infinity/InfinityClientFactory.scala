@@ -25,5 +25,8 @@ import es.tid.cosmos.infinity.common.credentials.Credentials
 trait InfinityClientFactory {
 
   /** Creates an Infinity client for a given metadata server. */
-  def build(metadataEndpoint: URL, credentials: Credentials, timeOut: FiniteDuration): InfinityClient
+  def build(
+        metadataEndpoint: URL,
+        credentials: Credentials,
+        longOperationTimeout: FiniteDuration): InfinityClient
 }

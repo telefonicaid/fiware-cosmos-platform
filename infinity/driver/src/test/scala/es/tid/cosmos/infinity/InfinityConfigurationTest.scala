@@ -46,18 +46,23 @@ class InfinityConfigurationTest extends FlatSpec with MustMatchers {
   }
 
   it must "have a default timeout duration" in {
-    defaultConfiguration().timeoutDuration must be (3.seconds)
+    defaultConfiguration().shortOperationTimeout must be (3.seconds)
   }
 
   it must "provide the configured timeout duration" in {
-    val config = configurationWithProperties("fs.infinity.timeout.millis" -> 1000)
-    config.timeoutDuration must be (1.second)
+    val config = configurationWithProperties(
+      "fs.infinity.timeout.shortOperation.millis" -> 1000,
+      "fs.infinity.timeout.longOperation.millis" -> 3000
+    )
+    config.shortOperationTimeout must be (1.second)
+    config.longOperationTimeout must be (3.seconds)
   }
 
   it must "reject non-positive timeout durations" in {
     for (invalidMillis <- Seq(-1, 0)) {
       evaluating {
-        configurationWithProperties("fs.infinity.timeout.millis" -> invalidMillis).timeoutDuration
+        configurationWithProperties(
+          "fs.infinity.timeout.shortOperation.millis" -> invalidMillis).shortOperationTimeout
       } must produce [IllegalArgumentException]
     }
   }

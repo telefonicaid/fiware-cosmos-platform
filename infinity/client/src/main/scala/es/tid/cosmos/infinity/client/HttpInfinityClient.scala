@@ -15,6 +15,7 @@ import java.io._
 import java.net.{ConnectException, URL}
 import scala.concurrent.{Future, blocking}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.FiniteDuration
 
 import com.ning.http.client._
 import com.ning.http.client.generators.InputStreamBodyGenerator
@@ -27,8 +28,12 @@ import es.tid.cosmos.infinity.common.json._
 import es.tid.cosmos.infinity.common.messages.{ErrorDescriptor, Request}
 import es.tid.cosmos.infinity.common.messages.Request._
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import es.tid.cosmos.infinity.common.streams.FutureBoundOutputStream
 
-class HttpInfinityClient(metadataEndpoint: URL, credentials: Credentials) extends InfinityClient {
+class HttpInfinityClient(
+    metadataEndpoint: URL,
+    credentials: Credentials,
+    longOperationTimeout: FiniteDuration) extends InfinityClient {
 
   private val resources = new ResourceBuilder(metadataEndpoint, credentials)
   private val metadataParser = new MetadataParser()
@@ -113,13 +118,13 @@ class HttpInfinityClient(metadataEndpoint: URL, credentials: Credentials) extend
        * Since the body comes from an async input stream we need to wrap the request in another
        * async block.
        */
-      Future { blocking { httpRequest(request) { response =>
+      val request_> = Future { blocking { httpRequest(request) { response =>
         response.getStatusCode match {
           case 404 => throw NotFoundException(path)
           case 204 => ()
         }
-      }}}
-      out
+      }}}.flatMap(identity)
+      new FutureBoundOutputStream(out, request_>, longOperationTimeout)
     }
 
   private def existingMetaData(path: Path): Future[PathMetadata] =

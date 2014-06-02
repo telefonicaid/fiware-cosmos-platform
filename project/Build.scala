@@ -175,6 +175,7 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(JavaVersions.java6: _*)
+    dependsOn(common_test % "test")
   )
 
   lazy val infinityClient = (Project(id = "infinity-client", base = file("infinity/client"))

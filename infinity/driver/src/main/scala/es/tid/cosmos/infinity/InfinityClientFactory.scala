@@ -17,6 +17,7 @@
 package es.tid.cosmos.infinity
 
 import java.net.URL
+import scala.concurrent.duration.FiniteDuration
 
 import es.tid.cosmos.infinity.client.InfinityClient
 import es.tid.cosmos.infinity.common.credentials.Credentials
@@ -24,5 +25,8 @@ import es.tid.cosmos.infinity.common.credentials.Credentials
 trait InfinityClientFactory {
 
   /** Creates an Infinity client for a given metadata server. */
-  def build(metadataEndpoint: URL, credentials: Credentials): InfinityClient
+  def build(
+        metadataEndpoint: URL,
+        credentials: Credentials,
+        longOperationTimeout: FiniteDuration): InfinityClient
 }

@@ -18,6 +18,7 @@ package es.tid.cosmos.infinity.client
 
 import java.util.Date
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -74,6 +75,7 @@ trait HttpInfinityClientBehavior extends MustMatchers with FutureMatchers { this
     val aDate = new Date(1398420798000L)
     val infinity = new MockInfinityServer(metadataPort = RandomTcpPort.choose(), defaultDate = aDate)
     val credentials = new UserCredentials("key", "secret")
-    val client = new HttpInfinityClient(infinity.metadataEndpoint, credentials)
+    val client = new HttpInfinityClient(
+      infinity.metadataEndpoint, credentials, longOperationTimeout = 10.seconds)
   }
 }

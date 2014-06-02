@@ -269,6 +269,7 @@ class HttpInfinityClientTest extends FlatSpec
   val aDate = new Date(1398420798000L)
   val permissions = PermissionsMask.fromOctal("644")
   val bufferSize = 1024
+  val timeOut = 10.seconds
 
   def readFully(client: InfinityClient, path: SubPath) =
     client.read(path, offset = None, length = None, bufferSize = bufferSize)
@@ -277,8 +278,7 @@ class HttpInfinityClientTest extends FlatSpec
     val infinity = new MockInfinityServer(metadataPort = RandomTcpPort.choose(), defaultDate = aDate)
     val dataFactory = infinity.TestDataFactory
     val credentials = UserCredentials("key", "secret")
-    val client = new HttpInfinityClient(infinity.metadataEndpoint, credentials)
-    val timeOut = 10.seconds
+    val client = new HttpInfinityClient(infinity.metadataEndpoint, credentials, timeOut)
 
     def contentOf(reader_> : Future[InputStream]): String = {
       val writer = new StringWriter()

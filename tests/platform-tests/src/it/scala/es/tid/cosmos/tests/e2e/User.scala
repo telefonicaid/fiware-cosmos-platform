@@ -103,9 +103,14 @@ class User(implicit info: Informer, testConfig: Config) extends Closeable
     }
     response_> must (runUnder(restTimeout) and eventuallySucceed)
     info(s"The user creation REST request returned 200")
-    Thread.sleep((3 minutes).toMillis) // FIXME: Wait while user is being added to Infinity, etc.
     val response = response_>.value.get.get
     info(s"The username being created is ${response.handle}")
+    val localUserResource =
+      (cosmos/ "cosmos" / "v1" / "profile").as_!(response.apiKey, response.apiSecret)
+    eventually {
+      val statusCode_> = Http(localUserResource).map(_.getStatusCode)
+      statusCode_> must (runUnder(restTimeout) and eventually(be(200)))
+    }
     response
   }
 
@@ -118,7 +123,6 @@ class User(implicit info: Informer, testConfig: Config) extends Closeable
       statusCode_> must (runUnder(restTimeout) and eventually(be(401)))
       info(s"User $handle removed")
     }
-    Thread.sleep((3 minutes).toMillis) // FIXME: Wait until user is removed from Infinity, etc.
   }
 
   override def close() = delete()

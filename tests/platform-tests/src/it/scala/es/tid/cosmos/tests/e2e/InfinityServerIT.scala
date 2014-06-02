@@ -33,9 +33,9 @@ class InfinityServerIT extends E2ETestBase {
       // Assign user1 and user2 to the same group
       val cosmosMaster = testConfig.getString("cosmosMaster")
       val groupName = "InfinityServerTest" + Random.nextInt()
-      s"ssh $cosmosMaster '/opt/pdi-cosmos/cosmos-admin/cosmos-admin group create -n $groupName'".! must be (0)
-      s"ssh $cosmosMaster '/opt/pdi-cosmos/cosmos-admin/cosmos-admin profile set-group -h ${user1.handle} -g $groupName'".! must be (0)
-      s"ssh $cosmosMaster '/opt/pdi-cosmos/cosmos-admin/cosmos-admin profile set-group -h ${user2.handle} -g $groupName'".! must be (0)
+      s"ssh root@$cosmosMaster /opt/pdi-cosmos/cosmos-admin/cosmos-admin group create -n $groupName".! must be (0)
+      s"ssh root@$cosmosMaster /opt/pdi-cosmos/cosmos-admin/cosmos-admin profile set-group -h ${user1.handle} -g $groupName".! must be (0)
+      s"ssh root@$cosmosMaster /opt/pdi-cosmos/cosmos-admin/cosmos-admin profile set-group -h ${user2.handle} -g $groupName".! must be (0)
 
       // Create files needed for testing
       val source = {

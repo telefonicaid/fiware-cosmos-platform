@@ -17,7 +17,6 @@
 package es.tid.cosmos.infinity.common.util
 
 import java.io.IOException
-import java.util.concurrent.TimeoutException
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.FiniteDuration
 import scala.util.{Try, Failure, Success}
@@ -63,9 +62,5 @@ class TimeBound(timeOut: FiniteDuration) {
   }
 
   /** Blocks for a result to be ready (or failed) */
-  private def boundedWait[T](result: Future[T]): Try[T] = try {
-    Await.ready(result, timeOut).value.get
-  } catch {
-    case ex: TimeoutException => Failure(ex)
-  }
+  private def boundedWait[T](result: Future[T]): Try[T] = Try { Await.result(result, timeOut) }
 }

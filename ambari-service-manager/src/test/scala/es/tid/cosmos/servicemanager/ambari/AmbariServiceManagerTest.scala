@@ -141,7 +141,7 @@ class AmbariServiceManagerTest
   }
 
   it must "be able to track the users of a cluster upon creation" in new WithMachines(1) {
-    val users = Seq(ClusterUser(username = "jsmith", publicKey = "that public key"))
+    val users = Seq(ClusterUser(username = "jsmith", group = None, publicKey = "that public key"))
     val (clusterId, _) = instance.createCluster(
       ClusterName("clusterName"), 1, serviceDescriptions, users, UnfilteredPassThrough)
     eventually {
@@ -223,7 +223,7 @@ class AmbariServiceManagerTest
     new MockIalComponent with WithServiceManager {
       val unmanagedClusterId = ClusterId.random()
       evaluating {
-        instance.setUsers(unmanagedClusterId, Seq(ClusterUser("username", "publicKey")))
+        instance.setUsers(unmanagedClusterId, Seq(ClusterUser("username", Some("group"), "publicKey")))
       } must produce [IllegalArgumentException]
     }
 
@@ -232,16 +232,17 @@ class AmbariServiceManagerTest
       ClusterName("clusterName"),
       clusterSize = 3,
       serviceDescriptions,
-      Seq(ClusterUser("user1", "publicKey1")),
+      Seq(ClusterUser("user1", Some("group"), "publicKey1")),
       UnfilteredPassThrough)
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
-    get(instance.setUsers(clusterId, Seq(ClusterUser("user2", "publicKey2"))))
+    get(instance.setUsers(clusterId,
+      Seq(ClusterUser("user2", group = None, publicKey = "publicKey2"))))
     Await.result(instance.terminateCluster(clusterId), 5 seconds)
     verifyCluster(machines, clusterId)
     val clusterUsers = instance.listUsers(clusterId)
     clusterUsers must be ('defined)
-    clusterUsers.get must be (Seq(ClusterUser("user2", "publicKey2")))
+    clusterUsers.get must be (Seq(ClusterUser("user2", group = None, publicKey = "publicKey2")))
   }
 
   it must "fail adding users on a cluster that is not in Running state" in new WithMachines(3) {
@@ -249,8 +250,9 @@ class AmbariServiceManagerTest
       ClusterName("clusterName"), 3, serviceDescriptions, Seq(), UnfilteredPassThrough)
     waitForClusterCompletion(clusterId, instance)
     terminateAndVerify(clusterId, instance)
-    evaluating (get(instance.setUsers(clusterId, Seq(ClusterUser("username", "publicKey"))))) must
-      produce [IllegalArgumentException]
+    evaluating {
+      get(instance.setUsers(clusterId, Seq(ClusterUser("username", Some("group"), "publicKey"))))
+    } must produce [IllegalArgumentException]
   }
 
   it must "fail terminating a cluster that is not in a valid termination state" in

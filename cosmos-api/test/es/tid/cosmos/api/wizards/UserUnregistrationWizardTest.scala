@@ -102,6 +102,7 @@ class UserUnregistrationWizardTest
 
     Await.ready(sm.addUser(clusterId, ClusterUser.enabled(
       username = cosmosProfile.handle,
+      group = None,
       publicKey = cosmosProfile.keys.head.signature,
       isSudoer = false
     )), timeout)

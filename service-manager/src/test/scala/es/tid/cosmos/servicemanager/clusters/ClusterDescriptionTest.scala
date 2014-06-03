@@ -78,7 +78,7 @@ class ClusterDescriptionTest extends FlatSpec with MustMatchers {
     nameNode = Some(new URI("someURI")),
     master = Some(HostDetails("master", "0.0.0.1")),
     slaves = Seq(HostDetails("slave", "0.0.0.2")),
-    users = Some(Set(ClusterUser("jsmith", "a public key"))),
+    users = Some(Set(ClusterUser("jsmith", Some("group"), "a public key"))),
     services = Set("ServiceA", "ServiceB"),
     blockedPorts = Set.empty
   )

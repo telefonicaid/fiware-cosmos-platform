@@ -56,6 +56,7 @@ class ProfileGroupCommands(override val store: CosmosDataStore, serviceManager: 
         store.profile.setGroup(cosmosProfile.id, targetGroup)
         val clusterUser = ClusterUser.enabled(
           username = cosmosProfile.handle,
+          group = cosmosProfile.group.hdfsGroupName,
           publicKey = cosmosProfile.keys.head.signature,
           isSudoer = cosmosProfile.capabilities.hasCapability(Capability.IsSudoer)
         )

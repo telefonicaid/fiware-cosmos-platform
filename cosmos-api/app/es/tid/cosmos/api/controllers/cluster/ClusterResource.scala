@@ -150,6 +150,7 @@ class ClusterResource(
 
   private def toClusterUser(profile: CosmosProfile) = ClusterUser(
     username = profile.handle,
+    group = profile.group.hdfsGroupName,
     publicKey = profile.keys.head.signature,
     isSudoer = profile.capabilities.hasCapability(Capability.IsSudoer)
   )

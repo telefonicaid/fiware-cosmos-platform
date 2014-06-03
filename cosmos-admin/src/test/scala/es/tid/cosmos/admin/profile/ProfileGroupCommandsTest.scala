@@ -31,7 +31,7 @@ class ProfileGroupCommandsTest extends FlatSpec with MustMatchers {
 
     def createSharedCluster(owner: String, withAccess: Set[String] = Set.empty) =
       store.withTransaction { implicit c =>
-        val clusterUsers = (withAccess + owner).map(ClusterUser(_, "ssh-rsa XXXX"))
+        val clusterUsers = (withAccess + owner).map(ClusterUser(_, Some("group"), "ssh-rsa XXXX"))
         val fakeCluster = mockedServiceManager.defineCluster(
           users = clusterUsers,
           initialState = Some(Running)

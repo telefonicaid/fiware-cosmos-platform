@@ -253,8 +253,8 @@ object MockedServiceManager {
     name = ClusterName("Persistent HDFS"),
     size = 4,
     users = Set(
-      ClusterUser.enabled("jsmith", "jsmith-public-key"),
-      ClusterUser.enabled("pocahontas", "pocahontas-public-key")
+      ClusterUser.enabled("jsmith", Some("group"), "jsmith-public-key"),
+      ClusterUser.enabled("pocahontas", None, "pocahontas-public-key")
     ),
     initialState = Some(Running)
   )

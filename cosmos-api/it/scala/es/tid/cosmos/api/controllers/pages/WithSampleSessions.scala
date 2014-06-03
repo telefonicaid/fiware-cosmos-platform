@@ -81,6 +81,7 @@ trait WithSampleSessions extends WithTestApplication with WithSampleGroups {
 
     def asClusterUser(sshEnabled: Boolean = true): ClusterUser = ClusterUser(
       username = handle,
+      group = group.hdfsGroupName,
       publicKey = cosmosProfile.keys.head.signature,
       sshEnabled = sshEnabled
     )

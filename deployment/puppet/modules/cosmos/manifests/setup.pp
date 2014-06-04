@@ -17,17 +17,6 @@
 class cosmos::setup {
   include cosmos::params, cosmos::master_db
 
-  # Files as fake templates to allow to load them in a variable.
-  # Puppet does not support loading file contents in variables.
-  $ssl_cert_content = template($cosmos::params::infinity_proxy_ssl_cert_source)
-  $ssl_key_content  = template($cosmos::params::infinity_proxy_ssl_key_source)
-
-  # Template injection variables
-  # Escape new lines so that the can be compatible with JSON syntax.
-  # JSON does not allow multiline strings.
-  $infinity_proxy_ssl_cert      = regsubst($ssl_cert_content, '\n', '\\n', 'G')
-  $infinity_proxy_ssl_key       = regsubst($ssl_key_content, '\n', '\\n', 'G')
-
   package { ['libvirt-client', 'libvirt-java'] :
     ensure => 'present'
   }

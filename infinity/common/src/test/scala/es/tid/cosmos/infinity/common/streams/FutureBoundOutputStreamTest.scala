@@ -53,9 +53,9 @@ class FutureBoundOutputStreamTest
   }
 
   it must "fail with an IOException when future fails" in new Fixture {
-    promise.failure(new RuntimeException("oops"))
     val close_> = Future { blocking { out.close() } }
     close_>.isCompleted must be (false)
+    promise.failure(new RuntimeException("oops"))
     close_> must eventuallyFailWith[IOException]
     verify(_out).close()
   }

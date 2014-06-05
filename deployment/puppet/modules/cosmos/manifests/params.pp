@@ -98,9 +98,7 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $ambari_mr_app_master_memory,
   $infinity_secret,
   $infinity_server_port = 51070,
-  $infinity_replication = 3,
-  $infinity_proxy_ssl_cert_source,
-  $infinity_proxy_ssl_key_source
+  $infinity_replication = 3
 ) {
   $cosmos_public_key          = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
   $cosmos_cli_filename        = "cosmos-${version}-py2.7.egg"

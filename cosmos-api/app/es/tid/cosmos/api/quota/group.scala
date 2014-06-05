@@ -28,6 +28,8 @@ sealed trait Group {
    * @return the quota of machines guaranteed to always be available within the group
    */
   def minimumQuota: LimitedQuota
+
+  val hdfsGroupName: Option[String]
 }
 
 /**
@@ -44,7 +46,9 @@ sealed trait Group {
  */
 case class GuaranteedGroup(
   override val name: String,
-  override val minimumQuota: LimitedQuota) extends Group
+  override val minimumQuota: LimitedQuota) extends Group {
+  override val hdfsGroupName = Some(name)
+}
 
 /**
  * Representation of a null group object for users that do not belong to any specific group.
@@ -53,6 +57,7 @@ case class GuaranteedGroup(
 case object NoGroup extends Group {
   override val name = "No Group"
   override val minimumQuota = EmptyQuota
+  override val hdfsGroupName = None
 }
 
 object Group {

@@ -39,8 +39,10 @@ class ProfileGroupCommands(override val store: CosmosDataStore, serviceManager: 
       for {
         change <- requireValidGroupChange(handle, groupName)
         clusterUpdates = updateSharedClusters(change)
+        infinityUpdate = updateInfinity(change)
+        allUpdates = Future.sequence(Seq(clusterUpdates, infinityUpdate))
           .map(_ => CommandResult.success(s"User $handle now belongs to ${change.target}"))
-      } yield CommandResult.await(clusterUpdates, ProfileGroupCommands.ClusterUpdateTimeout)
+      } yield CommandResult.await(allUpdates, ProfileGroupCommands.ClusterUpdateTimeout)
     }
 
   /** Perform all group change validations on a single transaction. */
@@ -56,6 +58,7 @@ class ProfileGroupCommands(override val store: CosmosDataStore, serviceManager: 
         store.profile.setGroup(cosmosProfile.id, targetGroup)
         val clusterUser = ClusterUser.enabled(
           username = cosmosProfile.handle,
+          group = cosmosProfile.group.hdfsGroupName,
           publicKey = cosmosProfile.keys.head.signature,
           isSudoer = cosmosProfile.capabilities.hasCapability(Capability.IsSudoer)
         )
@@ -73,6 +76,7 @@ class ProfileGroupCommands(override val store: CosmosDataStore, serviceManager: 
   private def activeSharedClustersOwnedBy(
       profile: CosmosProfile)(implicit c: store.Conn): Seq[ClusterId] = for {
     cluster <- store.cluster.ownedBy(profile.id)
+    if cluster.shared
     description <- serviceManager.describeCluster(cluster.clusterId)
     if description.state.isActive
   } yield cluster.clusterId
@@ -91,6 +95,13 @@ class ProfileGroupCommands(override val store: CosmosDataStore, serviceManager: 
       failedUpdates.isEmpty,
       s"Cannot update user $handle successfully on clusters: " + failedUpdates.mkString(", ")
     )
+  }
+
+  private def updateInfinity(change: GroupChange): Future[Unit] = {
+    val oldUsers = serviceManager.describePersistentHdfsCluster().get.users.get
+    val user  = oldUsers.find(_.username == change.user.username).get
+    val newUsers = (oldUsers - user) + user.copy(group = change.target.hdfsGroupName)
+    serviceManager.setUsers(serviceManager.persistentHdfsId, newUsers.toSeq)
   }
 
   private def clustersToLeave(handle: String, leftGroup: Group)

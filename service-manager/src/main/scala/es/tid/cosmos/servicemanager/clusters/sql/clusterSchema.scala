@@ -45,6 +45,7 @@ private[sql] case class HostEntity(
 
 private[sql] case class ClusterUserEntity(
     @Column("user_name") userName: String,
+    @Column("user_group") group: Option[String],
     @Column("public_key") publicKey: String,
     @Column("ssh_enabled") sshEnabled: Boolean,
     @Column("hdfs_enabled") hdfsEnabled: Boolean,
@@ -55,13 +56,14 @@ private[sql] case class ClusterUserEntity(
   @Column("cluster_id") val clusterId: String = ""
   lazy val users: ManyToOne[ClusterEntity] = ClusterSchema.clusterToUsers.right(this)
 
-  def toClusterUser = ClusterUser(userName, publicKey, sshEnabled, hdfsEnabled, isSudoer)
+  def toClusterUser = ClusterUser(userName, group, publicKey, sshEnabled, hdfsEnabled, isSudoer)
 }
 
 private[sql] object ClusterUserEntity {
 
   def apply(user: ClusterUser): ClusterUserEntity = ClusterUserEntity(
     user.username,
+    user.group,
     user.publicKey,
     user.sshEnabled,
     user.hdfsEnabled,

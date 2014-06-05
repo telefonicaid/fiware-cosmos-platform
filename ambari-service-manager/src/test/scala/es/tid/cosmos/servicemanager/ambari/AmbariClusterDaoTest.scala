@@ -123,7 +123,7 @@ class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar 
     given(ambariServer.listClusterNames).willReturn(Future.successful(Seq()))
     val mockResolver = new MockClusterStateResolver(AmbariClusterState.Running)
     val dao = new AmbariClusterDao(innerDao, ambariServer, services) with mockResolver.Trait
-    val newUsers = Set(ClusterUser.enabled("foo", "pK", false))
+    val newUsers = Set(ClusterUser.enabled("foo", Some("group"), "pK", false))
     dao.setUsers(id, newUsers)
     innerDao.getUsers(id) must be (Some(newUsers))
   }

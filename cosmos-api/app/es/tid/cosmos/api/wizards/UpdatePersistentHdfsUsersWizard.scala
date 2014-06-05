@@ -45,6 +45,7 @@ class UpdatePersistentHdfsUsersWizard(store: ProfileDataStore, serviceManager: S
         store.profile.list().map { profile =>
           ClusterUser(
             username = profile.handle,
+            group = profile.group.hdfsGroupName,
             publicKey = profile.keys.head.signature,
             sshEnabled = false,
             hdfsEnabled = AllowedUserStates.contains(profile.state)

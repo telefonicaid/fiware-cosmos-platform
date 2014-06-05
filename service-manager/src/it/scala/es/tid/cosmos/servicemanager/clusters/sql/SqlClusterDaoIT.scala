@@ -57,7 +57,7 @@ class SqlClusterDaoIT
   }
 
   trait ClusterCreatedWithUsers extends ClusterCreated {
-    val user1 = ClusterUser("jsmith", "jsmith-public-key")
+    val user1 = ClusterUser("jsmith", Some("group"), "jsmith-public-key")
     dao.setUsers(id, Set(user1))
   }
 
@@ -140,18 +140,18 @@ class SqlClusterDaoIT
 
   it must "set users of existing cluster" in new ClusterCreated {
     dao.getUsers(id) must be (Some(Set.empty))
-    dao.setUsers(id, Set(ClusterUser("jsmith", "publickey1")))
-    dao.getUsers(id) must be (Some(Set(ClusterUser("jsmith", "publickey1"))))
+    dao.setUsers(id, Set(ClusterUser("jsmith", Some("group1"), "publickey1")))
+    dao.getUsers(id) must be (Some(Set(ClusterUser("jsmith", Some("group1"), "publickey1"))))
   }
 
   it must "fail to set users of unexisting cluster" in new ClusterCreated {
     evaluating {
-      dao.setUsers(ClusterId.random(), Set(ClusterUser("jsmith", "publickey1")))
+      dao.setUsers(ClusterId.random(), Set(ClusterUser("jsmith", Some("group1"), "publickey1")))
     } must produce [IllegalArgumentException]
   }
 
   it must "replace the users of an existing cluster" in new ClusterCreatedWithUsers {
-    dao.setUsers(id, Set(ClusterUser("pocahontas", "publickey2")))
-    dao.getUsers(id) must be (Some(Set(ClusterUser("pocahontas", "publickey2"))))
+    dao.setUsers(id, Set(ClusterUser("pocahontas", Some("group2"), "publickey2")))
+    dao.getUsers(id) must be (Some(Set(ClusterUser("pocahontas", Some("group2"), "publickey2"))))
   }
 }

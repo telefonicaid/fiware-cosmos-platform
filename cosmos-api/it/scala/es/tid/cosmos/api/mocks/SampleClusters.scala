@@ -35,7 +35,7 @@ object SampleClusters {
     id = new ClusterId(),
     name = ClusterName("Running cluster"),
     size = 4,
-    users = Set(ClusterUser.enabled("jsmith", "jsmith-public-key")),
+    users = Set(ClusterUser.enabled("jsmith", Some("group"), "jsmith-public-key")),
     initialState = Some(Running)
   )
 
@@ -43,7 +43,7 @@ object SampleClusters {
     id = new ClusterId(),
     name = ClusterName("Provisioning cluster"),
     size = 4,
-    users = Set(ClusterUser.enabled("pocahontas", "pocahontas-public-key")),
+    users = Set(ClusterUser.enabled("pocahontas", group = None, publicKey = "pocahontas-public-key")),
     initialState = None
   )
 }

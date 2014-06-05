@@ -31,10 +31,12 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
 
   val clusterOwner = ClusterUser(
     username = "jsmith",
+    group = None,
     publicKey = "ssh-rsa XXXXX jsmith@example.com"
   )
   val extraUser = ClusterUser(
     username = "pbanks",
+    group = Some("group"),
     publicKey = "ssh-rsa ZZZZZ pbanks@example.com"
   )
   val sampleDetails = ClusterDetails(

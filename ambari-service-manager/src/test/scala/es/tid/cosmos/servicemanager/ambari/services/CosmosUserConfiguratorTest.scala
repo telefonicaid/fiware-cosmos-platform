@@ -27,6 +27,7 @@ class CosmosUserConfiguratorTest extends FlatSpec with MustMatchers {
   val users = Seq(ClusterUser(
     username = "userName",
     publicKey = "public_key",
+    group = Some("group"),
     sshEnabled = true,
     hdfsEnabled = false,
     isSudoer = false

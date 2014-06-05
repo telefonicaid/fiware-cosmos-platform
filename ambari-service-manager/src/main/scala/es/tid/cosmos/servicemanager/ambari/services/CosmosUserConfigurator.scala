@@ -39,6 +39,7 @@ private[services] class CosmosUserConfigurator(users: Seq[ClusterUser])
       prefix = s"user${index + 1}_"
       pair <- Map(
         s"${prefix}username" -> user.username,
+        s"${prefix}group" -> user.group.getOrElse("cosmos"),
         s"${prefix}ssh_enabled" -> user.sshEnabled,
         s"${prefix}ssh_master_private_key" -> sshKeys.privateKey,
         s"${prefix}ssh_master_public_key" -> sshKeys.publicKey,

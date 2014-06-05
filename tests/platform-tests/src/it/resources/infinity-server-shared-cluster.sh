@@ -33,7 +33,7 @@ set +e
 hdfs dfs -get infinity:///${TARGET_USER}/onlyUser.txt .
 if [ $? == "0" ]; then
   echo "Was able to read a user-only file from a shared cluster"
-  exit $?
+  exit 1
 fi
 set -e
 

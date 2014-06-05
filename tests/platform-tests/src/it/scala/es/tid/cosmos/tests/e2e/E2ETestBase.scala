@@ -58,6 +58,9 @@ abstract class E2ETestBase extends FeatureSpec with MustMatchers with Patience
       services: Seq[String] = Seq(),
       shared: Boolean = false)(body: LazyVal[Cluster] => Unit) {
     val cluster = new LazyVal(Cluster(size, owner, services))
+    eventually {
+      cluster.state(owner) must be (Some("running"))
+    }
     val executionResult = Try(body(cluster))
     clustersToDelete ::= cluster
     executionResult.get

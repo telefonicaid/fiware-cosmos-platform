@@ -30,7 +30,7 @@ class CosmosApiAuthenticationServiceTest extends FlatSpec with MustMatchers with
     val profile = UserProfile(
       username = "john",
       groups = Seq("scientists"),
-      sharedCluster = false
+      accessFromSharedCluster = false
     )
     cosmosApi.givenInfinitySecret(sharedSecret)
     cosmosApi.givenProfile(userCredentials, profile)
@@ -67,7 +67,7 @@ class CosmosApiAuthenticationServiceTest extends FlatSpec with MustMatchers with
     val profile = UserProfile(
       username = "john",
       groups = Seq("scientists"),
-      sharedCluster = true,
+      accessFromSharedCluster = true,
       accessFrom = Some(Set("10.0.0.1"))
     )
     cosmosApi.givenInfinitySecret(sharedSecret)

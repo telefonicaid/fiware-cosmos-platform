@@ -27,7 +27,7 @@ private[cosmosapi] case class UserProfileJson(
   def toUserProfile = UserProfile(
     username = user,
     groups = groups,
-    sharedCluster = sharedCluster,
+    accessFromSharedCluster = sharedCluster,
     accessFrom = origins.map(_.toSet)
   )
 }

@@ -37,7 +37,7 @@ class UserProfileParserTest extends FlatSpec with MustMatchers {
     ) must be (UserProfile(
       username = "gandalf",
       groups = Seq("istari", "maiar"),
-      sharedCluster = true,
+      accessFromSharedCluster = true,
       accessFrom = Some(Set("orion01", "orion02"))
     ))
   }
@@ -53,7 +53,7 @@ class UserProfileParserTest extends FlatSpec with MustMatchers {
     ) must be (UserProfile(
       username = "gandalf",
       groups = Seq("istari"),
-      sharedCluster = false
+      accessFromSharedCluster = false
     ))
   }
 

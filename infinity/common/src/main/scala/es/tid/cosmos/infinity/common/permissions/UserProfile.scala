@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory
   *
   * @param username The name of the user.
   * @param groups The groups of the user
-  * @param sharedCluster Whether the profile is being accessed from a shared cluster or not
+  * @param accessFromSharedCluster Whether the profile is being accessed from a shared cluster or not
   * @param accessFrom The set of hostnames where this profile is allowed to access from.
   *                   None means that can be accessed from any host but Some(Set.empty)
   *                   means that can be use from no host..
@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory
 case class UserProfile(
   username: String,
   groups: Seq[String],
-  sharedCluster: Boolean = false,
+  accessFromSharedCluster: Boolean = false,
   accessFrom: Option[Set[String]] = None
 ) {
 

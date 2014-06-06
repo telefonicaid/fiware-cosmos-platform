@@ -74,7 +74,7 @@ private[infinity] class InfinityAuthenticator(
       whiteList: Option[Set[String]] = None) = InfinityIdentity(
     user = profile.handle,
     groups = Seq(profile.group.name),
-    sharedCluster = shared,
+    accessFromSharedCluster = shared,
     origins = whiteList
   )
 }

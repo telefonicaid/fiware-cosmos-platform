@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package es.tid.cosmos.infinity.common
+package es.tid.cosmos.infinity.common.permissions
 
 import java.net.InetAddress
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.common.permissions.{UserProfile, PermissionsMask}
+import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 
 class UserProfileTest extends FlatSpec with MustMatchers {
 
@@ -31,7 +31,7 @@ class UserProfileTest extends FlatSpec with MustMatchers {
   val userWithoutWhitelist = UserProfile(
     username = "username",
     groups = Seq("group"),
-    sharedCluster = true,
+    accessFromSharedCluster = true,
     accessFrom = None
   )
   val userWithWhitelist = userWithoutWhitelist.copy(accessFrom = Some(Set("10.95.236.25")))

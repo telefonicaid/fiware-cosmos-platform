@@ -48,12 +48,13 @@ class GroupMapperResource(store: ProfileDataStore with GroupDataStore, config: C
   ))
   def map(@ApiParam(name = "User handle") maybeHandle: Option[String]) =
     Action { implicit request =>
+      def handleResult(handle: String) = requireUserWithHandle(handle).map(groupsFor)
+      def groupResult(handle: String) = requireGroupHandle(handle).map(toUserGroups)
       for {
         _ <- requestAuthentication.requireAuthorized(request)
         handle <- maybeHandle.toSuccess(MissingHandleResponse)
-        handleResult = requireUserWithHandle(handle).map(groupsFor)
-        groupResult = requireGroupHandle(handle).map(toGroupUser)
-        groups <- handleResult.orElse(groupResult).toSuccess(invalidHandleResponse(handle))
+        groups <- handleResult(handle).orElse(groupResult(handle)).toSuccess(
+          invalidHandleResponse(handle))
       } yield Ok(Json.toJson(groups))
     }
 
@@ -78,7 +79,7 @@ class GroupMapperResource(store: ProfileDataStore with GroupDataStore, config: C
     UserGroups(Seq(group))
   }
 
-  private def toGroupUser(group: GuaranteedGroup) = {
+  private def toUserGroups(group: GuaranteedGroup) = {
     UserGroups(Seq(group.name))
   }
 }

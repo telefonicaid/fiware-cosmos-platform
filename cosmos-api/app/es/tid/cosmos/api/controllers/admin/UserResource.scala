@@ -17,7 +17,6 @@
 package es.tid.cosmos.api.controllers.admin
 
 import javax.ws.rs.PathParam
-import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Random
@@ -154,13 +153,12 @@ class UserResource(
     unregistration_>
   }
 
-  private def selectHandle(reqHandle: Option[String])(implicit c: Conn) ={
-    val handle = reqHandle.getOrElse(generateHandle())
-    for {
-      _ <- HandleConstraint.ensureFreeHandle(handle, store).leftMap(error =>
-        Conflict(Json.toJson(Message(error))))
-    } yield handle
-  }
+  private def selectHandle(reqHandle: Option[String])(implicit c: Conn) =
+    reqHandle.map(handle => {
+      for {
+        _ <- HandleConstraint.ensureFreeHandle(handle, store)
+      } yield handle
+    }).getOrElse(generateHandle()).leftMap(error => Conflict(Json.toJson(Message(error))))
 
   private def uniqueUserId(params: RegisterUserParams)
                           (implicit c: Conn): ActionValidation[UserId] = {
@@ -201,9 +199,10 @@ class UserResource(
 
   private def failWith(status: Status, text: String) = message(status, text).fail
 
-  @tailrec
-  private def generateHandle()(implicit c: Conn): String = {
+  private def generateHandle()(implicit c: Conn): Validation[String, String] = {
     val handle = s"id${Random.nextLong().abs.toString}"
-    if (store.profile.handleExists(handle)) generateHandle() else handle
-  }
+    for {
+      _ <- HandleConstraint.ensureFreeHandle(handle, store)
+    } yield handle
+  }.orElse(generateHandle())
 }

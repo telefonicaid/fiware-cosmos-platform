@@ -20,8 +20,7 @@ import java.security.PrivilegedAction
 
 import org.apache.hadoop.security.UserGroupInformation
 
-import es.tid.cosmos.infinity.common.permissions.{PermissionClass, PermissionsMask, UserProfile}
-import es.tid.cosmos.infinity.server.groups.ArtificialUsersGroupMapping
+import es.tid.cosmos.infinity.common.permissions.UserProfile
 
 /** Mix-in trait to allow executing code using a user's privileges. */
 trait UserPrivileges {
@@ -40,7 +39,7 @@ trait UserPrivileges {
     */
   def as[A](user: UserProfile)(body: => A): A = {
     val ugi = UserGroupInformation.createRemoteUser(
-      if (!user.sharedCluster) user.username
+      if (!user.accessFromSharedCluster) user.username
       else user.groups.head)
     ugi.doAs(new PrivilegedAction[A] {
       override def run(): A = body

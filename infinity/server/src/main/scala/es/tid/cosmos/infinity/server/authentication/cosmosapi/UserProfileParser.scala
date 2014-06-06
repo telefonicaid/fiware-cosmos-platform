@@ -22,12 +22,12 @@ import net.liftweb.json.JsonParser.ParseException
 
 import es.tid.cosmos.infinity.common.permissions.UserProfile
 
-private[cosmosapi] class UserProfileParser(superGroup: String) {
+private[cosmosapi] class UserProfileParser {
 
   private implicit val formats = DefaultFormats
 
   def parse(input: String): UserProfile = try {
-    json.parse(input).extract[UserProfileJson].toUserProfile(superGroup)
+    json.parse(input).extract[UserProfileJson].toUserProfile
   } catch {
     case e: MappingException =>
       throw new IllegalArgumentException(s"cannot map response body to expected object: $input", e)

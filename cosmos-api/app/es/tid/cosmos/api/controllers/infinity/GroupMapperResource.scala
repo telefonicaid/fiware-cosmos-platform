@@ -25,12 +25,12 @@ import play.api.mvc.{Action, Controller, Results}
 
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.CosmosProfile
-import es.tid.cosmos.api.profile.dao.ProfileDataStore
+import es.tid.cosmos.api.profile.dao.{GroupDataStore, ProfileDataStore}
 import es.tid.cosmos.api.quota.{GuaranteedGroup, NoGroup}
 
 @Api(value = "/infinity/v1/groups", listingPath = "/doc/infinity/v1/groups",
   description = "Maps user handles to groups for Infinity")
-class GroupMapperResource(store: ProfileDataStore, config: Config)
+class GroupMapperResource(store: ProfileDataStore with GroupDataStore, config: Config)
   extends Controller {
 
   import Scalaz._
@@ -46,20 +46,26 @@ class GroupMapperResource(store: ProfileDataStore, config: Config)
     new ApiError(code = 401, reason = "Request lacks a basic authorization header"),
     new ApiError(code = 401, reason = "Invalid authentication credentials")
   ))
-  def map(@ApiParam(name = "User handle") handle: Option[String]) =
+  def map(@ApiParam(name = "User handle") maybeHandle: Option[String]) =
     Action { implicit request =>
       for {
         _ <- requestAuthentication.requireAuthorized(request)
-        userProfile <- requireUserWithHandle(handle)
-      } yield Ok(Json.toJson(groupsFor(userProfile)))
+        handle <- maybeHandle.toSuccess(MissingHandleResponse)
+        handleResult = requireUserWithHandle(handle).map(groupsFor)
+        groupResult = requireGroupHandle(handle).map(toGroupUser)
+        groups <- handleResult.orElse(groupResult).toSuccess(invalidHandleResponse(handle))
+      } yield Ok(Json.toJson(groups))
     }
 
-  private def requireUserWithHandle(handleOpt: Option[String]): ActionValidation[CosmosProfile] = for {
-    handle <- handleOpt.toSuccess(MissingHandleResponse)
-    profile <- store.withTransaction {implicit c =>
+  private def requireGroupHandle(groupName: String): Option[GuaranteedGroup] =
+    store.withTransaction { implicit c =>
+      store.group.lookupByName(groupName)
+    }
+
+  private def requireUserWithHandle(handle: String): Option[CosmosProfile] =
+    store.withTransaction {implicit c =>
       store.profile.lookupByHandle (handle)
-    }.toSuccess(invalidHandleResponse(handle))
-  } yield profile
+    }
 
   private def invalidHandleResponse(handle: String) =
     BadRequest(Json.toJson(Message(s"Handle $handle is invalid")))
@@ -70,6 +76,10 @@ class GroupMapperResource(store: ProfileDataStore, config: Config)
       case GuaranteedGroup(name, _) => name
     }
     UserGroups(Seq(group))
+  }
+
+  private def toGroupUser(group: GuaranteedGroup) = {
+    UserGroups(Seq(group.name))
   }
 }
 

@@ -34,8 +34,8 @@ import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.PagesAuthController
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.{Registration, UserId}
-import es.tid.cosmos.api.profile.dao.ProfileDataStore
+import es.tid.cosmos.api.profile.{HandleConstraint, Registration, UserId}
+import es.tid.cosmos.api.profile.dao.{GroupDataStore, ProfileDataStore}
 import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.api.task.TaskDao
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
@@ -49,7 +49,7 @@ class Pages(
     serviceManager: ServiceManager,
     reporter: ClusterReporter,
     override val taskDao: TaskDao,
-    override val store: ProfileDataStore,
+    override val store: ProfileDataStore with GroupDataStore,
     override val maintenanceStatus: MaintenanceStatus,
     config: Config
   ) extends Controller with JsonController with PagesAuthController
@@ -129,7 +129,7 @@ class Pages(
       validatedForm = store.withTransaction { implicit c =>
         val form = RegistrationForm().bindFromRequest()
         form.data.get("handle") match {
-          case Some(handle) if store.profile.handleExists(handle) =>
+          case Some(handle) if HandleConstraint.ensureFreeHandle(handle, store).isFailure =>
             form.withError("handle", s"'$handle' is already taken")
           case _ => form
         }

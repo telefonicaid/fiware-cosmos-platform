@@ -24,18 +24,16 @@ import org.apache.commons.logging.LogFactory
   *
   * @param username The name of the user.
   * @param groups The groups of the user
-  * @param mask The mask applied to the UNIX permissions for the user.
+  * @param sharedCluster Whether the profile is being accessed from a shared cluster or not
   * @param accessFrom The set of hostnames where this profile is allowed to access from.
   *                   None means that can be accessed from any host but Some(Set.empty)
   *                   means that can be use from no host..
-  * @param superuser Superuser can modify filesystem without any restrictions
   */
 case class UserProfile(
   username: String,
   groups: Seq[String],
-  mask: PermissionsMask = PermissionsMask.fromOctal("777"),
-  accessFrom: Option[Set[String]] = None,
-  superuser: Boolean = false
+  sharedCluster: Boolean = false,
+  accessFrom: Option[Set[String]] = None
 ) {
 
   def accessibleFrom(origin: InetAddress): Boolean =

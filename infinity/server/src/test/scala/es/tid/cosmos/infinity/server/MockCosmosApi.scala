@@ -141,7 +141,7 @@ class MockCosmosApi(port: Int) extends Assertions {
        |  "user": "${profile.username}",
        |  "groups": ${profile.groups.mkString("[\"", "\", \"", "\"],")},
        |  $originsField
-       |  "accessMask": "${profile.mask}"
+       |  "sharedCluster": ${profile.sharedCluster}
        |}
      """.stripMargin
   }

@@ -30,7 +30,7 @@ import play.api.mvc.{Action, Controller, Headers}
 
 import es.tid.cosmos.api.auth.multiauth.MultiAuthProvider
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile.{Registration, UserId}
+import es.tid.cosmos.api.profile.{HandleConstraint, Registration, UserId}
 import es.tid.cosmos.api.profile.dao._
 import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.api.wizards.{UserRegistrationWizard, UserUnregistrationWizard}
@@ -43,7 +43,7 @@ import es.tid.cosmos.servicemanager.ServiceManager
 class UserResource(
     multiUserProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
-    store: ProfileDataStore with ClusterDataStore,
+    store: ProfileDataStore with ClusterDataStore with GroupDataStore,
     override val maintenanceStatus: MaintenanceStatus,
     reporter: ClusterReporter
   ) extends Controller with JsonController with MaintenanceAwareController {
@@ -154,12 +154,13 @@ class UserResource(
     unregistration_>
   }
 
-  private def selectHandle(reqHandle: Option[String])(implicit c: Conn) =
-    reqHandle match {
-      case None => Success(generateHandle())
-      case Some(handle) if !store.profile.handleExists(handle) => handle.success
-      case Some(handle) => failWith(Conflict, s"Handle '$handle' is already taken")
-    }
+  private def selectHandle(reqHandle: Option[String])(implicit c: Conn) ={
+    val handle = reqHandle.getOrElse(generateHandle())
+    for {
+      _ <- HandleConstraint.ensureFreeHandle(handle, store).leftMap(error =>
+        Conflict(Json.toJson(Message(error))))
+    } yield handle
+  }
 
   private def uniqueUserId(params: RegisterUserParams)
                           (implicit c: Conn): ActionValidation[UserId] = {

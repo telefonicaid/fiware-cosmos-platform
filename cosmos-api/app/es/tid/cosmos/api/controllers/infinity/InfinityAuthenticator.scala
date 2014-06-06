@@ -74,14 +74,7 @@ private[infinity] class InfinityAuthenticator(
       whiteList: Option[Set[String]] = None) = InfinityIdentity(
     user = profile.handle,
     groups = Seq(profile.group.name),
-    accessMask =
-      if (shared) InfinityAuthenticator.SharedMask
-      else InfinityAuthenticator.IndividualMask,
+    sharedCluster = shared,
     origins = whiteList
   )
-}
-
-private object InfinityAuthenticator {
-  val IndividualMask = AccessMask("777")
-  val SharedMask = AccessMask("077")
 }

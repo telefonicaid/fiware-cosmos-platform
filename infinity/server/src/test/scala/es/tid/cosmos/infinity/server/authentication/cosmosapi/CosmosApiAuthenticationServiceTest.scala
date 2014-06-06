@@ -30,7 +30,7 @@ class CosmosApiAuthenticationServiceTest extends FlatSpec with MustMatchers with
     val profile = UserProfile(
       username = "john",
       groups = Seq("scientists"),
-      mask = PermissionsMask.fromOctal("777")
+      sharedCluster = false
     )
     cosmosApi.givenInfinitySecret(sharedSecret)
     cosmosApi.givenProfile(userCredentials, profile)
@@ -67,7 +67,7 @@ class CosmosApiAuthenticationServiceTest extends FlatSpec with MustMatchers with
     val profile = UserProfile(
       username = "john",
       groups = Seq("scientists"),
-      mask = PermissionsMask.fromOctal("770"),
+      sharedCluster = true,
       accessFrom = Some(Set("10.0.0.1"))
     )
     cosmosApi.givenInfinitySecret(sharedSecret)
@@ -86,8 +86,7 @@ class CosmosApiAuthenticationServiceTest extends FlatSpec with MustMatchers with
     val origin = "10.0.0.1"
     val client = new CosmosApiAuthenticationService(
       apiBase = s"http://localhost:$port",
-      infinitySecret = sharedSecret,
-      superGroup = "hdfs"
+      infinitySecret = sharedSecret
     )
   }
 }

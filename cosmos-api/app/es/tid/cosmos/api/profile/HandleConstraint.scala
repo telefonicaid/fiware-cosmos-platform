@@ -16,9 +16,15 @@
 
 package es.tid.cosmos.api.profile
 
+import scalaz._
+
 import play.api.data.validation.{Constraint, Invalid, Valid}
 
+import es.tid.cosmos.api.profile.dao.{GroupDataStore, ProfileDataStore}
+
 object HandleConstraint {
+
+  import Scalaz._
 
   val handleRegex = "^[a-zA-Z][a-zA-Z0-9]{2,}$".r
 
@@ -31,4 +37,20 @@ object HandleConstraint {
   }
 
   def apply(input: String): Boolean = constraint(input) == Valid
+
+  def ensureFreeHandle(handle: String, store: ProfileDataStore with GroupDataStore): Validation[String, Unit] = {
+    lazy val error = s"Handle '$handle' is already taken".failure
+    store.withTransaction { implicit c =>
+      val noProfileWithHandle =
+        if (!store.profile.handleExists(handle)) ().success
+        else error
+      val noGroupWithHandle =
+        if (store.group.lookupByName(handle).isEmpty) ().success
+        else error
+      for {
+        _ <- noProfileWithHandle
+        _ <- noGroupWithHandle
+      } yield ()
+    }
+  }
 }

@@ -29,6 +29,7 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.controllers.MaintenanceModeBehaviors
 import es.tid.cosmos.api.mocks.{MockAuthConstants, WithTestApplication}
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.quota.{EmptyQuota, GuaranteedGroup}
 import es.tid.cosmos.common.BasicAuth
 
 class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBehaviors {
@@ -118,6 +119,15 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
       store.profile.register(
         UserId("otherUser"), Registration(requestedHandle, publicKey, email), UserState.Enabled
       )
+    }
+    val response = postRegistration(validPayload)
+    status(response) must be (CONFLICT)
+    contentAsString(response) must include (s"Handle '$requestedHandle' is already taken")
+  }
+
+  it must "reject requests when handle is already taken by a group" in new WithTestApplication {
+    store.withTransaction { implicit c =>
+      store.group.register(GuaranteedGroup(requestedHandle, EmptyQuota))
     }
     val response = postRegistration(validPayload)
     status(response) must be (CONFLICT)

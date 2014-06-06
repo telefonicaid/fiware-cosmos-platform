@@ -31,9 +31,9 @@ import es.tid.cosmos.infinity.common.permissions.UserProfile
 import es.tid.cosmos.infinity.server.authentication._
 
 private[cosmosapi] class CosmosApiAuthenticationService(
-    apiBase: String, infinitySecret: String, superGroup: String) extends AuthenticationService {
+    apiBase: String, infinitySecret: String) extends AuthenticationService {
 
-  private def profileParser = new UserProfileParser(superGroup)
+  private def profileParser = new UserProfileParser
 
   override def authenticate(origin: String, credentials: Credentials): Future[UserProfile] =
     for {
@@ -81,7 +81,6 @@ object CosmosApiAuthenticationService {
   /** Creates a CosmosApiAuthentication taking its parameters from the passed configuration */
   def fromConfig(config: Config): CosmosApiAuthenticationService = new CosmosApiAuthenticationService(
     apiBase = config.getString("apiBase"),
-    infinitySecret = config.getString("secret"),
-    superGroup = config.getString("supergroup")
+    infinitySecret = config.getString("secret")
   )
 }

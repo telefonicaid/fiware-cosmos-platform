@@ -31,9 +31,8 @@ class UserProfileTest extends FlatSpec with MustMatchers {
   val userWithoutWhitelist = UserProfile(
     username = "username",
     groups = Seq("group"),
-    mask = PermissionsMask.fromOctal("770"),
-    accessFrom = None,
-    superuser = false
+    sharedCluster = true,
+    accessFrom = None
   )
   val userWithWhitelist = userWithoutWhitelist.copy(accessFrom = Some(Set("10.95.236.25")))
 

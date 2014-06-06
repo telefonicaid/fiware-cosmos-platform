@@ -38,6 +38,7 @@ private[groups] class DefaultGroupCommands(
     val group = GuaranteedGroup(name, Quota(minQuota))
     for {
       _ <- requireFeasibleQuota(group)
+      _ <- HandleConstraint.ensureFreeHandle(name, store)
       _ <- Validation.fromTryCatch(store.withTransaction { implicit c =>
         store.group.register(group)
       }).leftMap(_.getMessage)
@@ -58,26 +59,19 @@ private[groups] class DefaultGroupCommands(
     store.withTransaction { implicit c =>
       for {
         group <- requireExistingGroup(name)
-        _ <- requireNoSharedCluster(group)
+        _ <- requireNoUsers(group)
       } yield {
         store.group.delete(group.name)
         CommandResult.success(s"Group $name successfully deleted")
       }
     })
 
-  private def requireNoSharedCluster(group: GuaranteedGroup)
-                                    (implicit c: store.Conn): Validation[String, Unit] = {
-    val runningSharedClusters = for {
-      clusterId <- serviceManager.clusterIds
-      clusterDescription <- serviceManager.describeCluster(clusterId)
-      if clusterDescription.state.isActive
-      cluster = store.cluster.get(clusterId) if cluster.shared
-      owner <- store.profile.lookupByProfileId(cluster.ownerId) if owner.group == group
-    } yield clusterId
-
-    if (runningSharedClusters.isEmpty) ().success
+  private def requireNoUsers(group: GuaranteedGroup)
+                            (implicit c: store.Conn): Validation[String, Unit] = {
+    val groupUsers = store.profile.lookupByGroup(group)
+    if (groupUsers.isEmpty) ().success
     else (s"Cannot delete group ${group.name}: " +
-      s"there are running shared clusters (${runningSharedClusters.mkString(", ")})").fail
+      s"there are users in this group (${groupUsers.map(_.handle).mkString(", ")})").fail
   }
 
   override def setMinQuota(name: String, quota: Int): CommandResult = CommandResult.fromValidation {

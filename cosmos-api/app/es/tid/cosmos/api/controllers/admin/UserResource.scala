@@ -17,7 +17,6 @@
 package es.tid.cosmos.api.controllers.admin
 
 import javax.ws.rs.PathParam
-import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Random
@@ -30,7 +29,7 @@ import play.api.mvc.{Action, Controller, Headers}
 
 import es.tid.cosmos.api.auth.multiauth.MultiAuthProvider
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile.{Registration, UserId}
+import es.tid.cosmos.api.profile.{HandleConstraint, Registration, UserId}
 import es.tid.cosmos.api.profile.dao._
 import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.api.wizards.{UserRegistrationWizard, UserUnregistrationWizard}
@@ -43,7 +42,7 @@ import es.tid.cosmos.servicemanager.ServiceManager
 class UserResource(
     multiUserProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
-    store: ProfileDataStore with ClusterDataStore,
+    store: ProfileDataStore with ClusterDataStore with GroupDataStore,
     override val maintenanceStatus: MaintenanceStatus,
     reporter: ClusterReporter
   ) extends Controller with JsonController with MaintenanceAwareController {
@@ -155,11 +154,11 @@ class UserResource(
   }
 
   private def selectHandle(reqHandle: Option[String])(implicit c: Conn) =
-    reqHandle match {
-      case None => Success(generateHandle())
-      case Some(handle) if !store.profile.handleExists(handle) => handle.success
-      case Some(handle) => failWith(Conflict, s"Handle '$handle' is already taken")
-    }
+    reqHandle.map(handle => {
+      for {
+        _ <- HandleConstraint.ensureFreeHandle(handle, store)
+      } yield handle
+    }).getOrElse(generateHandle()).leftMap(error => Conflict(Json.toJson(Message(error))))
 
   private def uniqueUserId(params: RegisterUserParams)
                           (implicit c: Conn): ActionValidation[UserId] = {
@@ -200,9 +199,10 @@ class UserResource(
 
   private def failWith(status: Status, text: String) = message(status, text).fail
 
-  @tailrec
-  private def generateHandle()(implicit c: Conn): String = {
+  private def generateHandle()(implicit c: Conn): Validation[String, String] = {
     val handle = s"id${Random.nextLong().abs.toString}"
-    if (store.profile.handleExists(handle)) generateHandle() else handle
-  }
+    for {
+      _ <- HandleConstraint.ensureFreeHandle(handle, store)
+    } yield handle
+  }.orElse(generateHandle())
 }

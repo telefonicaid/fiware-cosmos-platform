@@ -50,10 +50,7 @@ private[groups] abstract class GroupMappingProvider
     * @return group memberships of user
     */
   override def getGroups(handle: String): util.List[String] =
-    if (handle.startsWith(ArtificialUsersGroupMapping.artificialUserMarker))
-      ArtificialUsersGroupMapping.getGroups(handle).asJava
-    else
-      groupMapping.getOrElse(reportNotInitialized()).groupsFor(handle).asJava
+    groupMapping.getOrElse(reportNotInitialized()).groupsFor(handle).asJava
 
   /** Build an actual group mapping given a Hadoop Configuration.
     *

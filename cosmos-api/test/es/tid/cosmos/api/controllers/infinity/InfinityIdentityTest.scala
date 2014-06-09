@@ -25,12 +25,12 @@ class InfinityIdentityTest extends FlatSpec with MustMatchers {
   val auth = InfinityIdentity(
     user = "jsmith",
     groups = Seq("analytics"),
-    accessMask = AccessMask("777")
+    accessFromSharedCluster = false
   )
   val authJson = Json.obj(
     "user" -> "jsmith",
     "groups" -> Seq("analytics"),
-    "accessMask" -> "777"
+    "accessFromSharedCluster" -> false
   )
 
   "An authentication" must "be convertible to JSON" in {

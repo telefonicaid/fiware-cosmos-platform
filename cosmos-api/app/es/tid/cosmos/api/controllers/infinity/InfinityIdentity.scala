@@ -22,14 +22,14 @@ import play.api.libs.json.{Json, Writes}
   *
   * @param user  User handle
   * @param groups  User groups
-  * @param accessMask  Unix-style access mask
+  * @param accessFromSharedCluster  Whether the authentication petition comes from a shared cluster
   * @param origins  Optionally, the set of allowed origins this identity can be used
   *                 from. When missing, all origins are OK.
   */
 case class InfinityIdentity(
     user: String,
     groups: Seq[String],
-    accessMask: AccessMask,
+    accessFromSharedCluster: Boolean,
     origins: Option[Set[String]] = None
 )
 

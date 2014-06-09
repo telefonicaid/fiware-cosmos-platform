@@ -16,22 +16,18 @@
 
 package es.tid.cosmos.infinity.server.authentication.cosmosapi
 
-import es.tid.cosmos.infinity.common.permissions.{UserProfile, PermissionsMask}
+import es.tid.cosmos.infinity.common.permissions.UserProfile
 
 private[cosmosapi] case class UserProfileJson(
     user: String,
     groups: Seq[String],
-    accessMask: String,
+    sharedCluster: Boolean,
     origins: Option[List[String]]) {
 
-  require(PermissionsMask.isValidOctal(accessMask),
-    s"invalid access mask expression '$accessMask': octal value was expected")
-
-  def toUserProfile(superGroup: String) = UserProfile(
+  def toUserProfile = UserProfile(
     username = user,
     groups = groups,
-    mask = PermissionsMask.fromOctal(accessMask),
-    accessFrom = origins.map(_.toSet),
-    superuser = groups.contains(superGroup)
+    accessFromSharedCluster = sharedCluster,
+    accessFrom = origins.map(_.toSet)
   )
 }

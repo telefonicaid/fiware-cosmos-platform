@@ -20,8 +20,7 @@ import java.security.PrivilegedAction
 
 import org.apache.hadoop.security.UserGroupInformation
 
-import es.tid.cosmos.infinity.common.permissions.{PermissionClass, PermissionsMask, UserProfile}
-import es.tid.cosmos.infinity.server.groups.ArtificialUsersGroupMapping
+import es.tid.cosmos.infinity.common.permissions.UserProfile
 
 /** Mix-in trait to allow executing code using a user's privileges. */
 trait UserPrivileges {
@@ -39,20 +38,9 @@ trait UserPrivileges {
     * @return     Whatever body returns
     */
   def as[A](user: UserProfile)(body: => A): A = {
-    val ugi = {
-      if (user.mask == PermissionsMask.fromOctal("777")) {
-        if (user.superuser && user.mask.owner == PermissionClass.fromOctal("7"))
-          UserGroupInformation.createProxyUser(user.username, UserGroupInformation.getCurrentUser)
-        else UserGroupInformation.createRemoteUser(user.username)
-      } else if (user.mask == PermissionsMask.fromOctal("077")) {
-        val artificialUser = UserGroupInformation.createRemoteUser(
-          ArtificialUsersGroupMapping.createUserFromGroups(user.groups))
-        UserGroupInformation.createProxyUser(user.username, artificialUser)
-      } else {
-        throw new UnsupportedOperationException(
-          "Masks different from 777 and 077 and not currently supported")
-      }
-    }
+    val ugi = UserGroupInformation.createRemoteUser(
+      if (!user.accessFromSharedCluster) user.username
+      else user.groups.head)
     ugi.doAs(new PrivilegedAction[A] {
       override def run(): A = body
     })

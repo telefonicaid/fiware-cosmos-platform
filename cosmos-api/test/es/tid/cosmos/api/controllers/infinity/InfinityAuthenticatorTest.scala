@@ -56,12 +56,12 @@ class InfinityAuthenticatorTest extends FlatSpec with MustMatchers {
     }.secret.get
   }
 
-  "API key and secret authentication" must "be accepted with 777 mask and for any host" in
+  "API key and secret authentication" must "be accepted with no shared cluster and for any host" in
     new WithAuthentication {
       instance.authenticateApiCredentials(profile.apiCredentials) must be (InfinityIdentity(
         user = "user",
         groups = Seq("No Group"),
-        accessMask = AccessMask("777")
+        accessFromSharedCluster = false
       ).success)
     }
 
@@ -94,7 +94,7 @@ class InfinityAuthenticatorTest extends FlatSpec with MustMatchers {
       val cluster = createCluster()
       val clusterSecret = registerCluster()
       val result = instance.authenticateClusterSecret(clusterSecret)
-      result.map(_.accessMask) must be (AccessMask("777").success)
+      result.map(_.accessFromSharedCluster) must be (false.success)
       result.map(_.origins) must be (Some(cluster.hosts.map(_.ipAddress)).success)
     }
 
@@ -114,7 +114,7 @@ class InfinityAuthenticatorTest extends FlatSpec with MustMatchers {
   it must "be accepted with 077 mask for shared clusters" in new WithAuthentication {
     val cluster = createCluster()
     val clusterSecret = registerCluster(shared = true)
-    instance.authenticateClusterSecret(clusterSecret).map(_.accessMask) must
-      be (AccessMask("077").success)
+    instance.authenticateClusterSecret(clusterSecret).map(_.accessFromSharedCluster) must
+      be (true.success)
   }
 }

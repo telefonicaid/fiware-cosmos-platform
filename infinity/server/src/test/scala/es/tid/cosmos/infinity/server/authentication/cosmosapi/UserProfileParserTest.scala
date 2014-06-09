@@ -19,38 +19,27 @@ package es.tid.cosmos.infinity.server.authentication.cosmosapi
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.common.permissions.{PermissionsMask, UserProfile}
+import es.tid.cosmos.infinity.common.permissions.UserProfile
 
 class UserProfileParserTest extends FlatSpec with MustMatchers {
 
-  val parser = new UserProfileParser(superGroup = "hdfs")
+  val parser = new UserProfileParser
 
   "User profile" must "be parsed from JSON" in {
     parser.parse(
       """{
         | "user": "gandalf",
         | "groups": ["istari", "maiar"],
-        | "accessMask": "752",
+        | "sharedCluster": true,
         | "origins": ["orion01", "orion02"]
         |}
       """.stripMargin
     ) must be (UserProfile(
       username = "gandalf",
       groups = Seq("istari", "maiar"),
-      mask = PermissionsMask.fromOctal("752"),
+      accessFromSharedCluster = true,
       accessFrom = Some(Set("orion01", "orion02"))
     ))
-  }
-
-  it must "be parsed as root if the groups contain the superuser group" in {
-    parser.parse(
-      """{
-        | "user": "gandalf",
-        | "groups": ["istari", "maiar", "hdfs"],
-        | "accessMask": "752",
-        |}
-      """.stripMargin
-    ) must be ('superuser)
   }
 
   it must "be parsed when optional fields are missing" in {
@@ -58,13 +47,13 @@ class UserProfileParserTest extends FlatSpec with MustMatchers {
       """{
         | "user": "gandalf",
         | "groups": ["istari"],
-        | "accessMask": "752"
+        | "sharedCluster": false
         |}
       """.stripMargin
     ) must be (UserProfile(
       username = "gandalf",
       groups = Seq("istari"),
-      mask = PermissionsMask.fromOctal("752")
+      accessFromSharedCluster = false
     ))
   }
 
@@ -73,19 +62,6 @@ class UserProfileParserTest extends FlatSpec with MustMatchers {
       parser.parse(
         """{
           | "user": "gandalf",
-          |}
-        """.stripMargin
-      )
-    } must produce [IllegalArgumentException]
-  }
-
-  it must "fail to be parsed with invalid access mask value" in {
-    evaluating {
-      parser.parse(
-        """{
-          | "user": "gandalf",
-          | "group": "istari",
-          | "accessMask": "This is a invalid access mask value"
           |}
         """.stripMargin
       )

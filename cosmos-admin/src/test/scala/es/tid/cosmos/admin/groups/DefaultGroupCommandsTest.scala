@@ -64,19 +64,17 @@ class DefaultGroupCommandsTest extends FlatSpec with MustMatchers with OneInstan
     groupCommands.list().message must be ("No groups available")
   }
 
-  it must "reject deleting groups with shared clusters" in new WithGroups {
-    val clusterId = serviceManager.defineCluster().view.id
+  it must "reject deleting groups with users" in new WithGroups {
     val groupA = GuaranteedGroup("groupA", Quota(3))
     store.withTransaction { implicit c =>
       store.group.register(groupA)
       val ownerId = CosmosProfileTestHelpers.registerUser(store, "user").id
       store.profile.setGroup(ownerId, groupA)
-      store.cluster.register(clusterId, ownerId, ClusterSecret.random(), shared = true)
     }
     val result = groupCommands.delete(groupA.name)
     result must not be 'success
     result.message must include (
-      s"Cannot delete group groupA: there are running shared clusters ($clusterId)")
+      s"Cannot delete group groupA: there are users in this group (user)")
   }
 
   it must "support setting an existing group's minimum quota" in new WithGroups {

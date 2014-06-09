@@ -123,6 +123,7 @@ class User(implicit info: Informer, testConfig: Config) extends Closeable
       statusCode_> must (runUnder(restTimeout) and eventually(be(401)))
       info(s"User $handle removed")
     }
+    Thread.sleep((3 minutes).toMillis) // FIXME: Wait until user is removed from Infinity, etc.
   }
 
   override def close() = delete()

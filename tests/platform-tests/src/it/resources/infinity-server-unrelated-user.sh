@@ -19,13 +19,13 @@ set +e
 hdfs dfs -get infinity:///${TARGET_USER}/onlyUser.txt .
 if [ $? == "0" ]; then
   echo "Was able to read a user-only file with an unrelated user's credentials"
-  exit $?
+  exit 1
 fi
 
 hdfs dfs -get infinity:///${TARGET_USER}/onlyGroup.txt .
 if [ $? == "0" ]; then
   echo "Was able to read a group-only file with an unrelated user's credentials"
-  exit $?
+  exit 1
 fi
 
 set -e

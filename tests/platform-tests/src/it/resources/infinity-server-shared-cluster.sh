@@ -38,4 +38,4 @@ fi
 set -e
 
 hdfs dfs -get infinity:///${TARGET_USER}/onlyGroup.txt .
-hdfs dfs -get infinity:///${TARGET_USER}/onlyEveryone.txt .
+hdfs dfs -get infinity:///${TARGET_USER}/everyone.txt .

@@ -66,7 +66,7 @@ class InfinityServerIT extends E2ETestBase {
     withNewCluster(1, user1, shared = true) { cluster =>
       scenario("Users can manage their group files in a shared cluster") {
         cluster.scp(resource("/infinity-server-shared-cluster.sh"))
-        cluster.sshCommand("TARGET_USER=${user1.handle} bash ./infinity-server-shared-cluster.sh")
+        cluster.sshCommand(s"TARGET_USER=${user1.handle} bash ./infinity-server-shared-cluster.sh")
         cluster.scp(resource("/infinity-server-shared-cluster.sh"), executedBy = user2)
         cluster.sshCommand(s"TARGET_USER=${user1.handle}; bash ./infinity-server-shared-cluster.sh", executedBy = user2)
       }
@@ -75,7 +75,7 @@ class InfinityServerIT extends E2ETestBase {
     withNewCluster(1, user3, shared = false) { cluster =>
       scenario("Users can only access files with 'other' permissions if they don't own and aren't part of the group") {
         cluster.scp(resource("/infinity-server-unrelated-user.sh"))
-        cluster.sshCommand(s"TARGET_USER=${user1.handle}; bash ./infinity-server-unrelated-test.sh")
+        cluster.sshCommand(s"TARGET_USER=${user1.handle}; bash ./infinity-server-unrelated-user.sh")
       }
     }
   }

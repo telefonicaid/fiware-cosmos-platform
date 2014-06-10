@@ -31,4 +31,4 @@ hdfs dfs -rm infinity:///${USER}/test*
 
 hdfs dfs -get infinity:///${USER}/onlyUser.txt .
 hdfs dfs -get infinity:///${USER}/onlyGroup.txt .
-hdfs dfs -get infinity:///${USER}/onlyEveryone.txt .
+hdfs dfs -get infinity:///${USER}/everyone.txt .

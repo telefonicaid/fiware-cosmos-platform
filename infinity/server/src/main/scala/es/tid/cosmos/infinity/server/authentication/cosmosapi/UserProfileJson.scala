@@ -21,13 +21,13 @@ import es.tid.cosmos.infinity.common.permissions.UserProfile
 private[cosmosapi] case class UserProfileJson(
     user: String,
     groups: Seq[String],
-    sharedCluster: Boolean,
+    accessFromSharedCluster: Boolean,
     origins: Option[List[String]]) {
 
   def toUserProfile = UserProfile(
     username = user,
     groups = groups,
-    accessFromSharedCluster = sharedCluster,
+    accessFromSharedCluster = accessFromSharedCluster,
     accessFrom = origins.map(_.toSet)
   )
 }

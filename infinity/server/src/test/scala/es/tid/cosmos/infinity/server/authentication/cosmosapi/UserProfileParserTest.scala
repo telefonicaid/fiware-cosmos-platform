@@ -30,7 +30,7 @@ class UserProfileParserTest extends FlatSpec with MustMatchers {
       """{
         | "user": "gandalf",
         | "groups": ["istari", "maiar"],
-        | "sharedCluster": true,
+        | "accessFromSharedCluster": true,
         | "origins": ["orion01", "orion02"]
         |}
       """.stripMargin
@@ -47,7 +47,7 @@ class UserProfileParserTest extends FlatSpec with MustMatchers {
       """{
         | "user": "gandalf",
         | "groups": ["istari"],
-        | "sharedCluster": false
+        | "accessFromSharedCluster": false
         |}
       """.stripMargin
     ) must be (UserProfile(

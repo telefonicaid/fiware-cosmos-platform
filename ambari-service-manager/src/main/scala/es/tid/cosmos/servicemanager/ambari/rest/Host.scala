@@ -37,7 +37,9 @@ private[ambari] class Host private[ambari](hostInfo: JValue, clusterBaseUrl: Req
     case JString(hostName) => hostName
     case _ =>
       throw new ServiceError("Ambari's host information response doesn't contain a " +
-        "Hosts/public_host_name element")
+        s"""Hosts/public_host_name element. Context data:
+        | Request: ${clusterBaseUrl.toString}
+        | Response: ${pretty(render(hostInfo))}""".stripMargin)
   }
 
   /**
@@ -46,12 +48,12 @@ private[ambari] class Host private[ambari](hostInfo: JValue, clusterBaseUrl: Req
    */
   def addComponents(componentNames: Seq[String]): Future[Unit] = {
     def getJsonForComponent(componentName: String) =
-      ("HostRoles" -> ("component_name" -> componentName))
+      "HostRoles" -> ("component_name" -> componentName)
     def ignoreResult(result: JValue) {}
     if (!componentNames.isEmpty)
       performRequest(new RequestBuilder(clusterBaseUrl) / "hosts"
           <<? Map("Hosts/host_name" -> name)
-          << compact(render(("host_components" -> componentNames.map(getJsonForComponent)))))
+          << compact(render("host_components" -> componentNames.map(getJsonForComponent))))
         .map(ignoreResult)
     else Future.successful()
   }

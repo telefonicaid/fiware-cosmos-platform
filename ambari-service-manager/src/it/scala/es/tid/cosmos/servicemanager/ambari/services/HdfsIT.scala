@@ -45,8 +45,8 @@ class HdfsIT extends ConfiguredServiceTest {
   }
 
   /* Note: This is a HDFS-specific configuration needed even when Oozie is not installed */
-  it must "have the oozie proxyuser group configured to be [cosmos]" in {
-    contributions.core.get.properties("hadoop.proxyuser.oozie.groups") must equal("cosmos")
+  it must "have the oozie proxyuser group configured to be [*]" in {
+    contributions.core.get.properties("hadoop.proxyuser.oozie.groups") must equal("*")
   }
 
   /* Note: This is a HDFS-specific configuration needed even when Oozie is not installed */

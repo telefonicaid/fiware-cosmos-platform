@@ -96,5 +96,5 @@ object Cluster {
       owner: User,
       services: Seq[String] = Seq.empty,
       shared: Boolean = false)(implicit info: Informer): Cluster =
-    CommandLineManagedCluster(clusterSize, owner, services)
+    CommandLineManagedCluster(clusterSize, owner, services, shared)
 }

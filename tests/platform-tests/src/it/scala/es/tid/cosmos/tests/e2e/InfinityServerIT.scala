@@ -66,7 +66,7 @@ class InfinityServerIT extends E2ETestBase {
     withNewCluster(1, user1, shared = true) { cluster =>
       scenario("Users can manage their group files in a shared cluster") {
         cluster.scp(resource("/infinity-server-shared-cluster.sh"))
-        cluster.sshCommand(s"TARGET_USER=${user1.handle} bash ./infinity-server-shared-cluster.sh")
+        cluster.sshCommand(s"TARGET_USER=${user1.handle}; bash ./infinity-server-shared-cluster.sh")
         cluster.scp(resource("/infinity-server-shared-cluster.sh"), executedBy = user2)
         cluster.sshCommand(s"TARGET_USER=${user1.handle}; bash ./infinity-server-shared-cluster.sh", executedBy = user2)
       }

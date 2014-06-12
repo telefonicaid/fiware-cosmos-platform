@@ -54,7 +54,7 @@ object Build extends sbt.Build {
     lazy val h2database = "com.h2database" % "h2" % "1.3.175"
     lazy val hadoopCommon = "org.apache.hadoop" % "hadoop-common" % Versions.hdp2Hadoop
     lazy val hadoopHdfs = "org.apache.hadoop" % "hadoop-hdfs" % Versions.hdp2Hadoop
-    lazy val liftJson = "net.liftweb" %% "lift-json" % "2.6-M2"
+    lazy val liftJson = "net.liftweb" %% "lift-json" % "2.6-M3"
     lazy val log4j = "log4j" % "log4j" % "1.2.17"
     lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.13"
     lazy val mockito = "org.mockito" % "mockito-all" % "1.9.5"

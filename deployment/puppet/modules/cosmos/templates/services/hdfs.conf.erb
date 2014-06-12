@@ -46,7 +46,7 @@ include "cluster-properties"
     "properties" {
         "fs.checkpoint.size" = "0.5",
         "fs.defaultFS" = "hdfs://"${MasterNode}":8020",
-        "fs.trash.interval" = "360",
+        "fs.trash.interval" = "0",
         "hadoop.proxyuser.oozie.groups"="*",
         "hadoop.proxyuser.oozie.hosts"="*",
         "hadoop.security.auth_to_local" = "\n        RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/\n        RULE:[2:$1@$0](jhs@.*)s/.*/mapred/\n        RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/\n        RULE:[2:$1@$0](hm@.*)s/.*/hbase/\n        RULE:[2:$1@$0](rs@.*)s/.*/hbase/\n        DEFAULT",

@@ -40,6 +40,8 @@ class ContentRoutes(
   private val actionValidator = new HttpContentActionValidator(config, dataNode)
   private val renderResult = new ContentActionResultRenderer(config.chunkSize)
 
+  override val asyncRequestTimeoutMillis: Long = config.contentRequestTimeout
+
   override def intent: Intent = { case request =>
     val response = for {
       authInfo <- AuthInfo(request)

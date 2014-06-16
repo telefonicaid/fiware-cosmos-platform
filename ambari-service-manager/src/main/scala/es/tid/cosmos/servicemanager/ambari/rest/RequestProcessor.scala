@@ -17,20 +17,23 @@
 package es.tid.cosmos.servicemanager.ambari.rest
 
 import java.util.concurrent.ExecutionException
-import scala.concurrent.Future
+import scala.concurrent.{future, Future, blocking}
+import scala.concurrent.duration._
 
 import com.ning.http.client.RequestBuilder
 import dispatch.{Future => _, _}, Defaults._
-import net.liftweb.json.JsonAST.JValue
+import net.liftweb.json.JsonAST.{JObject, JValue}
 
 import es.tid.cosmos.servicemanager.RequestException
 
 private[ambari] trait RequestProcessor {
 
+  private val MaxRetries = 3
+
   /** Executes the given request, handles error cases and returns the body as JSON in the success
     * case.
     */
-  def performRequest(request: RequestBuilder): Future[JValue] = {
+  private def performRequest(request: RequestBuilder, retry: Int): Future[JValue] = {
     def handleFailure(throwable: Throwable) = throwable match {
       case ex: ExecutionException if ex.getCause.isInstanceOf[StatusCode] =>
         RequestException(
@@ -42,6 +45,22 @@ private[ambari] trait RequestProcessor {
           ex.getCause)
       case other => other
     }
-    Http(request.OK(as.Json)).transform(identity, handleFailure)
+
+    /** This function takes care of the cases where Ambari returns an empty JSON due to
+      * timing issues.
+      */
+    def handleAmbariTimingBugs(response: JValue) = {
+      if (response == JObject(List.empty) && retry <= MaxRetries && request.build.getMethod == "GET") {
+        for {
+          _ <- future { blocking { Thread.sleep((500 milliseconds).toMillis * retry) } }
+          result <- performRequest(request, retry + 1)
+        } yield result
+      } else {
+        Future.successful(response)
+      }
+    }
+    Http(request.OK(as.Json)).flatMap(handleAmbariTimingBugs).transform(identity, handleFailure)
   }
+
+  def performRequest(request: RequestBuilder): Future[JValue] = performRequest(request, 1)
 }

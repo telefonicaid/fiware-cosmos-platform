@@ -79,7 +79,8 @@ class MetadataServerConfig(config: Config) extends BaseInfinityConfig(config) {
 class ContentServerConfig(config: Config) extends BaseInfinityConfig(config) {
   val chunkSize = withDefault(config.getInt("content.chunkSize"), DefaultChunkSize)
   val bufferSize = withDefault(config.getInt("content.bufferSize"), DefaultBufferSize)
-
+  val contentRequestTimeout = withDefault(
+    config.getLong("content.requestTimeout"), DefaultContentRequestTimeout)
   val nameNodeRPCUri: URI =
     new URI(config.getString(s"${PluginConfig.HadoopKeyPrefix}.$NameNodeHdfsAddressKey"))
 
@@ -87,11 +88,14 @@ class ContentServerConfig(config: Config) extends BaseInfinityConfig(config) {
 }
 
 object InfinityConfig {
+  import scala.concurrent.duration._
+
   val DefaultProtocol: String = "http"
   val DefaultContentPort: Int = 51075
   val DefaultMetadataPort: Int = 51070
   val DefaultMetadataBasePath: String = "/infinityfs/v1/metadata"
   val DefaultContentBasePath: String = "/infinityfs/v1/content"
+  val DefaultContentRequestTimeout: Long = 15.minutes.toMillis
   val DefaultReplication: Short = 3
   val DefaultBlockSize: Long = 64l * 1024l * 1024l
   val NameNodeHdfsAddressKey = "fs.defaultFS"

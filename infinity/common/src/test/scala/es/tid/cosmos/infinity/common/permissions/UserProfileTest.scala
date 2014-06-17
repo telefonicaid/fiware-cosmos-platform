@@ -21,8 +21,6 @@ import java.net.InetAddress
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.infinity.common.permissions.PermissionsMask
-
 class UserProfileTest extends FlatSpec with MustMatchers {
 
   val allowedHost = InetAddress.getByName("10.95.236.25")

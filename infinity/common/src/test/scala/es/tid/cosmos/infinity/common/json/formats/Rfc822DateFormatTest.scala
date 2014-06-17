@@ -24,7 +24,7 @@ import org.scalatest.matchers.MustMatchers
 class Rfc822DateFormatTest extends FlatSpec with MustMatchers {
 
   "Date format" must "parse RFC 822 dates" in {
-    val date = Rfc822DateFormat.parse("2014-04-08T12:31:45+0100")
+    val date = new Rfc822DateFormat().parse("2014-04-08T12:31:45+0100")
     val calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+01:00"))
     calendar.setTime(date)
     calendar.get(Calendar.YEAR) must be (2014)

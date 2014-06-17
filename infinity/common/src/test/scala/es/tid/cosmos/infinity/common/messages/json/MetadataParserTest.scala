@@ -25,10 +25,13 @@ import es.tid.cosmos.infinity.common.fs._
 import es.tid.cosmos.infinity.common.json.{MetadataParser, ParseException}
 import es.tid.cosmos.infinity.common.json.formats.Rfc822DateFormat
 import es.tid.cosmos.infinity.common.permissions.PermissionsMask
+import net.liftweb.json.DefaultFormats
 
 class MetadataParserTest extends FlatSpec with MustMatchers {
 
   val parser = new MetadataParser()
+  val dateParser = new Rfc822DateFormat
+  dateParser.setTimeZone(DefaultFormats.UTC)
 
   "A metadata parser" must "parse valid file metadata" in {
     parser.parse(
@@ -55,8 +58,8 @@ class MetadataParserTest extends FlatSpec with MustMatchers {
       group = "istari",
       permissions = PermissionsMask.fromOctal("600"),
       size = 45566918656L,
-      modificationTime = Rfc822DateFormat.parse("2014-04-08T12:31:45+0100"),
-      accessTime = Some(Rfc822DateFormat.parse("2014-04-08T12:45:22+0100")),
+      modificationTime = dateParser.parse("2014-04-08T12:31:45+0100"),
+      accessTime = Some(dateParser.parse("2014-04-08T12:45:22+0100")),
       blockSize = 65536,
       replication = 3
     ))
@@ -108,15 +111,15 @@ class MetadataParserTest extends FlatSpec with MustMatchers {
       owner = "gandalf",
       group = "istari",
       permissions = PermissionsMask.fromOctal("755"),
-      modificationTime = Rfc822DateFormat.parse("2014-04-08T12:31:45+0100"),
+      modificationTime = dateParser.parse("2014-04-08T12:31:45+0100"),
       content = Seq(
         DirectoryEntry.file(
           path = Path.absolute("/usr/gandalf/spells.txt"),
           metadata = new URL("http://example.com/infinityfs/v1/metadata/usr/gandalf/spells.txt"),
           owner = "gandalf",
           group = "istari",
-          modificationTime = Rfc822DateFormat.parse("2014-04-08T12:41:34+0100"),
-          accessTime = Rfc822DateFormat.parse("2014-04-08T12:54:32+0100"),
+          modificationTime = dateParser.parse("2014-04-08T12:41:34+0100"),
+          accessTime = dateParser.parse("2014-04-08T12:54:32+0100"),
           permissions = PermissionsMask.fromOctal("600"),
           replication = 3,
           blockSize = 1024,
@@ -127,7 +130,7 @@ class MetadataParserTest extends FlatSpec with MustMatchers {
           metadata = new URL("http://example.com/infinityfs/v1/metadata/usr/gandalf/enemies"),
           owner = "gandalf",
           group = "istari",
-          modificationTime = Rfc822DateFormat.parse("2014-04-08T12:55:45+0100"),
+          modificationTime = dateParser.parse("2014-04-08T12:55:45+0100"),
           permissions = PermissionsMask.fromOctal("750")
         )
       )

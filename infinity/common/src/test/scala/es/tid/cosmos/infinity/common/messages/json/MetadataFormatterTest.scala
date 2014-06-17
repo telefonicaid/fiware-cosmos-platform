@@ -31,8 +31,10 @@ import es.tid.cosmos.infinity.common.permissions.PermissionsMask
 class MetadataFormatterTest extends FlatSpec with MustMatchers {
 
   val formatter = new MetadataFormatter
-  val modificationTime = Rfc822DateFormat.parse("2014-04-08T12:31:45+0100")
-  val accessTime = Rfc822DateFormat.parse("2014-04-08T12:45:22+0100")
+  val dateParser = new Rfc822DateFormat()
+  dateParser.setTimeZone(DefaultFormats.UTC)
+  val modificationTime = dateParser.parse("2014-04-08T12:31:45+0100")
+  val accessTime = dateParser.parse("2014-04-08T12:45:22+0100")
 
   "A metadata formatter" must "format file metadata as JSON" in {
     val metadata = FileMetadata(
@@ -55,8 +57,8 @@ class MetadataFormatterTest extends FlatSpec with MustMatchers {
         ("content" -> "http://example.com/infinityfs/v1/content/usr/gandalf/spells.txt") ~
         ("owner" -> "gandalf") ~
         ("group" -> "istari") ~
-        ("modificationTime" -> Rfc822DateFormat.format(modificationTime)) ~
-        ("accessTime" -> Rfc822DateFormat.format(accessTime)) ~
+        ("modificationTime" -> dateParser.format(modificationTime)) ~
+        ("accessTime" -> dateParser.format(accessTime)) ~
         ("permissions" -> "600") ~
         ("replication" -> 3) ~
         ("blockSize" -> 65536) ~
@@ -106,8 +108,8 @@ class MetadataFormatterTest extends FlatSpec with MustMatchers {
             ("metadata" -> "http://example.com/infinityfs/v1/metadata/usr/gandalf/spells.txt") ~
             ("owner" -> "gandalf") ~
             ("group" -> "istari") ~
-            ("modificationTime" -> Rfc822DateFormat.format(modificationTime)) ~
-            ("accessTime" -> Rfc822DateFormat.format(accessTime)) ~
+            ("modificationTime" -> dateParser.format(modificationTime)) ~
+            ("accessTime" -> dateParser.format(accessTime)) ~
             ("permissions" -> "600") ~
             ("replication" -> 3) ~
             ("blockSize" -> 2048) ~
@@ -117,7 +119,7 @@ class MetadataFormatterTest extends FlatSpec with MustMatchers {
             ("metadata" -> "http://example.com/infinityfs/v1/metadata/usr/gandalf/enemies") ~
             ("owner" -> "gandalf") ~
             ("group" -> "istari") ~
-            ("modificationTime" -> Rfc822DateFormat.format(modificationTime)) ~
+            ("modificationTime" -> dateParser.format(modificationTime)) ~
             ("permissions" -> "750") ~
             ("replication" -> 0) ~
             ("blockSize" -> 0) ~
@@ -125,7 +127,7 @@ class MetadataFormatterTest extends FlatSpec with MustMatchers {
         )) ~
         ("owner" -> "gandalf") ~
         ("group" -> "istari") ~
-        ("modificationTime" -> Rfc822DateFormat.format(modificationTime)) ~
+        ("modificationTime" -> dateParser.format(modificationTime)) ~
         ("permissions" -> "755") ~
         ("type" -> "directory") ~
         ("size" -> 0)

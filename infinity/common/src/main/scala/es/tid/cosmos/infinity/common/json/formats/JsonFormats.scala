@@ -25,7 +25,7 @@ import net.liftweb.json.{Serializer, DefaultFormats}
   */
 private[json] object JsonFormats extends DefaultFormats {
 
-  override def dateFormatter = Rfc822DateFormat
+  override def dateFormatter = new Rfc822DateFormat
 
   override val customSerializers: List[Serializer[_]] = List(
     new PathSerializer,

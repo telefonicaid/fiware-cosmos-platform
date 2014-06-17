@@ -18,4 +18,4 @@ package es.tid.cosmos.infinity.common.json.formats
 
 import java.text.SimpleDateFormat
 
-object Rfc822DateFormat extends SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+class Rfc822DateFormat extends SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")

@@ -6,6 +6,7 @@ gpgcheck=0
 <% if @proxy != 'absent' %>
 proxy=<%= @proxy %>
 <% end %>
+metadata_expire=1
 
 [HDP-2.0.6-local]
 baseurl=<%= scope.lookupvar('ambari::params::hdp_stack_repo_url') %>
@@ -14,3 +15,4 @@ gpgcheck=0
 <% if @proxy != 'absent' %>
 proxy=<%= @proxy %>
 <% end %>
+metadata_expire=1

@@ -35,6 +35,14 @@ class cosmos::localrepo inherits cosmos::params {
     timeout   => 600,
   }
 
+  define cleanContainerYum {
+    exec {"slave yum clean ${title}" :
+      command => "ssh ${title} 'vzctl exec 101 \"yum clean all\"'",
+      path    => ['/usr/sbin/', '/bin/', '/usr/bin/'],
+      onlyif  => "ssh ${title} 'vzctl status 101' | grep running"
+    }
+  }
+
   if $ambari::params::enable_repo_mirroring {
 
     package{ 'yum-utils':
@@ -64,6 +72,9 @@ class cosmos::localrepo inherits cosmos::params {
       timeout   => 6000,
     }
 
+    $hosts = hiera('slave_hosts')
+    cleanContainerYum { $hosts: }
+
     File[$cosmos_stack_repo_path]
       -> Exec['reposync_ambari']
 
@@ -83,6 +94,9 @@ class cosmos::localrepo inherits cosmos::params {
     Package['yum-utils']
       -> Exec['reposync_hdp']
       -> Exec['createrepo']
+
+    Exec['createrepo']
+      -> CleanContainerYum[$hosts]
 
   } else {
 

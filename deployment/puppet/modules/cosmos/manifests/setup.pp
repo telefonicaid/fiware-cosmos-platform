@@ -64,7 +64,7 @@ class cosmos::setup {
   exec { 'cosmos-setup':
     command     => "sleep 5 && ${cosmos::params::cosmos_basedir}/cosmos-admin/cosmos-admin setup",
     path        => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
-    refreshonly => true,
+    logoutput   => true,
     user        => root,
     timeout     => 900,
   }
@@ -92,7 +92,7 @@ class cosmos::setup {
     $cosmos::params::ssl_cert_file,
     $cosmos::params::ssl_key_file,
     $cosmos::params::ssl_ca_file
-  ] ~> Exec['cosmos-setup']
+  ] -> Exec['cosmos-setup']
 
   anchor{'cosmos::setup::begin': }
     -> Class['cosmos::master_db']

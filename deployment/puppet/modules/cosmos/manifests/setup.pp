@@ -62,7 +62,7 @@ class cosmos::setup {
   }
 
   exec { 'cosmos-setup':
-    command     => "sleep 5 && ${cosmos::params::cosmos_basedir}/cosmos-admin/cosmos-admin setup",
+    command     => "sleep 120 && ${cosmos::params::cosmos_basedir}/cosmos-admin/cosmos-admin setup",
     path        => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
     logoutput   => true,
     user        => root,

@@ -231,7 +231,7 @@ This file, written in [HOCON](https://github.com/typesafehub/config/blob/master/
     }
     ```
 
-* Links (without trailing slashes):
+* Link to CLI egg:
 
     `cli.url="https://andromeda01.hi.inet:8000/eggs/cosmos-0.17.0-py2.7.egg"`
 

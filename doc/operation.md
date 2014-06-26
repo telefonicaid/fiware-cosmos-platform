@@ -60,14 +60,14 @@ Remove the quota from certain profile, identified by handle:
           -h, --handle  <arg>
           --help            Show help message
 
-Enable certain capability () to certain profile, identified by handle:
+Enable certain capability to certain profile, identified by handle:
 
     $ ./cosmos-admin profile enable-capability
           -c, --capability  <arg>
           -h, --handle  <arg>
           --help                Show help message
 
-Disable certain capability () to certain profile, identified by handle:
+Disable certain capability to certain profile, identified by handle:
 
     $ ./cosmos-admin profile disable-capability
           -c, --capability  <arg>
@@ -134,7 +134,7 @@ The Cosmos GUI shows an "Admin" tab only for those profiles with the operator ca
 ![Admin GUI](img/admin_gui.png)
 
 ## Infinity API
-The Infinity API can be seen in the [doc/infinity-api](doc/infinity-api) file.
+The Infinity API can be seen in the [doc/infinity-api](infinity-api) file.
 
 ## Runtime configuration parameters
 The configuration parameters for the different Cosmos modules can be found at `/opt/pdi-cosmos/etc/`:
@@ -200,7 +200,7 @@ This file, written in [HOCON](https://github.com/typesafehub/config/blob/master/
     `db.default.user=cosmos`<br>
     `db.default.pass="SomeV3ryNicePassw0rd"`
 
-* Related to BoneCP issue of spontaneously closing connections (see https://pdihub.hi.inet/Cosmos/cosmos-platform/issues/1496):
+* Related to BoneCP issue of spontaneously closing connections (see https://bugs.launchpad.net/bonecp/+bug/1243551):
 
     `db.default.maxConnectionAge=0 second`
 

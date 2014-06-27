@@ -36,7 +36,7 @@ class cosmos::localrepo inherits cosmos::params {
   }
 
   define cleanContainerYum {
-    $clean_commands = 'yum clean all && rm -rf /var/lib/rpm/__db* && rpm --rebuilddb && rm -Rf /var/cache/yum && yum history new'
+    $clean_commands = 'yum clean all && rm -rf /var/lib/rpm/__db* && rpm --rebuilddb && rm -Rf /var/cache/yum && yum history new && yum makecache'
     exec {"slave yum clean ${title}" :
       command => "ssh ${title} 'vzctl exec 101 \"${clean_commands}\"'",
       path    => ['/usr/sbin/', '/bin/', '/usr/bin/'],

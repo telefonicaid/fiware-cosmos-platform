@@ -1,0 +1,49 @@
+#
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+include "cluster-properties"
+
+"core" {
+    "properties" {
+        "hadoop.security.group.mapping" = "es.tid.cosmos.infinity.server.groups.CosmosApiGroupMappingProvider",
+        "hadoop.security.group.mapping.infinity.apiBase" = ${CosmosApiUrl},
+        "hadoop.security.group.mapping.infinity.timeout" = 5000,
+        "hadoop.security.group.mapping.infinity.secret" = ${InfinitySecret}
+    }
+}
+
+"services" = [
+    {
+        "configType"="hdfs-site",
+        "properties" {
+            "dfs.namenode.plugins" = "es.tid.cosmos.infinity.server.plugin.MetadataPlugin",
+            "dfs.datanode.plugins" = "es.tid.cosmos.infinity.server.plugin.ContentPlugin",
+            "dfs.infinity.apiBase" = ${CosmosApiUrl}
+            "dfs.infinity.secret" = ${InfinitySecret}
+            "dfs.infinity.metadata.host" = ${MasterNode}
+            "dfs.infinity.metadata.port" = "<%= scope.lookupvar('cosmos::params::infinity_server_port') %>"
+            "dfs.infinity.metadata.replication" = "<%= scope.lookupvar('cosmos::params::infinity_replication') %>"
+        }
+    },
+    {
+        "configType"="infinity-server",
+        "properties" {
+          "blocked_ports" = "8020,9000,50070,50010,50020,50075",
+          "ssl_certificate_content" = "<%= @infinity_proxy_ssl_cert %>",
+          "ssl_certificate_key_content" = "<%= @infinity_proxy_ssl_key %>"
+        }
+    }
+]

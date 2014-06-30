@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.servicemanager
@@ -14,7 +19,10 @@ package es.tid.cosmos.servicemanager
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+import es.tid.cosmos.common.NowFuture
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.Service
+import es.tid.cosmos.servicemanager.services.InfinityServer.InfinityServerParameters
 
 /**
  * Cluster manager that allows cluster creation, termination as well as
@@ -22,41 +30,55 @@ import es.tid.cosmos.servicemanager.clusters._
  */
 trait ServiceManager {
 
-  /**
-   * Get the IDs of the existing clusters managed by this manager.
-   * @return the IDs of the existing clusters
-   */
+  /** Get the IDs of the existing clusters managed by this manager.
+    * @return the IDs of the existing clusters
+    */
   def clusterIds: Seq[ClusterId]
 
-  /**
-   * A sequence of all services this service manager supports
-   */
-  val optionalServices: Seq[ServiceDescription]
+  /** A sequence of all services this service manager supports. */
+  val optionalServices: Set[Service]
 
-  /**
-   * Create a cluster of a given size with a specified set of services.
-   *
-   * @param name the cluster's name
-   * @param clusterSize the number of nodes the cluster should comprise of
-   * @param serviceDescriptions the description of services to be installed to the cluster
-   * @param users the list of users the cluster should have
-   * @param preConditions the pre-conditions to be validated before attempting to create a cluster
-   * @return the ID of the newly created cluster
-   */
+  /** Create a cluster of a given size with a specified set of services.
+    *
+    * @param name          the cluster's name
+    * @param clusterSize   the number of nodes the cluster should comprise of
+    * @param services      the concrete service instances to be installed to the cluster
+    * @param users         the list of users the cluster should have
+    * @param preConditions the pre-conditions to be validated before attempting to create a cluster
+    * @return              the ID of the newly created cluster
+    */
   def createCluster(
     name: ClusterName,
     clusterSize: Int,
-    serviceDescriptions: Seq[ServiceDescription],
+    services: Set[AnyServiceInstance],
     users: Seq[ClusterUser],
-    preConditions: ClusterExecutableValidation = UnfilteredPassThrough): ClusterId
+    preConditions: ClusterExecutableValidation = UnfilteredPassThrough): NowFuture[ClusterId, Unit]
+
+  /** Obtain information of an existing cluster's state.
+    *
+    * @param id the ID of the cluster
+    * @return the description of the cluster and it state iff found
+    */
+  def describeCluster(id: ClusterId): Option[ImmutableClusterDescription]
 
   /**
-   * Obtain information of an existing cluster's state.
+   * Get a cluster's info when a given future completes.
+   * This is useful to acquire the cluster's state right after the completion of
+   * an operation on it such as creating a cluster or adding users.
+   * The manager will always attempt to get the cluster's description if available even when
+   * the future fails. It will only propagate the future failure if no description is available.
    *
-   * @param id the ID of the cluster
-   * @return the description of the cluster and it state iff found
+   * @param id the cluster id
+   * @param toComplete_> the action to wait for completion before getting the info
+   * @tparam A the type of action to wait
+   * @return the cluster state info right after the action completes
    */
-  def describeCluster(id: ClusterId): Option[ImmutableClusterDescription]
+  def describeClusterUponCompletion[A](
+    id: ClusterId, toComplete_> : Future[A]): Future[Option[ImmutableClusterDescription]] = {
+    toComplete_>
+      .recover { case _ if describeCluster(id).nonEmpty => Future.successful() }
+      .map (_ => describeCluster(id))
+  }
 
   /**
    * Terminate an existing cluster.
@@ -65,15 +87,14 @@ trait ServiceManager {
    */
   def terminateCluster(id: ClusterId): Future[Unit]
 
-  /**
-   * The cluster id of the persistent HDFS cluster
-   */
+  /** The cluster id of the persistent HDFS cluster */
   def persistentHdfsId: ClusterId
 
-  /**
-   * Deploys the persistent HDFS cluster.
-   */
-  def deployPersistentHdfsCluster(): Future[Unit]
+  /* Deploys the persistent HDFS cluster. */
+  def deployPersistentHdfsCluster(parameters: InfinityServerParameters): Future[Unit]
+
+  /** Updates the persistent HDFS cluster with new services and/or its configuration */
+  def updatePersistentHdfsServices(parameters: InfinityServerParameters): Future[Unit]
 
   /** A convenience function to obtain information of the persistent HDFS cluster's state. */
   final def describePersistentHdfsCluster(): Option[ImmutableClusterDescription] =
@@ -145,10 +166,9 @@ trait ServiceManager {
     Future.sequence(clustersWithUsers.map(c => disableUser(c.id, username))).map(_ => ())
   }
 
-  /**
-   * Get the total number of cluster nodes managed by the service manager.
-   *
-   * @return the total number of nodes regardless of their state and usage
-   */
+  /** Get the total number of cluster nodes managed by the service manager.
+    *
+    * @return the total number of nodes regardless of their state and usage
+    */
   def clusterNodePoolCount: Int
 }

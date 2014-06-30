@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.controllers
@@ -26,7 +31,7 @@ import es.tid.cosmos.api.profile.CosmosProfile
 import es.tid.cosmos.api.test.matchers.JsonMatchers
 import es.tid.cosmos.api.quota.{Quota, GuaranteedGroup}
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.servicemanager.{ClusterUser, ClusterName}
+import es.tid.cosmos.servicemanager.ClusterName
 import es.tid.cosmos.servicemanager.clusters._
 
 class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors
@@ -43,54 +48,51 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
 
   it must "provide profile information about id, handle and individual quota" in
     new WithSampleSessions {
-      val res = regUser.doRequest(getInfo)
+      val res = regUserNoGroup.doRequest(getInfo)
       status(res) must be (OK)
-      val quota = regUser.cosmosProfile.quota.toOptInt.get
+      val quota = regUserNoGroup.cosmosProfile.quota.toOptInt.get
       contentAsJson(res) must (
-        containFieldWithValue("profileId", JsNumber(regUser.cosmosProfile.id)) and
-        containFieldWithValue("handle", JsString(regUser.handle)) and
+        containFieldWithValue("profileId", JsNumber(regUserNoGroup.cosmosProfile.id)) and
+        containFieldWithValue("handle", JsString(regUserNoGroup.handle)) and
         containFieldWithValue("individualQuota", JsNumber(quota))
       )
     }
 
   it must "provide group name and group quota" in new WithSampleSessions {
-    dao.withTransaction { implicit c =>
-      dao.registerGroup(GuaranteedGroup("fooGroup", Quota(10)))
-      dao.setGroup(regUser.cosmosProfile.id, Some("fooGroup"))
-    }
-    val res = regUser.doRequest(getInfo)
+    val group = regUserInGroup.group
+    val res = regUserInGroup.doRequest(getInfo)
     status(res) must be (OK)
     contentAsJson(res) must containFieldThatMust("group",
-      containFieldWithValue("name", JsString("fooGroup")) and
-      containFieldWithValue("guaranteedQuota", JsNumber(10))
+      containFieldWithValue("name", JsString(group.name)) and
+      containFieldWithValue("guaranteedQuota", JsNumber(group.minimumQuota.toInt))
     )
   }
 
   it must "provide info about clusters owned or accessible by SSH" in
     new WithSampleSessions {
-      val cluster1 = mockedServiceManager.createCluster(
+      val (cluster1, _) = mockedServiceManager.createCluster(
         name = ClusterName("ownCluster"),
         size = 2,
-        serviceDescriptions = Seq.empty,
+        serviceInstances = Set.empty,
         users = Seq.empty
       )
-      regUser.setAsOwner(cluster1)
+      regUserInGroup.assignCluster(cluster1, shared = false)
       val cluster2 = ClusterId("cluster2")
       mockedServiceManager.defineCluster(ClusterProperties(
         id = cluster2,
         name = ClusterName("cluster2"),
-        users = Set(opUser.asClusterUser(), regUser.asClusterUser()),
+        users = Set(opUser.asClusterUser(), regUserInGroup.asClusterUser()),
         size  = 2,
         initialState = Some(Running)
       ))
       mockedServiceManager.createCluster(
         name = ClusterName("unlisted"),
         size = 2,
-        serviceDescriptions = Seq.empty,
-        users = Seq(opUser.asClusterUser(), regUser.asClusterUser(sshEnabled = false))
+        serviceInstances = Set.empty,
+        users = Seq(opUser.asClusterUser(), regUserInGroup.asClusterUser(sshEnabled = false))
       )
 
-      val res = regUser.doRequest(getInfo)
+      val res = regUserInGroup.doRequest(getInfo)
       status(res) must be (OK)
 
       contentAsJson(res) must containFieldThatMust("clusters",
@@ -102,15 +104,15 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
   it must "filter terminated clusters from the owned listing" in
     new WithSampleSessions {
       val cluster1 = mockedServiceManager.defineCluster(MockedServiceManager.ClusterProperties(
-        id = ClusterId(),
+        id = ClusterId.random(),
         name = ClusterName("own but terminated"),
         size = 10,
-        users = Set(regUser.asClusterUser()),
+        users = Set(regUserInGroup.asClusterUser()),
         initialState = Some(Terminated)
       ))
-      regUser.setAsOwner(cluster1.view.id)
+      regUserInGroup.assignCluster(cluster1.view.id, shared = false)
 
-      val res = regUser.doRequest(getInfo)
+      val res = regUserInGroup.doRequest(getInfo)
       status(res) must be (OK)
 
       contentAsJson(res) must containFieldThatMust("clusters",
@@ -123,13 +125,13 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
       val cluster1 = mockedServiceManager.defineCluster(ClusterProperties(
         id = ClusterId("cluster1"),
         name = ClusterName("added to but not running"),
-        users = Set(opUser.asClusterUser(), regUser.asClusterUser()),
+        users = Set(opUser.asClusterUser(), regUserInGroup.asClusterUser()),
         size  = 2,
         initialState = Some(Provisioning)
       ))
-      opUser.setAsOwner(cluster1.view.id)
+      opUser.assignCluster(cluster1.view.id, shared = false)
 
-      val res = regUser.doRequest(getInfo)
+      val res = regUserInGroup.doRequest(getInfo)
       status(res) must be (OK)
 
       contentAsJson(res) must containFieldThatMust("clusters",
@@ -138,21 +140,21 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
     }
 
   it must "provide info about existing and available resources" in new WithSampleSessions {
-    dao.withTransaction { implicit c =>
-      dao.registerGroup(GuaranteedGroup("fooGroup", Quota(10)))
-      dao.registerGroup(GuaranteedGroup("otherGroup", Quota(5)))
-      dao.setGroup(regUser.cosmosProfile.id, Some("fooGroup"))
+    val guaranteedGroup = GuaranteedGroup("fooGroup", Quota(10))
+    store.withTransaction { implicit c =>
+      store.group.register(guaranteedGroup)
     }
-    val cluster = mockedServiceManager.createCluster(
+    val fooGroupUser = new RegisteredUserSession("user", "Mr. user", guaranteedGroup)
+    val (cluster, _) = mockedServiceManager.createCluster(
       name = ClusterName("ownCluster"),
       size = 2,
-      serviceDescriptions = Seq.empty,
+      serviceInstances = Set.empty,
       users = Seq.empty
     )
-    regUser.setAsOwner(cluster)
-    val res = regUser.doRequest(getInfo)
+    fooGroupUser.assignCluster(cluster, shared = false)
+    val res = fooGroupUser.doRequest(getInfo)
     status(res) must be (OK)
-    val quota = regUser.cosmosProfile.quota.toOptInt.get
+    val quota = fooGroupUser.cosmosProfile.quota.toOptInt.get
     contentAsJson(res) must containFieldThatMust("resources",
       containFieldWithValue("groupConsumption", JsNumber(2)) and
       containFieldWithValue("individualConsumption", JsNumber(2)) and

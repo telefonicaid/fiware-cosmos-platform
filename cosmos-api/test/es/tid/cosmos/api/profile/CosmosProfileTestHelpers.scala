@@ -1,15 +1,22 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.profile
+
+import es.tid.cosmos.api.profile.dao.ProfileDataStore
 
 /** Utilities for setting up users on integration tests. */
 object CosmosProfileTestHelpers {
@@ -31,7 +38,7 @@ object CosmosProfileTestHelpers {
   }
 
   /** Generates a user id based on a keyword.
-    * 
+    *
     * @param keyword To fill in the auth id
     * @return        A user id on the default realm
     */
@@ -41,15 +48,15 @@ object CosmosProfileTestHelpers {
     * See registrationFor and userIdFor methods for more details.
     *
     * @param handle  Handle to base the dummy info generation on
-    * @param dao     Where to create the user in
+    * @param store   Where to create the user in
     * @return        The newly created profile
     *
     * @see [[es.tid.cosmos.api.profile.CosmosProfileTestHelpers$#registrationFor]]
     * @see [[es.tid.cosmos.api.profile.CosmosProfileTestHelpers$#userIdFor]]
     */
-  def registerUser(handle: String)(implicit dao: CosmosProfileDao): CosmosProfile =
-    dao.withTransaction { implicit c =>
-      registerUser(dao, handle)
+  def registerUser(handle: String)(implicit store: ProfileDataStore): CosmosProfile =
+    store.withTransaction { implicit c =>
+      registerUser(store, handle)
     }
 
   /** Overload of `registerUser` that uses a given transaction/connection.
@@ -58,14 +65,14 @@ object CosmosProfileTestHelpers {
     * is created directly as an enabled one.
     *
     * Note that `dao` and `c` should be in different argument groups to satisfy type checking.
-    * 
-    * @param dao     Where to create the user in
+    *
+    * @param store   Where to create the user in
     * @param handle  Handle to base the dummy info generation on
     * @param c       Connection/transaction to do the changes on
     * @return        The newly created profile
     */
-  def registerUser(dao: CosmosProfileDao, handle: String)
-                  (implicit c: dao.type#Conn): CosmosProfile = dao.registerUser(
+  def registerUser(store: ProfileDataStore, handle: String)
+                  (implicit c: store.Conn): CosmosProfile = store.profile.register(
     userId = userIdFor(handle),
     reg = registrationFor(handle),
     state = UserState.Enabled
@@ -74,23 +81,22 @@ object CosmosProfileTestHelpers {
   /** Lookup a user profile by their handle.
     *
     * @param handle  The user's handle
-    * @param dao     The dao to use
+    * @param store   The store to use
     * @return        The profile iff found
     */
-  def lookup(handle: String)(implicit dao: CosmosProfileDao): Option[CosmosProfile] =
-    dao.withTransaction{ implicit c =>
-      lookup(dao, handle)
+  def lookup(handle: String)(implicit store: ProfileDataStore): Option[CosmosProfile] =
+    store.withTransaction{ implicit c =>
+      lookup(store, handle)
     }
 
   /** Overload of `lookup` that uses a given transaction/connection
     *
-    * @param dao     The dao to use
+    * @param store   The store to use
     * @param handle  The user's handle
     * @param c       Connection/transaction to do the changes on
     * @return        The profile iff found
     */
-  def lookup(dao: CosmosProfileDao, handle: String)
-            (implicit c: dao.type#Conn): Option[CosmosProfile] = {
-    dao.lookupByUserId(userIdFor(handle))
-  }
+  def lookup(store: ProfileDataStore, handle: String)
+            (implicit c: store.Conn): Option[CosmosProfile] =
+    store.profile.lookupByUserId(userIdFor(handle))
 }

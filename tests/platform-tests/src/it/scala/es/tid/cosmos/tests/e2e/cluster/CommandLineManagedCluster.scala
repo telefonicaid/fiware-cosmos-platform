@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.tests.e2e.cluster
@@ -22,7 +27,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.tests.e2e.{CommandLineMatchers, User}
 
-class CommandLineManagedCluster(val id: String, val owner: User)
+class CommandLineManagedCluster(val id: String, val owner: User, val shared: Boolean)
                                (implicit info: Informer)
   extends Cluster with MustVerb with MustMatchers with CommandLineMatchers {
 
@@ -34,16 +39,6 @@ class CommandLineManagedCluster(val id: String, val owner: User)
   override def describe(executedBy: User = owner) = parse(
     s"cosmos -c ${executedBy.cosmosrcPath} show $id" !! ProcessLogger(info(_))
   )
-
-  override def addUser(clusterUser: String, executedBy: User = owner): Int = {
-    val command = s"cosmos -c ${executedBy.cosmosrcPath} adduser $id $clusterUser"
-    command ! ProcessLogger(info(_))
-  }
-
-  override def removeUser(clusterUser: String, executedBy: User = owner): Int = {
-    val command = s"cosmos -c ${executedBy.cosmosrcPath} rmuser $id $clusterUser"
-    command ! ProcessLogger(info(_))
-  }
 
   override def terminate(executedBy: User = owner) {
     info(s"Calling terminate on cluster $id")
@@ -79,12 +74,16 @@ class CommandLineManagedCluster(val id: String, val owner: User)
 object CommandLineManagedCluster extends Cluster.Factory with MustMatchers {
 
   /** Creates the cluster and returns its ID in case of success. */
-  def apply(clusterSize: Int, owner: User, services: Seq[String] = Seq.empty)
-           (implicit info: Informer): CommandLineManagedCluster = {
+  def apply(
+      clusterSize: Int,
+      owner: User,
+      services: Seq[String] = Seq.empty,
+      shared: Boolean = false)(implicit info: Informer): CommandLineManagedCluster = {
     val nameFlag = "--name default-services"
     val sizeFlag = s"--size $clusterSize"
     val srvFlag = servicesFlag(services, owner)
-    val command = s"cosmos -c ${owner.cosmosrcPath} create $nameFlag $sizeFlag $srvFlag"
+    val sharedFlag = if (shared) "--shared" else ""
+    val command = s"cosmos -c ${owner.cosmosrcPath} create $sharedFlag $nameFlag $sizeFlag $srvFlag"
     info(s"Calling create cluster with command '$command'")
     val commandOutput = command.lines_!.toList
     commandOutput.foreach(info(_))
@@ -94,7 +93,7 @@ object CommandLineManagedCluster extends Cluster.Factory with MustMatchers {
       .getOrElse(fail(s"unexpected create command output: ${commandOutput.mkString("\n")}"))
       .substring(expectedPrefix.length)
     info(s"Cluster created with id $id")
-    new CommandLineManagedCluster(id, owner)(info)
+    new CommandLineManagedCluster(id, owner, shared)(info)
   }
 
   private def servicesFlag(services: Seq[String], user: User) = {

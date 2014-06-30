@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.controllers
@@ -36,7 +41,7 @@ trait MaintenanceModeBehaviors { this: FlatSpec with MustMatchers =>
   def enabledWhenUnderMaintenance[T](request: FakeRequest[T])(implicit evidence: Writeable[T]) {
     it must "accept requests when under maintenance status" in new WithSampleSessions {
       services.maintenanceStatus.enterMaintenance()
-      status(regUser.doRequest(request)) must not(equal(SERVICE_UNAVAILABLE))
+      status(regUserInGroup.doRequest(request)) must not(equal(SERVICE_UNAVAILABLE))
     }
   }
 
@@ -44,7 +49,7 @@ trait MaintenanceModeBehaviors { this: FlatSpec with MustMatchers =>
                                                     (implicit evidence: Writeable[T]) {
     it must "reject non-operator requests when under maintenance status" in new WithSampleSessions {
       services.maintenanceStatus.enterMaintenance()
-      status(regUser.doRequest(request)) must equal(SERVICE_UNAVAILABLE)
+      status(regUserInGroup.doRequest(request)) must equal(SERVICE_UNAVAILABLE)
     }
 
     it must "accept operator requests when under maintenance status" in new WithSampleSessions {
@@ -61,7 +66,7 @@ trait MaintenanceModeBehaviors { this: FlatSpec with MustMatchers =>
     it must s"reject request with 503 status as a $name under maintenance status" in
       new WithSampleSessions {
         services.maintenanceStatus.enterMaintenance()
-        val response = regUser.doRequest(request)
+        val response = regUserInGroup.doRequest(request)
         status(response) must equal (SERVICE_UNAVAILABLE)
         contentType(response) must be (Some(expectedMimeType))
         contentAsString(response) must include("Service temporarily in maintenance mode")

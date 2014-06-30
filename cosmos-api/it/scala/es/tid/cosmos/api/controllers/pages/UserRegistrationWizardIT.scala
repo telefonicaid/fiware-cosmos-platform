@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.controllers.pages
@@ -23,11 +28,12 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
+import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.clusters.ClusterId
-import scala.concurrent.Await
 
 class UserRegistrationWizardIT
   extends FlatSpec with MustMatchers with MockitoSugar with FutureMatchers {
@@ -37,19 +43,16 @@ class UserRegistrationWizardIT
   val userId = userIdFor(handle)
   val registration = registrationFor(handle)
 
-  trait WithUserRegistrationWizard {
-    val dao = new MockCosmosProfileDao()
+  trait WithUserRegistrationWizard extends MockCosmosDataStoreComponent {
     val sm = spy(new MockedServiceManager())
-    val instance = new UserRegistrationWizard(sm)
-
+    val reporter = mock[ClusterReporter]
+    val instance = new UserRegistrationWizard(store, sm, reporter)
     sm.defineCluster(MockedServiceManager.PersistentHdfsProps)
   }
 
   "User registration" must "create a new profile with the input data" in
     new WithUserRegistrationWizard {
-      val validationResult = dao.withTransaction { implicit c =>
-        instance.registerUser(dao, userId, registration)
-      }
+      val validationResult = instance.registerUser(userId, registration)
 
       validationResult must be ('success)
       val (profile, registration_>) = validationResult.toOption.get
@@ -63,14 +66,12 @@ class UserRegistrationWizardIT
 
   it must "reconfigure persistent HDFS cluster with current and deleted users" in
     new WithUserRegistrationWizard {
-      val deletedUser = registerUser("deleted")(dao)
-      dao.withTransaction { implicit c =>
-        dao.setUserState(deletedUser.id, UserState.Deleted)
+      val deletedUser = registerUser("deleted")(store)
+      store.withTransaction { implicit c =>
+        store.profile.setUserState(deletedUser.id, UserState.Deleted)
       }
 
-      val validationResult = dao.withTransaction { implicit c =>
-        instance.registerUser(dao, userId, registration)
-      }
+      val validationResult = instance.registerUser(userId, registration)
 
       validationResult must be ('success)
       val (_, registration_>) = validationResult.toOption.get

@@ -1,16 +1,22 @@
 # -*- coding: utf-8 -*-
 #
-# Telefónica Digital - Product Development and Innovation
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
-# THIS CODE AND INFORMATION ARE PROVIDED 'AS IS' WITHOUT WARRANTY OF ANY KIND,
-# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
-# All rights reserved.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 import unittest
 
+import os
 import requests
 from mock import MagicMock, patch
 from testfixtures import TempDirectory
@@ -19,7 +25,7 @@ from cosmos.common.exceptions import (OperationError, ResponseError,
                                       UnsupportedApiVersionException)
 from cosmos.common.tests.util import mock_response
 from cosmos.storage.connection import connect, StorageConnection
-from cosmos.storage.webhdfs import DirectoryListing
+from cosmos.storage.infinity import DirectoryListing, FileMetadata
 
 
 API_KEY='AL2jHQ25a1I3Bb4ZCUzs'
@@ -31,13 +37,13 @@ class ConnectionTest(unittest.TestCase):
 
     def test_connect(self):
         response = mock_response(json={
-            'location': 'webhdfs://host:8080/',
+            'location': 'infinity://host:8080/',
             'user': 'username'
         })
         with patch('requests.get', MagicMock(return_value=response)):
             result = connect(API_KEY, API_SECRET, API_URL)
             client = result._StorageConnection__client
-            self.assertEquals(client.webhdfs_uri, 'webhdfs://host:8080/')
+            self.assertEquals(client.infinity_uri, 'infinity://host:8080/')
             self.assertEquals(client.username, 'username')
 
     def test_connect_with_incompatible_api_version(self):
@@ -62,6 +68,7 @@ class StorageConnectionTest(unittest.TestCase):
     def test_upload_filename(self):
         with TempDirectory() as local_dir:
             local_file = local_dir.write('file.txt', 'contents')
+            self.client.list_path.side_effect = [None, DirectoryListing()]
             target_path = self.instance.upload_filename(
                 local_file, '/re/mote.txt')
             self.assertEquals(target_path, '/re/mote.txt')
@@ -72,20 +79,23 @@ class StorageConnectionTest(unittest.TestCase):
             self.assertEquals(args[1], '/re/mote.txt')
 
     def test_upload_file(self):
-        self.assertUploadFileToRemotePath('/re/mote.txt')
+        self.assertUploadFileToRemotePath('/re/mote.txt',
+                                          listings=[None, DirectoryListing()],
+                                          check_parent=True)
 
     def test_upload_file_to_target_with_trailing_dash(self):
         self.assertUploadFileToRemotePath('/re/mote/',
-                                          renaming_to='/re/mote/file.txt')
+                                          renaming_to='/re/mote/file.txt',
+                                          listings=[DirectoryListing(), DirectoryListing()])
 
-    def test_upload_file_to_directory_target(self):
+    def test_upload_file_to_target_without_trailing_dash(self):
         self.assertUploadFileToRemotePath('/re/mote',
                                           renaming_to='/re/mote/file.txt',
-                                          target_type='DIRECTORY')
+                                          listings=[DirectoryListing()])
 
     def test_upload_file_to_existing_path(self):
         self.assertUploadFileToRemotePath('/re/mote/file.txt',
-                                          target_type='FILE',
+                                          listings=[FileMetadata(the_json=None)],
                                           raising=OperationError)
     def test_download_to_file(self):
         file = MagicMock()
@@ -120,7 +130,7 @@ class StorageConnectionTest(unittest.TestCase):
         self.assertDelegation(self.instance.list_path,
                               self.client.list_path,
                               args=['/remote/dir'],
-                              retval=DirectoryListing(exists=False))
+                              retval=DirectoryListing())
 
     def test_delete_path(self):
         self.assertDelegation(self.instance.delete_path,
@@ -128,12 +138,16 @@ class StorageConnectionTest(unittest.TestCase):
                               args=['/remote/file.txt', False],
                               retval=True)
 
+    def test_chmod_path(self):
+        self.assertDelegation(self.instance.chmod,
+                              self.client.chmod,
+                              args=['/remote/file.txt', '555'],
+                              retval=None)
+
     def assertUploadFileToRemotePath(self, remote_path, renaming_to=None,
-                                     target_type=None, raising=None):
+                                     raising=None, listings=None, check_parent=False):
         expected_target = remote_path if renaming_to is None else renaming_to
-        listing_of_target_type = MagicMock()
-        listing_of_target_type.path_type = MagicMock(return_value=target_type)
-        self.client.list_path = MagicMock(return_value=listing_of_target_type)
+        self.client.list_path.side_effect = listings
         with TempDirectory() as local_dir:
             with open(local_dir.write('file.txt', 'contents'), 'rb') as fd:
                 if raising is None:
@@ -144,8 +158,10 @@ class StorageConnectionTest(unittest.TestCase):
                 else:
                     self.assertRaises(raising, self.instance.upload_file,
                                       fd, remote_path)
-        self.client.list_path.assert_called_once_with(remote_path)
-        listing_of_target_type.assert_called_once()
+        self.client.list_path.assert_any_call(remote_path)
+        if check_parent:
+            self.client.list_path.assert_any_call(os.path.dirname(remote_path))
+            self.assertEquals(self.client.list_path.call_count, 2)
 
     def assertDownloadToFilename(self, local_file, renaming_to=None):
         target_file = local_file if renaming_to is None else renaming_to

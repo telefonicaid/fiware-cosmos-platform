@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.auth.oauth2.github
@@ -16,9 +21,10 @@ import play.api.libs.json._
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.profile.UserId
 
-private[github] case class GitHubProfile(id: Int, login: String, name: String, email: String) {
+private[github] case class GitHubProfile(
+    id: Int, login: String, name: Option[String], email: Option[String]) {
   def asUserProfile(realm: String): OAuthUserProfile =
-    OAuthUserProfile(UserId(realm, id.toString), Some(name), Some(email))
+    OAuthUserProfile(UserId(realm, id.toString), name, email)
 }
 
 private[github] object GitHubProfile {

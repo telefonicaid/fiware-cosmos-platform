@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.wizards
@@ -17,58 +22,60 @@ import scala.language.postfixOps
 import scalaz.Failure
 
 import org.mockito.Matchers.{eq => the, any}
-import org.mockito.Mockito.{doReturn, doThrow, spy}
+import org.mockito.Mockito.{doReturn, spy}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.{Matcher, MustMatchers}
+import org.scalatest.mock.MockitoSugar
 import org.scalatest.concurrent.Eventually
 
+import es.tid.cosmos.api.controllers.common.Message
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.UserState.UserState
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers.{registerUser, userIdFor}
-import es.tid.cosmos.api.controllers.common.Message
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
+import es.tid.cosmos.api.report.ClusterReporter
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser, UnfilteredPassThrough}
 import es.tid.cosmos.servicemanager.clusters.{Running, ClusterId, Terminated}
 
 class UserUnregistrationWizardTest
-  extends FlatSpec with MustMatchers with FutureMatchers with Eventually {
+  extends FlatSpec with MustMatchers with FutureMatchers with Eventually with MockitoSugar {
 
   val timeout = 1.second
   val failure = new RuntimeException("Forced failure")
   val failedFuture: Future[Unit] = Future.failed(failure)
 
-  trait WithWizard {
+  trait WithWizard extends MockCosmosDataStoreComponent {
     val sm = spy(new MockedServiceManager())
-    val dao = spy(new MockCosmosProfileDao())
-    val wizard = new UserUnregistrationWizard(sm)
+    val reporter = mock[ClusterReporter]
+    val wizard = new UserUnregistrationWizard(store, sm, reporter)
 
     sm.defineCluster(MockedServiceManager.PersistentHdfsProps)
   }
 
   trait WithExistingUser extends WithWizard {
-    val cosmosProfile = registerUser("jsmith")(dao)
+    val cosmosProfile = registerUser("jsmith")(store)
     val cosmosId = cosmosProfile.id
 
     def unregistrationMust(futureMatcher: Matcher[Future[_]]) {
-      dao.withTransaction { implicit c =>
-        wizard.unregisterUser(dao, cosmosId)
+      store.withTransaction { implicit c =>
+        wizard.unregisterUser(cosmosId)
       }.fold(
         fail = message => fail(s"Unexpected failure with message $message"),
         succ = unreg_> => unreg_> must (runUnder(timeout) and futureMatcher)
       )
     }
 
-    def databaseUser = dao.withTransaction { implicit c =>
-      dao.lookupByUserId(userIdFor("jsmith"))
+    def databaseUser = store.withTransaction { implicit c =>
+      store.profile.lookupByUserId(userIdFor("jsmith"))
     }
   }
 
   trait WithUserWithCluster extends WithExistingUser {
-    val clusterId = sm.createCluster(
+    val (clusterId, _) = sm.createCluster(
       name = ClusterName("cluster1"),
       size = 6,
-      serviceDescriptions = Seq.empty,
+      serviceInstances = Set.empty,
       users = Seq.empty,
       preConditions = UnfilteredPassThrough
     )
@@ -76,16 +83,16 @@ class UserUnregistrationWizardTest
       cluster.completeProvisioning()
       cluster.immediateTermination()
     }
-    dao.withTransaction { implicit c =>
-      dao.assignCluster(clusterId, cosmosProfile.id)
+    store.withTransaction { implicit c =>
+      store.cluster.register(clusterId, cosmosProfile.id, ClusterSecret.random())
     }
   }
 
   trait WithUserOfNotOwnedClusters extends WithExistingUser {
-    val clusterId = sm.createCluster(
+    val (clusterId, _) = sm.createCluster(
       name = ClusterName("cluster1"),
       size = 2,
-      serviceDescriptions = Seq.empty,
+      serviceInstances = Set.empty,
       users = Seq.empty,
       preConditions = UnfilteredPassThrough
     )
@@ -95,18 +102,17 @@ class UserUnregistrationWizardTest
 
     Await.ready(sm.addUser(clusterId, ClusterUser.enabled(
       username = cosmosProfile.handle,
+      group = None,
       publicKey = cosmosProfile.keys.head.signature,
       isSudoer = false
     )), timeout)
   }
 
   "Unregistration" must "not be created when user status cannot be changed" in new WithWizard {
-    doThrow(failure).when(dao)
-      .setUserState(any[Long], any[UserState])(the(MockCosmosProfileDao.DummyConnection))
     val userId = 0
-    dao.withTransaction { implicit c =>
-      wizard.unregisterUser(dao, userId)
-    } must be (Failure(Message(s"Cannot change user cosmosId=$userId status")))
+    store.throwOnUserStateChangeTo(UserState.Creating)
+    wizard.unregisterUser(userId) must
+      be (Failure(Message(s"Cannot change user cosmosId=$userId status")))
   }
 
   it must "mark user as deleted" in new WithExistingUser {
@@ -114,9 +120,8 @@ class UserUnregistrationWizardTest
     databaseUser.get.state must be (UserState.Deleted)
   }
 
-  it must "fail when user cannot be mark as deleted" in new WithExistingUser {
-    doThrow(failure).when(dao)
-      .setUserState(the(cosmosId), the(UserState.Deleted))(the(MockCosmosProfileDao.DummyConnection))
+  it must "fail when user cannot be marked as deleted" in new WithExistingUser {
+    store.throwOnUserStateChangeTo(UserState.Deleted)
     unregistrationMust(eventuallyFailWith(
       s"Cannot remove user with cosmosId=$cosmosId from the database"))
     databaseUser.get.state must be (UserState.Deleting)

@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 #
-# Telefónica Digital - Product Development and Innovation
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
-# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
-# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
-# All rights reserved.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 """SSH connection with clusters"""
 
@@ -36,13 +41,25 @@ def ssh_cluster(cluster_id, config):
         address = cluster['master']['ipAddress']
     except KeyError:
         raise ExitWithError(-1, 'Unknown master node for %s' % cluster_id)
+
+    try:
+        blocked_ports = cluster['blockedPorts']
+    except KeyError:
+        log.warning("Blocked ports information not available. Not " +
+                    "forwarding any ports.")
+        blocked_ports = []
     command_line = [config.ssh_command, address,
                     '-l', get_user_handle(config),
                     '-o', 'UserKnownHostsFile=/dev/null',
                     '-o', 'StrictHostKeyChecking=no']
+    for port in blocked_ports:
+       command_line.extend(['-L%s:%s:%s' % (port, address, port)])
     if config.ssh_key is not None and config.ssh_key:
         command_line.extend(['-i', path.expanduser(config.ssh_key)])
     log.info('SSH command: ' + ' '.join(command_line))
+    if blocked_ports:
+        print ("The following ports are accessible through " +
+               "'localhost:<port>': %s") % (blocked_ports)
     try:
         return subprocess.call(command_line)
     except OSError:

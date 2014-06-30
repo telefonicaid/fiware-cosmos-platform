@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.quota
@@ -23,6 +28,8 @@ sealed trait Group {
    * @return the quota of machines guaranteed to always be available within the group
    */
   def minimumQuota: LimitedQuota
+
+  val hdfsGroupName: Option[String]
 }
 
 /**
@@ -39,7 +46,9 @@ sealed trait Group {
  */
 case class GuaranteedGroup(
   override val name: String,
-  override val minimumQuota: LimitedQuota) extends Group
+  override val minimumQuota: LimitedQuota) extends Group {
+  override val hdfsGroupName = Some(name)
+}
 
 /**
  * Representation of a null group object for users that do not belong to any specific group.
@@ -48,4 +57,10 @@ case class GuaranteedGroup(
 case object NoGroup extends Group {
   override val name = "No Group"
   override val minimumQuota = EmptyQuota
+  override val hdfsGroupName = None
+}
+
+object Group {
+  /** Alias of NoGroup with Group type to avoid the pitfalls of the NoGroup.type inference */
+  val noGroup: Group = NoGroup
 }

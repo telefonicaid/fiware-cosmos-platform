@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 #
-# Telefónica Digital - Product Development and Innovation
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
-# THIS CODE AND INFORMATION ARE PROVIDED 'AS IS' WITHOUT WARRANTY OF ANY KIND,
-# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
-# All rights reserved.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 import json
 import requests
@@ -97,17 +102,19 @@ class ProtocolTest(unittest.TestCase):
         postMock.return_value = mock_response(status_code=201, json={
             'id': '1',
             'name': 'cluster1',
-            'state': 'ready'
+            'state': 'ready',
+            'shared': False
         })
-        rep = self.__create_proto().create_cluster('cluster1', 2, ['FOO'])
+        rep = self.__create_proto().create_cluster('cluster1', 2, ['FOO'], False)
 
         expected_body = json.dumps({ 'name' : 'cluster1', 'size' : 2,
-            'optionalServices': ['FOO'] })
+            'optionalServices': ['FOO'], 'shared': False })
         self.assert_called_once_with(postMock, self.api_url + '/cluster',
                                      expected_body)
         self.assertEquals(rep['id'], '1')
         self.assertEquals(rep['name'], 'cluster1')
         self.assertEquals(rep['state'], 'ready')
+        self.assertEquals(rep['shared'], False)
 
     @patch('requests.post')
     def test_create_cluster_fail(self, postMock):
@@ -115,7 +122,7 @@ class ProtocolTest(unittest.TestCase):
             'error': 'request failed due to server error'
         })
         with self.assertRaises(ResponseError):
-            self.__create_proto().create_cluster('cluster1', 2, ['FOO', 'BAR'])
+            self.__create_proto().create_cluster('cluster1', 2, ['FOO', 'BAR'], True)
 
     @patch('requests.post')
     def test_terminate_cluster(self, postMock):
@@ -154,48 +161,3 @@ class ProtocolTest(unittest.TestCase):
 
         self.assert_called_once_with(getMock, self.api_url + '/services')
         self.assertEquals(rep, [])
-
-    @patch('requests.post')
-    def test_add_user_to_cluster(self, postMock):
-        postMock.return_value = mock_response(status_code=200, json={
-            'message': 'user added successfully'
-        })
-        rep = self.__create_proto().add_user_to_cluster('1', 'jsmith')
-
-        expected_body = json.dumps({ 'user' : 'jsmith' })
-        self.assert_called_once_with(postMock,
-                                     self.api_url + '/cluster/1/add_user',
-                                     expected_body)
-
-        self.assertEquals(rep['message'], 'user added successfully')
-
-    @patch('requests.post')
-    def test_add_user_to_cluster_fail(self, postMock):
-        postMock.return_value = mock_response(status_code=500, json={
-            'error': 'request failed due to server error'
-        })
-        with self.assertRaises(ResponseError):
-            self.__create_proto().add_user_to_cluster('1', 'jsmith')
-
-    @patch('requests.post')
-    def test_remove_user_from_cluster(self, postMock):
-        postMock.return_value = mock_response(status_code=200, json={
-            'message': 'user removed successfully'
-        })
-        rep = self.__create_proto().remove_user_from_cluster('1', 'jsmith')
-
-        expected_body = json.dumps({ 'user' : 'jsmith' })
-        self.assert_called_once_with(postMock,
-                                     self.api_url + '/cluster/1/remove_user',
-                                     expected_body)
-
-        self.assertEquals(rep['message'], 'user removed successfully')
-
-    @patch('requests.post')
-    def test_remove_user_from_cluster_fail(self, postMock):
-        postMock.return_value = mock_response(status_code=500, json={
-            'error': 'request failed due to server error'
-        })
-        with self.assertRaises(ResponseError):
-            self.__create_proto().remove_user_from_cluster('1', 'jsmith')
-

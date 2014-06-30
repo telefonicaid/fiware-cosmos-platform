@@ -1,22 +1,27 @@
 # -*- coding: utf-8 -*-
 #
-# Telefónica Digital - Product Development and Innovation
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
-# THIS CODE AND INFORMATION ARE PROVIDED 'AS IS' WITHOUT WARRANTY OF ANY KIND,
-# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
-# All rights reserved.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 import argparse
-import logging as log
-import os.path
+import iso8601
 import time
 
 from cosmos.cli.config import load_config
 from cosmos.cli.tables import format_table
 from cosmos.cli.util import ExitWithError
+from cosmos.common.paths import PathTypes
 from cosmos.storage.connection import connect
 
 
@@ -59,7 +64,7 @@ def put_file(args, config, conn):
 
 def add_put_command(subparsers):
     put_parser = subparsers.add_parser('put', help='upload file')
-    put_parser.add_argument('local_file', type=argparse.FileType('r'),
+    put_parser.add_argument('local_file', type=argparse.FileType('rb'),
                             help='local file to upload')
     put_parser.add_argument('remote_path', help='target remote path')
     put_parser.set_defaults(func=StorageCommand(put_file))
@@ -81,14 +86,14 @@ def format_perms(perms, file_type):
     """Formats a permission number in unix style.
 
     File permissions start with '-':
-    >>> format_perms("640", "FILE")
+    >>> format_perms("640", "file")
     '-rw-r-----'
 
     While directory ones with 'd':
-    >>> format_perms("711", "DIRECTORY")
+    >>> format_perms("711", "directory")
     'drwx--x--x'
     """
-    if file_type == "DIRECTORY":
+    if file_type == "directory":
         prefix = "d"
     else:
         prefix = "-"
@@ -111,47 +116,50 @@ def format_size(num_bytes):
 
 def format_timestamp(timestamp):
     """Formats an UTC timestamp into a date string.
-    >>> format_timestamp(1320895981256)
-    'Thu, 10 Nov 2011 03:33:01'
+    >>> format_timestamp("2014-04-08T12:41:34+0100")
+    'Tue, 08 Apr 2014 12:41:34'
     """
-    t = time.gmtime(timestamp / 1000)
+    t = iso8601.parse_date(timestamp).timetuple()
     return time.strftime("%a, %d %b %Y %H:%M:%S", t)
 
 
 def format_statuses(statuses):
     """Format a list of file statuses in a human-readable table.
     >>> list(format_statuses([{ \
-          "accessTime"      : 1320171722771, \
-          "blockSize"       : 33554432, \
-          "group"           : "supergroup", \
-          "length"          : 24930, \
-          "modificationTime": 1320171722771, \
-          "owner"           : "webuser", \
-          "pathSuffix"      : "a.patch", \
-          "permission"      : "644", \
-          "replication"     : 1, \
-          "type"            : "FILE" \
-        }, { \
-          "accessTime"      : 0, \
-          "blockSize"       : 0, \
-          "group"           : "supergroup", \
-          "length"          : 0, \
-          "modificationTime": 1320895981256, \
-          "owner"           : "szetszwo", \
-          "pathSuffix"      : "bar", \
-          "permission"      : "711", \
-          "replication"     : 0, \
-          "type"            : "DIRECTORY" \
-       }]))
-    ['-rw-r--r--  webuser   supergroup  24K  Tue, 01 Nov 2011 18:22:02  a.patch', 'drwx--x--x  szetszwo  supergroup   0B  Thu, 10 Nov 2011 03:33:01  bar    ']
+          "path" : "/usr/gandalf/spells.txt", \
+          "type" : "file", \
+          "metadata" : "http://example.com/infinityfs/v1/metadata/usr/gandalf/spells.txt", \
+          "owner" : "gandalf", \
+          "group" : "istari", \
+          "permissions" : "600", \
+          "size" : 45566918656, \
+          "modificationTime" : "2014-04-08T12:41:34+0100", \
+          "accessTime" : "2014-04-08T12:54:32+0100", \
+          "blockSize" : 65536, \
+          "replication" : 3 \
+        }, \
+        { \
+          "path" : "/usr/gandalf/enemies", \
+          "type" : "directory", \
+          "metadata" : "http://example.com/infinityfs/v1/metadata/usr/gandalf/enemies", \
+          "owner" : "gandalf", \
+          "group" : "istari", \
+          "permissions" : "750", \
+          "size" : 0, \
+          "modificationTime" : "2014-04-08T12:55:45+0100", \
+          "accessTime" : "2014-04-08T13:01:22+0100", \
+          "blockSize" : 0, \
+          "replication" : 0 \
+        }]))
+    ['-rw-------  gandalf  istari  42G  Tue, 08 Apr 2014 12:41:34  spells.txt', 'drwxr-x---  gandalf  istari   0B  Tue, 08 Apr 2014 12:55:45  enemies   ']
     """
     return format_table([
-        [format_perms(status["permission"], status["type"]),
+        [format_perms(status["permissions"], status["type"]),
          status["owner"],
          status["group"],
-         format_size(status["length"]),
-         format_timestamp(int(status["modificationTime"])),
-         status["pathSuffix"]] for status in statuses],
+         format_size(status["size"]),
+         format_timestamp(status["modificationTime"]),
+         status["path"].split('/')[-1]] for status in statuses],
         alignments="lllrll", separator="  "
     )
 
@@ -159,8 +167,10 @@ def format_statuses(statuses):
 def ls_command(args, config, conn):
     """List directory files"""
     listing = conn.list_path(args.path)
-    if not listing.exists:
+    if listing is None:
         raise ExitWithError(404, "Directory %s not found" % args.path)
+    if listing.path_type != PathTypes.DIRECTORY:
+        raise ExitWithError(400, "%s is not a directory" % args.path)
     for line in format_statuses(listing.statuses):
         print line.rstrip()
     if not listing.statuses:
@@ -191,18 +201,31 @@ def add_get_command(subparsers):
 
 def rm_command(args, config, conn):
     """Delete a path or path tree"""
-    deleted = conn.delete_path(args.path, args.recursive)
-    print "%s was %s deleted" % (args.path,
-                                 "successfully" if deleted else "not")
+    conn.delete_path(args.path, args.recursive)
+    print "%s was successfully deleted" % args.path
 
 
 def add_rm_command(subparsers):
-    get_parser = subparsers.add_parser(
+    rm_parser = subparsers.add_parser(
         'rm', help='delete a file or directory in the persistent storage')
-    get_parser.add_argument('--recursive', '-r', action='store_true',
+    rm_parser.add_argument('--recursive', '-r', action='store_true',
                             help='recursive delete')
-    get_parser.add_argument('path', help='remote path to delete')
-    get_parser.set_defaults(func=StorageCommand(rm_command))
+    rm_parser.add_argument('path', help='remote path to delete')
+    rm_parser.set_defaults(func=StorageCommand(rm_command))
+
+def chmod_command(args, config, conn):
+    """Change permissions on path"""
+    conn.chmod(args.path, args.permissions)
+    print "Permissions of %s change to %s" % (args.path, args.permissions)
+
+def add_chmod_command(subparsers):
+    chmod_parser = subparsers.add_parser(
+        'chmod',
+        help='change permissions on a file or directory in the persistent storage')
+    chmod_parser.add_argument('permissions',
+                              help='new permissions in octal notation [000-777]')
+    chmod_parser.add_argument('path', help='remote path')
+    chmod_parser.set_defaults(func=StorageCommand(chmod_command))
 
 
 def add_storage_commands(subparsers):
@@ -210,4 +233,5 @@ def add_storage_commands(subparsers):
     add_ls_command(subparsers)
     add_get_command(subparsers)
     add_rm_command(subparsers)
+    add_chmod_command(subparsers)
 

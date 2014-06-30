@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.controllers.pages
@@ -29,8 +34,10 @@ import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.PagesAuthController
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.{CosmosProfileDao, Registration, UserId}
-import es.tid.cosmos.api.task.{MutableTask, TaskDao}
+import es.tid.cosmos.api.profile.{HandleConstraint, Registration, UserId}
+import es.tid.cosmos.api.profile.dao.{GroupDataStore, ProfileDataStore}
+import es.tid.cosmos.api.report.ClusterReporter
+import es.tid.cosmos.api.task.TaskDao
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
@@ -40,8 +47,9 @@ import views.AuthAlternative
 class Pages(
     multiAuthProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
+    reporter: ClusterReporter,
     override val taskDao: TaskDao,
-    override val dao: CosmosProfileDao,
+    override val store: ProfileDataStore with GroupDataStore,
     override val maintenanceStatus: MaintenanceStatus,
     config: Config
   ) extends Controller with JsonController with PagesAuthController
@@ -49,7 +57,7 @@ class Pages(
 
   import Scalaz._
 
-  private val registrationWizard = new UserRegistrationWizard(serviceManager)
+  private val registrationWizard = new UserRegistrationWizard(store, serviceManager, reporter)
 
   def index = Action { implicit request =>
     withAuthentication(request)(
@@ -118,18 +126,18 @@ class Pages(
       _ <- requireResourceNotUnderMaintenance()
       userProfile <- requireAuthenticatedUser(request)
       _ <- requireUnregisteredUser(userProfile.id)
-      validatedForm = dao.withTransaction { implicit c =>
+      validatedForm = store.withTransaction { implicit c =>
         val form = RegistrationForm().bindFromRequest()
         form.data.get("handle") match {
-          case Some(handle) if dao.handleExists(handle) =>
+          case Some(handle) if HandleConstraint.ensureFreeHandle(handle, store).isFailure =>
             form.withError("handle", s"'$handle' is already taken")
           case _ => form
         }
       }
       registration <- requireValidRegistration(userProfile, validatedForm)
       _ <- requireNoActiveTask(registration.handle, "registration")
-      wizardResult <- dao.withTransaction { implicit c =>
-        registrationWizard.registerUser(dao, userProfile.id, registration)
+      wizardResult <- store.withTransaction { implicit c =>
+        registrationWizard.registerUser(userProfile.id, registration)
           .leftMap(message => InternalServerError(Json.toJson(message)))
       }
     } yield {
@@ -150,11 +158,10 @@ class Pages(
     )
 
   private def requireUnregisteredUser(userId: UserId): ActionValidation[Unit] = {
-    val userExists = dao.withTransaction { implicit c =>
-      dao.lookupByUserId(userId).isDefined
+    val userExists = store.withTransaction { implicit c =>
+      store.profile.lookupByUserId(userId).isDefined
     }
-    if (userExists) redirectToIndex.failure
-    else ().success
+    if (userExists) redirectToIndex.failure else ().success
   }
 
   private def registrationPage(profile: OAuthUserProfile, form: Form[Registration]) = {

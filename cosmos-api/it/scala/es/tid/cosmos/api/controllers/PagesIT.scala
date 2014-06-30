@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.controllers
@@ -41,7 +46,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
   }
 
   it must "redirect to the user profile page for registered users" in new WithSampleSessions {
-    regUser.doRequest("/") must redirectTo ("/profile")
+    regUserInGroup.doRequest("/") must redirectTo ("/profile")
   }
 
   "The registration page" must "redirect to the index unauthenticated users" in
@@ -68,7 +73,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
   }
 
   it must "redirect to the index registered users" in new WithSampleSessions {
-    regUser.doRequest("/register") must redirectTo ("/")
+    regUserInGroup.doRequest("/register") must redirectTo ("/")
   }
 
   it must "register unregistered users" in new WithSampleSessions {
@@ -78,8 +83,8 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
         "email" -> "jsmith@example.com",
         "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com")
       response must redirectTo ("/")
-      dao.withConnection { implicit c =>
-        dao.lookupByUserId(unregUser.userId) must be ('defined)
+      store.withConnection { implicit c =>
+        store.profile.lookupByUserId(unregUser.userId) must be ('defined)
       }
     }
   }
@@ -97,7 +102,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
 
   it must "reject registrations when selected handle is already taken" in new WithSampleSessions {
     val response = unregUser.submitForm("/register",
-      "handle" -> regUser.handle,
+      "handle" -> regUserInGroup.handle,
       "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com"
     )
     status(response) must be (BAD_REQUEST)
@@ -119,9 +124,9 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
   }
 
   "The profile page" must "show the user profile page for registered users" in new WithSampleSessions {
-    val profilePage = regUser.doRequest("/profile")
+    val profilePage = regUserInGroup.doRequest("/profile")
     status(profilePage) must equal (OK)
-    contentAsString(profilePage) must include (s"Profile for ${regUser.userProfile.contact}")
+    contentAsString(profilePage) must include (s"Profile for ${regUserInGroup.userProfile.contact}")
   }
 
   it must behave like enabledWhenUnderMaintenance(FakeRequest(GET, "/profile"))
@@ -129,10 +134,10 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
 
   "The getting started page" must "show a personalized getting started tutorial" in
     new WithSampleSessions {
-      val response = regUser.doRequest("/getting-started")
+      val response = regUserInGroup.doRequest("/getting-started")
       contentAsString(response) must (
-        include (regUser.cosmosProfile.apiCredentials.apiKey) and
-        include (regUser.cosmosProfile.apiCredentials.apiSecret))
+        include (regUserInGroup.cosmosProfile.apiCredentials.apiKey) and
+        include (regUserInGroup.cosmosProfile.apiCredentials.apiSecret))
     }
 
   it must behave like pageForRegisteredUsers("/getting-started")
@@ -143,7 +148,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
 
   "A registered user" must "be authenticated after OAuth redirection" in
     new WithTestApplication {
-      registerUser(dao, MockAuthConstants.User101)
+      registerUser(MockAuthConstants.User101)
       val redirection = oauthRedirectionWithCode(MockAuthConstants.GrantedCode)
       redirection must redirectTo ("/profile")
       val cosmosSession: CosmosSession = session(redirection)

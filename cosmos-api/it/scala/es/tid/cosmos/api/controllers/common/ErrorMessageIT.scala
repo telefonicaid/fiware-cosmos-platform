@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.controllers.common
@@ -14,6 +19,7 @@ package es.tid.cosmos.api.controllers.common
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.Mode
+import play.api.Mode.Mode
 import play.api.libs.json.Json
 import play.api.test.{FakeApplication, WithApplication}
 
@@ -30,21 +36,24 @@ class ErrorMessageIT extends FlatSpec with MustMatchers {
     Json.toJson(message) must be (Json.obj("error" -> "Something failed"))
   }
 
-  it must "show exception details when not in production mode" in new WithApplication {
-    val json = Json.toJson(messageWithException)
-    (json \ "error").as[String] must be ("Something failed: Missing foo")
-    (json \ "exception").as[String] must be ("java.lang.RuntimeException")
-    (json \ "stackTrace").asOpt[List[String]] must be ('defined)
-  }
+  it must "show exception details when not in production mode" in
+    new WithApplication(new FakeApp(Mode.Test)) {
+      val json = Json.toJson(messageWithException)
+      (json \ "error").as[String] must be ("Something failed: Missing foo")
+      (json \ "exception").as[String] must be ("java.lang.RuntimeException")
+      (json \ "stackTrace").asOpt[List[String]] must be ('defined)
+    }
 
-  class FakeProdApplication extends FakeApplication {
-    override val mode = Mode.Prod
-  }
+  class FakeApp(override val mode: Mode) extends FakeApplication(
+    // the mailer is not required for this IT test
+    // remove mailer plugin to allow testing without needing the mailer configuration
+    withoutPlugins = Seq("com.typesafe.plugin.CommonsMailerPlugin")
+  )
 
   it must "hide exception details when in production mode" in
-    new WithApplication(new FakeProdApplication()) {
+    new WithApplication(new FakeApp(Mode.Prod)) {
       val json = Json.toJson(messageWithException)
-      (json \ "exception").asOpt[String] must not be ('defined)
-      (json \ "stackTrace").asOpt[List[String]] must not be ('defined)
+      (json \ "exception").asOpt[String] must not be 'defined
+      (json \ "stackTrace").asOpt[List[String]] must not be 'defined
     }
 }

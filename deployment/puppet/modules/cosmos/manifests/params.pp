@@ -1,16 +1,21 @@
 #
-# Telefónica Digital - Product Development and Innovation
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
-# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
-# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
-# All rights reserved.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 
 class cosmos::params (
-  $version                 = '0.16.0',
+  $version                 = '0.17.0',
   $cosmos_basedir          = '/opt/pdi-cosmos',
   $cosmos_cli_repo_path    = '/opt/repos',
   $cosmos_repo_deps_url,
@@ -68,14 +73,21 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $master_ip,
   $master_repo_port,
   $master_hostname,
+  $master_use_ip_as_hostname = false,
   $domain,
   $pdihub_client_id,
   $pdihub_client_secret,
   $horizon_password,
+  $iface_bootproto = 'none',
+  $overwrite_hosts_file = true,
+  $proxy = absent,
   $ssl_authority,
   $ssl_cert_location,
   $ssl_support_name,
   $ssl_support_email,
+  $smtp_host,
+  $email_sender,
+  $email_report_receiver,
   $ambari_yarn_total_memory,
   $ambari_yarn_container_min_memory,
   $ambari_yarn_virtual_physical_memory_ratio,
@@ -83,7 +95,10 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $ambari_reduce_task_memory,
   $ambari_map_heap_memory,
   $ambari_reduce_heap_memory,
-  $ambari_mr_app_master_memory
+  $ambari_mr_app_master_memory,
+  $infinity_secret,
+  $infinity_server_port = 51070,
+  $infinity_replication = 3
 ) {
   $cosmos_public_key          = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
   $cosmos_cli_filename        = "cosmos-${version}-py2.7.egg"

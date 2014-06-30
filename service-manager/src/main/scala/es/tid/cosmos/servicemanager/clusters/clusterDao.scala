@@ -1,20 +1,26 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.servicemanager.clusters
 
-import es.tid.cosmos.servicemanager.{ClusterName, ServiceDescription, ClusterUser}
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
+import es.tid.cosmos.servicemanager.services.Service
 
 trait ClusterDaoComponent {
-  val clusterDao: ClusterDao
+  def serviceManagerClusterDao: ClusterDao
 }
 
 /** A DAO that stores information about clusters. */
@@ -40,10 +46,10 @@ trait ClusterDao {
     *         on this object will affect the state of the DAO.
     */
   def registerCluster(
-    id: ClusterId = ClusterId(),
+    id: ClusterId = ClusterId.random(),
     name: ClusterName,
     size: Int,
-    services: Set[ServiceDescription]): MutableClusterDescription
+    services: Set[Service]): MutableClusterDescription
 
   /** Retrieve the list of users for given cluster.
     *
@@ -58,5 +64,5 @@ trait ClusterDao {
     * @param users The new user seq for the cluster
     * @throws IllegalArgumentException If there is no cluster with given id
     */
-  def setUsers(id: ClusterId, users: Set[ClusterUser])
+  def setUsers(id: ClusterId, users: Set[ClusterUser]): Unit
 }

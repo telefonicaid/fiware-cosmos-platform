@@ -1,19 +1,30 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.profile
 
+import scalaz._
+
 import play.api.data.validation.{Constraint, Invalid, Valid}
 
+import es.tid.cosmos.api.profile.dao.{GroupDataStore, ProfileDataStore}
+
 object HandleConstraint {
+
+  import Scalaz._
 
   val handleRegex = "^[a-zA-Z][a-zA-Z0-9]{2,}$".r
 
@@ -26,4 +37,20 @@ object HandleConstraint {
   }
 
   def apply(input: String): Boolean = constraint(input) == Valid
+
+  def ensureFreeHandle(handle: String, store: ProfileDataStore with GroupDataStore): Validation[String, Unit] = {
+    lazy val error = s"Handle '$handle' is already taken".failure
+    store.withTransaction { implicit c =>
+      val noProfileWithHandle =
+        if (!store.profile.handleExists(handle)) ().success
+        else error
+      val noGroupWithHandle =
+        if (store.group.lookupByName(handle).isEmpty) ().success
+        else error
+      for {
+        _ <- noProfileWithHandle
+        _ <- noGroupWithHandle
+      } yield ()
+    }
+  }
 }

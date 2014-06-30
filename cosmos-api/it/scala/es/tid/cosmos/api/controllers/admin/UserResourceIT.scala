@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.controllers.admin
@@ -16,16 +21,16 @@ import scala.concurrent.Future
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.{HavePropertyMatchResult, HavePropertyMatcher, MustMatchers}
 import play.api.http.Writeable
-import play.api.libs.json.{Reads, JsValue, JsObject, Json}
+import play.api.libs.json.{JsObject, JsValue, Json, Reads}
 import play.api.mvc.SimpleResult
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.mocks.{MockAuthConstants, WithTestApplication}
 import es.tid.cosmos.api.controllers.MaintenanceModeBehaviors
-import es.tid.cosmos.api.controllers.common.BasicAuth
+import es.tid.cosmos.api.mocks.{MockAuthConstants, WithTestApplication}
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.Registration
+import es.tid.cosmos.api.quota.{EmptyQuota, GuaranteedGroup}
+import es.tid.cosmos.common.BasicAuth
 
 class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBehaviors {
 
@@ -69,8 +74,8 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
       responseData must have (field[String]("apiKey"))
       responseData must have (field[String]("apiSecret"))
       (responseData \ "handle").as[String] must be (requestedHandle)
-      val createdProfile = dao.withTransaction { implicit c =>
-        dao.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
+      val createdProfile = store.withTransaction { implicit c =>
+        store.profile.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
       }
       createdProfile.handle must be (requestedHandle)
       createdProfile.keys must be (Seq(NamedKey("default", publicKey)))
@@ -82,8 +87,8 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
       val response = postRegistration(validPayload - "handle")
       status(response) must be (CREATED)
       Json.parse(contentAsString(response)) must have (field[String]("handle"))
-      dao.withTransaction { implicit c =>
-        dao.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
+      store.withTransaction { implicit c =>
+        store.profile.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
       }
     }
   }
@@ -110,8 +115,8 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
   }
 
   it must "reject requests when handle is already taken" in new WithTestApplication {
-    dao.withTransaction { implicit c =>
-      dao.registerUser(
+    store.withTransaction { implicit c =>
+      store.profile.register(
         UserId("otherUser"), Registration(requestedHandle, publicKey, email), UserState.Enabled
       )
     }
@@ -120,9 +125,18 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
     contentAsString(response) must include (s"Handle '$requestedHandle' is already taken")
   }
 
+  it must "reject requests when handle is already taken by a group" in new WithTestApplication {
+    store.withTransaction { implicit c =>
+      store.group.register(GuaranteedGroup(requestedHandle, EmptyQuota))
+    }
+    val response = postRegistration(validPayload)
+    status(response) must be (CONFLICT)
+    contentAsString(response) must include (s"Handle '$requestedHandle' is already taken")
+  }
+
   it must "reject requests when credentials are already registered" in new WithTestApplication {
-    dao.withTransaction { implicit c =>
-      dao.registerUser(newUserId, Registration("otherHandle", publicKey, email), UserState.Enabled)
+    store.withTransaction { implicit c =>
+      store.profile.register(newUserId, Registration("otherHandle", publicKey, email), UserState.Enabled)
     }
     val response = postRegistration(validPayload)
     status(response) must be (CONFLICT)
@@ -143,14 +157,12 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
 
   it must "unregister existing users of the same realm" in new WithTestApplication {
     withPersistentHdfsDeployed {
-      dao.withTransaction { implicit c =>
-        registerUser(dao, MockAuthConstants.User101.copy(id = newUserId))
-      }
+      registerUser(MockAuthConstants.User101.copy(id = newUserId))
       val response = deleteUser(newUserId)
       status(response) must be (OK)
       contentAsString(response) must include ("User new_id@id_service unregistration started")
-      dao.withTransaction { implicit c =>
-        dao.lookupByUserId(newUserId).get.state
+      store.withTransaction { implicit c =>
+        store.profile.lookupByUserId(newUserId).get.state
       } must (be (UserState.Deleting) or be (UserState.Deleted))
     }
   }

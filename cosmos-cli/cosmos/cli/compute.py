@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 #
-# Telefónica Digital - Product Development and Innovation
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
-# THIS CODE AND INFORMATION ARE PROVIDED 'AS IS' WITHOUT WARRANTY OF ANY KIND,
-# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
-# All rights reserved.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 import json
 
@@ -105,7 +110,8 @@ def create_cluster(args, proto):
         for service in unknown_services:
             print "\t" + service
         return 1
-    body = proto.create_cluster(args.name, args.size, list(arg_services_set))
+    body = proto.create_cluster(
+        args.name, args.size, list(arg_services_set), args.shared)
     print "Provisioning new cluster %s" % body["id"]
     util.set_last_cluster_id(body["id"])
     return 0
@@ -118,6 +124,8 @@ def add_create_cluster_command(subparsers):
                         help="number of machines (at least 1")
     parser.add_argument("--services", required=False, nargs="*",
                         help='optional services to install in the cluster')
+    parser.add_argument("--shared", action="store_true",
+                        help="share the cluster with your group's users")
     parser.set_defaults(func=ComputeCommand(create_cluster))
 
 
@@ -133,38 +141,9 @@ def add_terminate_cluster_command(subparsers):
     parser.set_defaults(func=ComputeCommand(terminate_cluster))
 
 
-def add_user_to_cluster(args, proto):
-    result = proto.add_user_to_cluster(args.cluster_id, args.user_id)
-    util.set_last_cluster_id(args.cluster_id)
-    print result["message"]
-
-
-def add_adduser_command(subparsers):
-    parser = subparsers.add_parser("adduser", help="add a user to an existing cluster")
-    util.add_cluster_id_argument(parser)
-    parser.add_argument("user_id", help="user id")
-    parser.set_defaults(func=ComputeCommand(add_user_to_cluster))
-
-
-def remove_user_from_cluster(args, proto):
-    result = proto.remove_user_from_cluster(args.cluster_id, args.user_id)
-    util.set_last_cluster_id(args.cluster_id)
-    print result["message"]
-
-
-def add_rmuser_command(subparsers):
-    parser = subparsers.add_parser("rmuser", help="remove a user from an existing cluster")
-    util.add_cluster_id_argument(parser)
-    parser.add_argument("user_id", help="user id")
-    parser.set_defaults(func=ComputeCommand(remove_user_from_cluster))
-
-
 def add_compute_commands(subparsers):
     add_list_clusters_command(subparsers)
     add_list_services_command(subparsers)
     add_show_cluster_command(subparsers)
     add_create_cluster_command(subparsers)
     add_terminate_cluster_command(subparsers)
-    add_adduser_command(subparsers)
-    add_rmuser_command(subparsers)
-

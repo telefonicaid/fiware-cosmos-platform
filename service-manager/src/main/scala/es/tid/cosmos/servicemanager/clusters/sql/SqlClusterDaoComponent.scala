@@ -5,8 +5,7 @@ import com.imageworks.migration.{InstallAllMigrations, Migrator, MysqlDatabaseAd
 import es.tid.cosmos.common.{ConfigComponent, MySqlDatabase, MySqlConnDetails}
 import es.tid.cosmos.servicemanager.clusters.{ClusterDao, ClusterDaoComponent}
 
-trait SqlClusterDaoComponent extends ClusterDaoComponent {
-  this: ConfigComponent =>
+trait SqlClusterDaoComponent extends ClusterDaoComponent { this: ConfigComponent =>
   private val connDetails = MySqlConnDetails.fromConfig(config)
   private val db = new MySqlDatabase(connDetails)
   private val migrator = new Migrator(
@@ -18,5 +17,5 @@ trait SqlClusterDaoComponent extends ClusterDaoComponent {
     InstallAllMigrations,
     packageName = "es.tid.cosmos.servicemanager.clusters.sql.migrations",
     searchSubPackages = false)
-  val clusterDao: ClusterDao = new SqlClusterDao(db)
+  override val serviceManagerClusterDao: ClusterDao = new SqlClusterDao(db)
 }

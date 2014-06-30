@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 #
-# Telefónica Digital - Product Development and Innovation
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
-# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
-# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
-# All rights reserved.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 """OS independent representation of the home directory of the user. That means
 the $HOME path on unix-like systems and the "Application Data" for MS ones."""
@@ -48,7 +53,7 @@ class HomeDir(object):
                     else self.get_default_config_filename())
         abs_path = self.abs_path(filename)
         log.info("Loading config from %s", abs_path)
-        if self._is_public_file(abs_path):
+        if os.name != 'nt' and self._is_public_file(abs_path):
             sys.stderr.write("""WARNING: Configuration file can be accessed by other users.
 Please make it private ('chmod 0600 %s' in unix systems)
 

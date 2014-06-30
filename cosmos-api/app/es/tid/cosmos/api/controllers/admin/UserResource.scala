@@ -1,18 +1,22 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.controllers.admin
 
 import javax.ws.rs.PathParam
-import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Random
@@ -21,12 +25,15 @@ import scalaz._
 import com.wordnik.swagger.annotations._
 import play.Logger
 import play.api.libs.json.Json
-import play.api.mvc.{Controller, Action, Headers}
+import play.api.mvc.{Action, Controller, Headers}
 
 import es.tid.cosmos.api.auth.multiauth.MultiAuthProvider
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile.{Registration, UserId, CosmosProfileDao}
-import es.tid.cosmos.api.wizards.{UserUnregistrationWizard, UserRegistrationWizard}
+import es.tid.cosmos.api.profile.{HandleConstraint, Registration, UserId}
+import es.tid.cosmos.api.profile.dao._
+import es.tid.cosmos.api.report.ClusterReporter
+import es.tid.cosmos.api.wizards.{UserRegistrationWizard, UserUnregistrationWizard}
+import es.tid.cosmos.common.BasicAuth
 import es.tid.cosmos.servicemanager.ServiceManager
 
 /** Resource for user account administration */
@@ -35,16 +42,16 @@ import es.tid.cosmos.servicemanager.ServiceManager
 class UserResource(
     multiUserProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
-    dao: CosmosProfileDao,
-    override val maintenanceStatus: MaintenanceStatus
+    store: ProfileDataStore with ClusterDataStore with GroupDataStore,
+    override val maintenanceStatus: MaintenanceStatus,
+    reporter: ClusterReporter
   ) extends Controller with JsonController with MaintenanceAwareController {
 
   import Scalaz._
 
-  private type Conn = dao.Conn
-
-  private val registrationWizard = new UserRegistrationWizard(serviceManager)
-  private val unregistrationWizard = new UserUnregistrationWizard(serviceManager)
+  private type Conn = store.Conn
+  private val registrationWizard = new UserRegistrationWizard(store, serviceManager, reporter)
+  private val unregistrationWizard = new UserUnregistrationWizard(store, serviceManager, reporter)
 
   /** Register a new user account. */
   @ApiOperation(value = "Create a new user account", httpMethod = "POST",
@@ -84,14 +91,14 @@ class UserResource(
       _ <- requireResourceNotUnderMaintenance()
       params <- validJsonBody[RegisterUserParams](request)
       _ <- requireAdminCreds(params.authRealm, request.headers)
-      dbInfo <- dao.withTransaction { implicit c =>
+      dbInfo <- store.withTransaction { implicit c =>
         for {
           userId <- uniqueUserId(params)
           handle <- selectHandle(params.handle)
         } yield (userId, Registration(handle, params.sshPublicKey, params.email))
       }
       (userId, registration) = dbInfo
-      registrationResult <- registrationWizard.registerUser(dao, userId, registration)
+      registrationResult <- registrationWizard.registerUser(userId, registration)
         .leftMap(message => InternalServerError(Json.toJson(message)))
       (profile, _) = registrationResult
     } yield Created(Json.toJson(RegisterUserResponse(
@@ -124,17 +131,17 @@ class UserResource(
       _ <- requireAdminCreds(realm, request.headers)
       unregistration_> <- startUnregistration(userId)
     } yield {
-      val message = s"User $userId unregistration started"
-      Logger.info(message)
-      Ok(Json.toJson(Message(message)))
+      val text = s"User $userId unregistration started"
+      Logger.info(text)
+      message(Ok, text)
     }
   }
 
   private def startUnregistration(userId: UserId): ActionValidation[Future[Unit]] = for {
-    cosmosProfile <- dao.withTransaction { implicit c => dao.lookupByUserId(userId)}.toSuccess(
-      NotFound(Json.toJson(Message(s"User $userId does not exist")))
-    )
-    unregistration_> <- unregistrationWizard.unregisterUser(dao, cosmosProfile.id)
+    cosmosProfile <- store.withTransaction { implicit c =>
+      store.profile.lookupByUserId(userId)
+    }.toSuccess(message(NotFound, s"User $userId does not exist"))
+    unregistration_> <- unregistrationWizard.unregisterUser(cosmosProfile.id)
       .leftMap(message => InternalServerError(Json.toJson(message)))
   } yield {
     unregistration_>.onSuccess {
@@ -147,16 +154,16 @@ class UserResource(
   }
 
   private def selectHandle(reqHandle: Option[String])(implicit c: Conn) =
-    reqHandle match {
-      case None => Success(generateHandle())
-      case Some(handle) if !dao.handleExists(handle) => handle.success
-      case Some(handle) => failWith(Conflict, s"Handle '$handle' is already taken")
-    }
+    reqHandle.map(handle => {
+      for {
+        _ <- HandleConstraint.ensureFreeHandle(handle, store)
+      } yield handle
+    }).getOrElse(generateHandle()).leftMap(error => Conflict(Json.toJson(Message(error))))
 
   private def uniqueUserId(params: RegisterUserParams)
                           (implicit c: Conn): ActionValidation[UserId] = {
     val userId = UserId(params.authRealm, params.authId)
-    if (dao.lookupByUserId(userId).isEmpty) userId.success
+    if (store.profile.lookupByUserId(userId).isEmpty) userId.success
     else failWith(Conflict, s"Already existing credentials: $userId")
   }
 
@@ -192,10 +199,10 @@ class UserResource(
 
   private def failWith(status: Status, text: String) = message(status, text).fail
 
-  @tailrec
-  private def generateHandle()(implicit c: Conn): String = {
+  private def generateHandle()(implicit c: Conn): Validation[String, String] = {
     val handle = s"id${Random.nextLong().abs.toString}"
-    if (dao.handleExists(handle)) generateHandle()
-    else handle
-  }
+    for {
+      _ <- HandleConstraint.ensureFreeHandle(handle, store)
+    } yield handle
+  }.orElse(generateHandle())
 }

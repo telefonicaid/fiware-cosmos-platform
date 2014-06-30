@@ -1,0 +1,46 @@
+#
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+include "cluster-properties"
+
+"global" {
+    "properties" {
+        "hcat_log_dir": "/var/log/webhcat",
+        "hcat_pid_dir": "/var/run/webhcat"
+    }
+}
+
+"services" = [{
+    "configType" = "webhcat-site"
+    "properties" {
+        "templeton.exec.timeout": "60000",
+        "templeton.hadoop": "/usr/bin/hadoop",
+        "templeton.hadoop.conf.dir": "/etc/hadoop/conf",
+        "templeton.hcat": "/usr/bin/hcat",
+        "templeton.hive.archive": "hdfs:///apps/webhcat/hive.tar.gz",
+        "templeton.hive.path": "hive.tar.gz/hive/bin/hive",
+        "templeton.hive.properties": "hive.metastore.local=false,hive.metastore.uris=thrift://"${MasterNode}":9083,hive.metastore.sasl.enabled=false,hive.metastore.execute.setugi=true,hive.metastore.warehouse.dir=/apps/hive/warehouse",
+        "templeton.jar": "/usr/lib/hcatalog/share/webhcat/svr/webhcat.jar",
+        "templeton.libjars": "/usr/lib/zookeeper/zookeeper.jar",
+        "templeton.override.enabled": "false",
+        "templeton.pig.archive": "hdfs:///apps/webhcat/pig.tar.gz",
+        "templeton.pig.path": "pig.tar.gz/pig/bin/pig",
+        "templeton.port": "50111",
+        "templeton.storage.class": "org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage",
+        "templeton.streaming.jar": "hdfs:///apps/webhcat/hadoop-streaming.jar",
+        "templeton.zookeeper.hosts": ${ZookeeperHosts}
+    }
+}]

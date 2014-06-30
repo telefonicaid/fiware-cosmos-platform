@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.tests.e2e
@@ -20,8 +25,16 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.verb.MustVerb
 
 class PersistentHdfs(user: User)(implicit info: Informer) extends MustVerb with MustMatchers {
-  def ls: Seq[String] = (s"cosmos -c ${user.cosmosrcPath} ls /" lines_!(ProcessLogger(info(_))))
-    .filterNot(_ == "No directory entries").map(line => line.substring(line.lastIndexOf(' ') + 1))
+
+  case class FileEntry(name: String, permissions: String, owner: String, group: String)
+
+  def ls(): Seq[FileEntry] = stringToProcess(s"cosmos -c ${user.cosmosrcPath} ls /")
+    .lines(ProcessLogger(info(_)))
+    .filterNot(_ == "No directory entries")
+    .map(line => {
+      val chunks = line.split("  ", 6)
+      FileEntry(chunks(5), chunks(0), chunks(1), chunks(2))
+    }).force
 
   def put(sourcePath: String, targetPath: String) {
     (s"cosmos -c ${user.cosmosrcPath} put $sourcePath $targetPath" !!).stripLineEnd must be ===
@@ -36,8 +49,12 @@ class PersistentHdfs(user: User)(implicit info: Informer) extends MustVerb with 
     new File(localPath)
   }
 
-  def rm(targetPath: String, checkOutput: Boolean = true) {
+  def rm(targetPath: String, checkOutput: Boolean = true): Unit = {
     val output = (s"cosmos -c ${user.cosmosrcPath} rm $targetPath" !!).stripLineEnd
     if (checkOutput) output must be === s"$targetPath was successfully deleted"
+  }
+
+  def chmod(permissions: String, targetPath: String): Unit = {
+    s"cosmos -c ${user.cosmosrcPath} chmod $permissions $targetPath".! must be (0)
   }
 }

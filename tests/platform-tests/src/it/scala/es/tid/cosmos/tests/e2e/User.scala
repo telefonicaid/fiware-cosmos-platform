@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.tests.e2e
@@ -14,7 +19,6 @@ package es.tid.cosmos.tests.e2e
 import java.io.Closeable
 import java.nio.charset.Charset
 import java.nio.file.{Files, StandardOpenOption}
-import java.nio.file.attribute.PosixFilePermissions
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.io.Source
@@ -61,8 +65,7 @@ class User(implicit info: Informer, testConfig: Config) extends Closeable
   def profileResource =
     (cosmos / "cosmos" / "v1" / "profile").as_!(apiKey, apiSecret)
   val cosmosrcPath = {
-    val permissions = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------"))
-    val tempFile = Files.createTempFile(handle, "cosmosrc", permissions)
+    val tempFile = Files.createTempFile(handle, "cosmosrc")
     val contents = Seq(s"""api_key: $apiKey
       |api_secret: $apiSecret
       |api_url: ${cosmos.url}/cosmos/v1/
@@ -100,9 +103,14 @@ class User(implicit info: Informer, testConfig: Config) extends Closeable
     }
     response_> must (runUnder(restTimeout) and eventuallySucceed)
     info(s"The user creation REST request returned 200")
-    Thread.sleep((3 minutes).toMillis) // FIXME: Wait while user is being added to Infinity, etc.
     val response = response_>.value.get.get
     info(s"The username being created is ${response.handle}")
+    val localUserResource =
+      (cosmos/ "cosmos" / "v1" / "profile").as_!(response.apiKey, response.apiSecret)
+    eventually {
+      val statusCode_> = Http(localUserResource).map(_.getStatusCode)
+      statusCode_> must (runUnder(restTimeout) and eventually(be(200)))
+    }
     response
   }
 

@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.controllers
@@ -18,9 +23,9 @@ import play.api.test.Helpers._
 import play.api.test.FakeRequest
 
 import es.tid.cosmos.api.controllers.ResultMatchers.failWith
+import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.mocks.SampleClusters
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
-import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.test.matchers.JsonMatchers
 import es.tid.cosmos.servicemanager.clusters._
 
@@ -41,126 +46,84 @@ class ClusterIT
   it must behave like
     enabledOnlyForOperatorsWhenUnderMaintenance(RunningClusterProps.terminateRequest)
 
-  "Cluster user management" must behave like
-    rejectingUnauthenticatedRequests(RunningClusterProps.addUserRequest("pepito"))
-
-  it must behave like
-    enabledOnlyForOperatorsWhenUnderMaintenance(RunningClusterProps.addUserRequest("pepito"))
-
   "Cluster resource" must "list complete cluster details on GET request when cluster is running" in
     new WithSampleSessions with SampleClusters {
-      regUser.setAsOwner(RunningClusterProps.id)
-      val resource = regUser.doRequest(RunningClusterProps.listDetailsRequest)
+      regUserInGroup.assignCluster(RunningClusterProps.id, shared = false)
+      val resource = regUserInGroup.doRequest(RunningClusterProps.listDetailsRequest)
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
       val description = contentAsJson(resource)
       description must representClusterProperties(RunningClusterProps)
       description must representRunningCluster
+      description must representNonSharedCluster
+    }
+
+  it must "list complete cluster details on GET request when cluster is shared" in
+    new WithSampleSessions with SampleClusters {
+      regUserInGroup.assignCluster(RunningClusterProps.id, shared = true)
+      val resource = regUserInGroup.doRequest(RunningClusterProps.listDetailsRequest)
+      status(resource) must equal (OK)
+      contentType(resource) must be (Some("application/json"))
+      val description = contentAsJson(resource)
+      description must representClusterProperties(RunningClusterProps)
+      description must representRunningCluster
+      description must representSharedCluster
     }
 
   it must "list partial cluster details on GET request" +
     " when cluster is still provisioning" in new WithSampleSessions with SampleClusters {
-    regUser.setAsOwner(ProvisioningClusterProps.id)
-    val resource = regUser.doRequest(ProvisioningClusterProps.listDetailsRequest)
+    regUserInGroup.assignCluster(ProvisioningClusterProps.id, shared = false)
+    val resource = regUserInGroup.doRequest(ProvisioningClusterProps.listDetailsRequest)
     status(resource) must equal (OK)
     contentType(resource) must be (Some("application/json"))
     val description = contentAsJson(resource)
     description must representClusterProperties(ProvisioningClusterProps)
     description must representInProgressCluster
+    description must representNonSharedCluster
   }
 
   it must "return 404 on unknown cluster" in new WithSampleSessions {
-    val resource = regUser.doRequest(RunningClusterProps.listDetailsRequest)
+    val resource = regUserInGroup.doRequest(RunningClusterProps.listDetailsRequest)
     status(resource) must equal (NOT_FOUND)
   }
 
   it must "reject with 401 when listing non-owned cluster" in
       new WithSampleSessions with SampleClusters {
-    val resource = regUser.doRequest(RunningClusterProps.listDetailsRequest)
+    val resource = regUserInGroup.doRequest(RunningClusterProps.listDetailsRequest)
     status(resource) must equal (UNAUTHORIZED)
   }
 
   it must "throw if the service manager has no associated information" in new WithSampleSessions {
-      regUser.setAsOwner(RunningClusterProps.id)
-      val resource = regUser.doRequest(RunningClusterProps.listDetailsRequest)
+      regUserInGroup.assignCluster(RunningClusterProps.id, shared = false)
+      val resource = regUserInGroup.doRequest(RunningClusterProps.listDetailsRequest)
       resource must failWith (classOf[IllegalStateException])
     }
 
   it must "terminate cluster" in new WithSampleSessions with SampleClusters {
-    regUser.setAsOwner(RunningClusterProps.id)
-    val resource = regUser.doRequest(RunningClusterProps.terminateRequest)
+    regUserInGroup.assignCluster(RunningClusterProps.id, shared = false)
+    val resource = regUserInGroup.doRequest(RunningClusterProps.terminateRequest)
     status(resource) must equal (OK)
-    val cluster = services.serviceManager().describeCluster(RunningClusterProps.id).get
+    val cluster = services.serviceManager.describeCluster(RunningClusterProps.id).get
     cluster.state must (be (Terminating) or be (Terminated))
   }
 
   it must "return 404 when terminating unknown clusters" in new WithSampleSessions {
-    status(regUser.doRequest(RunningClusterProps.terminateRequest)) must equal (NOT_FOUND)
+    status(regUserInGroup.doRequest(RunningClusterProps.terminateRequest)) must equal (NOT_FOUND)
   }
 
   it must "reject cluster termination of non owned clusters" in
       new WithSampleSessions with SampleClusters {
-    status(regUser.doRequest(RunningClusterProps.terminateRequest)) must equal (UNAUTHORIZED)
+    status(regUserInGroup.doRequest(RunningClusterProps.terminateRequest)) must equal (UNAUTHORIZED)
   }
 
   it must "be idempotent respect to cluster termination" in
       new WithSampleSessions with SampleClusters {
-    regUser.setAsOwner(RunningClusterProps.id)
+    regUserInGroup.assignCluster(RunningClusterProps.id, shared = false)
     for (_ <- 1 to 2) {
-      status(regUser.doRequest(RunningClusterProps.terminateRequest)) must equal (OK)
-      val cluster = services.serviceManager().describeCluster(RunningClusterProps.id).get
+      status(regUserInGroup.doRequest(RunningClusterProps.terminateRequest)) must equal (OK)
+      val cluster = services.serviceManager.describeCluster(RunningClusterProps.id).get
       cluster.state must (be (Terminating) or be (Terminated))
     }
-  }
-
-  it must "add a user to cluster" in new WithSampleSessions with SampleClusters {
-    regUser.setAsOwner(RunningClusterProps.id)
-    val rep = regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
-    status(rep) must equal (OK)
-    val users = services.serviceManager().listUsers(RunningClusterProps.id)
-    users must be ('defined)
-    users.get.exists(
-      usr => usr.username.equals(opUser.handle) && usr.isEnabled
-    ) must be (true)
-  }
-
-  it must "fail to add an already existing user" in new WithSampleSessions with SampleClusters {
-    regUser.setAsOwner(RunningClusterProps.id)
-    val rep1 = regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
-    status(rep1) must equal (OK)
-
-    val rep2 = regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
-    status(rep2) must equal (BAD_REQUEST)
-  }
-
-  it must "fail to add a user that is already being added" in new WithSampleSessions with SampleClusters {
-    mockedServiceManager.autoCompleteSetUserOperations = false
-    regUser.setAsOwner(RunningClusterProps.id)
-    val rep1 = regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
-    status(rep1) must equal (OK)
-
-    val rep2 = regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
-    status(rep2) must equal (BAD_REQUEST)
-    (contentAsJson(rep2) \ "error").as[String] must include ("Please wait for it to finish")
-  }
-
-  it must "remove a user from cluster" in new WithSampleSessions with SampleClusters {
-    regUser.setAsOwner(RunningClusterProps.id)
-    status(regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle)))
-
-    val rep = regUser.doRequest(RunningClusterProps.removeUserRequest(opUser.handle))
-    status(rep) must equal (OK)
-    val users = services.serviceManager().listUsers(RunningClusterProps.id)
-    users must be ('defined)
-    users.get.exists(
-      usr => usr.username.equals("pocahontas") && usr.isEnabled
-    ) must be (false)
-  }
-
-  it must "fail to remove the owner of the cluster" in new WithSampleSessions with SampleClusters {
-    regUser.setAsOwner(RunningClusterProps.id)
-    val rep = regUser.doRequest(RunningClusterProps.removeUserRequest(regUser.handle))
-    status(rep) must equal (BAD_REQUEST)
   }
 
   private object representAMachine extends Matcher[JsObject] {
@@ -187,10 +150,10 @@ class ClusterIT
 
   private def representClusterProperties(props: MockedServiceManager.ClusterProperties) =
     containFieldWithValue("id", JsString(props.id.toString)) and
-      containFieldWithUrl("href") and
-      containFieldWithValue("name", JsString(props.name.toString)) and
-      containFieldWithValue("size", JsNumber(props.size)) and
-      containFieldWithValue("services", JsArray(props.services.map(JsString)))
+    containFieldWithUrl("href") and
+    containFieldWithValue("name", JsString(props.name.toString)) and
+    containFieldWithValue("size", JsNumber(props.size)) and
+    containFieldWithValue("services", JsArray(props.services.map(JsString)))
 
   private val representRunningCluster =
     containFieldWithValue("state", JsString(Running.name)) and
@@ -198,6 +161,12 @@ class ClusterIT
     containFieldThatMust("master", representAMachine) and
     containFieldThatMust("slaves", beAnArrayWhoseElementsMust(representAMachine)) and
     containFieldThatMust("users", beAnArrayWhoseElementsMust(representAUser))
+
+  private val representSharedCluster =
+    containFieldWithValue("shared", JsBoolean(true))
+
+  private val representNonSharedCluster =
+    containFieldWithValue("shared", JsBoolean(false))
 
   private val representInProgressCluster =
     containFieldWithValue("state", JsString(Provisioning.name)) and
@@ -209,11 +178,5 @@ class ClusterIT
 
     def listDetailsRequest = FakeRequest(GET, baseUrl)
     def terminateRequest = FakeRequest(POST, s"$baseUrl/terminate")
-    def addUserRequest(handle: String) = FakeRequest(POST, s"$baseUrl/add_user").withJsonBody(
-      Json.obj("user" -> handle)
-    )
-    def removeUserRequest(handle: String) = FakeRequest(POST, s"$baseUrl/remove_user").withJsonBody(
-      Json.obj("user" -> handle)
-    )
   }
 }

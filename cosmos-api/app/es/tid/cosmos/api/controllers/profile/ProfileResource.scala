@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.controllers.profile
@@ -19,12 +24,12 @@ import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.dao.ProfileDataStore
 
 /** Resource that represents a user profile. */
 @Api(value = "/cosmos/v1/profile", listingPath = "/doc/cosmos/v1/profile",
   description = "Represents the user profile")
-class ProfileResource(override val auth: RequestAuthentication, val dao: CosmosProfileDao)
+class ProfileResource(override val auth: RequestAuthentication, store: ProfileDataStore)
   extends Controller with JsonController with ApiAuthController {
 
   /** Show user profile. */
@@ -57,13 +62,13 @@ class ProfileResource(override val auth: RequestAuthentication, val dao: CosmosP
       targetProfile <- validJsonBody[UserProfile](request)
     } yield {
       if (targetProfile.keys.length != 1) badRequest("Only one public key is supported")
-      else dao.withTransaction { implicit c =>
+      else store.withTransaction { implicit c =>
         if (currentProfile.handle != targetProfile.handle) {
           badRequest("Handle modification is not supported")
         } else {
-          dao.setHandle(currentProfile.id, targetProfile.handle)
-          dao.setEmail(currentProfile.id, targetProfile.email)
-          dao.setPublicKeys(currentProfile.id, targetProfile.keys)
+          store.profile.setHandle(currentProfile.id, targetProfile.handle)
+          store.profile.setEmail(currentProfile.id, targetProfile.email)
+          store.profile.setPublicKeys(currentProfile.id, targetProfile.keys)
           Ok(Json.toJson(targetProfile))
         }
       }

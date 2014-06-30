@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.tests.e2e.cluster
@@ -25,15 +30,13 @@ trait Cluster extends Closeable with Patience {
 
   val owner: User
 
-  def id: String
+  val shared: Boolean
 
-  def addUser(clusterUser: String, executedBy: User = owner): Int
+  def id: String
 
   def describe(executedBy: User = owner): JValue
 
   def isListed(executedBy: User = owner): Boolean
-
-  def removeUser(clusterUser: String, executedBy: User = owner): Int
 
   def terminate(executedBy: User = owner)
 
@@ -81,11 +84,17 @@ trait Cluster extends Closeable with Patience {
 object Cluster {
 
   trait Factory {
-    def apply(clusterSize: Int, owner: User, services: Seq[String] = Seq.empty)
-             (implicit info: Informer): Cluster
+    def apply(
+        clusterSize: Int,
+        owner: User,
+        services: Seq[String] = Seq.empty,
+        shared: Boolean = false)(implicit info: Informer): Cluster
   }
 
-  def apply(clusterSize: Int, owner: User, services: Seq[String] = Seq.empty)
-           (implicit info: Informer): Cluster =
-    CommandLineManagedCluster(clusterSize, owner, services)
+  def apply(
+      clusterSize: Int,
+      owner: User,
+      services: Seq[String] = Seq.empty,
+      shared: Boolean = false)(implicit info: Informer): Cluster =
+    CommandLineManagedCluster(clusterSize, owner, services, shared)
 }

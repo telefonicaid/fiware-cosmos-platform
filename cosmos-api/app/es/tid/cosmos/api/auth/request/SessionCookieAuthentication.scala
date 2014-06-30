@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.auth.request
@@ -16,10 +21,10 @@ import scalaz._
 import play.api.mvc.RequestHeader
 
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.dao.ProfileDataStore
 
 /** Authenticates requests that have a valid session cookie associated. */
-private[request] class SessionCookieAuthentication(dao: CosmosProfileDao)
+private[request] class SessionCookieAuthentication(store: ProfileDataStore)
   extends RequestAuthentication {
 
   import Scalaz._
@@ -28,8 +33,8 @@ private[request] class SessionCookieAuthentication(dao: CosmosProfileDao)
   override def authenticateRequest(request: RequestHeader): AuthResult =
     (for {
       userId <- request.session.userId
-      profile <- dao.withTransaction { implicit c =>
-        dao.lookupByUserId(userId)
+      profile <- store.withTransaction { implicit c =>
+        store.profile.lookupByUserId(userId)
       }
     } yield profile.success).getOrElse(MissingAuthentication.failure)
 }

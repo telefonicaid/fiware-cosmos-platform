@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.controllers.cluster
@@ -17,9 +22,10 @@ import com.wordnik.swagger.annotations.ApiProperty
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
 
+import es.tid.cosmos.api.profile.Cluster
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
-import es.tid.cosmos.servicemanager.ambari.services.{InfinityfsDriver, CosmosUserService}
 import es.tid.cosmos.servicemanager.clusters.{HostDetails, ClusterDescription}
+import es.tid.cosmos.servicemanager.services.{CosmosUserService, InfinityDriver}
 
 /** A cluster from the perspective of API clients. */
 case class ClusterDetails(
@@ -34,27 +40,30 @@ case class ClusterDetails(
     master: Option[HostDetails],
     slaves: Option[Seq[HostDetails]],
     users: Option[Seq[ClusterUser]],
-    services: Set[String]
+    shared: Boolean,
+    services: Set[String],
+    blockedPorts: Set[Int]
 )
 
 object ClusterDetails {
 
   /** Services hidden from the API user. */
-  val unlistedServices: Set[String] = Set(CosmosUserService.name, InfinityfsDriver.name)
+  val unlistedServices: Set[String] = Set(CosmosUserService.name, InfinityDriver.name)
 
   /**
    * Create a ClusterDetails from a description in the context of a request.
    *
-   * @param desc     Cluster description
-   * @param request  Context request
-   * @return         A ClusterDetails instance
+   * @param desc       Cluster description
+   * @param assignment The cluster assignment from the cluster DAO
+   * @param request    Context request
+   * @return           A ClusterDetails instance
    */
-  def apply(desc: ClusterDescription)(implicit request: RequestHeader): ClusterDetails =
-    fromDescription(desc).copy(href = ClusterResource.clusterUrl(desc.id))
+  def apply(desc: ClusterDescription, assignment: Cluster)(implicit request: RequestHeader): ClusterDetails =
+    apply(desc, assignment, ClusterResource.clusterUrl(desc.id))
 
-  private[cluster] def fromDescription(desc: ClusterDescription): ClusterDetails =
+  def apply(desc: ClusterDescription, assignment: Cluster, href: String): ClusterDetails =
     ClusterDetails(
-      href = "href_not_available",
+      href = href,
       id = desc.id.toString,
       name = desc.name,
       size = desc.size,
@@ -62,8 +71,10 @@ object ClusterDetails {
       stateDescription = desc.state.descLine,
       master = desc.master,
       slaves = if (desc.slaves.isEmpty) None else Some(desc.slaves),
+      shared = assignment.shared,
       users = desc.users.map(_.toSeq),
-      services = desc.services.filterNot(unlistedServices)
+      services = desc.services.filterNot(unlistedServices),
+      blockedPorts = desc.blockedPorts
     )
 
   implicit object HostDetailsWrites extends Writes[HostDetails] {
@@ -92,7 +103,9 @@ object ClusterDetails {
       "size" -> d.size,
       "state" -> d.state,
       "stateDescription" -> d.stateDescription,
-      "services" -> d.services.toSeq.sorted
+      "shared" -> d.shared,
+      "services" -> d.services.toSeq.sorted,
+      "blockedPorts" -> d.blockedPorts.toSeq.sorted
     )
 
     private def machinesInfo(d: ClusterDetails) =

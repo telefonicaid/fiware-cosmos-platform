@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 #
-# Telefónica Digital - Product Development and Innovation
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
-# THIS CODE AND INFORMATION ARE PROVIDED 'AS IS' WITHOUT WARRANTY OF ANY KIND,
-# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
-# All rights reserved.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 import json
 
@@ -41,11 +46,11 @@ class Protocol(object):
                 "Cannot get details for %s" % cluster_id, r)
         return r.json()
 
-    def create_cluster(self, cluster_name, cluster_size, services):
+    def create_cluster(self, cluster_name, cluster_size, services, shared):
         """Send a request to create a new cluster and return the response
         in JSON format"""
         body = json.dumps({"name": cluster_name, "size": cluster_size,
-                           "optionalServices": services})
+                           "optionalServices": services, "shared": shared})
         r = self.__client.post(self.__routes.clusters(),
                                body)
         if r.status_code != 201:
@@ -66,29 +71,4 @@ class Protocol(object):
         r = self.__client.get(self.__routes.services)
         if r.status_code != 200:
             return []
-        return r.json()
-
-    def add_user_to_cluster(self, cluster_id, user_id):
-        """Request the addition of a platform user to an existing cluster"""
-        return self.__manage_cluster_user(
-            cluster_id,
-            user_id,
-            action="add_user",
-            error_msg="Cannot add user %s to cluster %s" % (user_id, cluster_id))
-
-    def remove_user_from_cluster(self, cluster_id, user_id):
-        """Request the removal of a platform user from an existing cluster"""
-        return self.__manage_cluster_user(
-            cluster_id,
-            user_id,
-            action="remove_user",
-            error_msg="Cannot remove user %s from cluster %s" % (user_id, cluster_id))
-
-    def __manage_cluster_user(self, cluster_id, user_id, action, error_msg):
-        body = json.dumps({"user": user_id})
-        r = self.__client.post(
-            self.__routes.cluster(cluster_id, action=action),
-            body)
-        if r.status_code != 200:
-            raise ResponseError(error_msg, r)
         return r.json()

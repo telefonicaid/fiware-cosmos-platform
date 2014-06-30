@@ -7,14 +7,13 @@ scalaVersion in ThisBuild := "2.10.3"
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature")
 
-javacOptions in ThisBuild ++= Seq("-source", "1.7")
-
 addCommandAlias("run-local-it", ";it:compile ;it:test-only * -- -l \"HasExternalDependencies EndToEndTest\"")
 
 resolvers in ThisBuild ++= Seq(
     DefaultMavenRepository,
-    "Cosmos Nexus Repository" at "http://cosmos10/nexus/content/groups/public/",
+    "Cosmos Nexus Repository" at "http://cosmos10.hi.inet/nexus/content/groups/public/",
     "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+    "Twitter" at "http://maven.twttr.com",
     Resolver.url("Play", url("http://download.playframework.org/ivy-releases/"))(Resolver.ivyStylePatterns)
 )
 
@@ -23,4 +22,14 @@ libraryDependencies in ThisBuild ++= Seq(
   Dependencies.scalatest % "test, it"
 )
 
+publishTo := {
+  val releaseType = if (version.value.trim.endsWith("SNAPSHOT")) "snapshots" else "releases"
+  Some(releaseType  at "http://cosmos10.hi.inet/nexus/content/repositories/" + releaseType)
+}
+
+credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
+
 cleanKeepFiles := (target.value * "centos-6-cosmos.HDP.*").get
+
+// orbit workaround https://jira.codehaus.org/browse/JETTY-1493
+classpathTypes ~= (_ + "orbit")

@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.controllers.common.auth
@@ -18,12 +23,13 @@ import org.scalatest.matchers.MustMatchers
 import play.api.test.Helpers._
 import play.api.mvc._
 
-import es.tid.cosmos.api.profile.{UserState, CosmosProfileDao}
+import es.tid.cosmos.api.profile.UserState
+import es.tid.cosmos.api.profile.dao.CosmosDataStore
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 
 class PagesAuthControllerIT extends FlatSpec with MustMatchers {
 
-  class TestController(override val dao: CosmosProfileDao)
+  class TestController(override val store: CosmosDataStore)
     extends Controller with PagesAuthController {
 
     def index() = Action(parse.anyContent) { request =>
@@ -36,7 +42,7 @@ class PagesAuthControllerIT extends FlatSpec with MustMatchers {
   }
 
   trait WithTestController extends WithSampleSessions {
-    val controller = new TestController(dao)
+    val controller = new TestController(store)
     def route(request: Request[AnyContent]): Future[SimpleResult] =
       controller.index().apply(request)
   }
@@ -50,7 +56,7 @@ class PagesAuthControllerIT extends FlatSpec with MustMatchers {
   }
 
   it must "detect sessions of registered users" in new WithTestController {
-    contentAsString(route(regUser.request("/"))) must include ("registered")
+    contentAsString(route(regUserInGroup.request("/"))) must include ("registered")
   }
 
   it must "discard sessions of not-enabled users" in new WithTestController {

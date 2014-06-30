@@ -1,17 +1,21 @@
 #
-# Telefónica Digital - Product Development and Innovation
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
-# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
-# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
-# All rights reserved.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 
-class cosmos::setup inherits cosmos::params {
-
-  include cosmos::master_db
+class cosmos::setup {
+  include cosmos::params, cosmos::master_db
 
   package { ['libvirt-client', 'libvirt-java'] :
     ensure => 'present'
@@ -31,14 +35,23 @@ class cosmos::setup inherits cosmos::params {
     content => template('cosmos/ial.conf.erb'),
   }
 
-  file { 'service configurations':
+  $services_confdir = "${cosmos::params::cosmos_confdir}/services"
+
+  file { 'service configurations directory':
     ensure  => 'directory',
-    source  => "puppet:///modules/${module_name}/services",
-    path    => "${cosmos::params::cosmos_confdir}/services",
+    path    => $services_confdir,
     owner   => 'root',
     group   => 'root',
     mode    => '0640',
-    recurse => true
+  }
+
+  recursive_directory { 'service configurations':
+    source_dir => "${module_name}/services",
+    dest_dir   => $services_confdir,
+    owner      => 'root',
+    group      => 'root',
+    file_mode  => '0640',
+    dir_mode   => '0640',
   }
 
   file { 'logback.conf' :
@@ -49,8 +62,9 @@ class cosmos::setup inherits cosmos::params {
   }
 
   exec { 'cosmos-setup':
-    command     => "${cosmos::params::cosmos_basedir}/cosmos-admin/cosmos-admin setup",
-    refreshonly => true,
+    command     => "sleep 120 && ${cosmos::params::cosmos_basedir}/cosmos-admin/cosmos-admin setup",
+    path        => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
+    logoutput   => true,
     user        => root,
     timeout     => 900,
   }
@@ -60,13 +74,14 @@ class cosmos::setup inherits cosmos::params {
     -> File[
         'cosmos-api.conf',
         'ial.conf',
-        'service configurations',
+        'service configurations directory',
         'logback.conf'
       ]
+  File['service configurations directory'] -> Recursive_directory['service configurations']
 
-  Package['cosmos-api'] -> File['cosmos-api.conf']
+  Exec['install-cosmos-api'] -> File['cosmos-api.conf']
 
-  Package['cosmos-admin'] -> Exec['cosmos-setup']
+  Exec['install-cosmos-admin'] -> Exec['cosmos-setup']
 
   Apache::Vhost['platform.repo'] -> Exec['cosmos-setup']
 
@@ -77,7 +92,7 @@ class cosmos::setup inherits cosmos::params {
     $cosmos::params::ssl_cert_file,
     $cosmos::params::ssl_key_file,
     $cosmos::params::ssl_ca_file
-  ] ~> Exec['cosmos-setup']
+  ] -> Exec['cosmos-setup']
 
   anchor{'cosmos::setup::begin': }
     -> Class['cosmos::master_db']

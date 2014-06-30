@@ -1,32 +1,42 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.controllers.cluster
+
+import java.sql.Timestamp
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.Json
 
+import es.tid.cosmos.api.profile.Cluster
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
-import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.{Hdfs, MapReduce2}
 
 class ClusterDetailsTest extends FlatSpec with MustMatchers {
 
   val clusterOwner = ClusterUser(
     username = "jsmith",
+    group = None,
     publicKey = "ssh-rsa XXXXX jsmith@example.com"
   )
   val extraUser = ClusterUser(
     username = "pbanks",
+    group = Some("group"),
     publicKey = "ssh-rsa ZZZZZ pbanks@example.com"
   )
   val sampleDetails = ClusterDetails(
@@ -39,7 +49,9 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
     master = Some(host(1)),
     slaves = Some(Seq(host(2), host(3))),
     users = Some(Seq(clusterOwner, extraUser)),
-    services = Set("ServiceB", "ServiceA")
+    services = Set("ServiceB", "ServiceA"),
+    blockedPorts = Set(2, 1, 3),
+    shared = true
   )
   val sampleJson = Json.obj(
     "href" -> "http://host/path",
@@ -50,6 +62,7 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
     "stateDescription" -> "releasing resources",
     "master" -> hostJson(1),
     "slaves" -> Json.arr(hostJson(2), hostJson(3)),
+    "shared" -> true,
     "users" -> Json.arr(
       Json.obj(
         "username" -> "jsmith",
@@ -62,7 +75,8 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
         "isSudoer" -> false
       )
     ),
-    "services" -> Json.arr("ServiceA", "ServiceB")
+    "services" -> Json.arr("ServiceA", "ServiceB"),
+    "blockedPorts" -> Json.arr(1, 2, 3)
   )
 
   "Cluster details" must "be serialized to JSON" in {
@@ -104,9 +118,11 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
       master = None,
       slaves = Seq.empty,
       users = None,
-      services = Set(Hdfs.name, MapReduce2.name) ++ ClusterDetails.unlistedServices
+      services = Set(Hdfs.name, MapReduce2.name) ++ ClusterDetails.unlistedServices,
+      blockedPorts = Set.empty
     )
-    val details = ClusterDetails.fromDescription(description)
+    val assignment = Cluster(description.id, 13L, new Timestamp(0))
+    val details = ClusterDetails(description, assignment, "href")
     val listedServices = (Json.toJson(details) \ "services").as[Set[String]]
     ClusterDetails.unlistedServices.foreach { serviceName =>
       listedServices must not contain serviceName

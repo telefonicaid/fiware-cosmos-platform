@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.mocks
@@ -30,7 +35,7 @@ object SampleClusters {
     id = new ClusterId(),
     name = ClusterName("Running cluster"),
     size = 4,
-    users = Set(ClusterUser.enabled("jsmith", "jsmith-public-key")),
+    users = Set(ClusterUser.enabled("jsmith", Some("group"), "jsmith-public-key")),
     initialState = Some(Running)
   )
 
@@ -38,7 +43,7 @@ object SampleClusters {
     id = new ClusterId(),
     name = ClusterName("Provisioning cluster"),
     size = 4,
-    users = Set(ClusterUser.enabled("pocahontas", "pocahontas-public-key")),
+    users = Set(ClusterUser.enabled("pocahontas", group = None, publicKey = "pocahontas-public-key")),
     initialState = None
   )
 }

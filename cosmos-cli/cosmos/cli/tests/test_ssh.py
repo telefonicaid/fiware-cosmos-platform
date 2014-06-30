@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 #
-# Telefónica Digital - Product Development and Innovation
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
-# THIS CODE AND INFORMATION ARE PROVIDED 'AS IS' WITHOUT WARRANTY OF ANY KIND,
-# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
-# All rights reserved.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 import unittest
 
@@ -29,7 +34,8 @@ RUNNING = {
     'state': 'running',
     'master': {
         'ipAddress': '192.168.20.18'
-    }
+    },
+    'blockedPorts': [1, 2, 3]
 }
 PROFILE = {
     'handle': 'user1'
@@ -78,7 +84,10 @@ class SshCommandTest(unittest.TestCase):
         call_mock.assert_called_with(['ssh', '192.168.20.18',
                                       '-l', 'user1',
                                       '-o', 'UserKnownHostsFile=/dev/null',
-                                      '-o', 'StrictHostKeyChecking=no'])
+                                      '-o', 'StrictHostKeyChecking=no',
+                                      '-L1:192.168.20.18:1',
+                                      '-L2:192.168.20.18:2',
+                                      '-L3:192.168.20.18:3'])
         self.assertEmptyIterator(response.json.side_effect)
 
     def test_ssh_cluster_with_custom_key(self):
@@ -93,6 +102,9 @@ class SshCommandTest(unittest.TestCase):
                                       '-l', 'user1',
                                       '-o', 'UserKnownHostsFile=/dev/null',
                                       '-o', 'StrictHostKeyChecking=no',
+                                      '-L1:192.168.20.18:1',
+                                      '-L2:192.168.20.18:2',
+                                      '-L3:192.168.20.18:3',
                                       '-i', expected_key_path])
 
     def test_exit_with_error_when_ssh_command_is_not_executable(self):

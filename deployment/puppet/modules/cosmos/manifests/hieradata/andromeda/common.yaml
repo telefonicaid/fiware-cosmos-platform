@@ -1,21 +1,26 @@
 #
-# Telefónica Digital - Product Development and Innovation
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
-# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
-# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
-# All rights reserved.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 
 ambari::params::repo_url: 'http://cosmos10.hi.inet/nexus/service/local/yum/repos/snapshots/staging'
 ambari::params::hdp_stack_repo_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/hortonworks/HDP-2.0.6.0/'
+ambari::params::enable_repo_mirroring: true
 ambari::params::cosmos_stack_repo_url: 'http://%{cosmos::params::master_ip}:%{cosmos::params::master_repo_port}/'
 ambari::params::jdk_url: 'http://cosmos10.hi.inet/develenv/repos/bins/jdk-6u31-linux-x64.bin'
 ambari::params::jce_url: 'http://cosmos10.hi.inet/develenv/repos/bins/jce_policy-6.zip'
-ambari::params::hdp_utils_repo_url: 'http://servilinux.hi.inet/ambari/HDP-UTILS-1.1.0.15/'
-ambari::params::hdp_utils_gpg_url: 'http://servilinux.hi.inet/ambari/RPM-GPG-KEY-Jenkins'
+ambari::params::hdp_utils_repo_url: 'http://repos.hi.inet/redhat/ambari-x86_64/RPMS.hdp-utils-1.1.0.15/'
 timezone::region: 'Europe'
 timezone::locality: 'Madrid'
 yum::params::yum_epel: 'http://repos.hi.inet/centos/epel%{operatingsystemmajrelease}-$basearch/RPMS.all/'
@@ -23,8 +28,8 @@ yum::params::yum_centos: 'http://repos.hi.inet/redhat/centos%{operatingsystemmaj
 yum::params::yum_centos_updates: 'http://repos.hi.inet/redhat/centos%{operatingsystemmajrelease}-$basearch/RPMS.updates'
 yum::params::yum_redhat: 'http://repos.hi.inet/redhat/rhel%{operatingsystemmajrelease}s-$basearch/RPMS.all/'
 yum::params::yum_redhat_optional: 'http://repos.hi.inet/redhat/rhel%{operatingsystemmajrelease}s-$basearch/RPMS.optional/'
-yum::params::yum_puppet: 'http://servilinux.hi.inet/puppet/yum/el/%{operatingsystemmajrelease}/products/$basearch/'
-yum::params::yum_puppet_deps: 'http://servilinux.hi.inet/puppet/yum/el/%{operatingsystemmajrelease}/dependencies/$basearch/'
+yum::params::yum_puppet: 'http://repos.hi.inet/redhat/puppet-el%{operatingsystemmajrelease}-$basearch/RPMS.products/'
+yum::params::yum_puppet_deps: 'http://repos.hi.inet/redhat/puppet-el%{operatingsystemmajrelease}-$basearch/RPMS.dependencies/'
 cosmos::params::cosmos_repo_deps_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps'
 cosmos::openvz::images::base_image_url: 'http://cosmos10/develenv/repos/ovz-templates'
 cosmos::openvz::images::image_name: 'centos-6-cosmos.HDP.2.0.6-20140123-x86_64.tar.gz'
@@ -47,6 +52,9 @@ cosmos::params::ssl_authority: 'TID'
 cosmos::params::ssl_cert_location: 'https://issuecatid.hi.inet/certsrv'
 cosmos::params::ssl_support_name: 'EPG'
 cosmos::params::ssl_support_email: 'epg@tid.es'
+cosmos::params::smtp_host: 'mailhost.hi.inet'
+cosmos::params::email_sender: 'noreply-cosmos-andromeda@tid.es'
+cosmos::params::email_report_receiver: 'cosmos@tid.es'
 cosmos::params::ambari_mr_app_master_memory: 1024
 cosmos::params::ambari_map_task_memory: 2048
 cosmos::params::ambari_map_heap_memory: 1536
@@ -55,6 +63,9 @@ cosmos::params::ambari_reduce_heap_memory: 2304
 cosmos::params::ambari_yarn_total_memory: 28672
 cosmos::params::ambari_yarn_container_min_memory: 128
 cosmos::params::ambari_yarn_virtual_physical_memory_ratio: 2.1
+cosmos::params::infinity_secret: 'inf1nity_secret'
+cosmos::params::infinity_server_port: 51070
+cosmos::params::infinity_replication: 1
 cosmos::openvz::network::host_iface: 'bond0.1'
 slave_hosts:
     - 'andromeda02'

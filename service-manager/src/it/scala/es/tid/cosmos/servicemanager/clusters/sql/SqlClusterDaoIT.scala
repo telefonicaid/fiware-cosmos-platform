@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.servicemanager.clusters.sql
@@ -19,20 +24,18 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.common.{MySqlDatabase, MySqlConnDetails}
-import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
-import es.tid.cosmos.servicemanager.{ClusterName, ServiceDescription, ClusterUser}
+import es.tid.cosmos.common.scalatest.tags.{TaggedTests, HasExternalDependencies}
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.services.Service
 
-class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter with MockitoSugar {
+class SqlClusterDaoIT
+  extends FlatSpec with MustMatchers with BeforeAndAfter with TaggedTests with MockitoSugar {
+
+  override val testsTag = HasExternalDependencies
+
   val db = new MySqlDatabase(MySqlConnDetails("localhost", 3306, "root", "", "smtest"))
   val dao = new SqlClusterDao(db)
-
-  override def tags: Map[String, Set[String]] = {
-    val originalTags = super.tags
-    (for {
-      test <- testNames
-    } yield (test, originalTags.getOrElse(test, Set()) + HasExternalDependencies.name)).toMap
-  }
 
   before  {
     dao.newTransaction {
@@ -45,8 +48,8 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter wit
   }
 
   trait ClusterCreated {
-    val id = ClusterId()
-    val serviceA, serviceB = mock[ServiceDescription]
+    val id = ClusterId.random()
+    val serviceA, serviceB = mock[Service]
     given(serviceA.name).willReturn("serviceA")
     given(serviceB.name).willReturn("serviceB")
     dao.registerCluster(id, ClusterName("cosmos"), 3, Set(serviceA, serviceB))
@@ -54,7 +57,7 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter wit
   }
 
   trait ClusterCreatedWithUsers extends ClusterCreated {
-    val user1 = ClusterUser("jsmith", "jsmith-public-key")
+    val user1 = ClusterUser("jsmith", Some("group"), "jsmith-public-key")
     dao.setUsers(id, Set(user1))
   }
 
@@ -122,7 +125,7 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter wit
   }
 
   it must "return all cluster ids" in new ClusterCreated {
-    val id2 = ClusterId()
+    val id2 = ClusterId.random()
     dao.registerCluster(id2, ClusterName("cosmos"), 3, Set.empty)
     dao.ids.toSet must be (Set(id, id2))
   }
@@ -132,23 +135,23 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter wit
   }
 
   it must "retrieve none users for unexisting cluster" in new ClusterCreated {
-    dao.getUsers(ClusterId()) must not be 'defined
+    dao.getUsers(ClusterId.random()) must not be 'defined
   }
 
   it must "set users of existing cluster" in new ClusterCreated {
     dao.getUsers(id) must be (Some(Set.empty))
-    dao.setUsers(id, Set(ClusterUser("jsmith", "publickey1")))
-    dao.getUsers(id) must be (Some(Set(ClusterUser("jsmith", "publickey1"))))
+    dao.setUsers(id, Set(ClusterUser("jsmith", Some("group1"), "publickey1")))
+    dao.getUsers(id) must be (Some(Set(ClusterUser("jsmith", Some("group1"), "publickey1"))))
   }
 
   it must "fail to set users of unexisting cluster" in new ClusterCreated {
     evaluating {
-      dao.setUsers(ClusterId(), Set(ClusterUser("jsmith", "publickey1")))
+      dao.setUsers(ClusterId.random(), Set(ClusterUser("jsmith", Some("group1"), "publickey1")))
     } must produce [IllegalArgumentException]
   }
 
   it must "replace the users of an existing cluster" in new ClusterCreatedWithUsers {
-    dao.setUsers(id, Set(ClusterUser("pocahontas", "publickey2")))
-    dao.getUsers(id) must be (Some(Set(ClusterUser("pocahontas", "publickey2"))))
+    dao.setUsers(id, Set(ClusterUser("pocahontas", Some("group2"), "publickey2")))
+    dao.getUsers(id) must be (Some(Set(ClusterUser("pocahontas", Some("group2"), "publickey2"))))
   }
 }

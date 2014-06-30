@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.mocks.servicemanager
@@ -16,10 +21,12 @@ import scala.concurrent._
 import scala.language.{postfixOps, reflectiveCalls}
 import scala.util.Random
 
+import es.tid.cosmos.common.NowFuture
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.services.{Hdfs, MapReduce2}
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.clusters.ImmutableClusterDescription
+import es.tid.cosmos.servicemanager.services.{Service, Pig, Hive}
+import es.tid.cosmos.servicemanager.services.InfinityServer.InfinityServerParameters
 
 /** In-memory, simulated service manager. */
 class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
@@ -45,6 +52,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
     @volatile private var statePromises: Map[ClusterState, Promise[Unit]] = Map.empty
     @volatile private var pendingSetUserOperations: Seq[(Set[ClusterUser], Promise[Unit])] = Seq()
     @volatile private var observers: Set[Observer] = Set.empty
+    @volatile private var blockedPorts: Set[Int] = Set.empty
 
     def isConsumingMachines: Boolean = state match {
       case Terminated => false
@@ -58,7 +66,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
       setUserOperation._2.future
     }
 
-    def completeSetUsers(): Boolean = { synchronized {
+    def completeSetUsers(): Boolean = synchronized {
       if (pendingSetUserOperations.isEmpty)
         return false
       for {
@@ -69,7 +77,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
       }
       pendingSetUserOperations = Seq()
       true
-    }}
+    }
 
     def setState(newState: ClusterState): Future[Unit] = synchronized {
       statePromises.get(state).foreach(_.success(()))
@@ -88,11 +96,11 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
       promise.future
     }
 
-    def when(predicate: FakeCluster => Boolean)(action: FakeCluster => Unit) { synchronized {
+    def when(predicate: FakeCluster => Boolean)(action: FakeCluster => Unit): Unit = { synchronized {
       observers += Observer(predicate, action)
     }}
 
-    def immediateTransition(from: ClusterState, to: ClusterState) {
+    def immediateTransition(from: ClusterState, to: ClusterState): Unit = {
       when(_.state == from) {
         _.setState(to)
       }
@@ -105,7 +113,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
     def successfulProvision = clusterNodePoolCount >= size
 
     def view = synchronized {
-      ImmutableClusterDescription(id, name, size, state, nameNode, master, slaves, users, services)
+      ImmutableClusterDescription(id, name, size, state, nameNode, master, slaves, users, services, blockedPorts)
     }
 
     def transitionFuture: Future[Unit] = synchronized { statePromises(state).future }
@@ -128,7 +136,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
       failTransition_>
     }
 
-    private def notifyObservers() {
+    private def notifyObservers(): Unit = {
       for (Observer(pred, act) <- observers if pred(this)) {
         act(this)
       }
@@ -149,15 +157,15 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
 
   override def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
-  override val optionalServices: Seq[ServiceDescription] = Seq(Hdfs, MapReduce2)
+  override val optionalServices: Set[Service] = Set(Pig, Hive)
 
   override def createCluster(
       name: ClusterName,
       size: Int,
-      serviceDescriptions: Seq[ServiceDescription],
+      serviceInstances: Set[AnyServiceInstance],
       users: Seq[ClusterUser],
-      preConditions: ClusterExecutableValidation): ClusterId = synchronized {
-    val id = ClusterId()
+      preConditions: ClusterExecutableValidation): NowFuture[ClusterId, Unit] = synchronized {
+    val id = ClusterId.random()
     val properties = ClusterProperties(id, name, size, users.toSet)
 
     val propertiesAfterPreconditions = preConditions(id).apply().fold(
@@ -165,7 +173,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
      succ = (_) => properties
     )
     defineCluster(propertiesAfterPreconditions)
-    id
+    (id, Future.successful())
   }
 
   override def describeCluster(id: ClusterId): Option[ImmutableClusterDescription] = synchronized {
@@ -182,7 +190,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
 
   override val persistentHdfsId: ClusterId = PersistentHdfsProps.id
 
-  override def deployPersistentHdfsCluster(): Future[Unit] =
+  override def deployPersistentHdfsCluster(parameters: InfinityServerParameters): Future[Unit] =
     defineCluster(PersistentHdfsProps).transitionFuture
 
   override def listUsers(clusterId: ClusterId): Option[Seq[ClusterUser]] = for {
@@ -202,7 +210,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
 
   override def clusterNodePoolCount: Int = maxPoolSize
 
-  def withCluster(clusterId: ClusterId)(action: FakeCluster => Unit) {
+  def withCluster(clusterId: ClusterId)(action: FakeCluster => Unit): Unit = {
     action(clusters(clusterId))
   }
 
@@ -212,6 +220,21 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
     clusters += props.id -> cluster
     cluster
   }
+
+  /** Overload of [[es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager.defineCluster]]
+    * with default values for all the fields for shorter tests.
+    */
+  def defineCluster(
+     id: ClusterId = ClusterId.random(),
+     name: ClusterName = ClusterName("fake_cluster"),
+     size: Int = 2,
+     users: Set[ClusterUser] = Set.empty,
+     initialState: Option[ClusterState] = None,
+     services: Seq[String] = Seq("HDFS", "MAPREDUCE")): FakeCluster =
+    defineCluster(ClusterProperties(id, name, size, users, initialState, services))
+
+  /** Updates the persistent HDFS cluster with new services and/or its configuration */
+  override def updatePersistentHdfsServices(parameters: InfinityServerParameters): Future[Unit] = ???
 }
 
 object MockedServiceManager {
@@ -230,8 +253,8 @@ object MockedServiceManager {
     name = ClusterName("Persistent HDFS"),
     size = 4,
     users = Set(
-      ClusterUser.enabled("jsmith", "jsmith-public-key"),
-      ClusterUser.enabled("pocahontas", "pocahontas-public-key")
+      ClusterUser.enabled("jsmith", Some("group"), "jsmith-public-key"),
+      ClusterUser.enabled("pocahontas", None, "pocahontas-public-key")
     ),
     initialState = Some(Running)
   )

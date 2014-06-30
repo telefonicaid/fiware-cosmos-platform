@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.api.auth.request
@@ -18,24 +23,24 @@ import org.scalatest.matchers.MustMatchers
 import play.api.test.FakeRequest
 
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.controllers.common.BasicAuth
 import es.tid.cosmos.api.profile.UserState.Enabled
-import es.tid.cosmos.api.profile.Registration
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
+import es.tid.cosmos.common.BasicAuth
 
 class ApiCredentialsAuthenticationTest extends FlatSpec with MustMatchers {
 
   import Scalaz._
 
-  trait WithInstance {
-    val dao = new MockCosmosProfileDao()
-    val auth = new ApiCredentialsAuthentication(dao)
+  trait WithInstance extends MockCosmosDataStoreComponent {
+    val auth = new ApiCredentialsAuthentication(store)
 
     val requestWithoutCredentials = FakeRequest("GET", "/sample/resource")
     def requestWithCredentials(apiKey: String, apiSecret: String) =
       requestWithoutCredentials.withHeaders("Authorization" -> BasicAuth(apiKey, apiSecret))
 
-    val userProfile = dao.withTransaction { implicit c =>
-      dao.registerUser(UserId("id"), Registration("user", "ssh-rsa XXX", "user@host"), Enabled)
+    val userProfile = store.withTransaction { implicit c =>
+      store.profile.register(
+        UserId("id"), Registration("user", "ssh-rsa XXX", "user@host"), Enabled)
     }
     val validApiKey = userProfile.apiCredentials.apiKey
     val invalidApiKey = stringOf(ApiCredentials.ApiKeyLength + 1)
@@ -59,7 +64,8 @@ class ApiCredentialsAuthenticationTest extends FlatSpec with MustMatchers {
     val requestWithMalformedAuth = FakeRequest("GET", "/sample/resource").withHeaders(
       "Authorization" -> "malformed"
     )
-    auth.authenticateRequest(requestWithMalformedAuth) must be (MalformedAuthHeader("malformed").fail)
+    auth.authenticateRequest(requestWithMalformedAuth) must
+      be (MalformedAuthHeader("malformed").fail)
   }
 
   it must "consider malformed header if keys have wrong lengths" in new WithInstance {
@@ -73,7 +79,8 @@ class ApiCredentialsAuthenticationTest extends FlatSpec with MustMatchers {
 
   it must "fail if the credentials doesn't belong to any user" in new WithInstance {
     val unknownCredentials = ApiCredentials.random()
-    val invalidRequest = requestWithCredentials(unknownCredentials.apiKey, unknownCredentials.apiSecret)
+    val invalidRequest =
+      requestWithCredentials(unknownCredentials.apiKey, unknownCredentials.apiSecret)
     auth.authenticateRequest(invalidRequest) must be (InvalidAuthCredentials.fail)
   }
 }

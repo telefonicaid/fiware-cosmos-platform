@@ -1,12 +1,17 @@
 /*
- * Telefónica Digital - Product Development and Innovation
+ * Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
  *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package es.tid.cosmos.tests.e2e
@@ -16,36 +21,28 @@ import scala.language.postfixOps
 import scala.util.Try
 
 import com.typesafe.config.{ConfigFactory, Config}
-import org.scalatest.{BeforeAndAfterAll, FeatureSpec}
+import org.scalatest.{Tag, BeforeAndAfterAll, FeatureSpec}
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.common.scalatest.tags.EndToEndTest
+import es.tid.cosmos.common.scalatest.tags.{TaggedTests, EndToEndTest}
 import es.tid.cosmos.tests.e2e.cluster.Cluster
 
 abstract class E2ETestBase extends FeatureSpec with MustMatchers with Patience
-  with FutureMatchers with BeforeAndAfterAll {
+  with FutureMatchers with BeforeAndAfterAll with TaggedTests {
   implicit val testConfig: Config = {
     val configFile = Option(System.getProperty("testConfig")).getOrElse("test.conf")
     ConfigFactory.load(getClass.getClassLoader, configFile)
   }
   val restTimeout = testConfig.getInt("restTimeout").seconds
 
-  override def tags: Map[String, Set[String]] = {
-    val originalTags = super.tags
-    (for {
-    test <- testNames
-    } yield (test, originalTags.getOrElse(test, Set()) + EndToEndTest.name)).toMap
-  }
+  override val testsTag: Tag = EndToEndTest
 
   private var usersToDelete = List.empty[LazyVal[User]]
   private var clustersToDelete = List.empty[LazyVal[Cluster]]
 
   def withNewUser(body: LazyVal[User] => Unit) {
-    val user = new LazyVal(new User())
-    val executionResult = Try(body(user))
-    usersToDelete = user :: usersToDelete
-    executionResult.get
+    withNewUsers(1)(users => body(users.head))
   }
 
   def withNewUsers(numberOfUsers: Int)(body: Seq[LazyVal[User]] => Unit) {
@@ -55,9 +52,16 @@ abstract class E2ETestBase extends FeatureSpec with MustMatchers with Patience
     executionResult.get
   }
 
-  def withNewCluster(size: Int, owner: LazyVal[User], services: Seq[String] = Seq())(
-      body: LazyVal[Cluster] => Unit) {
-    val cluster = new LazyVal(Cluster(size, owner, services))
+  def withNewCluster(
+      size: Int,
+      owner: LazyVal[User],
+      services: Seq[String] = Seq(),
+      shared: Boolean = false)(body: LazyVal[Cluster] => Unit) {
+    val cluster = new LazyVal(constructor = {
+      val c = Cluster(size, owner, services, shared)
+      eventually { c.state(owner) must be(Some("running")) }
+      c
+    })
     val executionResult = Try(body(cluster))
     clustersToDelete ::= cluster
     executionResult.get

@@ -1,21 +1,27 @@
 # -*- coding: utf-8 -*-
 #
-# Telefónica Digital - Product Development and Innovation
+# Copyright (c) 2013-2014 Telefónica Investigación y Desarrollo S.A.U.
 #
-# THIS CODE AND INFORMATION ARE PROVIDED 'AS IS' WITHOUT WARRANTY OF ANY KIND,
-# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
-# All rights reserved.
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 import os
 
 from cosmos.common.cosmos_requests import CosmosRequests
 from cosmos.common.exceptions import OperationError, ResponseError
+from cosmos.common.paths import PathTypes
 from cosmos.common.routes import Routes
 from cosmos.common.version import assert_supported_version
-from cosmos.storage.webhdfs import WebHdfsClient
+from cosmos.storage.infinity import InfinityClient
 
 
 def connect(api_key, api_secret, api_url):
@@ -32,15 +38,15 @@ def connect(api_key, api_secret, api_url):
         raise ResponseError("Cannot get WebHDFS details",
                             response)
     details = response.json()
-    client = WebHdfsClient(details["location"], details["user"])
+    client = InfinityClient(details["location"], details["user"], api_key, api_secret)
     return StorageConnection(client)
 
 
 class StorageConnection(object):
     """A connection with the persistent storage service"""
 
-    def __init__(self, webhdfs_client):
-        self.__client = webhdfs_client
+    def __init__(self, infinity_client):
+        self.__client = infinity_client
 
     def upload_file(self, local_file, remote_path):
         """Upload an open file to the persistent storage.
@@ -52,16 +58,34 @@ class StorageConnection(object):
         it will be uploaded and renamed at the same time.  The remote path of
         the upload is returned in any case.
         """
-        remote_type = self.__client.list_path(remote_path).path_type()
-        if remote_type == 'FILE':
-            raise OperationError("Path %s already exists" % remote_path)
-        if remote_path.endswith('/') or remote_type == 'DIRECTORY':
-            target_path = os.path.join(remote_path,
-                                       os.path.split(local_file.name)[-1])
-        else:
-            target_path = remote_path
+        target_path = self._upload_target_path(
+            remote_path, os.path.split(local_file.name)[-1])
         self.__client.put_file(local_file, target_path)
         return target_path
+
+    def _upload_target_path(self, remote_path, local_file_name):
+        path_listing = self.__client.list_path(remote_path)
+        if path_listing is None:
+            if remote_path.endswith('/'):
+                raise OperationError("Directory %s does not exist" % remote_path)
+            else:
+                parent_path = os.path.dirname(remote_path)
+                parent_listing = self.__client.list_path(parent_path)
+                if parent_listing is None:
+                    raise OperationError("Parent directory %s does not exist" % parent_path)
+                else:
+                    target_path = remote_path
+        else:
+            StorageConnection._require_directory(remote_path, path_listing)
+            target_path = os.path.join(remote_path, local_file_name)
+        return target_path
+
+    @staticmethod
+    def _require_directory(path, path_listing):
+        if path_listing.path_type == PathTypes.FILE:
+            raise OperationError("Path %s already exists" % path)
+        if path_listing.path_type != PathTypes.DIRECTORY:
+            raise OperationError("Path %s is not a directory" % path)
 
     def upload_filename(self, local_filename, remote_path):
         """Upload a local file given by path.
@@ -108,8 +132,10 @@ class StorageConnection(object):
         return (target_path, size)
 
     def delete_path(self, path, recursive):
-        """Delete a file of the persistent storage.
-        Returns whether the path was deleted as boolean value.
-        """
+        """Delete a file of the persistent storage."""
         return self.__client.delete_path(path, recursive)
+
+    def chmod(self, path, permissions):
+        """Changes file or directory permissions."""
+        return self.__client.chmod(path, permissions)
 
